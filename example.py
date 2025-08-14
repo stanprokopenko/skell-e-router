@@ -1,4 +1,4 @@
-from skelle_ai_router import ask_ai
+from skell_e_router import ask_ai
 
 
 # MAIN EXECUTION
