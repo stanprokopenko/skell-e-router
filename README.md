@@ -1,4 +1,10 @@
-# Setting Default Python Encoding to UTF-8 on Windows
+## Install the package
+
+   ```
+   pip install git+https://github.com/stanprokopenko/skell-e-router@main
+   ```
+
+## Setting Default Python Encoding to UTF-8 on Windows
 
 This project requires Python to use UTF-8 as its default file encoding. If you encounter `UnicodeDecodeError` errors when running Python scripts (especially related to reading configuration or data files), follow these steps:
 
