@@ -25,10 +25,10 @@ if __name__ == "__main__":
             stream=False,
             response_format={"type": "text"},
             candidate_count=1,
-            #reasoning_effort="high",
-            budget_tokens=8000 # Currently supported by Gemini-2.5-flash
+            reasoning_effort="high",
+            #budget_tokens=8000   # Budget conversion: <=1024=low, <=2048=medium, >2048=high
             # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
-            # Budget conversion: <=1024=low, <=2048=medium, >2048=high
+            
         )
 
     print("\n--- Tests finished ---")
