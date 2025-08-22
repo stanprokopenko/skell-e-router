@@ -5,28 +5,30 @@ from skell_e_router import ask_ai
 #---------------
 
 if __name__ == "__main__":
-    # Test/Execution-Specific Parameters
+
     SYSTEM_MESSAGE = "You are funny"
-    USER_PROMPT = "write a joke about Proko"
-    MODELS = ["o3"]
+    PROMPT = "write a joke about Proko."
+    MODELS = ["gpt-5"]
 
     for model in MODELS:
 
-        # Example passing kwargs for temperature and max_tokens
         ask_ai(
             model,
-            USER_PROMPT,
+            PROMPT, # accepts str OR list[dict] for conversation history
             SYSTEM_MESSAGE,
-            verbosity='debug',
-            temperature=0.5, 
+            verbosity='response', # 'none', 'response', 'info', 'debug'
+            # KWARGS
+            temperature=0, 
             max_tokens=5000,
             top_p=0.9,
             stop=None,
             stream=False,
             response_format={"type": "text"},
             candidate_count=1,
-            reasoning_effort="high",
-            budget_tokens=8000 # Use reasoning_effort because most models suport is and litellm maps it to thinking_config
+            #reasoning_effort="high",
+            budget_tokens=8000 # Currently supported by Gemini-2.5-flash
+            # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
+            # Budget conversion: <=1024=low, <=2048=medium, >2048=high
         )
 
     print("\n--- Tests finished ---")

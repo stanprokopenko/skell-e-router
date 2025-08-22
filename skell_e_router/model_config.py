@@ -1,0 +1,85 @@
+# MODEL CONFIGURATION
+#--------------------
+
+class AIModel:
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str]):
+        self.name = name  # Full model name used by LiteLLM
+        self.provider = provider # e.g., "gemini", "openai", "anthropic"
+        self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
+        self.supported_params = supported_params # Parameters supported by litellm.completion for this model, after our internal transformations
+
+    @property
+    def is_gemini(self) -> bool:
+        return self.provider == "gemini"
+
+    @property
+    def is_anthropic(self) -> bool:
+        return self.provider == "anthropic"
+
+    @property
+    def is_openai(self) -> bool: # General OpenAI check
+        return self.provider == "openai"
+
+    @property
+    def is_openai_o_series(self) -> bool: # Specific check for "o" series like o1 and o3
+        return self.is_openai and self.name.startswith("openai/o")
+
+
+MODEL_CONFIG = {
+    "gpt-5": AIModel(
+        name="openai/gpt-5",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+    ),
+    # TODO: add other params for gpt-5 such as verbosity, etc.
+
+    "o3": AIModel(
+        name="openai/o3",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+    "gpt-4o": AIModel(
+        name="openai/gpt-4o",
+        provider="openai",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+    "gemini-2.5-pro-preview-05-06": AIModel(
+        name="gemini/gemini-2.5-pro-preview-05-06",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+    ),
+    "gemini-2.5-pro-preview-03-25": AIModel(
+        name="gemini/gemini-2.5-pro-preview-03-25",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+    ),
+    "gemini-2.5-flash-preview-04-17": AIModel(
+        name="gemini/gemini-2.5-flash-preview-04-17",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+    ),
+    "claude-3-5-sonnet-20241022": AIModel(
+        name="anthropic/claude-3-5-sonnet-20241022",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+    "claude-3-7-sonnet-20250219": AIModel(
+        name="anthropic/claude-3-7-sonnet-20250219",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        # betas param such as betas=["output-128k-2025-02-19"] for 128K output tokens (much longer responses)
+    )
+}
+
+# Allow lookup by full name too
+for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)
+    if config.name not in MODEL_CONFIG:
+        MODEL_CONFIG[config.name] = config 

@@ -1,7 +1,8 @@
 import litellm
 import os
 import json
-
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+from .model_config import AIModel, MODEL_CONFIG
 
 # SETUP
 #--------
@@ -11,50 +12,6 @@ import json
 
 # Drop unsupported parameters automatically
 litellm.drop_params = True
-
-# Models known to support 'thinking' / 'reasoning_effort' parameters
-THINKING_MODELS = [
-    "gemini/gemini-2.5-flash-preview-04-17",
-    "openai/o3"
-]
-
-
-# Checks if required environment variables are set.
-def check_environment_variables():
-
-    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY"]
-    
-    all_set = True
-    for key in required_keys:
-        if key not in os.environ:
-            print(f"WARNING: Environment variable '{key}' not set.")
-            all_set = False
-    return all_set 
-
-
-# Resolves a model alias or full name to the actual model name used by LiteLLM.
-def resolve_model_alias(model_alias: str):
-
-    MODEL_MAP = {
-        "o3": "openai/o3",
-        "gpt-4o": "openai/gpt-4o",
-        "gemini-2.5-pro": "gemini/gemini-2.5-pro-preview-03-25",
-        "gemini-2.5-pro-preview-03-25": "gemini/gemini-2.5-pro-preview-03-25",
-        "gemini-2.5-flash": "gemini/gemini-2.5-flash-preview-04-17",
-        "gemini-2.5-flash-preview-04-17": "gemini/gemini-2.5-flash-preview-04-17",
-        "claude-3-5-sonnet": "anthropic/claude-3-5-sonnet-20240620",
-    }
-
-    model_name = MODEL_MAP.get(model_alias) # Try resolving alias
-    if not model_name:
-        if model_alias in MODEL_MAP.values():
-            model_name = model_alias # Identifier is a valid full model name
-        else:
-            # Identifier is neither a valid alias nor a known full model name
-            print(f"ERROR: Invalid model identifier '{model_alias}'. Not found in known models.")
-            return None
-    return model_name
-
 
 # HELPER FUNCTIONS
 #-----------------
@@ -80,168 +37,213 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
     return messages
 
 
-# Handles 'thinking' (derived from budget_tokens) and 'reasoning_effort' params
-def _handle_thinking_params(model_name: str, kwargs: dict):
-    is_gemini = model_name.startswith("gemini")
-    is_anthropic = model_name.startswith("anthropic")
+# Checks if required environment variables are set.
+def check_environment_variables():
 
-    '''For Gemini and Anthropic models, LiteLLM converts reasoning_effort → thinking_config with the mapping low→1024, medium→2048, high→4096 tokens'''
-    if is_gemini or is_anthropic:
-        # Gemini models: Prioritize budget_tokens if present
-        if 'budget_tokens' in kwargs:
-            budget = kwargs.pop('budget_tokens')
-            think_type = "enabled" if budget > 0 else "disabled"
-            kwargs['thinking'] = {"type": think_type, "budget_tokens": budget}
-            # If budget_tokens is used, remove reasoning_effort to avoid potential conflicts
-            kwargs.pop('reasoning_effort', None)
-        # else: If only reasoning_effort is present (and budget_tokens is not), leave it.
-    else:
-        # Non-Gemini models: Remove Gemini-specific params
-        kwargs.pop('budget_tokens', None)
-        kwargs.pop('thinking', None)
-        # Leave reasoning_effort for _filter_unsupported_params to handle for the specific model
-
-    return kwargs
+    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY"]
+    
+    all_set = True
+    for key in required_keys:
+        if key not in os.environ:
+            print(f"WARNING: Environment variable '{key}' not set.")
+            all_set = False
+    return all_set 
 
 
-# Gathers statistics from a LiteLLM response and prints them based on level.
-def _print_response_details(response, verbosity: str = 'info'):
+# Resolves a model alias (or full name) to its AIModel object.
+def resolve_model_alias(model_alias: str) -> AIModel | None:
+    ai_model = MODEL_CONFIG.get(model_alias)
+    if not ai_model:
+        print(f"ERROR: Invalid model alias '{model_alias}'. Not found in known models.")
+        return None
+    return ai_model
+
+
+def _print_request_details(messages: list[dict], kwargs: dict, verbosity: str = 'none'):
+    
+    if verbosity == 'debug':
+        # Print kwargs
+        print(f"\nKWARGS:\n\n{json.dumps(kwargs, indent=4)}\n\n")
+
+        # Print messages
+        print(f"\nMESSAGES:\n\n{json.dumps(messages, indent=4)}\n\n")
+
+
+# Gathers statistics from a LiteLLM response and prints them based on level
+# 'none', 'response', 'info', 'debug'
+def _print_response_details(response, verbosity: str = 'none'):
     if verbosity == 'none':
         return
     
-    model_name = getattr(response, 'model', 'UNKNOWN MODEL') # Get model name early
-    
-    # Print raw response only if debug level
+    # Print Raw Response
     if verbosity == 'debug':
-        print("\n\n\n\n" + "-" * 32 + f"\nRAW RESPONSE:\n\n{response}\n\n")
+        try:
+            # Attempt to pretty-print using Pydantic's model_dump_json if available
+            pretty_response = response.model_dump_json(indent=4)
+        except AttributeError:
+            # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)
+            try:
+                pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()
+            except TypeError: # vars() might fail on some objects
+                pretty_response = str(response) # Safest fallback
+        print("\n\n" + "-" * 32 + f"\nRAW RESPONSE:\n\n{pretty_response}\n\n")
 
-    usage = getattr(response, 'usage', None)
-    completion_details = getattr(usage, 'completion_tokens_details', None)
-    
-    first_choice = response.choices[0] if response.choices else None
-    message = getattr(first_choice, 'message', None) if first_choice else None
+    # Print Response Content
+    if verbosity == 'response' or verbosity == 'info' or verbosity == 'debug':
 
-    # Initialize stats dictionary first
-    stats = {
-        'Model': getattr(response, 'model', 'UNKNOWN MODEL'), # Capitalized for printing
-        'Finish Reason': getattr(first_choice, 'finish_reason', None),
-        'Cost': litellm.completion_cost(completion_response=response),
-        'Prompt Tokens': getattr(usage, 'prompt_tokens', None),
-        'Completion Tokens': getattr(usage, 'completion_tokens', None),
-        'Reasoning Tokens': getattr(completion_details, 'reasoning_tokens', None),
-        'Total Tokens': getattr(usage, 'total_tokens', None),
-        'Tool Calls': getattr(message, 'tool_calls', None),
-        'Function Call': getattr(message, 'function_call', None),
-        'Provider Specific Fields': getattr(message, 'provider_specific_fields', None),
-        # Safety ratings will be added below if applicable
-    }
+        content = response.choices[0].message.content
+        print(f"\nRESPONSE:\n\n{content}\n\n\n")
 
-    # Extract and add Safety Ratings directly to stats if available and model is Gemini
-    safety_results = getattr(response, 'vertex_ai_safety_results', None)
-    if model_name.startswith("gemini") and safety_results and isinstance(safety_results, list) and safety_results:
-        # Access the inner list of ratings
-        ratings_list = safety_results[0] if isinstance(safety_results[0], list) else safety_results
-        for rating in ratings_list:
-            category = rating.get('category', 'Unknown Category')
-            probability = rating.get('probability', 'Unknown Probability')
-            # Add each safety rating as a separate key
-            stats[f"Safety: {category}"] = probability
+    # Print Response Info / Stats
+    if verbosity == 'info' or verbosity == 'debug':
 
-    # Print response content for info and debug levels
-    content = response.choices[0].message.content
-    print(f"\nRESPONSE:\n\n{content}\n\n\n")
-    
-    # Print info for info and debug levels
-    print("\nRESPONSE INFO:\n")
-    # Calculate max_key_len *after* potentially adding safety keys
-    max_key_len = max(len(k) for k in stats.keys()) 
-    for key, value in stats.items():
-        # Removed special handling for Safety Ratings
+        model_name = getattr(response, 'model', 'UNKNOWN MODEL')
 
-        # Format cost specifically
-        if key == 'Cost' and value is not None:
-            formatted_value = f"${value:.6f}"
-        else:
-            formatted_value = str(value) # Convert None to "None"
+        usage = getattr(response, 'usage', None)
+        completion_details = getattr(usage, 'completion_tokens_details', None)
         
-        # Add note for Reasoning Tokens
-        note = " (part of completion)" if key == 'Reasoning Tokens' and value is not None else ""
+        first_choice = response.choices[0] if response.choices else None
+        message = getattr(first_choice, 'message', None) if first_choice else None
+
+        # Initialize stats dictionary first
+        stats = {
+            'Model': model_name,
+            'Finish Reason': getattr(first_choice, 'finish_reason', None),
+            'Cost': litellm.completion_cost(completion_response=response),
+            'Prompt Tokens': getattr(usage, 'prompt_tokens', None),
+            'Completion Tokens': getattr(usage, 'completion_tokens', None),
+            'Reasoning Tokens': getattr(completion_details, 'reasoning_tokens', None),
+            'Total Tokens': getattr(usage, 'total_tokens', None),
+            'Tool Calls': getattr(message, 'tool_calls', None),
+            'Function Call': getattr(message, 'function_call', None),
+            'Provider Specific Fields': getattr(message, 'provider_specific_fields', None),
+            # Safety ratings will be added below if applicable
+        }
+
+        # Extract and add Safety Ratings directly to stats if available and model is Gemini
+        safety_results = getattr(response, 'vertex_ai_safety_results', None)
+        if model_name.startswith("gemini") and safety_results and isinstance(safety_results, list) and safety_results:
+            # Access the inner list of ratings
+            ratings_list = safety_results[0] if isinstance(safety_results[0], list) else safety_results
+            for rating in ratings_list:
+                category = rating.get('category', 'Unknown Category')
+                probability = rating.get('probability', 'Unknown Probability')
+                # Add each safety rating as a separate key
+                stats[f"Safety: {category}"] = probability
+
+        # Print info for info and debug levels
+        print("\nRESPONSE INFO:\n")
+        # Calculate max_key_len *after* potentially adding safety keys
+        max_key_len = max(len(k) for k in stats.keys()) 
+        for key, value in stats.items():
+            # Removed special handling for Safety Ratings
+
+            # Format cost specifically
+            if key == 'Cost' and value is not None:
+                formatted_value = f"${value:.6f}"
+            else:
+                formatted_value = str(value) # Convert None to "None"
+            
+            # Add note for Reasoning Tokens
+            note = " (part of completion)" if key == 'Reasoning Tokens' and value is not None else ""
+            
+            # Right-align the key within the max_key_len width
+            print(f"{key:>{max_key_len}} : {formatted_value}{note}")
+        print("-" * 32 + "\n")
+
+
+# Removes known unsupported parameters from kwargs based on the target model.
+def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
+
+    if "budget_tokens" in kwargs:
+        budget = kwargs.pop("budget_tokens")
+
+        # Path A: If "budget_tokens" in supported_params, transform to 'thinking' dict.
+        if "budget_tokens" in ai_model.supported_params:
+            think_type = "enabled" if budget > 0 else "disabled"
+            kwargs['thinking'] = {"type": think_type, "budget_tokens": budget}
+            kwargs.pop('reasoning_effort', None) # Prioritize 'thinking' dict.
         
-        # Right-align the key within the max_key_len width
-        print(f"{key:>{max_key_len}} : {formatted_value}{note}")
-    print("-" * 32 + "\n")
+        # Path B: Else, if "reasoning_effort" in supported_params, map to 'reasoning_effort' string.
+        elif "reasoning_effort" in ai_model.supported_params:
+            if budget > 0:
+                if budget <= 1024:
+                    kwargs['reasoning_effort'] = "low"
+                elif budget <= 2048:
+                    kwargs['reasoning_effort'] = "medium"
+                else:
+                    kwargs['reasoning_effort'] = "high"
+            kwargs.pop('thinking', None) # Ensure no conflicting 'thinking' dict.\
+    elif "reasoning_effort" in kwargs:
+        # If "reasoning_effort" in kwargs but model supports token_budget and not reasoning_effort, map to thinking dict.
+        if "budget_tokens" in ai_model.supported_params and "reasoning_effort" not in ai_model.supported_params:
+            
+            effort_value = kwargs.get("reasoning_effort")
+            
+            budget_val = 0
+            transformed_to_thinking = False
 
-
-# Adds safety settings to kwargs if the model is a Gemini model.
-def _maybe_add_gemini_safety_settings(model_name: str, kwargs: dict):
-    if model_name.startswith("gemini"):
+            if effort_value == "low":
+                budget_val = 1024 
+                transformed_to_thinking = True
+            elif effort_value == "medium":
+                budget_val = 2048
+                transformed_to_thinking = True
+            elif effort_value == "high":
+                budget_val = 4096 
+                transformed_to_thinking = True
+            
+            if transformed_to_thinking:
+                kwargs['thinking'] = {"type": "enabled", "budget_tokens": budget_val}
+                kwargs.pop('reasoning_effort')
+            # If not transformed, 'reasoning_effort' stays for final filtering.
+    
+    # Add safety settings
+    if "safety_settings" in ai_model.supported_params:
         kwargs['safety_settings'] = [
             {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
         ]
-    return kwargs
 
-
-# Removes known unsupported parameters from kwargs based on the target model.
-def _filter_unsupported_params(model_name: str, kwargs: dict):
-    
-    # candidate_count
-    if not model_name.startswith("gemini"):
-        kwargs.pop('candidate_count', None) # Gemini-specific
-    
-    # thinking / reasoning_effort
-    if model_name not in THINKING_MODELS:
-        kwargs.pop('reasoning_effort', None)
-        kwargs.pop('thinking', None)
-
-    # top_p and stop
-    # Remove top_p for specific incompatible models (e.g., o3) or models using thinking params
-    if model_name in THINKING_MODELS:
-        kwargs.pop('top_p', None)
-        kwargs.pop('stop', None)
-
-    # Add more rules here as needed for different providers/models
-
-    # temperature
-    # Remove temperature for specific models (e.g., openai/o models)
-    if model_name.startswith("openai/o"):
-        kwargs.pop('temperature', None)
-
-    return kwargs
+    # Filter to include only parameters listed in model's supported_params.
+    final_kwargs = {
+        key: value
+        for key, value in kwargs.items()
+        if key in ai_model.supported_params
+    }
+    return final_kwargs
 
 
 # MAIN CALL FUNCTIONS
 #--------------------
 
+@retry(wait=wait_random_exponential(min=1, max=10), stop=stop_after_attempt(6))
 def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', **kwargs):
     
     if not check_environment_variables(): # Verify required API keys are present
         exit(1)
 
-    model_name = resolve_model_alias(model_alias)
-    if not model_name:
+    ai_model = resolve_model_alias(model_alias)
+    if not ai_model:
         return None
-
+    
     # Construct messages list
     messages = _construct_messages(user_input, system_message)
     if messages is None:
         return None
 
-    # Add Gemini-specific safety settings if applicable
-    kwargs = _maybe_add_gemini_safety_settings(model_name, kwargs)
+    # Swap and filter out parameters for the target model
+    kwargs = _handle_model_specific_params(ai_model, kwargs)
 
-    # Handle thinking/reasoning params (mutually exclusive)
-    kwargs = _handle_thinking_params(model_name, kwargs)
+    # Print Request Details
+    _print_request_details(messages, kwargs, verbosity) 
 
-    # Filter out known unsupported parameters for the target model
-    kwargs = _filter_unsupported_params(model_name, kwargs)
-
-    print(f"\n--- ASKING AI ({model_name}) ---\n")
+    print(f"\nASKING AI ({ai_model.name})...\n\n")
     try:
         response = litellm.completion(
-            model=model_name,
+            model=ai_model.name,
             messages=messages,
             **kwargs
         )
@@ -249,11 +251,11 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         # Extract content
         content = response.choices[0].message.content
 
-        # verbosity levels: "none", "info", "debug"
-        _print_response_details(response, verbosity=verbosity) 
+        # Print Response Details
+        _print_response_details(response, verbosity) 
 
         return content
 
     except Exception as e:
-        print(f"ERROR calling {model_name}: {e}")
+        print(f"ERROR calling {ai_model.name}: {e}")
         return None

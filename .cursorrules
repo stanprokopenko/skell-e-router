@@ -1,0 +1,82 @@
+## Python
+
+**Don't bloat the code:** Write clean elegant code. 
+**Few error checks:** Don't add error checks unless it's critical
+**Few Print statements:** Only print statements for results, unless more requested.
+**Helper Functions:** Don't make the main and process functions too long. Add helper functions. When a helper function is likely to be used across files in the project, add it to `utils.py`.
+
+
+## Commenting Guidelines
+
+**Conciseness is Key:** Avoid long paragraphs or walls of text. Keep comments VERY brief and to the point. 
+
+**No useless comments:** Don't bloat the code with a lot of comments. If in doubt, leave it out.
+
+**Never write a comment about a change that was made**
+
+**Docstrings:** We dont like docstrings. Use regular comments instead, but avoid useless comments that are already obvious by reading the code at a glance.
+
+**Outline Procedural Steps:** Within functions that execute a sequence of distinct actions (like data loading, processing, saving, especially within a main function), use comments like # Step X: Brief description of action to clearly delineate these stages. For example: # Step 1: Parse command-line arguments, # Step 2: Find unique audio file, # Step 3: Compress audio.
+
+**Don't delete existing comments unless requested:** Make sure you keep any comments that exist in a file.
+
+## Naming Conventions & Configuration
+
+**Global Constants:** Use `UPPER_SNAKE_CASE`. Define constants used throughout the script (e.g., `FPS`) at the module level, with a section called "SETTINGS" typically grouped together *directly above* the main execution block (`if __name__ == "__main__":`) for visibility.
+
+**Test/Execution-Specific Parameters:** Use `UPPER_SNAKE_CASE`. Define parameters intended primarily for configuring a specific execution run (like default file paths used only for testing within `if __name__ == "__main__":`) *inside* the relevant execution block (e.g., inside the `if __name__ == "__main__":` block).
+
+## Formatting
+
+**Indentation:** 4 spaces
+
+**Blank Lines:** Always add two blank lines between functions
+
+**Section Separation:** For each major logical block (e.g., IMPORTS, CONSTANTS, HELPER FUNCTIONS, MAIN EXECUTION), insert a section header. Each header must be preceded by exactly two blank lines, use the format `# SECTION NAME` on one line, immediately followed by a separator line of dashes (`#------------`) matching the length of the section name, and then exactly one blank line before the code for that section.
+
+Example:
+
+```python
+# ... previous code ...
+
+
+# (Two blank lines above this line)
+# SECTION NAME
+#------------
+# (Exactly one blank line below this line)
+
+def function_or_code_belonging_to_section():
+    pass
+```
+
+Now I will apply this corrected spacing rule throughout `process_coverage.py`.
+
+## README Files
+
+Detailed documentation in README files.
+
+## Device
+
+- Windows PC
+- *Python Version*
+- *Other version*
+
+## Tasklist 
+
+if a `TASKLIST.md` file exists, use format `[ ]` and `[x]`. Subtasks can be created but need their own brackets. If a subtask cant be completed independatly, then just format it as a sub item without brackets.
+
+
+## MISC
+
+**Use UTF-8** when loading data to avoid errors with symbols and other special characters
+
+
+## *Other rules to define later*
+
+- logging vs printing
+    - "log_levels": `["debug", "info", "warn", "error"]`
+    - For simple scripts, just use print statements. When the project becomes complex, suggest to the user to refactor to log system
+- environment (anaconda?)
+- secret variables (.env or environment variables in OS)
+
+
