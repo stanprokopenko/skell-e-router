@@ -16,7 +16,7 @@ if __name__ == "__main__":
             model,
             PROMPT, # accepts str OR list[dict] for conversation history
             SYSTEM_MESSAGE,
-            verbosity='response', # 'none', 'response', 'info', 'debug'
+            verbosity='debug', # 'none', 'response', 'info', 'debug'
             # KWARGS
             temperature=0, 
             max_tokens=5000,
@@ -25,7 +25,7 @@ if __name__ == "__main__":
             stream=False,
             response_format={"type": "text"},
             candidate_count=1,
-            reasoning_effort="high",
+            reasoning_effort="low",
             #budget_tokens=8000   # Budget conversion: <=1024=low, <=2048=medium, >2048=high
             # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
             

@@ -26,6 +26,9 @@ class AIModel:
 
 
 MODEL_CONFIG = {
+
+    # OPENAI
+
     "gpt-5": AIModel(
         name="openai/gpt-5",
         provider="openai",
@@ -33,6 +36,18 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
     ),
     # TODO: add other params for gpt-5 such as verbosity, etc.
+    "gpt-5-mini": AIModel(
+        name="openai/gpt-5-mini",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+    ),
+    "gpt-5-nano": AIModel(
+        name="openai/gpt-5-nano",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+    ),
 
     "o3": AIModel(
         name="openai/o3",
@@ -46,24 +61,43 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"}
     ),
-    "gemini-2.5-pro-preview-05-06": AIModel(
-        name="gemini/gemini-2.5-pro-preview-05-06",
+
+    "gpt-oss-120b": AIModel(
+        name="groq/openai/gpt-oss-120b",
+        provider="openai(groq)",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
+    ),
+    "gpt-oss-20b": AIModel(
+        name="groq/openai/gpt-oss-20b",
+        provider="openai(groq)",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
+    ),
+
+    # GEMINI
+
+    "gemini-2.5-pro": AIModel(
+        name="gemini/gemini-2.5-pro",
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
     ),
-    "gemini-2.5-pro-preview-03-25": AIModel(
-        name="gemini/gemini-2.5-pro-preview-03-25",
+    "gemini-2.5-flash": AIModel(
+        name="gemini/gemini-2.5-flash",
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
     ),
-    "gemini-2.5-flash-preview-04-17": AIModel(
-        name="gemini/gemini-2.5-flash-preview-04-17",
+    "gemini-2.5-flash-lite": AIModel(
+        name="gemini/gemini-2.5-flash-lite",
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
     ),
+
+    # ANTHROPIC
+
     "claude-3-5-sonnet-20241022": AIModel(
         name="anthropic/claude-3-5-sonnet-20241022",
         provider="anthropic",
@@ -76,7 +110,8 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
         # betas param such as betas=["output-128k-2025-02-19"] for 128K output tokens (much longer responses)
-    )
+    ),
+    
 }
 
 # Allow lookup by full name too

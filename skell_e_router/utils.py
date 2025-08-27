@@ -1,6 +1,7 @@
 import litellm
 import os
 import json
+import time
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from .model_config import AIModel, MODEL_CONFIG
 
@@ -40,7 +41,7 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
 # Checks if required environment variables are set.
 def check_environment_variables():
 
-    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY"]
+    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"]
     
     all_set = True
     for key in required_keys:
@@ -71,7 +72,7 @@ def _print_request_details(messages: list[dict], kwargs: dict, verbosity: str = 
 
 # Gathers statistics from a LiteLLM response and prints them based on level
 # 'none', 'response', 'info', 'debug'
-def _print_response_details(response, verbosity: str = 'none'):
+def _print_response_details(response, verbosity: str = 'none', request_duration_s: float | None = None):
     if verbosity == 'none':
         return
     
@@ -105,11 +106,18 @@ def _print_response_details(response, verbosity: str = 'none'):
         first_choice = response.choices[0] if response.choices else None
         message = getattr(first_choice, 'message', None) if first_choice else None
 
-        # Initialize stats dictionary first
+        # Compute cost safely – some models might not be mapped in LiteLLM's cost table
+        try:
+            computed_cost = litellm.completion_cost(completion_response=response)
+        except Exception:
+            computed_cost = None
+
+        # Initialize stats dictionary
         stats = {
             'Model': model_name,
             'Finish Reason': getattr(first_choice, 'finish_reason', None),
-            'Cost': litellm.completion_cost(completion_response=response),
+            'Cost': computed_cost,
+            'Speed': request_duration_s,
             'Prompt Tokens': getattr(usage, 'prompt_tokens', None),
             'Completion Tokens': getattr(usage, 'completion_tokens', None),
             'Reasoning Tokens': getattr(completion_details, 'reasoning_tokens', None),
@@ -141,6 +149,8 @@ def _print_response_details(response, verbosity: str = 'none'):
             # Format cost specifically
             if key == 'Cost' and value is not None:
                 formatted_value = f"${value:.6f}"
+            elif key == 'Speed' and value is not None:
+                formatted_value = f"{value:.3f}s"
             else:
                 formatted_value = str(value) # Convert None to "None"
             
@@ -242,17 +252,20 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
     print(f"\nASKING AI ({ai_model.name})...\n\n")
     try:
+        start_time = time.perf_counter()
         response = litellm.completion(
             model=ai_model.name,
             messages=messages,
             **kwargs
         )
+        end_time = time.perf_counter()
+        request_duration_s = end_time - start_time
 
         # Extract content
         content = response.choices[0].message.content
 
         # Print Response Details
-        _print_response_details(response, verbosity) 
+        _print_response_details(response, verbosity, request_duration_s) 
 
         return content
 
