@@ -1,4 +1,4 @@
-from skell_e_router import ask_ai
+from skell_e_router import ask_ai, RouterError
 
 
 # MAIN EXECUTION
@@ -6,14 +6,13 @@ from skell_e_router import ask_ai
 
 if __name__ == "__main__":
 
-    SYSTEM_MESSAGE = "You are funny"
+    SYSTEM_MESSAGE = "You are funny."
     PROMPT = "write a joke about Proko."
-    MODELS = ["gpt-5"]
+    MODEL = "gpt-5"
 
-    for model in MODELS:
-
+    try:
         ask_ai(
-            model,
+            MODEL,
             PROMPT, # accepts str OR list[dict] for conversation history
             SYSTEM_MESSAGE,
             verbosity='debug', # 'none', 'response', 'info', 'debug'
@@ -28,7 +27,9 @@ if __name__ == "__main__":
             reasoning_effort="low",
             #budget_tokens=8000   # Budget conversion: <=1024=low, <=2048=medium, >2048=high
             # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
-            
         )
+    except RouterError as err:
+        # Pass upstream to your service / translate to your API error shape
+        print({"code": err.code, "message": err.message, "details": err.details})
 
     print("\n--- Tests finished ---")

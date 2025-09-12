@@ -2,11 +2,12 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str]):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
         self.supported_params = supported_params # Parameters supported by litellm.completion for this model, after our internal transformations
+        self.accepted_reasoning_efforts = accepted_reasoning_efforts # Optional per-model allowed values for 'reasoning_effort'
 
     @property
     def is_gemini(self) -> bool:
@@ -33,20 +34,23 @@ MODEL_CONFIG = {
         name="openai/gpt-5",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     # TODO: add other params for gpt-5 such as verbosity, etc.
     "gpt-5-mini": AIModel(
         name="openai/gpt-5-mini",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5-nano": AIModel(
         name="openai/gpt-5-nano",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"}
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
 
     "o3": AIModel(

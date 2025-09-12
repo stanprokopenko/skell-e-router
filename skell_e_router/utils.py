@@ -14,6 +14,22 @@ from .model_config import AIModel, MODEL_CONFIG
 # Drop unsupported parameters automatically
 litellm.drop_params = True
 
+# ERRORS
+#--------
+
+class RouterError(Exception):
+    def __init__(self, code: str, message: str, details: dict | None = None):
+        self.code = code
+        self.message = message
+        self.details = details or {}
+        super().__init__(f"{code}: {message}")
+
+
+# CONSTANTS
+#-----------
+
+REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"]
+
 # HELPER FUNCTIONS
 #-----------------
 
@@ -30,37 +46,47 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
         if all(isinstance(msg, dict) and 'role' in msg and 'content' in msg for msg in user_input):
             messages.extend(user_input)
         else:
-            print("ERROR: Invalid format in user_input list. Each item must be a dictionary with 'role' and 'content'.")
-            return None
+            raise RouterError(
+                code="INVALID_INPUT",
+                message="user_input items must be dicts with 'role' and 'content'"
+            )
     else:
-        print(f"ERROR: Invalid user_input type: {type(user_input)}. Must be string or list of dictionaries.")
-        return None
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=f"user_input must be a string or list of dicts with 'role' and 'content', got {type(user_input)}"
+        )
     return messages
 
 
 # Checks if required environment variables are set.
-def check_environment_variables():
-
-    required_keys = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"]
-    
-    all_set = True
-    for key in required_keys:
+def check_environment_variables(verbosity: str = 'none'):
+    missing = []
+    for key in REQUIRED_ENV_KEYS:
         if key not in os.environ:
-            print(f"WARNING: Environment variable '{key}' not set.")
-            all_set = False
-    return all_set 
+            if verbosity != 'none':
+                print(f"WARNING: Environment variable '{key}' not set.")
+            missing.append(key)
+    if missing:
+        raise RouterError(
+            code="MISSING_ENV",
+            message="Required environment variables are not set.",
+            details={"required": REQUIRED_ENV_KEYS, "missing": missing}
+        )
+    return True 
 
 
 # Resolves a model alias (or full name) to its AIModel object.
-def resolve_model_alias(model_alias: str) -> AIModel | None:
+def resolve_model_alias(model_alias: str) -> AIModel:
     ai_model = MODEL_CONFIG.get(model_alias)
     if not ai_model:
-        print(f"ERROR: Invalid model alias '{model_alias}'. Not found in known models.")
-        return None
+        raise RouterError(
+            code="INVALID_MODEL",
+            message=f"Invalid model alias '{model_alias}'."
+        )
     return ai_model
 
 
-def _print_request_details(messages: list[dict], kwargs: dict, verbosity: str = 'none'):
+def _print_request_details(messages: list[dict], kwargs: dict, model_name: str, verbosity: str = 'none'):
     
     if verbosity == 'debug':
         # Print kwargs
@@ -68,6 +94,9 @@ def _print_request_details(messages: list[dict], kwargs: dict, verbosity: str = 
 
         # Print messages
         print(f"\nMESSAGES:\n\n{json.dumps(messages, indent=4)}\n\n")
+    
+    if verbosity != 'none':
+        print(f"\nASKING AI ({model_name})...\n\n")
 
 
 # Gathers statistics from a LiteLLM response and prints them based on level
@@ -166,6 +195,13 @@ def _print_response_details(response, verbosity: str = 'none', request_duration_
 def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 
     if "budget_tokens" in kwargs:
+        # Validate type to avoid TypeError on comparisons
+        if not isinstance(kwargs.get("budget_tokens"), (int, float)):
+            raise RouterError(
+                code="INVALID_PARAM",
+                message="'budget_tokens' must be a number",
+                details={"received_type": str(type(kwargs.get("budget_tokens")))}
+            )
         budget = kwargs.pop("budget_tokens")
 
         # Path A: If "budget_tokens" in supported_params, transform to 'thinking' dict.
@@ -176,7 +212,10 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         
         # Path B: Else, if "reasoning_effort" in supported_params, map to 'reasoning_effort' string.
         elif "reasoning_effort" in ai_model.supported_params:
-            if budget > 0:
+            accepted_efforts = getattr(ai_model, 'accepted_reasoning_efforts', {"low", "medium", "high"})
+            if budget == 0:
+                kwargs['reasoning_effort'] = "minimal" if "minimal" in accepted_efforts else "low"
+            elif budget > 0:
                 if budget <= 1024:
                     kwargs['reasoning_effort'] = "low"
                 elif budget <= 2048:
@@ -190,10 +229,23 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
             
             effort_value = kwargs.get("reasoning_effort")
             
+            accepted_efforts = getattr(ai_model, 'accepted_reasoning_efforts', None)
+            if accepted_efforts is None:
+                accepted_efforts = {"low", "medium", "high"}
+
+            if effort_value not in accepted_efforts:
+                raise RouterError(
+                    code="INVALID_PARAM",
+                    message=f"'reasoning_effort' must be one of: {sorted(list(accepted_efforts))}"
+                )
+
             budget_val = 0
             transformed_to_thinking = False
 
-            if effort_value == "low":
+            if effort_value == "minimal":
+                budget_val = 0
+                transformed_to_thinking = True
+            elif effort_value == "low":
                 budget_val = 1024 
                 transformed_to_thinking = True
             elif effort_value == "medium":
@@ -204,7 +256,8 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 transformed_to_thinking = True
             
             if transformed_to_thinking:
-                kwargs['thinking'] = {"type": "enabled", "budget_tokens": budget_val}
+                think_type = "enabled" if budget_val > 0 else "disabled"
+                kwargs['thinking'] = {"type": think_type, "budget_tokens": budget_val}
                 kwargs.pop('reasoning_effort')
             # If not transformed, 'reasoning_effort' stays for final filtering.
     
@@ -230,45 +283,50 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 #--------------------
 
 @retry(wait=wait_random_exponential(min=1, max=10), stop=stop_after_attempt(6))
+def _perform_completion(model_name: str, messages: list[dict], **kwargs):
+    return litellm.completion(
+        model=model_name,
+        messages=messages,
+        **kwargs
+    )
+
+
 def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', **kwargs):
     
-    if not check_environment_variables(): # Verify required API keys are present
-        exit(1)
-
+    verbosity = verbosity.lower()
+    if verbosity not in ['none', 'response', 'info', 'debug']:
+        print(f"WARNING: Invalid verbosity '{verbosity}'. Must be 'none', 'response', 'info', or 'debug'.\nSetting to 'response'.")
+        verbosity = 'response'
+ 
+    # These helpers will raise RouterError on failure
+    check_environment_variables(verbosity)
     ai_model = resolve_model_alias(model_alias)
-    if not ai_model:
-        return None
-    
-    # Construct messages list
     messages = _construct_messages(user_input, system_message)
-    if messages is None:
-        return None
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)
 
-    # Print Request Details
-    _print_request_details(messages, kwargs, verbosity) 
+    _print_request_details(messages, kwargs, ai_model.name, verbosity) 
 
-    print(f"\nASKING AI ({ai_model.name})...\n\n")
     try:
         start_time = time.perf_counter()
-        response = litellm.completion(
-            model=ai_model.name,
+        response = _perform_completion(
+            model_name=ai_model.name,
             messages=messages,
             **kwargs
         )
         end_time = time.perf_counter()
         request_duration_s = end_time - start_time
 
-        # Extract content
         content = response.choices[0].message.content
-
-        # Print Response Details
         _print_response_details(response, verbosity, request_duration_s) 
-
         return content
 
     except Exception as e:
-        print(f"ERROR calling {ai_model.name}: {e}")
-        return None
+        if verbosity != 'none':
+            print(f"ERROR calling {ai_model.name}: {e}")
+        raise RouterError(
+            code="PROVIDER_ERROR",
+            message=str(e),
+            details={"provider": ai_model.provider, "model": ai_model.name}
+        ) from e
