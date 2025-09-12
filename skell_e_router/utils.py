@@ -2,7 +2,7 @@ import litellm
 import os
 import json
 import time
-from tenacity import retry, wait_random_exponential, stop_after_attempt
+from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
 
 # SETUP
@@ -29,6 +29,7 @@ class RouterError(Exception):
 #-----------
 
 REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"]
+FALLBACK_WAIT = wait_random_exponential(min=1, max=10)
 
 # HELPER FUNCTIONS
 #-----------------
@@ -56,6 +57,94 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
             message=f"user_input must be a string or list of dicts with 'role' and 'content', got {type(user_input)}"
         )
     return messages
+
+
+# Classify retryable errors and honor Retry-After when available
+def _extract_status_and_headers(exc: Exception) -> tuple[int | None, dict]:
+    status = getattr(exc, 'status_code', None)
+    headers = getattr(exc, 'headers', None)
+    if headers is None:
+        resp = getattr(exc, 'response', None)
+        if resp is not None:
+            status = getattr(resp, 'status_code', status)
+            headers = getattr(resp, 'headers', None)
+    if headers is None:
+        headers = {}
+    return status, headers
+
+
+def _parse_retry_after_seconds(headers: dict) -> float | None:
+    if not isinstance(headers, dict):
+        return None
+    retry_after = None
+    for k, v in headers.items():
+        if str(k).lower() == 'retry-after':
+            retry_after = v
+            break
+    if retry_after is None:
+        return None
+    try:
+        seconds = float(str(retry_after).strip())
+        if seconds >= 0:
+            return seconds
+    except Exception:
+        return None
+    return None
+
+
+def _is_quota_related(exc: Exception) -> bool:
+    code = getattr(exc, 'code', None)
+    if code is None:
+        error = getattr(exc, 'error', None)
+        if isinstance(error, dict):
+            code = error.get('code') or error.get('type')
+    if isinstance(code, str):
+        c = code.lower()
+        return ('quota' in c) or ('insufficient_quota' in c) or ('quota_exceeded' in c)
+    return False
+
+
+def _is_retryable_exception(exc: Exception) -> bool:
+    status, headers = _extract_status_and_headers(exc)
+
+    name = exc.__class__.__name__.lower()
+    if 'timeout' in name or 'connection' in name or 'connect' in name:
+        return True
+
+    if status is None:
+        return False
+
+    if status in (500, 502, 503, 504):
+        # Optional: respect very large Retry-After on 503 if present
+        ra = _parse_retry_after_seconds(headers)
+        if ra is not None and ra > 120:
+            return False
+        return True
+
+    if status == 429:
+        if _is_quota_related(exc):
+            return False
+        ra = _parse_retry_after_seconds(headers)
+        if ra is not None and ra > 120:
+            return False
+        return True
+
+    return False
+
+
+def _retry_after_wait(retry_state) -> float:
+    exc = retry_state.outcome.exception() if retry_state.outcome else None
+    if exc is None:
+        return FALLBACK_WAIT(retry_state)
+
+    status, headers = _extract_status_and_headers(exc)
+    if status in (429, 503):
+        seconds = _parse_retry_after_seconds(headers)
+        if seconds is not None and seconds >= 0:
+            return min(seconds, 120.0)
+        return FALLBACK_WAIT(retry_state)
+
+    return FALLBACK_WAIT(retry_state)
 
 
 # Checks if required environment variables are set.
@@ -282,7 +371,11 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 # MAIN CALL FUNCTIONS
 #--------------------
 
-@retry(wait=wait_random_exponential(min=1, max=10), stop=stop_after_attempt(6))
+@retry(
+    retry=retry_if_exception(_is_retryable_exception),
+    wait=_retry_after_wait,
+    stop=stop_after_attempt(3)
+)
 def _perform_completion(model_name: str, messages: list[dict], **kwargs):
     return litellm.completion(
         model=model_name,

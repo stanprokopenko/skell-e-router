@@ -24,3 +24,11 @@ This project requires Python to use UTF-8 as its default file encoding. If you e
     *   For the change to be fully recognized by all applications, it's sometimes necessary to log out and log back in, or even restart your computer.
 
 After completing these steps, Python should correctly interpret files using UTF-8 encoding by default. 
+
+## Retry policy
+
+The router has an internal retry up to 3 times before sending the response.
+
+- Retries: only on network/timeout errors, HTTP 500/502/503/504, and 429 without quota/billing exhaustion.
+- No retry: bad params (4xx), auth/permission errors, not found, quota/billing 429, policy blocks.
+- Backoff: exponential with jitter; if `Retry-After` is present on 429/503, it is honored up to a maximum of 120 seconds. If `Retry-After` exceeds 120 seconds, no retry is attempted and the error is returned.
