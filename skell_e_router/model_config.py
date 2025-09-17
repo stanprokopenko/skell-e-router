@@ -25,6 +25,10 @@ class AIModel:
     def is_openai_o_series(self) -> bool: # Specific check for "o" series like o1 and o3
         return self.is_openai and self.name.startswith("openai/o")
 
+    @property
+    def is_xai(self) -> bool:
+        return self.provider == "xai"
+
 
 MODEL_CONFIG = {
 
@@ -37,7 +41,7 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
-    # TODO: add other params for gpt-5 such as verbosity, etc.
+    # TODO: add other params for gpt-5 such as verbosity, etc. (implement responses api)
     "gpt-5-mini": AIModel(
         name="openai/gpt-5-mini",
         provider="openai",
@@ -52,12 +56,23 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
-
     "o3": AIModel(
         name="openai/o3",
         provider="openai",
         supports_thinking=True,
         supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+    "o1": AIModel(
+        name="openai/o1",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+    "gpt-4.1": AIModel(
+        name="openai/gpt-4.1",
+        provider="openai",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"}
     ),
     "gpt-4o": AIModel(
         name="openai/gpt-4o",
@@ -68,13 +83,13 @@ MODEL_CONFIG = {
 
     "gpt-oss-120b": AIModel(
         name="groq/openai/gpt-oss-120b",
-        provider="openai(groq)",
+        provider="openai",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
     ),
     "gpt-oss-20b": AIModel(
         name="groq/openai/gpt-oss-20b",
-        provider="openai(groq)",
+        provider="openai",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
     ),
@@ -102,11 +117,17 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
-    "claude-3-5-sonnet-20241022": AIModel(
-        name="anthropic/claude-3-5-sonnet-20241022",
+    "claude-opus-4-1-20250805": AIModel(
+        name="anthropic/claude-opus-4-1-20250805",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"}
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+    ),
+    "claude-sonnet-4-20250514": AIModel(
+        name="anthropic/claude-sonnet-4-20250514",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
     ),
     "claude-3-7-sonnet-20250219": AIModel(
         name="anthropic/claude-3-7-sonnet-20250219",
@@ -115,7 +136,22 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
         # betas param such as betas=["output-128k-2025-02-19"] for 128K output tokens (much longer responses)
     ),
-    
+    "claude-3-5-sonnet-20241022": AIModel(
+        name="anthropic/claude-3-5-sonnet-20241022",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"}
+    ),
+
+    # XAI
+    "grok-4-0709": AIModel(
+        name="xai/grok-4-0709",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},   # NOTE: It's a reasoning model, but reasoning_effort is NOT SUPPORTED
+    ),
+
+
 }
 
 # Allow lookup by full name too
