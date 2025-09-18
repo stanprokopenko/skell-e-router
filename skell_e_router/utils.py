@@ -365,6 +365,11 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         if isinstance(thinking_cfg, dict) and thinking_cfg.get('type') == 'enabled':
             if 'temperature' in ai_model.supported_params:
                 kwargs['temperature'] = 1
+            # top_p must be >= 0.95 or unset when thinking is enabled
+            top_p_val = kwargs.get('top_p')
+            if isinstance(top_p_val, (int, float)):
+                if top_p_val < 0.95:
+                    kwargs['top_p'] = 1
 
     # Filter to include only parameters listed in model's supported_params.
     final_kwargs = {

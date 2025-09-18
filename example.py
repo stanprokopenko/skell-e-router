@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     SYSTEM_MESSAGE = "You are funny."
     PROMPT = "write a joke about Proko."
-    MODEL = "gpt-5"
+    MODEL = "claude-3-7-sonnet-20250219"
 
     try:
         ask_ai(
