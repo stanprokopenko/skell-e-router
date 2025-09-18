@@ -359,6 +359,13 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
             {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
         ]
 
+    # Anthropic: when extended thinking is enabled, temperature must be 1
+    if ai_model.is_anthropic:
+        thinking_cfg = kwargs.get('thinking')
+        if isinstance(thinking_cfg, dict) and thinking_cfg.get('type') == 'enabled':
+            if 'temperature' in ai_model.supported_params:
+                kwargs['temperature'] = 1
+
     # Filter to include only parameters listed in model's supported_params.
     final_kwargs = {
         key: value
