@@ -28,6 +28,10 @@ class AIModel:
     @property
     def is_xai(self) -> bool:
         return self.provider == "xai"
+    
+    @property
+    def is_groq(self) -> bool:
+        return self.provider == "groq"
 
 
 MODEL_CONFIG = {
@@ -144,11 +148,27 @@ MODEL_CONFIG = {
     ),
 
     # XAI
+
     "grok-4-0709": AIModel(
         name="xai/grok-4-0709",
         provider="xai",
         supports_thinking=True,
         supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},   # NOTE: It's a reasoning model, but reasoning_effort is NOT SUPPORTED
+    ),
+
+    # GROQ
+
+    "groq-compound": AIModel(
+        name="groq/groq/compound",
+        provider="groq",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice", "compound_custom", "extra_headers", "headers"}
+    ),
+    "groq-compound-mini": AIModel(
+        name="groq/groq/compound-mini",
+        provider="groq",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice", "compound_custom", "extra_headers", "headers"}
     ),
 
 

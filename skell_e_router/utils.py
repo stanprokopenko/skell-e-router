@@ -31,6 +31,7 @@ class RouterError(Exception):
 REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY", "XAI_API_KEY"]
 FALLBACK_WAIT = wait_random_exponential(min=1, max=10)
 
+
 # HELPER FUNCTIONS
 #-----------------
 
@@ -350,6 +351,40 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 kwargs.pop('reasoning_effort')
             # If not transformed, 'reasoning_effort' stays for final filtering.
     
+    # Groq Compound: ensure correct model-version header is sent to enable tools
+    if ai_model.is_groq and (ai_model.name.endswith("/compound") or ai_model.name.endswith("/compound-mini")):
+        groq_header_key = "Groq-Model-Version"
+        header_value = "latest"
+
+        # Prefer LiteLLM's extra_headers; fall back to headers
+        extra_headers = kwargs.get("extra_headers")
+        headers = kwargs.get("headers")
+
+        if isinstance(extra_headers, dict):
+            if groq_header_key not in extra_headers:
+                extra_headers[groq_header_key] = header_value
+            kwargs["extra_headers"] = extra_headers
+        elif isinstance(headers, dict):
+            if groq_header_key not in headers:
+                headers[groq_header_key] = header_value
+            kwargs["headers"] = headers
+        else:
+            # Create using the more common LiteLLM arg name
+            kwargs["extra_headers"] = {groq_header_key: header_value}
+
+        GROQ_COMPOUND_DEFAULT_TOOLS = [
+            "browser_automation",
+            "web_search",
+            "code_interpreter",
+            "visit_website",
+        ]
+
+        # If caller didn't specify tools, default to all Groq Compound tools
+        if "compound_custom" not in kwargs:
+            kwargs["compound_custom"] = {
+                "tools": {"enabled_tools": GROQ_COMPOUND_DEFAULT_TOOLS}
+            }
+
     # Add safety settings
     if "safety_settings" in ai_model.supported_params:
         kwargs['safety_settings'] = [

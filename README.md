@@ -32,3 +32,10 @@ The router has an internal retry up to 3 times before sending the response.
 - Retries: only on network/timeout errors, HTTP 500/502/503/504, and 429 without quota/billing exhaustion.
 - No retry: bad params (4xx), auth/permission errors, not found, quota/billing 429, policy blocks.
 - Backoff: exponential with jitter; if `Retry-After` is present on 429/503, it is honored up to a maximum of 120 seconds. If `Retry-After` exceeds 120 seconds, no retry is attempted and the error is returned.
+
+## Groq Compound (temporary header)
+
+When routing to Groq Compound models (`groq/groq/compound`, `groq/groq/compound-mini`), the router injects a request header `Groq-Model-Version: latest`. This selects the Compound profile that exposes built‑in tools like `visit_website`.
+
+- This is a temporary shim for LiteLLM. Once LiteLLM forwards this header by default for Groq Compound, remove the injection in `skell_e_router/utils.py` in the `_handle_model_specific_params` function and the extra header params in `skell_e_router/model_config.py`.
+- If you prefer pinning to a specific profile, change the injected header value from `latest` to the desired version.
