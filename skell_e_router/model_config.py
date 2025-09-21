@@ -155,6 +155,18 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},   # NOTE: It's a reasoning model, but reasoning_effort is NOT SUPPORTED
     ),
+    "grok-4-fast-reasoning": AIModel(
+        name="xai/grok-4-fast-reasoning",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "grok-4-fast-non-reasoning": AIModel(
+        name="xai/grok-4-fast-non-reasoning",
+        provider="xai",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
 
     # GROQ
 
@@ -177,4 +189,4 @@ MODEL_CONFIG = {
 # Allow lookup by full name too
 for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)
     if config.name not in MODEL_CONFIG:
-        MODEL_CONFIG[config.name] = config 
+        MODEL_CONFIG[config.name] = config
