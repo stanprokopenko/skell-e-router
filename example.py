@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     SYSTEM_MESSAGE = "You are funny."
     PROMPT = "write a joke about Proko."
-    MODEL = "gpt-5"
+    MODEL = "claude-sonnet-4-5-20250929"
 
     try:
         ask_ai(
@@ -17,7 +17,7 @@ if __name__ == "__main__":
             SYSTEM_MESSAGE,
             verbosity='debug', # 'none', 'response', 'info', 'debug'
             # KWARGS
-            temperature=1, 
+            temperature=0.7, 
             max_tokens=5000,
             max_completion_tokens=2048,
             top_p=1,

@@ -125,7 +125,7 @@ MODEL_CONFIG = {
         name="anthropic/claude-sonnet-4-5-20250929",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
     ),
     "claude-opus-4-1-20250805": AIModel(
         name="anthropic/claude-opus-4-1-20250805",
