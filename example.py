@@ -17,7 +17,7 @@ if __name__ == "__main__":
             SYSTEM_MESSAGE,
             verbosity='debug', # 'none', 'response', 'info', 'debug'
             # KWARGS
-            temperature=1, 
+            temperature=0.7, 
             max_tokens=5000,
             max_completion_tokens=2048,
             top_p=1,

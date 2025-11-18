@@ -274,7 +274,7 @@ def _print_response_details(response, verbosity: str = 'none', request_duration_
                 formatted_value = str(value) # Convert None to "None"
             
             # Add note for Reasoning Tokens
-            note = " (part of completion)" if key == 'Reasoning Tokens' and value is not None else ""
+            note = " (sometimes part of completion)" if key == 'Reasoning Tokens' and value is not None else ""
             
             # Right-align the key within the max_key_len width
             print(f"{key:>{max_key_len}} : {formatted_value}{note}")
