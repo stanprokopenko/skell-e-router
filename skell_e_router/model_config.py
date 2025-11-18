@@ -119,6 +119,13 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
     ),
 
+    "gemini-3-pro-preview": AIModel(
+        name="gemini/gemini-3-pro-preview",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
+    ),
+
     # ANTHROPIC
 
     "claude-opus-4-1-20250805": AIModel(
