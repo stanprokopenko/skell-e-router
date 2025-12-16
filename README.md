@@ -33,6 +33,13 @@ The router has an internal retry up to 3 times before sending the response.
 - No retry: bad params (4xx), auth/permission errors, not found, quota/billing 429, policy blocks.
 - Backoff: exponential with jitter; if `Retry-After` is present on 429/503, it is honored up to a maximum of 120 seconds. If `Retry-After` exceeds 120 seconds, no retry is attempted and the error is returned.
 
+## Verbosity Settings
+
+- **none**: No output
+- **response**: Response content
+- **info**: Response content + response info/stats (Model, Finish Reason, Cost, Speed, Prompt Tokens, Completion Tokens, Reasoning Tokens, Total Tokens, Tool Calls, Function Call, Provider Specific Fields, Safety ratings if applicable)
+- **debug**: Request details (kwargs, messages) + response content + response info/stats + raw response
+
 ## Groq Compound (temporary header)
 
 When routing to Groq Compound models (`groq/groq/compound`, `groq/groq/compound-mini`), the router injects a request header `Groq-Model-Version: latest`. This selects the Compound profile that exposes built‑in tools like `visit_website`.
