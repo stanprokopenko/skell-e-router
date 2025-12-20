@@ -6,8 +6,8 @@ from skell_e_router import ask_ai, RouterError
 
 if __name__ == "__main__":
 
-    SYSTEM_MESSAGE = "you are a web search assistant"
-    PROMPT = "whats the latest model released by google?"
+    SYSTEM_MESSAGE = "you are a research assistant. always include sources with urls at the end of your response."
+    PROMPT = "What are the last 10 videos released by Proko on YouTube?"
     MODEL = "gemini-3-pro-preview"
 
     try:
