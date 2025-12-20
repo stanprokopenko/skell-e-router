@@ -34,10 +34,18 @@ class AIModel:
         return self.provider == "groq"
 
 
+# Models are sorted by provider, then by latest models on top
 MODEL_CONFIG = {
 
     # OPENAI
 
+    "gpt-5.2": AIModel(
+        name="openai/gpt-5.2",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+    ),
     "gpt-5": AIModel(
         name="openai/gpt-5",
         provider="openai",
@@ -100,6 +108,18 @@ MODEL_CONFIG = {
 
     # GEMINI
 
+    "gemini-3-flash-preview": AIModel(
+        name="gemini/gemini-3-flash-preview",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
+    ),
+    "gemini-3-pro-preview": AIModel(
+        name="gemini/gemini-3-pro-preview",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
+    ),
     "gemini-2.5-pro": AIModel(
         name="gemini/gemini-2.5-pro",
         provider="gemini",
@@ -119,20 +139,25 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
     ),
 
-    "gemini-3-pro-preview": AIModel(
-        name="gemini/gemini-3-pro-preview",
-        provider="gemini",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
-    ),
-
     # ANTHROPIC
 
+    "claude-opus-4-5": AIModel(
+        name="anthropic/claude-opus-4-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+    ),
+    "claude-haiku-4-5": AIModel(
+        name="anthropic/claude-haiku-4-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+    ),
     "claude-sonnet-4-5-20250929": AIModel(
         name="anthropic/claude-sonnet-4-5-20250929",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
     ),
     "claude-opus-4-1-20250805": AIModel(
         name="anthropic/claude-opus-4-1-20250805",
@@ -162,6 +187,18 @@ MODEL_CONFIG = {
 
     # XAI
 
+    "grok-4-1-fast-reasoning": AIModel(
+        name="xai/grok-4-1-fast-reasoning",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "grok-4-1-fast-non-reasoning": AIModel(
+        name="xai/grok-4-1-fast-non-reasoning",
+        provider="xai",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
     "grok-4-0709": AIModel(
         name="xai/grok-4-0709",
         provider="xai",
