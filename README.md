@@ -158,6 +158,32 @@ result = ask_deep_research(
 
 ---
 
+## Google Search Grounding (Gemini 2.0+)
+
+For standard `ask_ai()` calls with Gemini models, you can enable Google Search Grounding to let the model search the web for real-time information. This is different from Deep Research - it's a quick, single-query search capability.
+
+```python
+from skell_e_router import ask_ai
+
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "What is the latest news on the James Webb Telescope?",
+    verbosity="response",
+    # Enable Google Search Grounding
+    web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
+)
+```
+
+**Key points:**
+- Works with Gemini 2.0+ models (`gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-3-pro-preview`, etc.)
+- Uses `web_search_options` parameter with `search_context_size` to control search depth
+- Options for `search_context_size`: `"low"`, `"medium"`, `"high"`
+- Returns grounding metadata with citations in the response
+- This is a server-side capability, not client-side function calling
+- Can be combined with `reasoning_effort` for thinking models
+
+---
+
 ## Setting Default Python Encoding to UTF-8 on Windows
 
 This project requires Python to use UTF-8 as its default file encoding. If you encounter `UnicodeDecodeError` errors when running Python scripts (especially related to reading configuration or data files), follow these steps:

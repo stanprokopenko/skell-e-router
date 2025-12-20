@@ -107,36 +107,38 @@ MODEL_CONFIG = {
     ),
 
     # GEMINI
+    # Note: web_search_options enables Google Search Grounding for real-time web search
+    # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
     "gemini-3-flash-preview": AIModel(
         name="gemini/gemini-3-flash-preview",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
     ),
     "gemini-3-pro-preview": AIModel(
         name="gemini/gemini-3-pro-preview",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"},
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
     ),
     "gemini-2.5-pro": AIModel(
         name="gemini/gemini-2.5-pro",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
     ),
     "gemini-2.5-flash": AIModel(
         name="gemini/gemini-2.5-flash",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
     ),
     "gemini-2.5-flash-lite": AIModel(
         name="gemini/gemini-2.5-flash-lite",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings"}
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
     ),
 
     # ANTHROPIC

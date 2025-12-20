@@ -6,8 +6,8 @@ from skell_e_router import ask_ai, RouterError
 
 if __name__ == "__main__":
 
-    SYSTEM_MESSAGE = "You are funny."
-    PROMPT = "write a joke about Proko."
+    SYSTEM_MESSAGE = "you are a web search assistant"
+    PROMPT = "whats the latest model released by google?"
     MODEL = "gemini-3-pro-preview"
 
     try:
@@ -15,9 +15,9 @@ if __name__ == "__main__":
             MODEL,
             PROMPT, # accepts str OR list[dict] for conversation history
             SYSTEM_MESSAGE,
-            verbosity='debug', # 'none', 'response', 'info', 'debug'
+            verbosity='info', # 'none', 'response', 'info', 'debug'
             # KWARGS
-            temperature=0.7, 
+            temperature=0.7,
             max_tokens=5000,
             max_completion_tokens=2048,
             top_p=1,
@@ -29,6 +29,13 @@ if __name__ == "__main__":
             # compound_custom={"tools": {"enabled_tools": ["visit_website"]}},   # Used only for Groq's compound model.
             #budget_tokens=8000   # Budget conversion: <=1024=low, <=2048=medium, >2048=high
             # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
+            
+            web_search_options={"search_context_size": "high"},
+            # GOOGLE SEARCH GROUNDING (Gemini 2.0+ models only)
+            # Enables the model to search the web for real-time information.
+            # Options for search_context_size: "low", "medium", "high"
+            # Returns grounding metadata with citations in the response.
+
         )
     except RouterError as err:
         # Pass upstream to your service / translate to your API error shape
