@@ -34,7 +34,7 @@ if __name__ == "__main__":
             # GOOGLE SEARCH GROUNDING (Gemini 2.0+ models only)
             # Enables the model to search the web for real-time information.
             # Options for search_context_size: "low", "medium", "high"
-            # Returns grounding metadata with citations in the response.
+            # Returns grounding metadata with citations in the response if rich_response=True
 
         )
     except RouterError as err:
