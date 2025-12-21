@@ -1,3 +1,4 @@
+from .response import AIResponse
 from .utils import ask_ai, resolve_model_alias, check_environment_variables, RouterError
 from .gemini_deep_research import (
     ask_deep_research,
@@ -16,6 +17,7 @@ __all__ = [
     "resolve_model_alias",
     "check_environment_variables",
     "RouterError",
+    "AIResponse",
     # Gemini Deep Research Agent
     "ask_deep_research",
     "deep_research_follow_up",

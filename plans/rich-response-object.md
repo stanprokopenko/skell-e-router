@@ -20,7 +20,7 @@ content = ask_ai("gemini-3-pro-preview", "Hello")
 print(content)  # "Hello! How can I help you?"
 
 # Option 2: Request rich response via parameter
-response = ask_ai("gemini-3-pro-preview", "Hello", return_response=True)
+response = ask_ai("gemini-3-pro-preview", "Hello", rich_response=True)
 print(response.content)           # "Hello! How can I help you?"
 print(response.model)             # "gemini-3-pro-preview"
 print(response.cost)              # 0.000123
@@ -164,12 +164,12 @@ def ask_ai(
         user_input: Prompt string or conversation history
         system_message: Optional system prompt
         verbosity: Output level ('none', 'response', 'info', 'debug')
-        return_response: If True, return AIResponse object instead of string
+        rich_response: If True, return AIResponse object instead of string
         **kwargs: Model-specific parameters
     
     Returns:
         str: Response content (default, backwards compatible)
-        AIResponse: Rich response object (when return_response=True)
+        AIResponse: Rich response object (when rich_response=True)
     """
 ```
 
@@ -261,7 +261,7 @@ Add a new section to README.md:
 ```markdown
 ## Rich Response Object
 
-By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `return_response=True`:
+By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
 
 ### Basic Usage (Backwards Compatible)
 ```python
@@ -271,7 +271,7 @@ print(content)  # Just the string
 
 ### Rich Response
 ```python
-response = ask_ai("gemini-3-pro-preview", "Hello", return_response=True)
+response = ask_ai("gemini-3-pro-preview", "Hello", rich_response=True)
 
 # Access content
 print(response.content)
@@ -332,7 +332,7 @@ print(f"Basic: {content}")
 response = ask_ai(
     "gemini-3-pro-preview",
     "What is the latest news?",
-    return_response=True,
+    rich_response=True,
     web_search_options={"search_context_size": "high"}
 )
 
@@ -367,14 +367,14 @@ if response.grounding_metadata:
 
 1. **Default behavior unchanged**: `ask_ai()` returns `str` by default
 2. **No breaking changes**: Existing code continues to work without modification
-3. **Opt-in rich response**: Apps must explicitly pass `return_response=True`
+3. **Opt-in rich response**: Apps must explicitly pass `rich_response=True`
 4. **String coercion**: `AIResponse.__str__()` returns content, so `print(response)` works
 
 ---
 
 ## Assumptions to Review
 
-1. **Parameter name**: Using `return_response=True` as the opt-in flag. Alternatives considered: `full_response`, `include_metadata`, `as_object`.
+1. **Parameter name**: Using `rich_response=True` as the opt-in flag. Alternatives considered: `full_response`, `include_metadata`, `as_object`.
 
 2. **AIResponse is a dataclass**: Using `@dataclass` for simplicity. Could use Pydantic `BaseModel` for validation, but adds dependency complexity.
 

@@ -2,8 +2,10 @@ import litellm
 import os
 import json
 import time
+from typing import overload, Literal
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
+from .response import AIResponse
 
 # SETUP
 #--------
@@ -431,7 +433,76 @@ def _perform_completion(model_name: str, messages: list[dict], **kwargs):
     )
 
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', **kwargs):
+def _build_ai_response(
+    response,
+    request_duration_s: float | None = None
+) -> AIResponse:
+    """Build AIResponse from LiteLLM completion response."""
+    
+    content = response.choices[0].message.content if response.choices else ""
+    model_name = getattr(response, 'model', 'unknown')
+    
+    usage = getattr(response, 'usage', None)
+    completion_details = getattr(usage, 'completion_tokens_details', None) if usage else None
+    first_choice = response.choices[0] if response.choices else None
+    message = getattr(first_choice, 'message', None) if first_choice else None
+    
+    # Compute cost safely
+    try:
+        computed_cost = litellm.completion_cost(completion_response=response)
+    except Exception:
+        computed_cost = None
+    
+    # Extract grounding metadata for Gemini
+    grounding_metadata = None
+    if hasattr(response, 'vertex_ai_grounding_metadata'):
+        grounding_metadata = response.vertex_ai_grounding_metadata
+    
+    # Extract safety ratings for Gemini
+    safety_ratings = None
+    if hasattr(response, 'vertex_ai_safety_results'):
+        safety_ratings = response.vertex_ai_safety_results
+    
+    return AIResponse(
+        content=content or "",
+        model=model_name,
+        finish_reason=getattr(first_choice, 'finish_reason', None),
+        prompt_tokens=getattr(usage, 'prompt_tokens', None),
+        completion_tokens=getattr(usage, 'completion_tokens', None),
+        total_tokens=getattr(usage, 'total_tokens', None),
+        reasoning_tokens=getattr(completion_details, 'reasoning_tokens', None),
+        cost=computed_cost,
+        duration_seconds=request_duration_s,
+        grounding_metadata=grounding_metadata,
+        safety_ratings=safety_ratings,
+        tool_calls=getattr(message, 'tool_calls', None),
+        function_call=getattr(message, 'function_call', None),
+        provider_specific_fields=getattr(message, 'provider_specific_fields', None),
+        raw_response=response,
+    )
+
+
+@overload
+def ask_ai(
+    model_alias: str,
+    user_input: str | list[dict],
+    system_message: str = None,
+    verbosity: str = 'none',
+    rich_response: Literal[False] = False,
+    **kwargs
+) -> str: ...
+
+@overload
+def ask_ai(
+    model_alias: str,
+    user_input: str | list[dict],
+    system_message: str = None,
+    verbosity: str = 'none',
+    rich_response: Literal[True] = ...,
+    **kwargs
+) -> AIResponse: ...
+
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, **kwargs) -> str | AIResponse:
     
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -459,7 +530,10 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         request_duration_s = end_time - start_time
 
         content = response.choices[0].message.content
-        _print_response_details(response, verbosity, request_duration_s) 
+        _print_response_details(response, verbosity, request_duration_s)
+        
+        if rich_response:
+            return _build_ai_response(response, request_duration_s)
         return content
 
     except Exception as e:

@@ -35,6 +35,61 @@ print(result.text)  # Full research report
 print(f"Duration: {result.duration_seconds:.0f}s")
 ```
 
+## Rich Response Object
+
+By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
+
+### Basic Usage (Backwards Compatible)
+```python
+content = ask_ai("gemini-3-pro-preview", "Hello")
+print(content)  # Just the string
+```
+
+### Rich Response
+```python
+response = ask_ai("gemini-3-pro-preview", "Hello", rich_response=True)
+
+# Access content
+print(response.content)
+
+# Token usage
+print(f"Tokens: {response.prompt_tokens} + {response.completion_tokens} = {response.total_tokens}")
+print(f"Reasoning tokens: {response.reasoning_tokens}")
+
+# Cost and timing
+print(f"Cost: ${response.cost:.6f}")
+print(f"Duration: {response.duration_seconds:.2f}s")
+
+# Model info
+print(f"Model: {response.model}")
+print(f"Finish reason: {response.finish_reason}")
+
+# Grounding metadata (Gemini with web_search_options)
+if response.grounding_metadata:
+    print(f"Sources: {len(response.grounding_metadata[0].get('groundingChunks', []))}")
+
+# Can still use as string
+print(response)  # Prints content via __str__
+```
+
+### AIResponse Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `content` | str | The response text |
+| `model` | str | Model name used |
+| `finish_reason` | str | Why generation stopped |
+| `prompt_tokens` | int | Input token count |
+| `completion_tokens` | int | Output token count |
+| `total_tokens` | int | Total tokens used |
+| `reasoning_tokens` | int | Thinking/reasoning tokens |
+| `cost` | float | Estimated cost in USD |
+| `duration_seconds` | float | Request duration |
+| `grounding_metadata` | dict | Web search citations (Gemini) |
+| `safety_ratings` | list | Content safety scores (Gemini) |
+| `tool_calls` | list | Function calls made |
+| `raw_response` | Any | Full LiteLLM response |
+
 ## Gemini Deep Research Agent
 
 The Gemini Deep Research Agent autonomously plans, executes, and synthesizes multi-step research tasks. It navigates complex information landscapes using web search to produce detailed, cited reports.
