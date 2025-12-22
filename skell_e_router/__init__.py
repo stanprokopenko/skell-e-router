@@ -5,10 +5,14 @@ from .gemini_deep_research import (
     deep_research_follow_up,
     get_research_status,
     stream_deep_research,
+    process_citations,
+    citations_to_dict,
+    result_to_dict,
     DeepResearchResult,
     DeepResearchUsage,
     DeepResearchConfig,
     DeepResearchError,
+    ParsedCitation,
 )
 
 __all__ = [
@@ -23,10 +27,14 @@ __all__ = [
     "deep_research_follow_up",
     "get_research_status",
     "stream_deep_research",
+    "process_citations",
+    "citations_to_dict",
+    "result_to_dict",
     "DeepResearchResult",
     "DeepResearchUsage",
     "DeepResearchConfig",
     "DeepResearchError",
+    "ParsedCitation",
 ]
 
 __version__ = "0.2.0"

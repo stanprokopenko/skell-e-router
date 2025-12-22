@@ -10,25 +10,37 @@ Requirements:
     - google-genai package must be installed (included in skell-e-router dependencies)
 """
 
+import json
+import os
+
 from skell_e_router import (
     ask_deep_research,
     deep_research_follow_up,
     DeepResearchError,
 )
 
+# Output directory for saved files
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
+
+
+def ensure_output_dir():
+    """Create output directory if it doesn't exist."""
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 
 def example_basic_research():
-    """Basic research with polling (simplest usage)."""
+    """Basic research with polling - citations are resolved automatically."""
     print("\n" + "=" * 60)
     print("EXAMPLE 1: Basic Research")
     print("=" * 60)
     
     try:
+        # Citations are resolved automatically (resolve_citations=True by default)
         result = ask_deep_research(
             "Research the history and evolution of Google TPUs, including key milestones and performance improvements.",
-            verbosity="info",  # Shows progress and stats
-            poll_interval=10.0,  # Check status every 10 seconds
-            timeout=1800.0,  # 30 minute timeout
+            verbosity="info",
+            poll_interval=10.0,
+            timeout=1800.0,
         )
         
         print(f"\n--- Research Complete ---")
@@ -38,11 +50,32 @@ def example_basic_research():
         if result.usage:
             print(f"Tokens used: {result.usage.total_tokens}")
         
-        if result.citations:
-            print(f"Citations: {len(result.citations)}")
+        print(f"Report length: {len(result.text)} characters")
+        print(f"Citations: {len(result.parsed_citations)}")
         
-        # The full report is in result.text
-        print(f"\nReport length: {len(result.text)} characters")
+        # Show first few citations with resolved URLs and titles
+        for cit in result.parsed_citations[:3]:
+            title_display = f'"{cit.title}"' if cit.title else cit.domain
+            print(f"  [{cit.number}] {title_display}")
+            print(f"       {cit.url}")
+        if len(result.parsed_citations) > 3:
+            print(f"  ... and {len(result.parsed_citations) - 3} more")
+        
+        # Save outputs
+        ensure_output_dir()
+        
+        # JSON for app consumption
+        json_data = result.to_dict()
+        json_path = os.path.join(OUTPUT_DIR, "research_output.json")
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(json_data, f, indent=2, ensure_ascii=False)
+        
+        # Markdown report with resolved URLs
+        md_path = os.path.join(OUTPUT_DIR, "research_output.md")
+        with open(md_path, "w", encoding="utf-8") as f:
+            f.write(result.text)
+        
+        print(f"\nSaved to output/: research_output.json, research_output.md")
         
         return result
         
@@ -62,19 +95,20 @@ def example_streaming_research():
         if event_type == "thought":
             print(f"\n[THINKING] {content}\n")
         elif event_type == "text":
-            # Print text chunks as they arrive
             print(content, end="", flush=True)
     
     try:
+        # Citations resolved automatically after streaming completes
         result = ask_deep_research(
-            "Compare the top 3 cloud providers (AWS, Azure, GCP) for machine learning workloads.",
+            "Compare these 3 competitors to Proko (Schoolism, ArtWOD, New Masters Academy).",
             stream=True,
             on_progress=on_progress,
-            verbosity="none",  # We're handling output via callback
+            verbosity="none",
         )
         
         print(f"\n\n--- Streaming Complete ---")
         print(f"Duration: {result.duration_seconds:.0f} seconds")
+        print(f"Citations: {len(result.parsed_citations)}")
         
         return result
         
@@ -89,7 +123,6 @@ def example_follow_up():
     print("EXAMPLE 3: Follow-up Questions")
     print("=" * 60)
     
-    # First, do some research
     try:
         result = ask_deep_research(
             "Research the current state of quantum computing in 2024.",
@@ -97,7 +130,6 @@ def example_follow_up():
         )
         
         if result and result.id:
-            # Now ask a follow-up question
             print("\n--- Asking Follow-up Question ---\n")
             
             clarification = deep_research_follow_up(
@@ -139,11 +171,13 @@ def example_with_formatting():
         
         print(f"\n--- Formatted Report Complete ---")
         print(f"Report length: {len(result.text)} characters")
+        print(f"Citations: {len(result.parsed_citations)}")
         
-        # Save to file
-        with open("ev_battery_report.md", "w", encoding="utf-8") as f:
+        ensure_output_dir()
+        report_path = os.path.join(OUTPUT_DIR, "ev_battery_report.md")
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(result.text)
-        print("Report saved to ev_battery_report.md")
+        print(f"Report saved to output/ev_battery_report.md")
         
     except DeepResearchError as err:
         print(f"Research failed: {err.code} - {err.message}")
@@ -182,9 +216,6 @@ def example_with_file_search():
 # --------------
 
 if __name__ == "__main__":
-    import os
-    
-    # Check for API key
     if "GEMINI_API_KEY" not in os.environ:
         print("ERROR: GEMINI_API_KEY environment variable is not set.")
         print("Please set it before running this example:")
@@ -200,7 +231,7 @@ if __name__ == "__main__":
     
     # Uncomment the examples you want to run:
     
-    # Example 1: Basic polling-based research
+    # Example 1: Basic research with citation processing
     example_basic_research()
     
     # Example 2: Streaming research with progress callback

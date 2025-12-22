@@ -112,9 +112,12 @@ try:
         timeout=1800.0,        # 30 minute timeout
     )
     
-    print(result.text)         # The research report
+    print(result.text)         # The research report (with resolved URLs)
     print(result.id)           # Interaction ID for follow-ups
-    print(result.citations)    # Sources cited
+    
+    # Parsed citations with titles and permanent URLs
+    for cit in result.parsed_citations:
+        print(f"[{cit.number}] {cit.title}: {cit.url}")
     
     if result.usage:
         print(f"Tokens: {result.usage.total_tokens}")
@@ -194,22 +197,96 @@ result = ask_deep_research(
 |-------|------|-------------|
 | `id` | str | Interaction ID (use for follow-ups) |
 | `status` | str | "completed" or "failed" |
-| `text` | str | The final research report |
-| `citations` | list | Sources cited in the report |
-| `usage` | DeepResearchUsage | Token counts and cost info |
+| `text` | str | The final research report (with resolved citation URLs) |
+| `text_without_sources` | str | Report text without the Sources section |
+| `parsed_citations` | list[ParsedCitation] | Structured citations with resolved URLs and titles |
+| `citations` | list | Raw citations from the API |
+| `usage` | DeepResearchUsage | Token counts (currently None - see note below) |
 | `duration_seconds` | float | Total research time |
 | `outputs` | list | All output objects from the API |
 | `raw_interaction` | Any | Raw API response for advanced use |
 
-### Error Codes
+> **Note:** The Deep Research Interactions API does not currently provide token usage data. The `usage` field will be `None`. This differs from the standard `generate_content` API. If Google adds usage tracking in the future, it will be automatically populated.
+
+### Citation Processing
+
+By default, `ask_deep_research()` automatically processes citations:
+- Extracts citations from the Sources section
+- Resolves temporary `vertexaisearch` redirect URLs to permanent URLs
+- Fetches page titles for better context
+- Rebuilds the Sources section with resolved links
+
+```python
+from skell_e_router import ask_deep_research
+
+result = ask_deep_research("Research quantum computing advances")
+
+# Access parsed citations
+for cit in result.parsed_citations:
+    print(f"[{cit.number}] {cit.title or cit.domain}")
+    print(f"    URL: {cit.url}")
+
+# Get report without sources (useful for custom formatting)
+print(result.text_without_sources)
+```
+
+**ParsedCitation Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `number` | int | Citation number in the report |
+| `domain` | str | Source domain (e.g., "wikipedia.org") |
+| `url` | str | Resolved permanent URL |
+| `title` | str | Page title (falls back to domain if unavailable) |
+| `redirect_url` | str | Original vertexaisearch redirect URL |
+
+**Disable citation resolution** if you want faster results (skips URL resolution):
+
+```python
+result = ask_deep_research("My query", resolve_citations=False)
+```
+
+### Converting Results to JSON
+
+Use the `.to_dict()` method to serialize results for APIs or storage:
+
+```python
+from skell_e_router import ask_deep_research
+import json
+
+result = ask_deep_research("Research topic")
+data = result.to_dict()
+json_output = json.dumps(data, indent=2)
+```
+
+### Error Handling
 
 | Code | Description |
 |------|-------------|
 | `TIMEOUT` | Research exceeded timeout limit |
 | `RESEARCH_FAILED` | The research task failed |
 | `STREAM_ERROR` | Streaming connection error |
+| `PROVIDER_ERROR` | API error from Gemini (may be transient) |
 | `MISSING_API_KEY` | GEMINI_API_KEY not set |
 | `MISSING_DEPENDENCY` | google-genai package not installed |
+
+**Note:** `PROVIDER_ERROR` can occur occasionally due to transient API issues. Implement retry logic if needed:
+
+```python
+from skell_e_router import ask_deep_research, DeepResearchError
+import time
+
+def research_with_retry(query, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return ask_deep_research(query)
+        except DeepResearchError as e:
+            if e.code == "PROVIDER_ERROR" and attempt < max_retries - 1:
+                print(f"Provider error, retrying ({attempt + 1}/{max_retries})...")
+                time.sleep(5)
+            else:
+                raise
+```
 
 ---
 

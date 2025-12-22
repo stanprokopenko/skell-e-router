@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skell-e-router"
-version = "2.0.2"
+version = "2.1.2"
 description = "Simple AI router using LiteLLM with Gemini Deep Research Agent support."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,6 +13,7 @@ dependencies = [
     "litellm>=1.43.0",
     "tenacity>=8.0.0",
     "google-genai>=1.0.0",  # Required for Gemini Deep Research Agent
+    "requests>=2.25.0",  # Required for citation URL resolution
 ]
 
 [tool.hatch.build.targets.wheel]
