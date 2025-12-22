@@ -92,7 +92,9 @@ def example_streaming_research():
     
     def on_progress(event_type: str, content: str):
         """Callback for streaming updates."""
-        if event_type == "thought":
+        if event_type == "start":
+            print(f"Research started: {content}\n")
+        elif event_type == "thought":
             print(f"\n[THINKING] {content}\n")
         elif event_type == "text":
             print(content, end="", flush=True)

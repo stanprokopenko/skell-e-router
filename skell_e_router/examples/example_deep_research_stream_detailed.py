@@ -51,7 +51,12 @@ def run_detailed_streaming_research(query: str):
         
         def on_progress(event_type: str, content: str):
             """Callback for streaming updates - prints and saves."""
-            if event_type == "thought":
+            if event_type == "start":
+                start_line = f"Research started: {content}\n"
+                print(start_line)
+                f.write(start_line + "\n")
+                f.flush()
+            elif event_type == "thought":
                 thought_line = f"\n[THINKING] {content}\n"
                 print(thought_line)
                 f.write(thought_line + "\n")

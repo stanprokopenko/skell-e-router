@@ -132,7 +132,9 @@ except DeepResearchError as err:
 from skell_e_router import ask_deep_research
 
 def on_progress(event_type: str, content: str):
-    if event_type == "thought":
+    if event_type == "start":
+        print(f"Research started: {content}")  # content is interaction_id
+    elif event_type == "thought":
         print(f"[Thinking] {content}")
     elif event_type == "text":
         print(content, end="", flush=True)
@@ -143,6 +145,8 @@ result = ask_deep_research(
     on_progress=on_progress,
 )
 ```
+
+**Note:** The router automatically handles transient errors like `gateway_timeout` during streaming. If Google's API times out mid-research, the router reconnects and continues from where it left off - no action required from your code.
 
 ### Follow-up Questions
 
@@ -259,13 +263,18 @@ data = result.to_dict()
 json_output = json.dumps(data, indent=2)
 ```
 
+### Automatic Reconnection
+
+The router automatically handles transient streaming errors (like `gateway_timeout`, `connection_reset`, `unavailable`). When these occur mid-research, it reconnects and continues from where it left off. This means your streaming code doesn't need special error handling for network interruptions.
+
 ### Error Handling
 
 | Code | Description |
 |------|-------------|
 | `TIMEOUT` | Research exceeded timeout limit |
 | `RESEARCH_FAILED` | The research task failed |
-| `STREAM_ERROR` | Streaming connection error |
+| `STREAM_FAILED` | Stream failed after exhausting reconnection attempts |
+| `STREAM_ERROR` | Non-retryable streaming error |
 | `PROVIDER_ERROR` | API error from Gemini (may be transient) |
 | `MISSING_API_KEY` | GEMINI_API_KEY not set |
 | `MISSING_DEPENDENCY` | google-genai package not installed |

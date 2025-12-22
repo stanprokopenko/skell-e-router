@@ -122,6 +122,17 @@ DEFAULT_POLL_INTERVAL = 10.0  # seconds
 DEFAULT_TIMEOUT = 3600.0  # 60 minutes (max research time)
 RECONNECT_DELAY = 2.0  # seconds between reconnection attempts
 
+# Transient errors that should trigger automatic reconnection
+RETRYABLE_ERRORS = [
+    "gateway_timeout",
+    "deadline_expired",
+    "timeout",
+    "connection_reset",
+    "connection_closed",
+    "unavailable",
+    "resource_exhausted",
+]
+
 
 # HELPER FUNCTIONS
 # ----------------
@@ -512,6 +523,12 @@ def _poll_for_completion(
 # STREAMING IMPLEMENTATION
 # ------------------------
 
+def _is_retryable_error(error_msg: str) -> bool:
+    """Check if an error message indicates a transient/retryable error."""
+    error_lower = error_msg.lower()
+    return any(err in error_lower for err in RETRYABLE_ERRORS)
+
+
 def _stream_research(
     client: "genai.Client",
     query: str,
@@ -527,15 +544,18 @@ def _stream_research(
     collected_text = ""
     is_complete = False
     final_interaction = None
+    last_error = None  # Track last error for reporting if all retries fail
     
     def process_stream(stream) -> bool:
-        """Process events from a stream. Returns True if complete."""
-        nonlocal interaction_id, last_event_id, collected_text, is_complete, final_interaction
+        """Process events from a stream. Returns True if complete, False to retry."""
+        nonlocal interaction_id, last_event_id, collected_text, is_complete, final_interaction, last_error
         
         for chunk in stream:
             # Capture Interaction ID from start event
             if chunk.event_type == "interaction.start":
                 interaction_id = chunk.interaction.id
+                if on_progress:
+                    on_progress("start", interaction_id)
                 if verbosity in ("info", "debug"):
                     print(f"  Research started: {interaction_id}")
             
@@ -571,9 +591,18 @@ def _stream_research(
                     final_interaction = chunk.interaction
                 return True
             
-            # Handle errors
+            # Handle errors - check if retryable
             if chunk.event_type == "error":
                 error_msg = str(chunk.error) if hasattr(chunk, 'error') else "Stream error"
+                last_error = error_msg
+                
+                # If retryable and we have interaction_id, signal for reconnection
+                if interaction_id and _is_retryable_error(error_msg):
+                    if verbosity != "none":
+                        print(f"\n  Transient error (will reconnect): {error_msg}")
+                    return False  # Signal to reconnect
+                
+                # Non-retryable error - raise immediately
                 raise DeepResearchError(
                     code="STREAM_ERROR",
                     message=error_msg,
@@ -607,9 +636,16 @@ def _stream_research(
             final = client.interactions.get(interaction_id)
             return _build_result(final, duration)
             
-    except DeepResearchError:
-        raise
+    except DeepResearchError as e:
+        # Check if it's a retryable error - if so, fall through to reconnection
+        if interaction_id and _is_retryable_error(e.message):
+            last_error = e.message
+            if verbosity != "none":
+                print(f"\n  Retryable error (will reconnect): {e.message}")
+        else:
+            raise
     except Exception as e:
+        last_error = str(e)
         if verbosity != "none":
             print(f"\n  Stream interrupted: {e}")
     
@@ -639,9 +675,16 @@ def _stream_research(
                 final = client.interactions.get(interaction_id)
                 return _build_result(final, duration)
                 
-        except DeepResearchError:
-            raise
+        except DeepResearchError as e:
+            # Check if it's a retryable error that slipped through
+            if _is_retryable_error(e.message):
+                last_error = e.message
+                if verbosity != "none":
+                    print(f"  Retryable error during reconnection: {e.message}")
+            else:
+                raise
         except Exception as e:
+            last_error = str(e)
             if verbosity != "none":
                 print(f"  Reconnection failed: {e}")
     
@@ -653,8 +696,8 @@ def _stream_research(
     
     raise DeepResearchError(
         code="STREAM_FAILED",
-        message="Failed to complete research stream",
-        details={"reconnect_attempts": reconnect_count}
+        message=f"Failed to complete research stream after {reconnect_count} reconnection attempts",
+        details={"reconnect_attempts": reconnect_count, "last_error": last_error}
     )
 
 
@@ -690,7 +733,7 @@ def ask_deep_research(
         timeout: Maximum wait time in seconds. Default: 3600.0 (60 minutes)
         verbosity: Output level - "none", "response", "info", or "debug". Default: "none"
         on_progress: Callback function for streaming updates. Called with (event_type, content)
-                     where event_type is "text" or "thought".
+                     where event_type is "start" (content=interaction_id), "text", or "thought".
         resolve_citations: Automatically extract citations from the report and resolve
                            redirect URLs to real URLs. Default: True. The original
                            redirect URLs are preserved in parsed_citations[].redirect_url.
