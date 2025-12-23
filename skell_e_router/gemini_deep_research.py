@@ -120,7 +120,8 @@ class DeepResearchConfig:
 DEFAULT_AGENT = "deep-research-pro-preview-12-2025"
 DEFAULT_POLL_INTERVAL = 10.0  # seconds
 DEFAULT_TIMEOUT = 3600.0  # 60 minutes (max research time)
-RECONNECT_DELAY = 2.0  # seconds between reconnection attempts
+RECONNECT_DELAY = 2.0  # seconds for initial connection retries
+STREAM_POLL_INTERVAL = 10.0  # seconds between reconnection attempts (matches poll_interval)
 
 # Transient errors that should trigger automatic reconnection
 RETRYABLE_ERRORS = [
@@ -535,7 +536,8 @@ def _stream_research(
     config: DeepResearchConfig,
     on_progress: Callable | None,
     verbosity: str,
-    start_time: float
+    start_time: float,
+    timeout: float = DEFAULT_TIMEOUT
 ) -> DeepResearchResult:
     """Stream research with automatic reconnection on failure."""
     
@@ -611,55 +613,95 @@ def _stream_research(
         
         return False
     
-    # Initial stream attempt
-    try:
-        if verbosity != "none":
-            print("  Starting research stream...")
-        
-        stream = client.interactions.create(
-            input=query,
-            agent=config.agent,
-            background=True,
-            stream=True,
-            agent_config={
-                "type": "deep-research",
-                "thinking_summaries": config.thinking_summaries
-            },
-            tools=config.tools
-        )
-        
-        if process_stream(stream):
-            duration = time.time() - start_time
-            if final_interaction:
-                return _build_result(final_interaction, duration)
-            # Fallback: fetch final state
-            final = client.interactions.get(interaction_id)
-            return _build_result(final, duration)
-            
-    except DeepResearchError as e:
-        # Check if it's a retryable error - if so, fall through to reconnection
-        if interaction_id and _is_retryable_error(e.message):
-            last_error = e.message
+    # Initial stream attempt (with retries if stream is None)
+    max_initial_retries = 3
+    for initial_attempt in range(max_initial_retries):
+        try:
             if verbosity != "none":
-                print(f"\n  Retryable error (will reconnect): {e.message}")
-        else:
+                if initial_attempt == 0:
+                    print("  Starting research stream...")
+                else:
+                    print(f"  Retrying initial connection (attempt {initial_attempt + 1})...")
+            
+            stream = client.interactions.create(
+                input=query,
+                agent=config.agent,
+                background=True,
+                stream=True,
+                agent_config={
+                    "type": "deep-research",
+                    "thinking_summaries": config.thinking_summaries
+                },
+                tools=config.tools
+            )
+            
+            # Handle None stream - retry if we haven't exhausted attempts
+            if stream is None:
+                last_error = "Stream returned None"
+                if verbosity != "none":
+                    print(f"  Stream returned None, will retry...")
+                time.sleep(RECONNECT_DELAY)
+                continue
+            
+            if process_stream(stream):
+                duration = time.time() - start_time
+                if final_interaction:
+                    return _build_result(final_interaction, duration)
+                # Fallback: fetch final state
+                final = client.interactions.get(interaction_id)
+                return _build_result(final, duration)
+            
+            # If process_stream returned False, we have interaction_id - break to reconnection loop
+            break
+                
+        except DeepResearchError as e:
+            # Check if it's a retryable error - if so, fall through to reconnection
+            if interaction_id and _is_retryable_error(e.message):
+                last_error = e.message
+                if verbosity != "none":
+                    print(f"\n  Retryable error (will reconnect): {e.message}")
+                break  # We have interaction_id, go to reconnection loop
+            else:
+                raise
+        except TypeError as e:
+            # Handle "'NoneType' object is not iterable" - stream was None
+            if "NoneType" in str(e) and "not iterable" in str(e):
+                last_error = "Stream returned None"
+                if verbosity != "none":
+                    print(f"  Stream returned None, will retry...")
+                time.sleep(RECONNECT_DELAY)
+                continue
+            # Other TypeError - re-raise
             raise
-    except Exception as e:
-        last_error = str(e)
-        if verbosity != "none":
-            print(f"\n  Stream interrupted: {e}")
+        except Exception as e:
+            last_error = str(e)
+            if verbosity != "none":
+                print(f"\n  Stream interrupted: {e}")
+            # If we have interaction_id, break to reconnection loop
+            if interaction_id:
+                break
+            # Otherwise retry initial connection
+            time.sleep(RECONNECT_DELAY)
+            continue
     
-    # Reconnection loop
-    max_reconnect_attempts = 100  # Prevent infinite loops
+    # Reconnection loop - keep trying until timeout
     reconnect_count = 0
     
-    while not is_complete and interaction_id and reconnect_count < max_reconnect_attempts:
+    while not is_complete and interaction_id:
+        elapsed = time.time() - start_time
+        if elapsed > timeout:
+            raise DeepResearchError(
+                code="TIMEOUT",
+                message=f"Deep Research timed out after {timeout}s",
+                details={"interaction_id": interaction_id, "elapsed": elapsed}
+            )
+        
         reconnect_count += 1
         
         if verbosity != "none":
-            print(f"\n  Reconnecting (attempt {reconnect_count})...")
+            print(f"\n  Reconnecting (attempt {reconnect_count}, elapsed: {elapsed:.0f}s)...")
         
-        time.sleep(RECONNECT_DELAY)
+        time.sleep(STREAM_POLL_INTERVAL)
         
         try:
             stream = client.interactions.get(
@@ -667,6 +709,13 @@ def _stream_research(
                 stream=True,
                 last_event_id=last_event_id
             )
+            
+            # Handle None stream - just continue to next reconnection attempt
+            if stream is None:
+                last_error = "Stream returned None"
+                if verbosity != "none":
+                    print(f"  Stream returned None")
+                continue
             
             if process_stream(stream):
                 duration = time.time() - start_time
@@ -683,6 +732,14 @@ def _stream_research(
                     print(f"  Retryable error during reconnection: {e.message}")
             else:
                 raise
+        except TypeError as e:
+            # Handle "'NoneType' object is not iterable" - stream was None
+            if "NoneType" in str(e) and "not iterable" in str(e):
+                last_error = "Stream returned None"
+                if verbosity != "none":
+                    print(f"  Stream returned None")
+                continue
+            raise
         except Exception as e:
             last_error = str(e)
             if verbosity != "none":
@@ -778,7 +835,7 @@ def ask_deep_research(
     
     try:
         if stream:
-            result = _stream_research(client, query, config, on_progress, verbosity, start_time)
+            result = _stream_research(client, query, config, on_progress, verbosity, start_time, timeout)
         else:
             # Start the research task
             interaction = client.interactions.create(
