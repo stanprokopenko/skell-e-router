@@ -107,8 +107,139 @@ print(response)  # Prints content via __str__
 | `duration_seconds` | float | Request duration |
 | `grounding_metadata` | dict | Web search citations (Gemini) |
 | `safety_ratings` | list | Content safety scores (Gemini) |
+| `images` | list[dict] | Generated images (see Image Output below) |
 | `tool_calls` | list | Function calls made |
 | `raw_response` | Any | Full LiteLLM response |
+
+---
+
+## Image Input (Vision)
+
+The `images` parameter on `ask_ai()` lets you send images alongside a text prompt. It works with any vision-capable model across all providers.
+
+### Supported Image Sources
+
+Each item in the `images` list is a string. The router detects the type automatically:
+
+| Format | Example | Behavior |
+|--------|---------|----------|
+| **Local file path** | `"photo.jpg"` | Read from disk, detect MIME type, base64-encode |
+| **URL** | `"https://example.com/img.png"` | Passed through to the provider as-is |
+| **Base64 data URI** | `"data:image/png;base64,iVBOR..."` | Passed through to the provider as-is |
+
+### Usage
+
+```python
+from skell_e_router import ask_ai
+
+# Single image from a local file
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "Describe what you see in this image",
+    images=["path/to/photo.jpg"],
+)
+
+# Multiple images (file + URL)
+response = ask_ai(
+    "gpt-4o",
+    "Compare these two images",
+    images=["local.png", "https://example.com/remote.jpg"],
+)
+
+# With rich response for full metadata
+response = ask_ai(
+    "claude-opus-4-5",
+    "What does this diagram show?",
+    images=["diagram.png"],
+    rich_response=True,
+)
+print(f"Tokens: {response.prompt_tokens} + {response.completion_tokens}")
+```
+
+### How It Works
+
+When `images` is provided with a string `user_input`, the router constructs a multimodal message in OpenAI's content-parts format:
+
+```python
+# What the router builds internally:
+{
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Describe this image"},
+        {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,..."}}
+    ]
+}
+```
+
+LiteLLM translates this to the correct provider-specific format for Gemini, OpenAI, Anthropic, etc.
+
+### Constraints
+
+- The `images` parameter only works when `user_input` is a **string**. If you're passing conversation history as a `list[dict]`, embed image content parts directly in your messages.
+- If the file path doesn't exist, a `RouterError` with code `INVALID_INPUT` is raised.
+- An empty list (`images=[]`) or `images=None` has no effect — the message is constructed as plain text.
+
+---
+
+## Image Output (Generation)
+
+The `nano-banana-3` model (alias: `gemini-3-pro-image`) can generate images. Generated images are returned on the `AIResponse.images` field when using `rich_response=True`.
+
+### Usage
+
+```python
+import base64
+from skell_e_router import ask_ai
+
+response = ask_ai(
+    "nano-banana-3",
+    "Generate a charcoal drawing of a skull",
+    rich_response=True,
+)
+
+# response.images is a list of image dicts (or None if no images)
+if response.images:
+    for i, img in enumerate(response.images):
+        data_url = img["image_url"]["url"]  # "data:image/jpeg;base64,..."
+        header, encoded = data_url.split(",", 1)
+        with open(f"output_{i}.jpg", "wb") as f:
+            f.write(base64.b64decode(encoded))
+```
+
+### Combined Input + Output
+
+You can send a reference image and ask the model to generate a new image based on it:
+
+```python
+response = ask_ai(
+    "nano-banana-3",
+    "Read the text in this image and create an illustration of what it says",
+    images=["reference.jpg"],
+    rich_response=True,
+)
+```
+
+### Image Response Format
+
+Each item in `response.images` is a dict with this structure:
+
+```python
+{
+    "image_url": {
+        "url": "data:image/jpeg;base64,/9j/4AAQSkZ...",
+        "detail": "auto"
+    },
+    "index": 0,
+    "type": "image_url"
+}
+```
+
+### How It Works
+
+- The `nano-banana-3` model has `modalities` in its `supported_params`. The router auto-injects `modalities=["text", "image"]` to tell LiteLLM to request image output.
+- You can override this by passing `modalities=["text"]` if you only want text from this model.
+- When `rich_response=False` (the default), `ask_ai()` returns just the text content string. Images are only accessible via the `AIResponse` object with `rich_response=True`.
+- The model aliases `"nano-banana-3"` and `"gemini-3-pro-image"` both point to `gemini/gemini-3-pro-image-preview`.
 
 ---
 

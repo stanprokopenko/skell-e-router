@@ -122,6 +122,12 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
     ),
+    "nano-banana-3": AIModel(
+        name="gemini/gemini-3-pro-image-preview",
+        provider="gemini",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "candidate_count", "safety_settings", "modalities"},
+    ),
     "gemini-2.5-pro": AIModel(
         name="gemini/gemini-2.5-pro",
         provider="gemini",
@@ -237,6 +243,9 @@ MODEL_CONFIG = {
 
 
 }
+
+# Additional aliases
+MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 
 # Allow lookup by full name too
 for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)

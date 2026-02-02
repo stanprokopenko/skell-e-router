@@ -21,12 +21,14 @@ class TestAIResponseCreation:
         assert r.duration_seconds is None
         assert r.grounding_metadata is None
         assert r.safety_ratings is None
+        assert r.images is None
         assert r.tool_calls is None
         assert r.function_call is None
         assert r.provider_specific_fields is None
         assert r.raw_response is None
 
     def test_full_creation(self):
+        img_data = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
         r = AIResponse(
             content="result",
             model="gemini/gemini-2.5-pro",
@@ -39,6 +41,7 @@ class TestAIResponseCreation:
             duration_seconds=1.23,
             grounding_metadata={"key": "val"},
             safety_ratings=[{"category": "HARM", "probability": "LOW"}],
+            images=img_data,
             tool_calls=[{"id": "tc1"}],
             function_call={"name": "fn"},
             provider_specific_fields={"extra": True},
@@ -52,10 +55,17 @@ class TestAIResponseCreation:
         assert r.duration_seconds == 1.23
         assert r.grounding_metadata == {"key": "val"}
         assert r.safety_ratings[0]["category"] == "HARM"
+        assert r.images == img_data
         assert r.tool_calls == [{"id": "tc1"}]
         assert r.function_call == {"name": "fn"}
         assert r.provider_specific_fields == {"extra": True}
         assert r.raw_response == "raw"
+
+    def test_images_stored(self):
+        imgs = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
+        r = AIResponse(content="here is an image", model="gemini/gemini-3-pro-image-preview", images=imgs)
+        assert r.images == imgs
+        assert len(r.images) == 1
 
 
 class TestAIResponseStr:

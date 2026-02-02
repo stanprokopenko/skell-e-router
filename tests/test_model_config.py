@@ -84,6 +84,7 @@ class TestModelConfig:
     @pytest.mark.parametrize("alias", [
         "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-2.5-pro", "gemini-2.5-flash",
+        "nano-banana-3", "gemini-3-pro-image",
         "claude-opus-4-5", "claude-haiku-4-5",
         "groq-compound", "groq-compound-mini",
     ])
@@ -125,6 +126,7 @@ class TestModelConfig:
     @pytest.mark.parametrize("alias", [
         "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
         "gemini-3-flash-preview", "gemini-3-pro-preview",
+        "nano-banana-3",
     ])
     def test_gemini_models_have_safety_settings(self, alias):
         model = MODEL_CONFIG[alias]
@@ -144,3 +146,17 @@ class TestModelConfig:
             model = MODEL_CONFIG[alias]
             assert "compound_custom" in model.supported_params
             assert "extra_headers" in model.supported_params
+
+    def test_nano_banana_has_modalities(self):
+        model = MODEL_CONFIG["nano-banana-3"]
+        assert model.provider == "gemini"
+        assert "modalities" in model.supported_params
+        assert model.supports_thinking is False
+
+    def test_nano_banana_aliases_point_to_same_model(self):
+        assert MODEL_CONFIG["nano-banana-3"] is MODEL_CONFIG["gemini-3-pro-image"]
+
+    def test_nano_banana_full_name_lookup(self):
+        assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
+        model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
+        assert model.name == "gemini/gemini-3-pro-image-preview"

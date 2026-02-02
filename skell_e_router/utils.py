@@ -2,6 +2,8 @@ import litellm
 import os
 import json
 import time
+import base64
+import mimetypes
 from typing import overload, Literal
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
@@ -47,14 +49,48 @@ PROVIDER_ENV_KEY = {
 # HELPER FUNCTIONS
 #-----------------
 
+def _encode_image(source: str) -> dict:
+    """Convert an image source (URL, data URI, or file path) to an OpenAI-format content part."""
+    if source.startswith(("http://", "https://")):
+        return {"type": "image_url", "image_url": {"url": source}}
+    if source.startswith("data:"):
+        return {"type": "image_url", "image_url": {"url": source}}
+    # File path -- read, detect MIME, base64 encode
+    if not os.path.isfile(source):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=f"Image file not found: {source}"
+        )
+    mime_type, _ = mimetypes.guess_type(source)
+    if mime_type is None:
+        mime_type = "application/octet-stream"
+    with open(source, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode("utf-8")
+    return {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}}
+
+
 # Constructs the messages list for the AI call.
-def _construct_messages(user_input: str | list[dict], system_message: str = None):
+def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None):
     messages = []
+
+    if images and not isinstance(user_input, str):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message="'images' parameter is only supported when 'user_input' is a string. "
+                    "For list input, embed image content parts directly in your messages."
+        )
+
     if system_message:
         messages.append({"role": "system", "content": system_message})
-    
+
     if isinstance(user_input, str):
-        messages.append({"role": "user", "content": user_input})
+        if images:
+            content_parts = [{"type": "text", "text": user_input}]
+            for img in images:
+                content_parts.append(_encode_image(img))
+            messages.append({"role": "user", "content": content_parts})
+        else:
+            messages.append({"role": "user", "content": user_input})
     elif isinstance(user_input, list):
         # Ensure all items in the list are dictionaries with 'role' and 'content'
         if all(isinstance(msg, dict) and 'role' in msg and 'content' in msg for msg in user_input):
@@ -466,6 +502,10 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 if top_p_val < 0.95:
                     kwargs['top_p'] = 1
 
+    # Auto-inject modalities for image generation models
+    if "modalities" in ai_model.supported_params and "modalities" not in kwargs:
+        kwargs["modalities"] = ["text", "image"]
+
     # Filter to include only parameters listed in model's supported_params.
     final_kwargs = {
         key: value
@@ -519,7 +559,14 @@ def _build_ai_response(
     safety_ratings = None
     if hasattr(response, 'vertex_ai_safety_results'):
         safety_ratings = response.vertex_ai_safety_results
-    
+
+    # Extract generated images (e.g., from Gemini image generation models)
+    response_images = None
+    if message is not None:
+        raw_images = getattr(message, 'images', None)
+        if raw_images:
+            response_images = raw_images
+
     return AIResponse(
         content=content or "",
         model=model_name,
@@ -532,6 +579,7 @@ def _build_ai_response(
         duration_seconds=request_duration_s,
         grounding_metadata=grounding_metadata,
         safety_ratings=safety_ratings,
+        images=response_images,
         tool_calls=getattr(message, 'tool_calls', None),
         function_call=getattr(message, 'function_call', None),
         provider_specific_fields=getattr(message, 'provider_specific_fields', None),
@@ -547,6 +595,7 @@ def ask_ai(
     verbosity: str = 'none',
     rich_response: Literal[False] = False,
     config: dict | None = None,
+    images: list[str] | None = None,
     **kwargs
 ) -> str: ...
 
@@ -558,10 +607,11 @@ def ask_ai(
     verbosity: str = 'none',
     rich_response: Literal[True] = ...,
     config: dict | None = None,
+    images: list[str] | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -571,7 +621,7 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # These helpers will raise RouterError on failure
     ai_model = resolve_model_alias(model_alias)
     _check_provider_key(ai_model, config, verbosity)
-    messages = _construct_messages(user_input, system_message)
+    messages = _construct_messages(user_input, system_message, images=images)
 
     # Resolve API key from config (None falls back to litellm env var lookup)
     api_key = _resolve_api_key(ai_model, config)

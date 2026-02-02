@@ -61,6 +61,7 @@ def make_litellm_response(
     provider_specific_fields=None,
     grounding_metadata=None,
     safety_ratings=None,
+    images=None,
 ):
     """Build a mock that looks like a litellm completion response."""
     message = MagicMock()
@@ -68,6 +69,7 @@ def make_litellm_response(
     message.tool_calls = tool_calls
     message.function_call = function_call
     message.provider_specific_fields = provider_specific_fields
+    message.images = images
 
     choice = MagicMock()
     choice.message = message

@@ -23,6 +23,7 @@ class AIResponse:
     # Provider-specific
     grounding_metadata: dict | None = None
     safety_ratings: list[dict] | None = None
+    images: list[dict] | None = None
     tool_calls: list | None = None
     function_call: Any = None
     provider_specific_fields: dict | None = None

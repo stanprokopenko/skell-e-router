@@ -1,12 +1,14 @@
 """Tests for utils.py — message construction, retry logic, model params, ask_ai."""
 
 import os
+import tempfile
 import pytest
 from unittest.mock import patch, MagicMock
 
 from skell_e_router.model_config import AIModel, MODEL_CONFIG
 from skell_e_router.utils import (
     _construct_messages,
+    _encode_image,
     _resolve_api_key,
     _redact_keys,
     _extract_status_and_headers,
@@ -86,6 +88,96 @@ class TestConstructMessages:
                 {"role": "user", "content": "ok"},
                 {"only_role": "user"},
             ])
+
+    def test_string_input_with_images(self):
+        msgs = _construct_messages("describe this", images=["https://example.com/img.jpg"])
+        assert len(msgs) == 1
+        assert msgs[0]["role"] == "user"
+        content = msgs[0]["content"]
+        assert isinstance(content, list)
+        assert content[0] == {"type": "text", "text": "describe this"}
+        assert content[1]["type"] == "image_url"
+        assert content[1]["image_url"]["url"] == "https://example.com/img.jpg"
+
+    def test_string_input_with_multiple_images(self):
+        imgs = ["https://example.com/a.jpg", "data:image/png;base64,abc123"]
+        msgs = _construct_messages("compare these", images=imgs)
+        content = msgs[0]["content"]
+        assert len(content) == 3  # 1 text + 2 images
+        assert content[1]["image_url"]["url"] == "https://example.com/a.jpg"
+        assert content[2]["image_url"]["url"] == "data:image/png;base64,abc123"
+
+    def test_string_input_with_images_and_system(self):
+        msgs = _construct_messages("describe", system_message="Be detailed", images=["https://img.jpg"])
+        assert len(msgs) == 2
+        assert msgs[0]["role"] == "system"
+        assert isinstance(msgs[1]["content"], list)
+
+    def test_images_with_list_input_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _construct_messages(
+                [{"role": "user", "content": "hi"}],
+                images=["https://example.com/img.jpg"]
+            )
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_images_none_no_effect(self):
+        """Passing images=None should behave identically to not passing it."""
+        msgs = _construct_messages("hello", images=None)
+        assert msgs == [{"role": "user", "content": "hello"}]
+
+    def test_images_empty_list_no_effect(self):
+        """An empty images list should not create multimodal content."""
+        msgs = _construct_messages("hello", images=[])
+        assert msgs == [{"role": "user", "content": "hello"}]
+
+
+# ---------------------------------------------------------------------------
+# _encode_image
+# ---------------------------------------------------------------------------
+
+class TestEncodeImage:
+
+    def test_url_http(self):
+        result = _encode_image("https://example.com/photo.jpg")
+        assert result == {"type": "image_url", "image_url": {"url": "https://example.com/photo.jpg"}}
+
+    def test_url_http_plain(self):
+        result = _encode_image("http://example.com/photo.jpg")
+        assert result == {"type": "image_url", "image_url": {"url": "http://example.com/photo.jpg"}}
+
+    def test_data_uri(self):
+        data_uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg"
+        result = _encode_image(data_uri)
+        assert result == {"type": "image_url", "image_url": {"url": data_uri}}
+
+    def test_file_path(self):
+        # Create a temporary image file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+            f.write(b"\x89PNG\r\n\x1a\n")  # PNG magic bytes
+            tmp_path = f.name
+        try:
+            result = _encode_image(tmp_path)
+            assert result["type"] == "image_url"
+            assert result["image_url"]["url"].startswith("data:image/png;base64,")
+        finally:
+            os.unlink(tmp_path)
+
+    def test_file_path_jpeg(self):
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as f:
+            f.write(b"\xff\xd8\xff\xe0")  # JPEG magic bytes
+            tmp_path = f.name
+        try:
+            result = _encode_image(tmp_path)
+            assert result["image_url"]["url"].startswith("data:image/jpeg;base64,")
+        finally:
+            os.unlink(tmp_path)
+
+    def test_file_not_found_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_image("/nonexistent/path/image.png")
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "not found" in exc_info.value.message
 
 
 # ---------------------------------------------------------------------------
@@ -507,6 +599,35 @@ class TestHandleModelSpecificParams:
         assert result["extra_headers"]["Custom-Header"] == "val"
         assert result["extra_headers"]["Groq-Model-Version"] == "latest"
 
+    # --- Modalities auto-injection for image generation models ---
+
+    def test_auto_injects_modalities_for_image_model(self):
+        model = make_model(
+            provider="gemini",
+            supported_params={"modalities", "safety_settings", "temperature", "stream"},
+        )
+        kwargs = {"temperature": 0.7}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["modalities"] == ["text", "image"]
+
+    def test_user_modalities_not_overridden(self):
+        model = make_model(
+            provider="gemini",
+            supported_params={"modalities", "safety_settings", "temperature", "stream"},
+        )
+        kwargs = {"temperature": 0.7, "modalities": ["text"]}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["modalities"] == ["text"]
+
+    def test_modalities_not_injected_when_not_in_supported_params(self):
+        model = make_model(
+            provider="gemini",
+            supported_params={"safety_settings", "temperature", "stream"},
+        )
+        kwargs = {"temperature": 0.7}
+        result = _handle_model_specific_params(model, kwargs)
+        assert "modalities" not in result
+
     # --- Parameter filtering ---
 
     def test_unsupported_params_filtered(self):
@@ -570,6 +691,22 @@ class TestBuildAIResponse:
             result = _build_ai_response(mock_resp)
 
         assert result.safety_ratings == ratings
+
+    def test_extracts_images(self):
+        img_data = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
+        mock_resp = make_litellm_response(images=img_data)
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.return_value = 0.0
+            result = _build_ai_response(mock_resp)
+        assert result.images == img_data
+
+    def test_images_none_when_not_present(self):
+        mock_resp = make_litellm_response()
+        mock_resp.choices[0].message.images = None
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.return_value = 0.0
+            result = _build_ai_response(mock_resp)
+        assert result.images is None
 
     def test_empty_choices(self):
         mock_resp = MagicMock()
@@ -695,6 +832,51 @@ class TestAskAi:
         with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
             result = ask_ai("gpt-5", history)
         assert result == "reply"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_images_passed_to_messages(self, mock_litellm):
+        mock_litellm.completion.return_value = make_litellm_response("I see a cat")
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-4o", "What is in this image?", images=["https://example.com/cat.jpg"])
+
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        user_msg = messages[-1]
+        assert isinstance(user_msg["content"], list)
+        assert user_msg["content"][0]["type"] == "text"
+        assert user_msg["content"][1]["type"] == "image_url"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_rich_response_includes_images(self, mock_litellm):
+        img_data = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
+        mock_litellm.completion.return_value = make_litellm_response(
+            content="Here is your image",
+            images=img_data,
+        )
+        mock_litellm.completion_cost.return_value = 0.001
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-5", "Generate an image", rich_response=True)
+
+        assert result.images == img_data
+
+    @patch("skell_e_router.utils.litellm")
+    def test_plain_response_returns_text_only(self, mock_litellm):
+        img_data = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
+        mock_litellm.completion.return_value = make_litellm_response(
+            content="Here is your image",
+            images=img_data,
+        )
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-5", "Generate an image")
+
+        assert isinstance(result, str)
+        assert result == "Here is your image"
 
 
 # ---------------------------------------------------------------------------
