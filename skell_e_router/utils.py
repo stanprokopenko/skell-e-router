@@ -33,6 +33,16 @@ class RouterError(Exception):
 REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY", "XAI_API_KEY"]
 FALLBACK_WAIT = wait_random_exponential(min=1, max=10)
 
+# Maps model provider names to their corresponding environment variable key names.
+# Config dict keys use the lowercase form (e.g., "openai_api_key").
+PROVIDER_ENV_KEY = {
+    "openai": "OPENAI_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+    "anthropic": "ANTHROPIC_API_KEY",
+    "groq": "GROQ_API_KEY",
+    "xai": "XAI_API_KEY",
+}
+
 
 # HELPER FUNCTIONS
 #-----------------
@@ -60,6 +70,26 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
             message=f"user_input must be a string or list of dicts with 'role' and 'content', got {type(user_input)}"
         )
     return messages
+
+
+def _resolve_api_key(ai_model: "AIModel", config: dict | None) -> str | None:
+    """Get the API key for a model's provider from a config dict, if available."""
+    if not config:
+        return None
+    env_key = PROVIDER_ENV_KEY.get(ai_model.provider)
+    if env_key:
+        return config.get(env_key.lower())
+    return None
+
+
+def _redact_keys(message: str, config: dict | None) -> str:
+    """Remove any config values from a string to prevent accidental key leakage."""
+    if not config:
+        return message
+    for value in config.values():
+        if isinstance(value, str) and value:
+            message = message.replace(value, "[REDACTED]")
+    return message
 
 
 # Classify retryable errors and honor Retry-After when available
@@ -151,9 +181,14 @@ def _retry_after_wait(retry_state) -> float:
 
 
 # Checks if required environment variables are set.
-def check_environment_variables(verbosity: str = 'none'):
+# Keys already supplied via config are skipped.
+def check_environment_variables(verbosity: str = 'none', config: dict | None = None):
+    config = config or {}
     missing = []
     for key in REQUIRED_ENV_KEYS:
+        # If the caller provided this key via config, no env var needed
+        if key.lower() in config:
+            continue
         if key not in os.environ:
             if verbosity != 'none':
                 print(f"WARNING: Environment variable '{key}' not set.")
@@ -164,7 +199,30 @@ def check_environment_variables(verbosity: str = 'none'):
             message="Required environment variables are not set.",
             details={"required": REQUIRED_ENV_KEYS, "missing": missing}
         )
-    return True 
+    return True
+
+
+def _check_provider_key(ai_model: "AIModel", config: dict | None = None, verbosity: str = 'none'):
+    """Check that the API key for the given model's provider is available (via config or env)."""
+    env_key = PROVIDER_ENV_KEY.get(ai_model.provider)
+    if not env_key:
+        return  # Unknown provider, let litellm handle it
+
+    config_key = env_key.lower()
+
+    # If provided in config, we're good
+    if config and config_key in config:
+        return
+
+    # Otherwise, check env var
+    if env_key not in os.environ:
+        if verbosity != 'none':
+            print(f"WARNING: Environment variable '{env_key}' not set.")
+        raise RouterError(
+            code="MISSING_ENV",
+            message=f"API key for provider '{ai_model.provider}' is not available.",
+            details={"required": env_key, "provider": ai_model.provider}
+        )
 
 
 # Resolves a model alias (or full name) to its AIModel object.
@@ -425,12 +483,11 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     wait=_retry_after_wait,
     stop=stop_after_attempt(3)
 )
-def _perform_completion(model_name: str, messages: list[dict], **kwargs):
-    return litellm.completion(
-        model=model_name,
-        messages=messages,
-        **kwargs
-    )
+def _perform_completion(model_name: str, messages: list[dict], api_key: str | None = None, **kwargs):
+    completion_kwargs = dict(model=model_name, messages=messages, **kwargs)
+    if api_key:
+        completion_kwargs["api_key"] = api_key
+    return litellm.completion(**completion_kwargs)
 
 
 def _build_ai_response(
@@ -489,6 +546,7 @@ def ask_ai(
     system_message: str = None,
     verbosity: str = 'none',
     rich_response: Literal[False] = False,
+    config: dict | None = None,
     **kwargs
 ) -> str: ...
 
@@ -499,31 +557,36 @@ def ask_ai(
     system_message: str = None,
     verbosity: str = 'none',
     rich_response: Literal[True] = ...,
+    config: dict | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, **kwargs) -> str | AIResponse:
-    
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, **kwargs) -> str | AIResponse:
+
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
         print(f"WARNING: Invalid verbosity '{verbosity}'. Must be 'none', 'response', 'info', or 'debug'.\nSetting to 'response'.")
         verbosity = 'response'
- 
+
     # These helpers will raise RouterError on failure
-    check_environment_variables(verbosity)
     ai_model = resolve_model_alias(model_alias)
+    _check_provider_key(ai_model, config, verbosity)
     messages = _construct_messages(user_input, system_message)
+
+    # Resolve API key from config (None falls back to litellm env var lookup)
+    api_key = _resolve_api_key(ai_model, config)
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)
 
-    _print_request_details(messages, kwargs, ai_model.name, verbosity) 
+    _print_request_details(messages, kwargs, ai_model.name, verbosity)
 
     try:
         start_time = time.perf_counter()
         response = _perform_completion(
             model_name=ai_model.name,
             messages=messages,
+            api_key=api_key,
             **kwargs
         )
         end_time = time.perf_counter()
@@ -531,16 +594,17 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
         content = response.choices[0].message.content
         _print_response_details(response, verbosity, request_duration_s)
-        
+
         if rich_response:
             return _build_ai_response(response, request_duration_s)
         return content
 
     except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
         if verbosity != 'none':
-            print(f"ERROR calling {ai_model.name}: {e}")
+            print(f"ERROR calling {ai_model.name}: {safe_msg}")
         raise RouterError(
             code="PROVIDER_ERROR",
-            message=str(e),
+            message=safe_msg,
             details={"provider": ai_model.provider, "model": ai_model.name}
         ) from e

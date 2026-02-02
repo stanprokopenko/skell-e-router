@@ -147,8 +147,10 @@ def _check_genai_available():
         )
 
 
-def _check_api_key():
-    """Ensure GEMINI_API_KEY is set."""
+def _check_api_key(config: dict | None = None):
+    """Ensure GEMINI_API_KEY is available via config or environment."""
+    if config and "gemini_api_key" in config:
+        return
     if "GEMINI_API_KEY" not in os.environ:
         raise DeepResearchError(
             code="MISSING_API_KEY",
@@ -156,11 +158,23 @@ def _check_api_key():
         )
 
 
-def _get_client() -> "genai.Client":
+def _get_client(config: dict | None = None) -> "genai.Client":
     """Create and return a Google GenAI client."""
     _check_genai_available()
-    _check_api_key()
+    _check_api_key(config)
+    if config and "gemini_api_key" in config:
+        return genai.Client(api_key=config["gemini_api_key"])
     return genai.Client()
+
+
+def _redact_keys(message: str, config: dict | None) -> str:
+    """Remove any config values from a string to prevent accidental key leakage."""
+    if not config:
+        return message
+    for value in config.values():
+        if isinstance(value, str) and value:
+            message = message.replace(value, "[REDACTED]")
+    return message
 
 
 def _extract_usage(interaction) -> DeepResearchUsage | None:
@@ -772,6 +786,7 @@ def ask_deep_research(
     verbosity: str = "none",
     on_progress: Callable[[str, str], None] | None = None,
     resolve_citations: bool = True,
+    config: dict | None = None,
 ) -> DeepResearchResult:
     """
     Execute a Deep Research task and wait for completion.
@@ -822,27 +837,26 @@ def ask_deep_research(
         print(f"WARNING: Invalid verbosity '{verbosity}'. Setting to 'response'.")
         verbosity = 'response'
     
-    config = DeepResearchConfig(
+    dr_config = DeepResearchConfig(
         agent=agent,
         stream=stream,
         tools=tools
     )
-    
-    _print_request_details(query, config, verbosity)
-    
-    client = _get_client()
-    start_time = time.time()
-    
+
+    _print_request_details(query, dr_config, verbosity)
+
     try:
+        client = _get_client(config)
+        start_time = time.time()
         if stream:
-            result = _stream_research(client, query, config, on_progress, verbosity, start_time, timeout)
+            result = _stream_research(client, query, dr_config, on_progress, verbosity, start_time, timeout)
         else:
             # Start the research task
             interaction = client.interactions.create(
                 input=query,
-                agent=config.agent,
+                agent=dr_config.agent,
                 background=True,
-                tools=config.tools
+                tools=dr_config.tools
             )
             
             if verbosity in ("info", "debug"):
@@ -868,12 +882,13 @@ def ask_deep_research(
     except DeepResearchError:
         raise
     except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
         if verbosity != 'none':
-            print(f"ERROR in Deep Research: {e}")
+            print(f"ERROR in Deep Research: {safe_msg}")
         raise DeepResearchError(
             code="PROVIDER_ERROR",
-            message=str(e),
-            details={"agent": config.agent}
+            message=safe_msg,
+            details={"agent": dr_config.agent}
         ) from e
 
 
@@ -882,7 +897,8 @@ def deep_research_follow_up(
     query: str,
     *,
     model: str = "gemini-3-pro-preview",
-    verbosity: str = "none"
+    verbosity: str = "none",
+    config: dict | None = None,
 ) -> str:
     """
     Ask a follow-up question about a completed Deep Research task.
@@ -912,50 +928,53 @@ def deep_research_follow_up(
         ... )
     """
     verbosity = verbosity.lower()
-    
-    client = _get_client()
-    
+
+    client = _get_client(config)
+
     try:
         if verbosity != "none":
             print(f"\nAsking follow-up question...")
-        
+
         interaction = client.interactions.create(
             input=query,
             model=model,
             previous_interaction_id=previous_interaction_id
         )
-        
+
         text = _extract_text(interaction)
-        
+
         if verbosity in ('response', 'info', 'debug'):
             print(f"\nFOLLOW-UP RESPONSE:\n")
             print(text or "(No response)")
             print()
-        
+
         return text or ""
-        
+
     except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
         if verbosity != 'none':
-            print(f"ERROR in follow-up: {e}")
+            print(f"ERROR in follow-up: {safe_msg}")
         raise DeepResearchError(
             code="FOLLOW_UP_ERROR",
-            message=str(e),
+            message=safe_msg,
             details={"previous_interaction_id": previous_interaction_id}
         ) from e
 
 
-def get_research_status(interaction_id: str) -> DeepResearchResult:
+def get_research_status(interaction_id: str, *, config: dict | None = None) -> DeepResearchResult:
     """
     Get the current status of a Deep Research task.
-    
+
     Useful for checking on a research task without waiting for completion.
-    
+
     Args:
         interaction_id: The interaction ID from a started research task
-    
+        config: Optional dict of API keys (e.g., {"gemini_api_key": "..."}).
+                When provided, uses these keys instead of environment variables.
+
     Returns:
         DeepResearchResult with current status and any available outputs
-    
+
     Example:
         >>> # Start research without waiting
         >>> client = genai.Client()
@@ -968,7 +987,7 @@ def get_research_status(interaction_id: str) -> DeepResearchResult:
         >>> status = get_research_status(interaction.id)
         >>> print(status.status)  # "in_progress", "completed", or "failed"
     """
-    client = _get_client()
+    client = _get_client(config)
     interaction = client.interactions.get(interaction_id)
     return _build_result(interaction)
 
@@ -981,6 +1000,7 @@ def stream_deep_research(
     *,
     agent: str = DEFAULT_AGENT,
     tools: list | None = None,
+    config: dict | None = None,
 ) -> Generator[tuple[str, str], None, DeepResearchResult]:
     """
     Stream Deep Research as a generator yielding (event_type, content) tuples.
@@ -1012,8 +1032,8 @@ def stream_deep_research(
         ...         print(f"[Thinking] {content}")
         >>> result = gen.value  # Get final result after iteration
     """
-    config = DeepResearchConfig(agent=agent, stream=True, tools=tools)
-    client = _get_client()
+    dr_config = DeepResearchConfig(agent=agent, stream=True, tools=tools)
+    client = _get_client(config)
     start_time = time.time()
     
     interaction_id = None
@@ -1053,18 +1073,18 @@ def stream_deep_research(
     try:
         stream = client.interactions.create(
             input=query,
-            agent=config.agent,
+            agent=dr_config.agent,
             background=True,
             stream=True,
             agent_config={
                 "type": "deep-research",
-                "thinking_summaries": config.thinking_summaries
+                "thinking_summaries": dr_config.thinking_summaries
             },
-            tools=config.tools
+            tools=dr_config.tools
         )
-        
+
         yield from process_stream(stream)
-        
+
     except Exception:
         pass  # Will attempt reconnection
     
