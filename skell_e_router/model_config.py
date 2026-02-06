@@ -149,6 +149,13 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    "claude-opus-4-6": AIModel(
+        name="anthropic/claude-opus-4-6",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "max"}
+    ),
     "claude-opus-4-5": AIModel(
         name="anthropic/claude-opus-4-5",
         provider="anthropic",

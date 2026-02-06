@@ -85,7 +85,7 @@ class TestModelConfig:
         "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
-        "claude-opus-4-5", "claude-haiku-4-5",
+        "claude-opus-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "groq-compound", "groq-compound-mini",
     ])
     def test_known_aliases_exist(self, alias):
@@ -133,13 +133,20 @@ class TestModelConfig:
         assert "safety_settings" in model.supported_params
 
     @pytest.mark.parametrize("alias", [
-        "claude-opus-4-5", "claude-haiku-4-5",
+        "claude-opus-4-6", "claude-opus-4-5", "claude-haiku-4-5",
     ])
     def test_anthropic_models_support_thinking(self, alias):
         model = MODEL_CONFIG[alias]
         assert model.supports_thinking is True
         assert "budget_tokens" in model.supported_params
         assert "thinking" in model.supported_params
+
+    def test_opus_4_6_supports_adaptive_thinking(self):
+        model = MODEL_CONFIG["claude-opus-4-6"]
+        assert "reasoning_effort" in model.supported_params
+        assert "thinking" in model.supported_params
+        assert "budget_tokens" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
 
     def test_groq_compound_models_have_compound_custom(self):
         for alias in ("groq-compound", "groq-compound-mini"):

@@ -410,21 +410,25 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                     kwargs['reasoning_effort'] = "high"
             kwargs.pop('thinking', None) # Ensure no conflicting 'thinking' dict.\
     elif "reasoning_effort" in kwargs:
-        # If "reasoning_effort" in kwargs but model supports token_budget and not reasoning_effort, map to thinking dict.
-        if "budget_tokens" in ai_model.supported_params and "reasoning_effort" not in ai_model.supported_params:
-            
-            effort_value = kwargs.get("reasoning_effort")
-            
-            accepted_efforts = getattr(ai_model, 'accepted_reasoning_efforts', None)
-            if accepted_efforts is None:
-                accepted_efforts = {"low", "medium", "high"}
+        effort_value = kwargs.get("reasoning_effort")
+        accepted_efforts = getattr(ai_model, 'accepted_reasoning_efforts', None)
+        if accepted_efforts is None:
+            accepted_efforts = {"low", "medium", "high"}
 
-            if effort_value not in accepted_efforts:
-                raise RouterError(
-                    code="INVALID_PARAM",
-                    message=f"'reasoning_effort' must be one of: {sorted(list(accepted_efforts))}"
-                )
+        if effort_value not in accepted_efforts:
+            raise RouterError(
+                code="INVALID_PARAM",
+                message=f"'reasoning_effort' must be one of: {sorted(list(accepted_efforts))}"
+            )
 
+        # Path A: model supports reasoning_effort natively (e.g., Opus 4.6) — pass through
+        # and auto-inject adaptive thinking if no thinking dict was provided.
+        if "reasoning_effort" in ai_model.supported_params:
+            if ai_model.is_anthropic and "thinking" not in kwargs:
+                kwargs["thinking"] = {"type": "adaptive"}
+
+        # Path B: model supports budget_tokens but not reasoning_effort — map to thinking dict.
+        elif "budget_tokens" in ai_model.supported_params:
             budget_val = 0
             transformed_to_thinking = False
 
@@ -432,15 +436,15 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 budget_val = 0
                 transformed_to_thinking = True
             elif effort_value == "low":
-                budget_val = 1024 
+                budget_val = 1024
                 transformed_to_thinking = True
             elif effort_value == "medium":
                 budget_val = 2048
                 transformed_to_thinking = True
             elif effort_value == "high":
-                budget_val = 4096 
+                budget_val = 4096
                 transformed_to_thinking = True
-            
+
             if transformed_to_thinking:
                 think_type = "enabled" if budget_val > 0 else "disabled"
                 kwargs['thinking'] = {"type": think_type, "budget_tokens": budget_val}
