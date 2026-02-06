@@ -86,6 +86,7 @@ class TestModelConfig:
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
         "claude-opus-4-6", "claude-opus-4-5", "claude-haiku-4-5",
+        "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
     ])
     def test_known_aliases_exist(self, alias):

@@ -239,6 +239,12 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
     ),
+    "grok-code-fast-1": AIModel(
+        name="xai/grok-code-fast-1",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
 
     # GROQ
 
