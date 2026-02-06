@@ -39,6 +39,13 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    "gpt-5.3-codex": AIModel(
+        name="openai/gpt-5.3-codex",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"}
+    ),
     "gpt-5.2": AIModel(
         name="openai/gpt-5.2",
         provider="openai",

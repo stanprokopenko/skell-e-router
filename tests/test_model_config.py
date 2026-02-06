@@ -82,7 +82,7 @@ class TestModelConfig:
         assert len(MODEL_CONFIG) > 0
 
     @pytest.mark.parametrize("alias", [
-        "gpt-5", "gpt-4o", "o3", "o1",
+        "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
         "claude-opus-4-6", "claude-opus-4-5", "claude-haiku-4-5",
