@@ -122,6 +122,12 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
     ),
+    "gemini-3.1-pro-preview": AIModel(
+        name="gemini/gemini-3.1-pro-preview",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+    ),
     "nano-banana-3": AIModel(
         name="gemini/gemini-3-pro-image-preview",
         provider="gemini",
