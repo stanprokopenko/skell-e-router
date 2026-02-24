@@ -39,6 +39,13 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    "gpt-5.3-codex": AIModel(
+        name="openai/gpt-5.3-codex",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"}
+    ),
     "gpt-5.2": AIModel(
         name="openai/gpt-5.2",
         provider="openai",
@@ -155,6 +162,13 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    "claude-opus-4-6": AIModel(
+        name="anthropic/claude-opus-4-6",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "max"}
+    ),
     "claude-opus-4-5": AIModel(
         name="anthropic/claude-opus-4-5",
         provider="anthropic",
@@ -230,6 +244,12 @@ MODEL_CONFIG = {
         provider="xai",
         supports_thinking=False,
         supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "grok-code-fast-1": AIModel(
+        name="xai/grok-code-fast-1",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
     ),
 
     # GROQ

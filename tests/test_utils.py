@@ -628,6 +628,77 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert "modalities" not in result
 
+    # --- Opus 4.6 adaptive thinking (reasoning_effort passthrough) ---
+
+    def test_opus46_reasoning_effort_passes_through(self):
+        """Opus 4.6-style model: reasoning_effort stays in kwargs, not converted to budget_tokens."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "temperature", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        kwargs = {"reasoning_effort": "high"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "high"
+        assert result["thinking"] == {"type": "adaptive"}
+
+    def test_opus46_reasoning_effort_max(self):
+        """Opus 4.6 supports the 'max' effort level."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "temperature", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        kwargs = {"reasoning_effort": "max"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "max"
+        assert result["thinking"] == {"type": "adaptive"}
+
+    def test_opus46_adaptive_thinking_auto_injected(self):
+        """When reasoning_effort is used without explicit thinking dict, adaptive thinking is injected."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        kwargs = {"reasoning_effort": "low"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["thinking"] == {"type": "adaptive"}
+
+    def test_opus46_explicit_thinking_not_overridden(self):
+        """User-provided thinking dict is preserved, not replaced with adaptive."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        kwargs = {"reasoning_effort": "low", "thinking": {"type": "enabled", "budget_tokens": 2048}}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["thinking"] == {"type": "enabled", "budget_tokens": 2048}
+        assert result["reasoning_effort"] == "low"
+
+    def test_opus46_invalid_effort_raises(self):
+        """Invalid reasoning_effort value raises even on passthrough path."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        with pytest.raises(RouterError) as exc_info:
+            _handle_model_specific_params(model, {"reasoning_effort": "ultra"})
+        assert exc_info.value.code == "INVALID_PARAM"
+
+    def test_opus46_no_thinking_without_reasoning_effort(self):
+        """Without reasoning_effort, adaptive thinking is NOT auto-injected."""
+        model = make_model(
+            provider="anthropic",
+            supported_params={"reasoning_effort", "budget_tokens", "thinking", "temperature", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        )
+        kwargs = {"temperature": 0.7}
+        result = _handle_model_specific_params(model, kwargs)
+        assert "thinking" not in result
+
     # --- Parameter filtering ---
 
     def test_unsupported_params_filtered(self):
