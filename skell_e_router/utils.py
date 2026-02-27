@@ -451,6 +451,12 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 kwargs.pop('reasoning_effort')
             # If not transformed, 'reasoning_effort' stays for final filtering.
     
+    # Groq Qwen3: remap standard reasoning_effort values to Groq's accepted values.
+    # low -> none (disable thinking), medium/high -> default (enable thinking).
+    if ai_model.is_groq and "reasoning_effort" in kwargs:
+        GROQ_EFFORT_REMAP = {"low": "none", "medium": "default", "high": "default"}
+        kwargs["reasoning_effort"] = GROQ_EFFORT_REMAP.get(kwargs["reasoning_effort"], kwargs["reasoning_effort"])
+
     # Groq: LiteLLM doesn't natively support reasoning_effort for Groq,
     # so we force it through via allowed_openai_params.
     if ai_model.is_groq and "reasoning_effort" in kwargs:

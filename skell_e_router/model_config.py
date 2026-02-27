@@ -271,7 +271,7 @@ MODEL_CONFIG = {
         provider="groq",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
-        accepted_reasoning_efforts={"none", "default"},
+        accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
     ),
     "kimi-k2-0905": AIModel(
         name="groq/moonshotai/kimi-k2-instruct-0905",
