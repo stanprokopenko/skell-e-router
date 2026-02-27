@@ -98,6 +98,8 @@ XAI_API_KEY
 
 Only the one you need is required — you don't need all five.
 
+> **Groq models** (`groq-compound`, `qwen3-32b`, `kimi-k2-0905`, etc.) use the `GROQ_API_KEY`.
+
 You can also pass keys directly so your code doesn't depend on environment variables:
 
 ```python

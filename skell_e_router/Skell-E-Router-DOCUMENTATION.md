@@ -497,9 +497,40 @@ The router has an internal retry up to 3 times before sending the response.
 
 ---
 
-## Groq Compound (temporary header)
+## Groq Models
 
-When routing to Groq Compound models (`groq/groq/compound`, `groq/groq/compound-mini`), the router injects a request header `Groq-Model-Version: latest`. This selects the Compound profile that exposes built-in tools like `visit_website`.
+The router supports several models hosted on Groq's fast inference infrastructure.
+
+### Available Models
+
+| Alias | Model | Thinking | Notes |
+|---|---|---|---|
+| `groq-compound` | `groq/groq/compound` | Yes | Agentic model with built-in tools (web search, code interpreter, etc.) |
+| `groq-compound-mini` | `groq/groq/compound-mini` | Yes | Lighter version of Compound |
+| `qwen3-32b` | `groq/qwen/qwen3-32b` | Yes | Qwen 3 32B with toggleable thinking mode |
+| `kimi-k2-0905` | `groq/moonshotai/kimi-k2-instruct-0905` | No | Moonshot Kimi K2, fast general-purpose model |
+
+### Disabling Thinking on Qwen3-32B
+
+Qwen3-32B runs in thinking mode by default (responses include `<think>` blocks). You can disable this with `reasoning_effort="none"`:
+
+```python
+from skell_e_router import ask_ai
+
+# Default — thinking enabled
+response = ask_ai("qwen3-32b", "Explain neural networks")
+
+# Thinking disabled — faster, no <think> block
+response = ask_ai("qwen3-32b", "Explain neural networks", reasoning_effort="none")
+```
+
+Accepted values for `reasoning_effort` on this model: `"none"`, `"default"`.
+
+**Note:** LiteLLM does not natively recognize `reasoning_effort` for Groq models. The router works around this by injecting `allowed_openai_params` to force the parameter through.
+
+### Groq Compound (temporary header)
+
+When routing to Groq Compound models, the router injects a request header `Groq-Model-Version: latest`. This selects the Compound profile that exposes built-in tools like `visit_website`.
 
 - This is a temporary shim for LiteLLM. Once LiteLLM forwards this header by default for Groq Compound, remove the injection in `skell_e_router/utils.py` in the `_handle_model_specific_params` function and the extra header params in `skell_e_router/model_config.py`.
 - If you prefer pinning to a specific profile, change the injected header value from `latest` to the desired version.

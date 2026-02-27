@@ -451,6 +451,13 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 kwargs.pop('reasoning_effort')
             # If not transformed, 'reasoning_effort' stays for final filtering.
     
+    # Groq: LiteLLM doesn't natively support reasoning_effort for Groq,
+    # so we force it through via allowed_openai_params.
+    if ai_model.is_groq and "reasoning_effort" in kwargs:
+        existing = kwargs.get("allowed_openai_params", [])
+        if "reasoning_effort" not in existing:
+            kwargs["allowed_openai_params"] = existing + ["reasoning_effort"]
+
     # Groq Compound: ensure correct model-version header is sent to enable tools
     if ai_model.is_groq and (ai_model.name.endswith("/compound") or ai_model.name.endswith("/compound-mini")):
         groq_header_key = "Groq-Model-Version"
@@ -511,10 +518,12 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         kwargs["modalities"] = ["text", "image"]
 
     # Filter to include only parameters listed in model's supported_params.
+    # Also allow LiteLLM meta-params that control param forwarding behavior.
+    PASSTHROUGH_KEYS = {"allowed_openai_params"}
     final_kwargs = {
         key: value
         for key, value in kwargs.items()
-        if key in ai_model.supported_params
+        if key in ai_model.supported_params or key in PASSTHROUGH_KEYS
     }
     return final_kwargs
 

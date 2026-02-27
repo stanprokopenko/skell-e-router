@@ -266,6 +266,19 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice", "compound_custom", "extra_headers", "headers"}
     ),
+    "qwen3-32b": AIModel(
+        name="groq/qwen/qwen3-32b",
+        provider="groq",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"none", "default"},
+    ),
+    "kimi-k2-0905": AIModel(
+        name="groq/moonshotai/kimi-k2-instruct-0905",
+        provider="groq",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice"},
+    ),
 
 
 }
