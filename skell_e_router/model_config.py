@@ -123,12 +123,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
     ),
-    "gemini-3-pro-preview": AIModel(
-        name="gemini/gemini-3-pro-preview",
-        provider="gemini",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
-    ),
+    # "gemini-3-pro-preview" is aliased to "gemini-3.1-pro-preview" below (Gemini 3 Pro discontinued March 9, 2026)
     "gemini-3.1-pro-preview": AIModel(
         name="gemini/gemini-3.1-pro-preview",
         provider="gemini",
@@ -168,6 +163,13 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "max"}
+    ),
+    "claude-sonnet-4-6": AIModel(
+        name="anthropic/claude-sonnet-4-6",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high"}
     ),
     "claude-opus-4-5": AIModel(
         name="anthropic/claude-opus-4-5",
@@ -215,6 +217,12 @@ MODEL_CONFIG = {
 
     # XAI
 
+    "grok-4-0220": AIModel(
+        name="xai/grok-4-0220",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
     "grok-4-1-fast-reasoning": AIModel(
         name="xai/grok-4-1-fast-reasoning",
         provider="xai",
@@ -284,6 +292,7 @@ MODEL_CONFIG = {
 }
 
 # Additional aliases
+MODEL_CONFIG["gemini-3-pro-preview"] = MODEL_CONFIG["gemini-3.1-pro-preview"]  # Gemini 3 Pro discontinued March 9, 2026
 MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 
 # Allow lookup by full name too
