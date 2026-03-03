@@ -88,6 +88,7 @@ class TestModelConfig:
         "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
+        "qwen3-32b", "kimi-k2-0905",
     ])
     def test_known_aliases_exist(self, alias):
         assert alias in MODEL_CONFIG
@@ -161,6 +162,21 @@ class TestModelConfig:
             model = MODEL_CONFIG[alias]
             assert "compound_custom" in model.supported_params
             assert "extra_headers" in model.supported_params
+
+    def test_qwen3_32b_config(self):
+        model = MODEL_CONFIG["qwen3-32b"]
+        assert model.provider == "groq"
+        assert model.is_groq is True
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"none", "default", "low", "medium", "high"}
+
+    def test_kimi_k2_config(self):
+        model = MODEL_CONFIG["kimi-k2-0905"]
+        assert model.provider == "groq"
+        assert model.is_groq is True
+        assert model.supports_thinking is False
+        assert "reasoning_effort" not in model.supported_params
 
     def test_nano_banana_has_modalities(self):
         model = MODEL_CONFIG["nano-banana-3"]

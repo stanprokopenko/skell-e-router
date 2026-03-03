@@ -699,6 +699,64 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert "thinking" not in result
 
+    # --- Groq reasoning_effort remapping ---
+
+    def test_groq_reasoning_effort_low_remaps_to_none(self):
+        """Groq: low reasoning_effort maps to 'none' (disables thinking)."""
+        model = make_model(
+            provider="groq",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
+        )
+        kwargs = {"reasoning_effort": "low"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "none"
+        assert "allowed_openai_params" in result
+
+    def test_groq_reasoning_effort_medium_remaps_to_default(self):
+        """Groq: medium reasoning_effort maps to 'default' (keeps thinking)."""
+        model = make_model(
+            provider="groq",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
+        )
+        kwargs = {"reasoning_effort": "medium"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "default"
+
+    def test_groq_reasoning_effort_high_remaps_to_default(self):
+        """Groq: high reasoning_effort maps to 'default' (keeps thinking)."""
+        model = make_model(
+            provider="groq",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
+        )
+        kwargs = {"reasoning_effort": "high"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "default"
+
+    def test_groq_reasoning_effort_none_passes_through(self):
+        """Groq: native 'none' value passes through unchanged."""
+        model = make_model(
+            provider="groq",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
+        )
+        kwargs = {"reasoning_effort": "none"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "none"
+
+    def test_groq_allowed_openai_params_injected(self):
+        """Groq: allowed_openai_params is injected so LiteLLM forwards reasoning_effort."""
+        model = make_model(
+            provider="groq",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
+        )
+        kwargs = {"reasoning_effort": "none"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert "reasoning_effort" in result["allowed_openai_params"]
+
     # --- Parameter filtering ---
 
     def test_unsupported_params_filtered(self):
