@@ -557,6 +557,15 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert result["temperature"] == 1
 
+    def test_anthropic_adaptive_thinking_forces_temperature_1(self):
+        model = make_model(
+            provider="anthropic",
+            supported_params={"thinking", "temperature", "reasoning_effort", "stream"},
+        )
+        kwargs = {"thinking": {"type": "adaptive"}, "reasoning_effort": "high", "temperature": 0.5}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["temperature"] == 1
+
     def test_anthropic_thinking_top_p_clamped(self):
         model = make_model(
             provider="anthropic",
