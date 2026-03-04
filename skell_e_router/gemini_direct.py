@@ -19,6 +19,17 @@ except ImportError:
 from .response import AIResponse
 
 
+# Cache genai.Client instances per API key to avoid ~0.8s construction overhead per call
+_client_cache: dict[str, object] = {}
+
+
+def _get_gemini_client(api_key: str):
+    """Return a cached genai.Client for the given API key."""
+    if api_key not in _client_cache:
+        _client_cache[api_key] = genai.Client(api_key=api_key)
+    return _client_cache[api_key]
+
+
 # Known pricing per 1M tokens (USD) for direct-SDK models
 # Per 1M tokens (USD), text/image/video input — source: https://ai.google.dev/gemini-api/docs/pricing
 _PRICING = {
@@ -274,7 +285,7 @@ def _call_gemini_direct(model_name: str, contents: list, system_instruction: str
     if model_name.startswith("gemini/"):
         model_name = model_name[len("gemini/"):]
 
-    client = genai.Client(api_key=api_key)
+    client = _get_gemini_client(api_key)
 
     # Rebuild config to include system_instruction and/or tools if needed
     if system_instruction or tools:
@@ -331,7 +342,7 @@ def _call_gemini_direct_stream(model_name: str, contents: list, system_instructi
     if model_name.startswith("gemini/"):
         model_name = model_name[len("gemini/"):]
 
-    client = genai.Client(api_key=api_key)
+    client = _get_gemini_client(api_key)
 
     # Rebuild config to include system_instruction and/or tools if needed
     if system_instruction or tools:
@@ -419,7 +430,7 @@ def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
     tool_calls = None
     if response.candidates:
         candidate = response.candidates[0]
-        if hasattr(candidate, 'content') and candidate.content and hasattr(candidate.content, 'parts'):
+        if hasattr(candidate, 'content') and candidate.content and hasattr(candidate.content, 'parts') and candidate.content.parts:
             fc_parts = [
                 p for p in candidate.content.parts
                 if hasattr(p, 'function_call') and p.function_call is not None
