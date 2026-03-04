@@ -177,17 +177,17 @@ class TestBuildGenerateConfig:
     def test_reasoning_effort_low(self):
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "low"})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_level == "THINKING_LEVEL_LOW"
+        assert tc.thinking_budget == 1024
 
     def test_reasoning_effort_medium(self):
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "medium"})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_level == "THINKING_LEVEL_MEDIUM"
+        assert tc.thinking_budget == 2048
 
     def test_reasoning_effort_high(self):
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "high"})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_level == "THINKING_LEVEL_HIGH"
+        assert tc.thinking_budget == 4096
 
     def test_reasoning_effort_validation_error(self):
         from skell_e_router.utils import RouterError
@@ -207,11 +207,11 @@ class TestBuildGenerateConfig:
         assert tc.thinking_budget == 2048
 
     def test_budget_tokens_maps_to_reasoning_effort(self):
-        """budget_tokens on model w/o budget_tokens but w/ reasoning_effort -> ThinkingConfig via effort."""
+        """budget_tokens on model w/o budget_tokens but w/ reasoning_effort -> ThinkingConfig via budget."""
         model = self._gemini_model()  # has reasoning_effort, no budget_tokens
         config, _ = self._call(model, {"budget_tokens": 500})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_level == "THINKING_LEVEL_LOW"
+        assert tc.thinking_budget == 1024
 
     def test_thinking_dict_enabled(self):
         config, _ = self._call(self._gemini_model(), {"thinking": {"type": "enabled", "budget_tokens": 4096}})

@@ -139,14 +139,14 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
             else:
                 effort = "high"
             # Apply as reasoning_effort -> ThinkingConfig
-            level_map = {
-                "minimal": "THINKING_LEVEL_LOW",
-                "low": "THINKING_LEVEL_LOW",
-                "medium": "THINKING_LEVEL_MEDIUM",
-                "high": "THINKING_LEVEL_HIGH",
+            budget_map = {
+                "minimal": 0,
+                "low": 1024,
+                "medium": 2048,
+                "high": 4096,
             }
             config_kwargs["thinking_config"] = types.ThinkingConfig(
-                thinking_level=level_map.get(effort, "THINKING_LEVEL_MEDIUM")
+                thinking_budget=budget_map.get(effort, 1024)
             )
 
     elif "thinking" in kwargs:
@@ -161,7 +161,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                     )
                 else:
                     config_kwargs["thinking_config"] = types.ThinkingConfig(
-                        thinking_level="THINKING_LEVEL_MEDIUM"
+                        thinking_budget=2048
                     )
             # disabled -> no thinking_config (skip)
 
@@ -176,14 +176,14 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 code="INVALID_PARAM",
                 message=f"'reasoning_effort' must be one of: {sorted(list(accepted))}"
             )
-        level_map = {
-            "minimal": "THINKING_LEVEL_LOW",
-            "low": "THINKING_LEVEL_LOW",
-            "medium": "THINKING_LEVEL_MEDIUM",
-            "high": "THINKING_LEVEL_HIGH",
+        budget_map = {
+            "minimal": 0,
+            "low": 1024,
+            "medium": 2048,
+            "high": 4096,
         }
         config_kwargs["thinking_config"] = types.ThinkingConfig(
-            thinking_level=level_map.get(effort, "THINKING_LEVEL_MEDIUM")
+            thinking_budget=budget_map.get(effort, 1024)
         )
 
     # Safety settings — always set BLOCK_NONE for all categories

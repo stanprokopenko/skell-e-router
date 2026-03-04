@@ -558,7 +558,119 @@ For models without native `budget_tokens` support but with `reasoning_effort`, t
 
 ### Limitations
 
-- **Gemini models only** — `direct_sdk=True` on non-Gemini models has no effect (falls through to LiteLLM)
+- **Cost calculation** uses hardcoded pricing rather than LiteLLM's cost table
+
+---
+
+## Direct Anthropic SDK (Low-Latency Mode)
+
+All Claude models bypass LiteLLM by default, calling the `anthropic` SDK directly. Same pattern as the Gemini direct path — eliminates 0.3–1.7s of overhead per call.
+
+### How It Works
+
+- All Claude models use the direct SDK path **by default**
+- You can override this per-call with the `direct_sdk` parameter
+
+### Usage
+
+```python
+from skell_e_router import ask_ai
+
+# Uses direct SDK automatically
+response = ask_ai("claude-sonnet-4-6", "Hello")
+
+# Force back to LiteLLM path
+response = ask_ai("claude-sonnet-4-6", "Hello", direct_sdk=False)
+```
+
+### Streaming
+
+When `stream=True`, returns a stream context manager from `client.messages.stream()`:
+
+```python
+with ask_ai("claude-sonnet-4-6", "Tell me a story", stream=True) as stream:
+    for text in stream.text_stream:
+        print(text, end="", flush=True)
+```
+
+### Function Calling (Tools)
+
+The direct SDK path converts OpenAI-format tool definitions to Anthropic format (`parameters` → `input_schema`):
+
+```python
+tools = [{"type": "function", "function": {
+    "name": "get_weather",
+    "description": "Get the current weather",
+    "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+}}]
+
+response = ask_ai(
+    "claude-sonnet-4-6", "What's the weather in NYC?",
+    tools=tools, tool_choice="auto", rich_response=True
+)
+
+if response.tool_calls:
+    for tc in response.tool_calls:
+        print(f"{tc['function']['name']}({tc['function']['arguments']})")
+```
+
+**tool_choice mapping:**
+
+| OpenAI value | Anthropic format |
+|---|---|
+| `"auto"` | `{"type": "auto"}` |
+| `"none"` | `{"type": "none"}` |
+| `"required"` | `{"type": "any"}` |
+| `{"type": "function", "function": {"name": "X"}}` | `{"type": "tool", "name": "X"}` |
+
+### Extended Thinking
+
+Claude models support extended thinking via `budget_tokens`, `thinking`, or `reasoning_effort`:
+
+```python
+# budget_tokens — explicit control
+response = ask_ai("claude-sonnet-4-6", "Solve this", budget_tokens=4096)
+
+# reasoning_effort — maps to thinking automatically
+# On models with native reasoning_effort (opus-4-6, sonnet-4-6): uses adaptive thinking
+# On other models: maps to budget (low=1024, medium=2048, high=4096)
+response = ask_ai("claude-opus-4-6", "Analyze this", reasoning_effort="high")
+
+# thinking dict — full control (passed through as-is)
+response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enabled", "budget_tokens": 2048})
+```
+
+**Anthropic constraint:** When thinking is enabled or adaptive, the router automatically forces `temperature=1` and drops `top_p` below 0.95.
+
+### Betas
+
+Pass beta feature flags via the `betas` parameter, which maps to the `anthropic-beta` header:
+
+```python
+response = ask_ai(
+    "claude-3-7-sonnet-20250219", "Write a long essay",
+    betas=["output-128k-2025-02-19"]
+)
+```
+
+### Pricing
+
+Cost is computed from hardcoded per-1M-token rates:
+
+| Model | Input | Output |
+|---|---|---|
+| claude-opus-4-6 | $5.00 | $25.00 |
+| claude-sonnet-4-6 | $3.00 | $15.00 |
+| claude-opus-4-5 | $5.00 | $25.00 |
+| claude-haiku-4-5 | $1.00 | $5.00 |
+| claude-sonnet-4-5-20250929 | $3.00 | $15.00 |
+| claude-opus-4-1-20250805 | $15.00 | $75.00 |
+| claude-sonnet-4-20250514 | $3.00 | $15.00 |
+| claude-3-7-sonnet-20250219 | $3.00 | $15.00 |
+| claude-3-5-sonnet-20241022 | $3.00 | $15.00 |
+
+### Limitations
+
 - **Cost calculation** uses hardcoded pricing rather than LiteLLM's cost table
 
 ---
