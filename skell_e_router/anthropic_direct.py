@@ -17,6 +17,17 @@ except ImportError:
 from .response import AIResponse
 
 
+# Cache Anthropic client instances per API key to avoid repeated construction overhead
+_client_cache: dict[str, object] = {}
+
+
+def _get_anthropic_client(api_key: str):
+    """Return a cached anthropic.Anthropic for the given API key."""
+    if api_key not in _client_cache:
+        _client_cache[api_key] = anthropic.Anthropic(api_key=api_key)
+    return _client_cache[api_key]
+
+
 # Known pricing per 1M tokens (USD) for direct-SDK models
 _PRICING = {
     "claude-opus-4-6": {"input": 5.00, "output": 25.00},
@@ -214,7 +225,7 @@ def _call_anthropic_direct(model_name: str, messages: list[dict], system_prompt:
     if model_name.startswith("anthropic/"):
         model_name = model_name[len("anthropic/"):]
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client(api_key)
 
     call_kwargs = dict(model=model_name, messages=messages, **params)
     if system_prompt:
@@ -251,7 +262,7 @@ def _call_anthropic_direct_stream(model_name: str, messages: list[dict], system_
     if model_name.startswith("anthropic/"):
         model_name = model_name[len("anthropic/"):]
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = _get_anthropic_client(api_key)
 
     call_kwargs = dict(model=model_name, messages=messages, **params)
     if system_prompt:
