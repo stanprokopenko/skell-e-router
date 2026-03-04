@@ -46,6 +46,13 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"}
     ),
+    "gpt-5.3-chat": AIModel(
+        name="openai/gpt-5.3-chat-latest",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "max_tokens", "stream"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+    ),
     "gpt-5.2": AIModel(
         name="openai/gpt-5.2",
         provider="openai",
