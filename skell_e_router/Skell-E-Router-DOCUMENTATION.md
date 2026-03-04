@@ -484,8 +484,8 @@ For speed-critical Gemini models, the router can bypass LiteLLM and call the Goo
 
 ### How It Works
 
-- `gemini-3.1-flash-lite-preview` uses the direct SDK path **by default**
-- All other models use the standard LiteLLM path by default
+- All Gemini Flash models use the direct SDK path **by default**: `gemini-3-flash-preview`, `gemini-3.1-flash-lite-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`
+- Pro and other models use the standard LiteLLM path by default
 - You can override this per-call with the `direct_sdk` parameter
 
 ### Usage

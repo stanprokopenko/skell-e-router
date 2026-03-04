@@ -131,6 +131,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
+        use_direct_sdk=True,
     ),
     # "gemini-3-pro-preview" is aliased to "gemini-3.1-pro-preview" below (Gemini 3 Pro discontinued March 9, 2026)
     "gemini-3.1-pro-preview": AIModel(
@@ -164,13 +165,15 @@ MODEL_CONFIG = {
         name="gemini/gemini-2.5-flash",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
+        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        use_direct_sdk=True,
     ),
     "gemini-2.5-flash-lite": AIModel(
         name="gemini/gemini-2.5-flash-lite",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        use_direct_sdk=True,
     ),
 
     # ANTHROPIC

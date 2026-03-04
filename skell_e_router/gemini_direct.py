@@ -20,7 +20,10 @@ from .response import AIResponse
 
 # Known pricing per 1M tokens (USD) for direct-SDK models
 _PRICING = {
+    "gemini-3-flash-preview": {"input": 0.15, "output": 0.60},
     "gemini-3.1-flash-lite-preview": {"input": 0.25, "output": 1.50},
+    "gemini-2.5-flash": {"input": 0.15, "output": 0.60},
+    "gemini-2.5-flash-lite": {"input": 0.075, "output": 0.30},
 }
 
 
