@@ -12,6 +12,7 @@ from .gemini_direct import (
     _convert_messages_to_contents,
     _build_generate_config,
     _call_gemini_direct,
+    _call_gemini_direct_stream,
     _build_response as _build_gemini_response,
     _print_response as _print_gemini_response,
 )
@@ -626,12 +627,23 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             message="GEMINI_API_KEY is required for direct Gemini SDK calls.",
         )
 
+    stream = kwargs.pop("stream", False)
     system_instruction, contents = _convert_messages_to_contents(messages)
     gen_config, tools = _build_generate_config(ai_model, kwargs)
 
     _print_request_details(messages, kwargs, ai_model.name + " (direct)", verbosity)
 
     try:
+        if stream:
+            return _call_gemini_direct_stream(
+                model_name=ai_model.name,
+                contents=contents,
+                system_instruction=system_instruction,
+                config=gen_config,
+                tools=tools,
+                api_key=api_key,
+            )
+
         start_time = time.perf_counter()
         response = _call_gemini_direct(
             model_name=ai_model.name,
@@ -650,6 +662,8 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             return ai_response
         return ai_response.content
 
+    except RouterError:
+        raise
     except Exception as e:
         safe_msg = _redact_keys(str(e), config)
         if verbosity != 'none':
@@ -705,7 +719,7 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # Direct SDK path for Gemini models (bypasses LiteLLM overhead).
     # direct_sdk=True/False overrides the model default; None falls back to ai_model.use_direct_sdk.
     use_direct = direct_sdk if direct_sdk is not None else ai_model.use_direct_sdk
-    if use_direct and ai_model.is_gemini and not kwargs.get("stream"):
+    if use_direct and ai_model.is_gemini:
         return _ask_ai_direct_gemini(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
 
     # Swap and filter out parameters for the target model

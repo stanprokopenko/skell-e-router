@@ -499,7 +499,7 @@ response = ask_ai("gemini-3.1-flash-lite-preview", "Hello")
 # Force any Gemini model to use the direct SDK
 response = ask_ai("gemini-2.5-flash", "Hello", direct_sdk=True)
 
-# Force Flash Lite back to LiteLLM (e.g., for streaming)
+# Force back to LiteLLM path
 response = ask_ai("gemini-3.1-flash-lite-preview", "Hello", direct_sdk=False)
 ```
 
@@ -511,11 +511,54 @@ response = ask_ai("gemini-3.1-flash-lite-preview", "Hello", direct_sdk=False)
 | `True` | Forces direct SDK path (only works with Gemini models) |
 | `False` | Forces LiteLLM path |
 
+### Streaming
+
+The direct SDK path supports streaming. When `stream=True`, it returns a chunk iterator from `generate_content_stream()`:
+
+```python
+for chunk in ask_ai("gemini-2.5-flash", "Tell me a story", stream=True):
+    print(chunk.text, end="", flush=True)
+```
+
+### Function Calling (Tools)
+
+The direct SDK path converts OpenAI-format tool definitions to Google SDK format:
+
+```python
+tools = [{"type": "function", "function": {
+    "name": "get_weather",
+    "description": "Get the current weather",
+    "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+}}]
+
+response = ask_ai(
+    "gemini-2.5-flash", "What's the weather in NYC?",
+    tools=tools, tool_choice="auto", rich_response=True
+)
+
+if response.tool_calls:
+    for tc in response.tool_calls:
+        print(f"{tc['function']['name']}({tc['function']['arguments']})")
+```
+
+**tool_choice mapping:**
+
+| OpenAI value | Google SDK mode |
+|---|---|
+| `"auto"` | `AUTO` |
+| `"none"` | `NONE` |
+| `"required"` | `ANY` |
+| `{"type": "function", "function": {"name": "X"}}` | `ANY` with `allowed_function_names=["X"]` |
+
+### budget_tokens Support
+
+Models like `gemini-2.5-flash-lite` that list `budget_tokens` in their `supported_params` now correctly convert `budget_tokens` to a `ThinkingConfig(thinking_budget=N)` on the direct SDK path. Previously this parameter was silently dropped.
+
+For models without native `budget_tokens` support but with `reasoning_effort`, the value is mapped to an effort level: 0 → low, ≤1024 → low, ≤2048 → medium, >2048 → high.
+
 ### Limitations
 
 - **Gemini models only** — `direct_sdk=True` on non-Gemini models has no effect (falls through to LiteLLM)
-- **No streaming** — when `stream=True` is passed, the direct path is skipped and LiteLLM handles it automatically
-- **No tool/function calling conversion** — if you're using `tools`, stick with the LiteLLM path (`direct_sdk=False`)
 - **Cost calculation** uses hardcoded pricing rather than LiteLLM's cost table
 
 ---

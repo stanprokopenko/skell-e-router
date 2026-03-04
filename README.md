@@ -112,4 +112,31 @@ response = ask_ai(
 
 ## Documentation
 
+### Streaming (Direct SDK)
+
+Gemini Flash models support streaming via the direct SDK path:
+
+```python
+for chunk in ask_ai("gemini-2.5-flash", "Tell me a story", stream=True):
+    print(chunk.text, end="", flush=True)
+```
+
+### Function Calling (Direct SDK)
+
+```python
+tools = [{"type": "function", "function": {
+    "name": "get_weather",
+    "description": "Get the weather",
+    "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
+}}]
+
+response = ask_ai(
+    "gemini-2.5-flash", "What's the weather in NYC?",
+    tools=tools, tool_choice="auto", rich_response=True
+)
+print(response.tool_calls)
+```
+
+## Documentation
+
 For the full technical reference (rich responses, image I/O, streaming, citations, retry policy, verbosity settings, etc.), see [skell_e_router/README.md](skell_e_router/README.md).

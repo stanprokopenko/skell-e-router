@@ -94,6 +94,70 @@ def make_litellm_response(
 
 
 # ---------------------------------------------------------------------------
+# Mock Google genai SDK response builder
+# ---------------------------------------------------------------------------
+
+def make_gemini_response(
+    text: str = "Hello from Gemini",
+    prompt_tokens: int = 10,
+    completion_tokens: int = 20,
+    total_tokens: int = 30,
+    reasoning_tokens: int | None = None,
+    finish_reason: str = "STOP",
+    grounding_metadata=None,
+    safety_ratings=None,
+    function_call_parts=None,
+    blocked: bool = False,
+):
+    """Build a mock that looks like a google-genai GenerateContentResponse."""
+    # Build parts
+    parts = []
+    if text:
+        text_part = MagicMock()
+        text_part.text = text
+        text_part.function_call = None
+        parts.append(text_part)
+
+    if function_call_parts:
+        for fc in function_call_parts:
+            fc_part = MagicMock()
+            fc_part.text = None
+            fc_mock = MagicMock()
+            fc_mock.name = fc["name"]
+            fc_mock.args = fc.get("args", {})
+            fc_part.function_call = fc_mock
+            # hasattr checks should work on MagicMock by default
+            parts.append(fc_part)
+
+    content = MagicMock()
+    content.parts = parts
+
+    candidate = MagicMock()
+    candidate.content = content
+    candidate.finish_reason = finish_reason
+    candidate.grounding_metadata = grounding_metadata
+    candidate.safety_ratings = safety_ratings
+
+    usage = MagicMock()
+    usage.prompt_token_count = prompt_tokens
+    usage.candidates_token_count = completion_tokens
+    usage.total_token_count = total_tokens
+    usage.thoughts_token_count = reasoning_tokens
+
+    response = MagicMock()
+    response.candidates = [candidate] if not blocked else []
+    response.usage_metadata = usage
+
+    if blocked:
+        response.text = None
+        type(response).text = property(lambda self: (_ for _ in ()).throw(ValueError("blocked")))
+    else:
+        response.text = text
+
+    return response
+
+
+# ---------------------------------------------------------------------------
 # Mock deep-research interaction builder
 # ---------------------------------------------------------------------------
 

@@ -5,6 +5,7 @@
 
 import time
 import json
+import uuid
 
 try:
     from google import genai
@@ -89,8 +90,12 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
 
     Returns (config, tools) where tools is a list to pass separately if needed.
     """
+    # Import RouterError here to avoid circular import at module level
+    from .utils import RouterError
+
     config_kwargs = {}
     tools = None
+    tool_config = None
 
     # max_tokens -> max_output_tokens
     if "max_tokens" in kwargs:
@@ -108,19 +113,77 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
             stop = [stop]
         config_kwargs["stop_sequences"] = stop
 
-    # reasoning_effort -> thinking_config with thinking_level
-    if "reasoning_effort" in kwargs:
+    # candidate_count
+    if "candidate_count" in kwargs:
+        config_kwargs["candidate_count"] = kwargs["candidate_count"]
+
+    # --- Thinking / reasoning handling ---
+    # Priority: budget_tokens > thinking dict > reasoning_effort
+
+    if "budget_tokens" in kwargs:
+        budget = kwargs["budget_tokens"]
+        if "budget_tokens" in ai_model.supported_params:
+            # Direct ThinkingConfig with budget
+            config_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_budget=budget
+            )
+        elif "reasoning_effort" in ai_model.supported_params:
+            # Map budget to effort level, then fall through to reasoning_effort handling
+            accepted = getattr(ai_model, 'accepted_reasoning_efforts', {"low", "medium", "high"})
+            if budget == 0:
+                effort = "minimal" if "minimal" in accepted else "low"
+            elif budget <= 1024:
+                effort = "low"
+            elif budget <= 2048:
+                effort = "medium"
+            else:
+                effort = "high"
+            # Apply as reasoning_effort -> ThinkingConfig
+            level_map = {
+                "minimal": "THINKING_LEVEL_LOW",
+                "low": "THINKING_LEVEL_LOW",
+                "medium": "THINKING_LEVEL_MEDIUM",
+                "high": "THINKING_LEVEL_HIGH",
+            }
+            config_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_level=level_map.get(effort, "THINKING_LEVEL_MEDIUM")
+            )
+
+    elif "thinking" in kwargs:
+        thinking = kwargs["thinking"]
+        if isinstance(thinking, dict):
+            think_type = thinking.get("type", "disabled")
+            if think_type == "enabled":
+                budget_val = thinking.get("budget_tokens")
+                if budget_val is not None:
+                    config_kwargs["thinking_config"] = types.ThinkingConfig(
+                        thinking_budget=budget_val
+                    )
+                else:
+                    config_kwargs["thinking_config"] = types.ThinkingConfig(
+                        thinking_level="THINKING_LEVEL_MEDIUM"
+                    )
+            # disabled -> no thinking_config (skip)
+
+    elif "reasoning_effort" in kwargs:
         effort = kwargs["reasoning_effort"]
-        # Map to Google's ThinkingLevel enum values
+        # Validate against model's accepted values
+        accepted = getattr(ai_model, 'accepted_reasoning_efforts', None)
+        if accepted is None:
+            accepted = {"low", "medium", "high"}
+        if effort not in accepted:
+            raise RouterError(
+                code="INVALID_PARAM",
+                message=f"'reasoning_effort' must be one of: {sorted(list(accepted))}"
+            )
         level_map = {
             "minimal": "THINKING_LEVEL_LOW",
             "low": "THINKING_LEVEL_LOW",
             "medium": "THINKING_LEVEL_MEDIUM",
             "high": "THINKING_LEVEL_HIGH",
         }
-        thinking_level = level_map.get(effort, "THINKING_LEVEL_MEDIUM")
         config_kwargs["thinking_config"] = types.ThinkingConfig(
-            thinking_level=thinking_level
+            thinking_level=level_map.get(effort, "THINKING_LEVEL_MEDIUM")
         )
 
     # Safety settings — always set BLOCK_NONE for all categories
@@ -147,8 +210,52 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
     if "web_search_options" in kwargs:
         tools = [types.Tool(google_search=types.GoogleSearch())]
 
+    # tools (function calling) — convert OpenAI format to Google SDK
+    if "tools" in kwargs and kwargs["tools"]:
+        func_declarations = []
+        for tool_def in kwargs["tools"]:
+            if isinstance(tool_def, dict) and tool_def.get("type") == "function":
+                fn = tool_def["function"]
+                fd_kwargs = {"name": fn["name"]}
+                if "description" in fn:
+                    fd_kwargs["description"] = fn["description"]
+                if "parameters" in fn:
+                    fd_kwargs["parameters"] = fn["parameters"]
+                func_declarations.append(types.FunctionDeclaration(**fd_kwargs))
+        if func_declarations:
+            fn_tool = types.Tool(function_declarations=func_declarations)
+            tools = [fn_tool] if tools is None else tools + [fn_tool]
+
+    # tool_choice -> ToolConfig with FunctionCallingConfig
+    if "tool_choice" in kwargs and kwargs["tool_choice"] is not None:
+        tc = kwargs["tool_choice"]
+        if isinstance(tc, str):
+            mode_map = {"auto": "AUTO", "none": "NONE", "required": "ANY"}
+            mode = mode_map.get(tc)
+            if mode:
+                tool_config = types.ToolConfig(
+                    function_calling_config=types.FunctionCallingConfig(mode=mode)
+                )
+        elif isinstance(tc, dict) and tc.get("type") == "function":
+            fn_name = tc.get("function", {}).get("name")
+            if fn_name:
+                tool_config = types.ToolConfig(
+                    function_calling_config=types.FunctionCallingConfig(
+                        mode="ANY",
+                        allowed_function_names=[fn_name]
+                    )
+                )
+
+    if tool_config:
+        config_kwargs["tool_config"] = tool_config
+
     config = types.GenerateContentConfig(**config_kwargs)
     return config, tools
+
+
+_CONFIG_ATTRS = ("max_output_tokens", "temperature", "top_p", "top_k",
+                 "stop_sequences", "thinking_config", "safety_settings",
+                 "candidate_count", "tool_config")
 
 
 def _call_gemini_direct(model_name: str, contents: list, system_instruction: str | None,
@@ -170,9 +277,6 @@ def _call_gemini_direct(model_name: str, contents: list, system_instruction: str
     client = genai.Client(api_key=api_key)
 
     # Rebuild config to include system_instruction and/or tools if needed
-    _CONFIG_ATTRS = ("max_output_tokens", "temperature", "top_p", "top_k",
-                     "stop_sequences", "thinking_config", "safety_settings")
-
     if system_instruction or tools:
         existing = {}
         for attr in _CONFIG_ATTRS:
@@ -206,6 +310,63 @@ def _call_gemini_direct(model_name: str, contents: list, system_instruction: str
             )
             if is_transient and attempt < max_attempts:
                 wait_time = 2 ** attempt  # 2s, 4s
+                time.sleep(wait_time)
+                continue
+            raise
+
+
+def _call_gemini_direct_stream(model_name: str, contents: list, system_instruction: str | None,
+                               config, tools, api_key: str):
+    """Call the Google genai SDK with streaming. Returns an iterator of chunks.
+
+    Same retry logic as _call_gemini_direct (retry before first chunk).
+    """
+    if not GENAI_AVAILABLE:
+        raise ImportError(
+            "google-genai package is required for direct Gemini SDK calls. "
+            "Install it with: pip install google-genai"
+        )
+
+    # Strip "gemini/" prefix used by LiteLLM
+    if model_name.startswith("gemini/"):
+        model_name = model_name[len("gemini/"):]
+
+    client = genai.Client(api_key=api_key)
+
+    # Rebuild config to include system_instruction and/or tools if needed
+    if system_instruction or tools:
+        existing = {}
+        for attr in _CONFIG_ATTRS:
+            val = getattr(config, attr, None)
+            if val is not None:
+                existing[attr] = val
+        if system_instruction:
+            existing["system_instruction"] = system_instruction
+        if tools:
+            existing["tools"] = tools
+        config = types.GenerateContentConfig(**existing)
+
+    call_kwargs = dict(
+        model=model_name,
+        contents=contents,
+        config=config,
+    )
+
+    max_attempts = 3
+    for attempt in range(1, max_attempts + 1):
+        try:
+            stream = client.models.generate_content_stream(**call_kwargs)
+            return stream
+        except Exception as e:
+            err_name = type(e).__name__.lower()
+            status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
+            is_transient = (
+                'timeout' in err_name or
+                'connection' in err_name or
+                status in (429, 500, 502, 503, 504)
+            )
+            if is_transient and attempt < max_attempts:
+                wait_time = 2 ** attempt
                 time.sleep(wait_time)
                 continue
             raise
@@ -247,6 +408,40 @@ def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
         if gm:
             grounding_metadata = gm
 
+    # Safety ratings
+    safety_ratings = None
+    if response.candidates:
+        sr = getattr(response.candidates[0], 'safety_ratings', None)
+        if sr:
+            safety_ratings = sr
+
+    # Tool calls — convert function call parts to OpenAI format
+    tool_calls = None
+    if response.candidates:
+        candidate = response.candidates[0]
+        if hasattr(candidate, 'content') and candidate.content and hasattr(candidate.content, 'parts'):
+            fc_parts = [
+                p for p in candidate.content.parts
+                if hasattr(p, 'function_call') and p.function_call is not None
+            ]
+            if fc_parts:
+                tool_calls = []
+                for p in fc_parts:
+                    fc = p.function_call
+                    args = getattr(fc, 'args', None)
+                    if isinstance(args, dict):
+                        args_str = json.dumps(args)
+                    else:
+                        args_str = json.dumps(dict(args)) if args else "{}"
+                    tool_calls.append({
+                        "id": f"call_{uuid.uuid4().hex[:24]}",
+                        "type": "function",
+                        "function": {
+                            "name": fc.name,
+                            "arguments": args_str,
+                        }
+                    })
+
     # Compute cost from known pricing
     cost = None
     pricing = _PRICING.get(display_model)
@@ -265,6 +460,8 @@ def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
         cost=cost,
         duration_seconds=duration_s,
         grounding_metadata=grounding_metadata,
+        safety_ratings=safety_ratings,
+        tool_calls=tool_calls,
         raw_response=response,
     )
 
@@ -297,6 +494,9 @@ def _print_response(response: AIResponse, model_name: str, verbosity: str, durat
 
         if response.grounding_metadata:
             stats['Grounding'] = 'Yes'
+
+        if response.tool_calls:
+            stats['Tool Calls'] = len(response.tool_calls)
 
         print("\nRESPONSE INFO:\n")
         max_key_len = max(len(k) for k in stats.keys())
