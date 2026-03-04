@@ -16,6 +16,14 @@ from .gemini_direct import (
     _build_response as _build_gemini_response,
     _print_response as _print_gemini_response,
 )
+from .anthropic_direct import (
+    _convert_messages_for_anthropic,
+    _build_create_params,
+    _call_anthropic_direct,
+    _call_anthropic_direct_stream,
+    _build_response as _build_anthropic_response,
+    _print_response as _print_anthropic_response,
+)
 
 # SETUP
 #--------
@@ -675,6 +683,67 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
         ) from e
 
 
+def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: str | None,
+                             verbosity: str, rich_response: bool, config: dict | None,
+                             kwargs: dict) -> str | AIResponse:
+    """Call Anthropic via anthropic SDK directly, bypassing LiteLLM for lower latency."""
+    # Resolve API key: explicit > config > env
+    if not api_key:
+        api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise RouterError(
+            code="MISSING_ENV",
+            message="ANTHROPIC_API_KEY is required for direct Anthropic SDK calls.",
+        )
+
+    stream = kwargs.pop("stream", False)
+    system_prompt, converted_messages = _convert_messages_for_anthropic(messages)
+    params, extra_headers = _build_create_params(ai_model, kwargs)
+
+    _print_request_details(messages, kwargs, ai_model.name + " (direct)", verbosity)
+
+    try:
+        if stream:
+            return _call_anthropic_direct_stream(
+                model_name=ai_model.name,
+                messages=converted_messages,
+                system_prompt=system_prompt,
+                params=params,
+                extra_headers=extra_headers,
+                api_key=api_key,
+            )
+
+        start_time = time.perf_counter()
+        response = _call_anthropic_direct(
+            model_name=ai_model.name,
+            messages=converted_messages,
+            system_prompt=system_prompt,
+            params=params,
+            extra_headers=extra_headers,
+            api_key=api_key,
+        )
+        duration_s = time.perf_counter() - start_time
+
+        ai_response = _build_anthropic_response(response, ai_model.name, duration_s)
+        _print_anthropic_response(ai_response, ai_model.name, verbosity, duration_s)
+
+        if rich_response:
+            return ai_response
+        return ai_response.content
+
+    except RouterError:
+        raise
+    except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
+        if verbosity != 'none':
+            print(f"ERROR calling {ai_model.name} (direct): {safe_msg}")
+        raise RouterError(
+            code="PROVIDER_ERROR",
+            message=safe_msg,
+            details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True}
+        ) from e
+
+
 @overload
 def ask_ai(
     model_alias: str,
@@ -721,6 +790,9 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     use_direct = direct_sdk if direct_sdk is not None else ai_model.use_direct_sdk
     if use_direct and ai_model.is_gemini:
         return _ask_ai_direct_gemini(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
+
+    if use_direct and ai_model.is_anthropic:
+        return _ask_ai_direct_anthropic(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)

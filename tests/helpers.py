@@ -178,3 +178,53 @@ def make_interaction(
     interaction.usage_metadata = usage_metadata
     interaction.citations = citations
     return interaction
+
+
+# ---------------------------------------------------------------------------
+# Mock Anthropic SDK response builder
+# ---------------------------------------------------------------------------
+
+def make_anthropic_response(
+    text: str = "Hello from Claude",
+    prompt_tokens: int = 10,
+    completion_tokens: int = 20,
+    stop_reason: str = "end_turn",
+    model: str = "claude-sonnet-4-6",
+    message_id: str = "msg_test123",
+    tool_use_blocks=None,
+    thinking_blocks=None,
+):
+    """Build a mock that looks like an anthropic Message response."""
+    # Build content blocks
+    content = []
+    if thinking_blocks:
+        for tb in thinking_blocks:
+            block = MagicMock()
+            block.type = "thinking"
+            block.thinking = tb.get("thinking", "")
+            content.append(block)
+    if text is not None:
+        text_block = MagicMock()
+        text_block.type = "text"
+        text_block.text = text
+        content.append(text_block)
+    if tool_use_blocks:
+        for tu in tool_use_blocks:
+            block = MagicMock()
+            block.type = "tool_use"
+            block.id = tu.get("id", "toolu_test123")
+            block.name = tu["name"]
+            block.input = tu.get("input", {})
+            content.append(block)
+
+    usage = MagicMock()
+    usage.input_tokens = prompt_tokens
+    usage.output_tokens = completion_tokens
+
+    response = MagicMock()
+    response.content = content
+    response.usage = usage
+    response.stop_reason = stop_reason
+    response.model = model
+    response.id = message_id
+    return response

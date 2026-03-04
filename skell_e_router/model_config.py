@@ -183,57 +183,66 @@ MODEL_CONFIG = {
         provider="anthropic",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
-        accepted_reasoning_efforts={"low", "medium", "high", "max"}
+        accepted_reasoning_efforts={"low", "medium", "high", "max"},
+        use_direct_sdk=True,
     ),
     "claude-sonnet-4-6": AIModel(
         name="anthropic/claude-sonnet-4-6",
         provider="anthropic",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
-        accepted_reasoning_efforts={"low", "medium", "high"}
+        accepted_reasoning_efforts={"low", "medium", "high"},
+        use_direct_sdk=True,
     ),
     "claude-opus-4-5": AIModel(
         name="anthropic/claude-opus-4-5",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
     ),
     "claude-haiku-4-5": AIModel(
         name="anthropic/claude-haiku-4-5",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
     ),
     "claude-sonnet-4-5-20250929": AIModel(
         name="anthropic/claude-sonnet-4-5-20250929",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
     ),
     "claude-opus-4-1-20250805": AIModel(
         name="anthropic/claude-opus-4-1-20250805",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
     ),
     "claude-sonnet-4-20250514": AIModel(
         name="anthropic/claude-sonnet-4-20250514",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
     ),
     "claude-3-7-sonnet-20250219": AIModel(
         name="anthropic/claude-3-7-sonnet-20250219",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"}
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
+        use_direct_sdk=True,
         # betas param such as betas=["output-128k-2025-02-19"] for 128K output tokens (much longer responses)
     ),
     "claude-3-5-sonnet-20241022": AIModel(
         name="anthropic/claude-3-5-sonnet-20241022",
         provider="anthropic",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"}
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        use_direct_sdk=True,
     ),
 
     # XAI

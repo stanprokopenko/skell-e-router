@@ -112,16 +112,34 @@ response = ask_ai(
 
 ## Documentation
 
-### Streaming (Direct SDK)
+### Direct SDK Path
 
-Gemini Flash models support streaming via the direct SDK path:
+Gemini and Claude models bypass LiteLLM by default, calling the provider SDK directly for lower latency (eliminates 0.3-1.7s overhead). This is controlled per-model via `use_direct_sdk` and can be overridden per-call:
 
 ```python
-for chunk in ask_ai("gemini-2.5-flash", "Tell me a story", stream=True):
-    print(chunk.text, end="", flush=True)
+# Force LiteLLM path even for direct-SDK models
+response = ask_ai("claude-sonnet-4-6", "Hello", direct_sdk=False)
+
+# Force direct SDK path
+response = ask_ai("claude-opus-4-6", "Hello", direct_sdk=True)
 ```
 
-### Function Calling (Direct SDK)
+### Streaming
+
+Gemini and Claude models support streaming via the direct SDK path:
+
+```python
+# Gemini streaming
+for chunk in ask_ai("gemini-2.5-flash", "Tell me a story", stream=True):
+    print(chunk.text, end="", flush=True)
+
+# Claude streaming (returns a context manager)
+with ask_ai("claude-sonnet-4-6", "Tell me a story", stream=True) as stream:
+    for text in stream.text_stream:
+        print(text, end="", flush=True)
+```
+
+### Function Calling
 
 ```python
 tools = [{"type": "function", "function": {
@@ -130,13 +148,36 @@ tools = [{"type": "function", "function": {
     "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}
 }}]
 
+# Works with both Gemini and Claude models
 response = ask_ai(
-    "gemini-2.5-flash", "What's the weather in NYC?",
+    "claude-sonnet-4-6", "What's the weather in NYC?",
     tools=tools, tool_choice="auto", rich_response=True
 )
 print(response.tool_calls)
 ```
 
-## Documentation
+### Extended Thinking (Claude)
 
-For the full technical reference (rich responses, image I/O, streaming, citations, retry policy, verbosity settings, etc.), see [skell_e_router/README.md](skell_e_router/README.md).
+Claude models support extended thinking via `budget_tokens`, `thinking`, or `reasoning_effort`:
+
+```python
+# Budget tokens (explicit control)
+response = ask_ai("claude-sonnet-4-6", "Solve this math problem", budget_tokens=4096)
+
+# Reasoning effort (maps to thinking automatically)
+response = ask_ai("claude-opus-4-6", "Analyze this code", reasoning_effort="high")
+
+# Thinking dict (full control)
+response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enabled", "budget_tokens": 2048})
+```
+
+### Anthropic Betas
+
+Pass beta feature flags to Claude models:
+
+```python
+response = ask_ai(
+    "claude-3-7-sonnet-20250219", "Write a long essay",
+    betas=["output-128k-2025-02-19"]
+)
+```
