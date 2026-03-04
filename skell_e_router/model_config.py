@@ -129,6 +129,7 @@ MODEL_CONFIG = {
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
     ),
     # "gemini-3-pro-preview" is aliased to "gemini-3.1-pro-preview" below (Gemini 3 Pro discontinued March 9, 2026)
     "gemini-3.1-pro-preview": AIModel(
@@ -136,12 +137,14 @@ MODEL_CONFIG = {
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"low", "medium", "high"},
     ),
     "gemini-3.1-flash-lite-preview": AIModel(
         name="gemini/gemini-3.1-flash-lite-preview",
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
     ),
     "nano-banana-3": AIModel(
         name="gemini/gemini-3-pro-image-preview",
