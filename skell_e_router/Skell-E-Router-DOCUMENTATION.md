@@ -478,6 +478,48 @@ response = ask_ai(
 
 ---
 
+## Direct Gemini SDK (Low-Latency Mode)
+
+For speed-critical Gemini models, the router can bypass LiteLLM and call the Google `google-genai` SDK directly. This eliminates 0.3–1.7s of overhead per call.
+
+### How It Works
+
+- `gemini-3.1-flash-lite-preview` uses the direct SDK path **by default**
+- All other models use the standard LiteLLM path by default
+- You can override this per-call with the `direct_sdk` parameter
+
+### Usage
+
+```python
+from skell_e_router import ask_ai
+
+# Flash Lite uses direct SDK automatically (fastest path)
+response = ask_ai("gemini-3.1-flash-lite-preview", "Hello")
+
+# Force any Gemini model to use the direct SDK
+response = ask_ai("gemini-2.5-flash", "Hello", direct_sdk=True)
+
+# Force Flash Lite back to LiteLLM (e.g., for streaming)
+response = ask_ai("gemini-3.1-flash-lite-preview", "Hello", direct_sdk=False)
+```
+
+### Behavior
+
+| `direct_sdk` value | Effect |
+|---|---|
+| `None` (default) | Uses the model's built-in default (`True` for flash-lite, `False` for others) |
+| `True` | Forces direct SDK path (only works with Gemini models) |
+| `False` | Forces LiteLLM path |
+
+### Limitations
+
+- **Gemini models only** — `direct_sdk=True` on non-Gemini models has no effect (falls through to LiteLLM)
+- **No streaming** — when `stream=True` is passed, the direct path is skipped and LiteLLM handles it automatically
+- **No tool/function calling conversion** — if you're using `tools`, stick with the LiteLLM path (`direct_sdk=False`)
+- **Cost calculation** uses hardcoded pricing rather than LiteLLM's cost table
+
+---
+
 ## Retry Policy
 
 The router has an internal retry up to 3 times before sending the response.

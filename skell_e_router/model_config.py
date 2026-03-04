@@ -2,12 +2,13 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
         self.supported_params = supported_params # Parameters supported by litellm.completion for this model, after our internal transformations
         self.accepted_reasoning_efforts = accepted_reasoning_efforts # Optional per-model allowed values for 'reasoning_effort'
+        self.use_direct_sdk = use_direct_sdk # True to bypass LiteLLM and call provider SDK directly
 
     @property
     def is_gemini(self) -> bool:
@@ -145,6 +146,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
+        use_direct_sdk=True,
     ),
     "nano-banana-3": AIModel(
         name="gemini/gemini-3-pro-image-preview",

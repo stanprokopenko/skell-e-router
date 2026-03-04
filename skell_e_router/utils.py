@@ -8,6 +8,13 @@ from typing import overload, Literal
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
 from .response import AIResponse
+from .gemini_direct import (
+    _convert_messages_to_contents,
+    _build_generate_config,
+    _call_gemini_direct,
+    _build_response as _build_gemini_response,
+    _print_response as _print_gemini_response,
+)
 
 # SETUP
 #--------
@@ -606,6 +613,54 @@ def _build_ai_response(
     )
 
 
+def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str | None,
+                          verbosity: str, rich_response: bool, config: dict | None,
+                          kwargs: dict) -> str | AIResponse:
+    """Call Gemini via google-genai SDK directly, bypassing LiteLLM for lower latency."""
+    # Resolve API key: explicit > config > env
+    if not api_key:
+        api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RouterError(
+            code="MISSING_ENV",
+            message="GEMINI_API_KEY is required for direct Gemini SDK calls.",
+        )
+
+    system_instruction, contents = _convert_messages_to_contents(messages)
+    gen_config, tools = _build_generate_config(ai_model, kwargs)
+
+    _print_request_details(messages, kwargs, ai_model.name + " (direct)", verbosity)
+
+    try:
+        start_time = time.perf_counter()
+        response = _call_gemini_direct(
+            model_name=ai_model.name,
+            contents=contents,
+            system_instruction=system_instruction,
+            config=gen_config,
+            tools=tools,
+            api_key=api_key,
+        )
+        duration_s = time.perf_counter() - start_time
+
+        ai_response = _build_gemini_response(response, ai_model.name, duration_s)
+        _print_gemini_response(ai_response, ai_model.name, verbosity, duration_s)
+
+        if rich_response:
+            return ai_response
+        return ai_response.content
+
+    except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
+        if verbosity != 'none':
+            print(f"ERROR calling {ai_model.name} (direct): {safe_msg}")
+        raise RouterError(
+            code="PROVIDER_ERROR",
+            message=safe_msg,
+            details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True}
+        ) from e
+
+
 @overload
 def ask_ai(
     model_alias: str,
@@ -615,6 +670,7 @@ def ask_ai(
     rich_response: Literal[False] = False,
     config: dict | None = None,
     images: list[str] | None = None,
+    direct_sdk: bool | None = None,
     **kwargs
 ) -> str: ...
 
@@ -627,10 +683,11 @@ def ask_ai(
     rich_response: Literal[True] = ...,
     config: dict | None = None,
     images: list[str] | None = None,
+    direct_sdk: bool | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -644,6 +701,12 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
     # Resolve API key from config (None falls back to litellm env var lookup)
     api_key = _resolve_api_key(ai_model, config)
+
+    # Direct SDK path for Gemini models (bypasses LiteLLM overhead).
+    # direct_sdk=True/False overrides the model default; None falls back to ai_model.use_direct_sdk.
+    use_direct = direct_sdk if direct_sdk is not None else ai_model.use_direct_sdk
+    if use_direct and ai_model.is_gemini and not kwargs.get("stream"):
+        return _ask_ai_direct_gemini(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)
