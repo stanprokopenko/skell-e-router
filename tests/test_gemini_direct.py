@@ -174,18 +174,31 @@ class TestBuildGenerateConfig:
         config, _ = self._call(self._gemini_model(), {"stop": ["END", "STOP"]})
         assert config._kw["stop_sequences"] == ["END", "STOP"]
 
-    def test_reasoning_effort_low(self):
+    def test_reasoning_effort_low_uses_thinking_level(self):
+        """Model with reasoning_effort but no budget_tokens -> thinking_level."""
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "low"})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_budget == 1024
+        assert tc.thinking_level == "LOW"
 
-    def test_reasoning_effort_medium(self):
+    def test_reasoning_effort_medium_uses_thinking_level(self):
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "medium"})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_budget == 2048
+        assert tc.thinking_level == "MEDIUM"
 
-    def test_reasoning_effort_high(self):
+    def test_reasoning_effort_high_uses_thinking_level(self):
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "high"})
+        tc = config._kw["thinking_config"]
+        assert tc.thinking_level == "HIGH"
+
+    def test_reasoning_effort_on_budget_model_uses_thinking_budget(self):
+        """Model with budget_tokens in supported_params -> thinking_budget."""
+        model = self._gemini_model(
+            name="gemini/gemini-2.5-flash-lite",
+            supported_params={"temperature", "top_p", "stop", "max_tokens", "budget_tokens",
+                              "thinking", "reasoning_effort", "stream", "tools", "tool_choice",
+                              "candidate_count", "safety_settings", "web_search_options"},
+        )
+        config, _ = self._call(model, {"reasoning_effort": "high"})
         tc = config._kw["thinking_config"]
         assert tc.thinking_budget == 4096
 
@@ -206,12 +219,12 @@ class TestBuildGenerateConfig:
         tc = config._kw["thinking_config"]
         assert tc.thinking_budget == 2048
 
-    def test_budget_tokens_maps_to_reasoning_effort(self):
-        """budget_tokens on model w/o budget_tokens but w/ reasoning_effort -> ThinkingConfig via budget."""
+    def test_budget_tokens_maps_to_thinking_level(self):
+        """budget_tokens on model w/o budget_tokens but w/ reasoning_effort -> thinking_level."""
         model = self._gemini_model()  # has reasoning_effort, no budget_tokens
         config, _ = self._call(model, {"budget_tokens": 500})
         tc = config._kw["thinking_config"]
-        assert tc.thinking_budget == 1024
+        assert tc.thinking_level == "LOW"
 
     def test_thinking_dict_enabled(self):
         config, _ = self._call(self._gemini_model(), {"thinking": {"type": "enabled", "budget_tokens": 4096}})

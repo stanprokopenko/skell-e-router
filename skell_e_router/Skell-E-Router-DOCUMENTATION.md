@@ -550,11 +550,12 @@ if response.tool_calls:
 | `"required"` | `ANY` |
 | `{"type": "function", "function": {"name": "X"}}` | `ANY` with `allowed_function_names=["X"]` |
 
-### budget_tokens Support
+### Thinking / Reasoning on the Direct SDK Path
 
-Models like `gemini-2.5-flash-lite` that list `budget_tokens` in their `supported_params` now correctly convert `budget_tokens` to a `ThinkingConfig(thinking_budget=N)` on the direct SDK path. Previously this parameter was silently dropped.
+The direct SDK path handles thinking configuration differently depending on what the model supports:
 
-For models without native `budget_tokens` support but with `reasoning_effort`, the value is mapped to an effort level: 0 → low, ≤1024 → low, ≤2048 → medium, >2048 → high.
+- **Models with `budget_tokens`** (e.g., `gemini-2.5-flash-lite`): `budget_tokens` maps to `ThinkingConfig(thinking_budget=N)`. `reasoning_effort` also maps to `thinking_budget` (low=1024, medium=2048, high=4096).
+- **Models with only `reasoning_effort`** (e.g., `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`): `reasoning_effort` maps to `ThinkingConfig(thinking_level="LOW"/"MEDIUM"/"HIGH")`. `budget_tokens` is converted to the appropriate thinking level. This avoids the `ThinkingConfig thinking_budget Extra inputs are not permitted` validation error that occurs when sending `thinking_budget` to models that don't support it.
 
 ### Limitations
 

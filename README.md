@@ -156,18 +156,19 @@ response = ask_ai(
 print(response.tool_calls)
 ```
 
-### Extended Thinking (Claude)
+### Reasoning Effort / Thinking
 
-Claude models support extended thinking via `budget_tokens`, `thinking`, or `reasoning_effort`:
+Control thinking depth across providers with `reasoning_effort`:
 
 ```python
-# Budget tokens (explicit control)
-response = ask_ai("claude-sonnet-4-6", "Solve this math problem", budget_tokens=4096)
-
-# Reasoning effort (maps to thinking automatically)
+# Works with Gemini, Claude, and other thinking models
+response = ask_ai("gemini-3.1-flash-lite-preview", "Solve this", reasoning_effort="low")
 response = ask_ai("claude-opus-4-6", "Analyze this code", reasoning_effort="high")
 
-# Thinking dict (full control)
+# Budget tokens (explicit control, Claude & Gemini)
+response = ask_ai("claude-sonnet-4-6", "Solve this math problem", budget_tokens=4096)
+
+# Thinking dict (full control, Claude)
 response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enabled", "budget_tokens": 2048})
 ```
 

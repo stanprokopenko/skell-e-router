@@ -96,6 +96,25 @@ def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, lis
     return system_instruction, contents
 
 
+def _thinking_config_for_effort(effort: str):
+    """Build a ThinkingConfig using thinking_level for reasoning_effort strings.
+
+    For models that accept reasoning_effort (low/medium/high) but not budget_tokens,
+    the Google GenAI SDK expects ThinkingConfig(thinking_level=...) rather than
+    ThinkingConfig(thinking_budget=N).
+    """
+    level_map = {
+        "low": "LOW",
+        "medium": "MEDIUM",
+        "high": "HIGH",
+    }
+    level = level_map.get(effort)
+    if level is not None:
+        return types.ThinkingConfig(thinking_level=level)
+    # "minimal" or unknown → disable thinking
+    return types.ThinkingConfig(thinking_budget=0)
+
+
 def _build_generate_config(ai_model, kwargs: dict) -> tuple:
     """Convert router kwargs to Google SDK GenerateContentConfig and tools list.
 
@@ -139,7 +158,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 thinking_budget=budget
             )
         elif "reasoning_effort" in ai_model.supported_params:
-            # Map budget to effort level, then fall through to reasoning_effort handling
+            # Map budget to effort level, then apply as thinking_level
             accepted = getattr(ai_model, 'accepted_reasoning_efforts', {"low", "medium", "high"})
             if budget == 0:
                 effort = "minimal" if "minimal" in accepted else "low"
@@ -149,16 +168,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 effort = "medium"
             else:
                 effort = "high"
-            # Apply as reasoning_effort -> ThinkingConfig
-            budget_map = {
-                "minimal": 0,
-                "low": 1024,
-                "medium": 2048,
-                "high": 4096,
-            }
-            config_kwargs["thinking_config"] = types.ThinkingConfig(
-                thinking_budget=budget_map.get(effort, 1024)
-            )
+            config_kwargs["thinking_config"] = _thinking_config_for_effort(effort)
 
     elif "thinking" in kwargs:
         thinking = kwargs["thinking"]
@@ -187,15 +197,20 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 code="INVALID_PARAM",
                 message=f"'reasoning_effort' must be one of: {sorted(list(accepted))}"
             )
-        budget_map = {
-            "minimal": 0,
-            "low": 1024,
-            "medium": 2048,
-            "high": 4096,
-        }
-        config_kwargs["thinking_config"] = types.ThinkingConfig(
-            thinking_budget=budget_map.get(effort, 1024)
-        )
+        # Use thinking_level for models that support reasoning_effort,
+        # thinking_budget for models that support budget_tokens.
+        if "budget_tokens" in ai_model.supported_params:
+            budget_map = {
+                "minimal": 0,
+                "low": 1024,
+                "medium": 2048,
+                "high": 4096,
+            }
+            config_kwargs["thinking_config"] = types.ThinkingConfig(
+                thinking_budget=budget_map.get(effort, 1024)
+            )
+        else:
+            config_kwargs["thinking_config"] = _thinking_config_for_effort(effort)
 
     # Safety settings — always set BLOCK_NONE for all categories
     config_kwargs["safety_settings"] = [
