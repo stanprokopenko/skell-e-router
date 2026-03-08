@@ -324,8 +324,10 @@ def _call_gemini_direct(model_name: str, contents: list, system_instruction: str
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
         try:
+            request_start = time.perf_counter()
             response = client.models.generate_content(**call_kwargs)
-            return response
+            request_duration = time.perf_counter() - request_start
+            return response, request_duration
         except Exception as e:
             err_name = type(e).__name__.lower()
             status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
@@ -398,7 +400,7 @@ def _call_gemini_direct_stream(model_name: str, contents: list, system_instructi
             raise
 
 
-def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
+def _build_response(response, model_name: str, duration_s: float, total_duration_s: float | None = None) -> AIResponse:
     """Convert Google SDK response to AIResponse."""
     # Strip prefix for display
     display_model = model_name.replace("gemini/", "")
@@ -485,6 +487,7 @@ def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
         reasoning_tokens=reasoning_tokens,
         cost=cost,
         duration_seconds=duration_s,
+        total_duration_seconds=total_duration_s,
         grounding_metadata=grounding_metadata,
         safety_ratings=safety_ratings,
         tool_calls=tool_calls,

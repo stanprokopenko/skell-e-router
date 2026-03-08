@@ -19,6 +19,7 @@ class AIResponse:
     # Cost and timing
     cost: float | None = None
     duration_seconds: float | None = None
+    total_duration_seconds: float | None = None
     
     # Provider-specific
     grounding_metadata: dict | None = None

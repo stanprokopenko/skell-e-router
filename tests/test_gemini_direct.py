@@ -316,7 +316,9 @@ class TestCallGeminiDirect:
 
         call_args = mock_genai.Client.return_value.models.generate_content.call_args
         assert call_args.kwargs["model"] == "gemini-2.5-flash"
-        assert result is mock_response
+        response, request_duration = result
+        assert response is mock_response
+        assert isinstance(request_duration, float)
 
     @patch("skell_e_router.gemini_direct.time.sleep")
     def test_retries_transient_errors(self, mock_sleep):
@@ -337,7 +339,9 @@ class TestCallGeminiDirect:
             from skell_e_router.gemini_direct import _call_gemini_direct
             result = _call_gemini_direct("gemini-2.5-flash", [], None, config, None, FAKE_GEMINI_KEY)
 
-        assert result is not None
+        response, request_duration = result
+        assert response is not None
+        assert isinstance(request_duration, float)
         assert mock_sleep.call_count == 2
 
     def test_no_retry_on_400(self):
@@ -518,7 +522,7 @@ class TestAskAiDirectGeminiIntegration:
         mock_convert.return_value = (None, [])
         mock_config.return_value = (MagicMock(), None)
         mock_resp = make_gemini_response()
-        mock_call.return_value = mock_resp
+        mock_call.return_value = (mock_resp, 0.5)
 
         from skell_e_router.utils import _ask_ai_direct_gemini
         model = self._make_flash_model()
@@ -537,7 +541,7 @@ class TestAskAiDirectGeminiIntegration:
         mock_resp.choices[0].message.content = "from litellm"
         mock_resp.choices[0].finish_reason = "stop"
         mock_resp.usage = MagicMock()
-        mock_completion.return_value = mock_resp
+        mock_completion.return_value = (mock_resp, 0.5)
 
         from skell_e_router.utils import ask_ai
         from skell_e_router.model_config import MODEL_CONFIG
@@ -585,7 +589,7 @@ class TestAskAiDirectGeminiIntegration:
         """budget_tokens should be handled by _build_generate_config (no crash)."""
         mock_convert.return_value = (None, [])
         mock_config.return_value = (MagicMock(), None)
-        mock_call.return_value = make_gemini_response()
+        mock_call.return_value = (make_gemini_response(), 0.5)
 
         from skell_e_router.utils import _ask_ai_direct_gemini
         model = self._make_flash_model()
