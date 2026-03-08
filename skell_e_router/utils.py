@@ -562,12 +562,16 @@ def _perform_completion(model_name: str, messages: list[dict], api_key: str | No
     completion_kwargs = dict(model=model_name, messages=messages, **kwargs)
     if api_key:
         completion_kwargs["api_key"] = api_key
-    return litellm.completion(**completion_kwargs)
+    request_start = time.perf_counter()
+    response = litellm.completion(**completion_kwargs)
+    request_duration = time.perf_counter() - request_start
+    return response, request_duration
 
 
 def _build_ai_response(
     response,
-    request_duration_s: float | None = None
+    request_duration_s: float | None = None,
+    total_duration_s: float | None = None,
 ) -> AIResponse:
     """Build AIResponse from LiteLLM completion response."""
     
@@ -612,6 +616,7 @@ def _build_ai_response(
         reasoning_tokens=getattr(completion_details, 'reasoning_tokens', None),
         cost=computed_cost,
         duration_seconds=request_duration_s,
+        total_duration_seconds=total_duration_s,
         grounding_metadata=grounding_metadata,
         safety_ratings=safety_ratings,
         images=response_images,
@@ -653,7 +658,7 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             )
 
         start_time = time.perf_counter()
-        response = _call_gemini_direct(
+        response, request_duration_s = _call_gemini_direct(
             model_name=ai_model.name,
             contents=contents,
             system_instruction=system_instruction,
@@ -661,10 +666,10 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             tools=tools,
             api_key=api_key,
         )
-        duration_s = time.perf_counter() - start_time
+        total_duration_s = time.perf_counter() - start_time
 
-        ai_response = _build_gemini_response(response, ai_model.name, duration_s)
-        _print_gemini_response(ai_response, ai_model.name, verbosity, duration_s)
+        ai_response = _build_gemini_response(response, ai_model.name, request_duration_s, total_duration_s)
+        _print_gemini_response(ai_response, ai_model.name, verbosity, total_duration_s)
 
         if rich_response:
             return ai_response
@@ -714,7 +719,7 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
             )
 
         start_time = time.perf_counter()
-        response = _call_anthropic_direct(
+        response, request_duration_s = _call_anthropic_direct(
             model_name=ai_model.name,
             messages=converted_messages,
             system_prompt=system_prompt,
@@ -722,10 +727,10 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
             extra_headers=extra_headers,
             api_key=api_key,
         )
-        duration_s = time.perf_counter() - start_time
+        total_duration_s = time.perf_counter() - start_time
 
-        ai_response = _build_anthropic_response(response, ai_model.name, duration_s)
-        _print_anthropic_response(ai_response, ai_model.name, verbosity, duration_s)
+        ai_response = _build_anthropic_response(response, ai_model.name, request_duration_s, total_duration_s)
+        _print_anthropic_response(ai_response, ai_model.name, verbosity, total_duration_s)
 
         if rich_response:
             return ai_response
@@ -801,20 +806,19 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
     try:
         start_time = time.perf_counter()
-        response = _perform_completion(
+        response, request_duration_s = _perform_completion(
             model_name=ai_model.name,
             messages=messages,
             api_key=api_key,
             **kwargs
         )
-        end_time = time.perf_counter()
-        request_duration_s = end_time - start_time
+        total_duration_s = time.perf_counter() - start_time
 
         content = response.choices[0].message.content
-        _print_response_details(response, verbosity, request_duration_s)
+        _print_response_details(response, verbosity, total_duration_s)
 
         if rich_response:
-            return _build_ai_response(response, request_duration_s)
+            return _build_ai_response(response, request_duration_s, total_duration_s)
         return content
 
     except Exception as e:

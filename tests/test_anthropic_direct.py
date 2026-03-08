@@ -243,6 +243,12 @@ class TestBuildCreateParams:
 class TestCallAnthropicDirect:
     """Tests for _call_anthropic_direct."""
 
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.anthropic_direct import _client_cache
+        _client_cache.clear()
+
     def test_strips_anthropic_prefix(self):
         mock_anthropic = MagicMock()
         mock_response = MagicMock()
@@ -260,7 +266,9 @@ class TestCallAnthropicDirect:
 
         call_kwargs = mock_client.messages.create.call_args.kwargs
         assert call_kwargs["model"] == "claude-sonnet-4-6"
-        assert result is mock_response
+        response, request_duration = result
+        assert response is mock_response
+        assert isinstance(request_duration, float)
 
     @patch("skell_e_router.anthropic_direct.time.sleep")
     def test_retries_transient_errors(self, mock_sleep):
@@ -281,7 +289,9 @@ class TestCallAnthropicDirect:
                 None, {"max_tokens": 4096}, None, FAKE_ANTHROPIC_KEY
             )
 
-        assert result is not None
+        response, request_duration = result
+        assert response is not None
+        assert isinstance(request_duration, float)
         assert mock_sleep.call_count == 2
 
     def test_no_retry_on_400(self):
@@ -384,6 +394,12 @@ class TestBuildResponse:
 class TestStreamAnthropicDirect:
     """Tests for _call_anthropic_direct_stream."""
 
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.anthropic_direct import _client_cache
+        _client_cache.clear()
+
     def test_returns_stream_manager(self):
         mock_anthropic = MagicMock()
         mock_client = MagicMock()
@@ -449,7 +465,7 @@ class TestAskAiDirectAnthropicIntegration:
         mock_convert.return_value = (None, [{"role": "user", "content": "hi"}])
         mock_params.return_value = ({"max_tokens": 4096}, None)
         mock_resp = make_anthropic_response()
-        mock_call.return_value = mock_resp
+        mock_call.return_value = (mock_resp, 0.5)
 
         from skell_e_router.utils import _ask_ai_direct_anthropic
         model = self._make_claude_model()
@@ -468,7 +484,7 @@ class TestAskAiDirectAnthropicIntegration:
         mock_resp.choices[0].message.content = "from litellm"
         mock_resp.choices[0].finish_reason = "stop"
         mock_resp.usage = MagicMock()
-        mock_completion.return_value = mock_resp
+        mock_completion.return_value = (mock_resp, 0.5)
 
         from skell_e_router.utils import ask_ai
         from skell_e_router.model_config import MODEL_CONFIG
@@ -515,7 +531,7 @@ class TestAskAiDirectAnthropicIntegration:
         """budget_tokens should be handled by _build_create_params (no crash)."""
         mock_convert.return_value = (None, [])
         mock_params.return_value = ({"max_tokens": 4096, "thinking": {"type": "enabled", "budget_tokens": 2048}}, None)
-        mock_call.return_value = make_anthropic_response()
+        mock_call.return_value = (make_anthropic_response(), 0.5)
 
         from skell_e_router.utils import _ask_ai_direct_anthropic
         model = self._make_claude_model()

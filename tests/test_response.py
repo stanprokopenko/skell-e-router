@@ -19,6 +19,7 @@ class TestAIResponseCreation:
         assert r.reasoning_tokens is None
         assert r.cost is None
         assert r.duration_seconds is None
+        assert r.total_duration_seconds is None
         assert r.grounding_metadata is None
         assert r.safety_ratings is None
         assert r.images is None
@@ -39,6 +40,7 @@ class TestAIResponseCreation:
             reasoning_tokens=50,
             cost=0.005,
             duration_seconds=1.23,
+            total_duration_seconds=1.45,
             grounding_metadata={"key": "val"},
             safety_ratings=[{"category": "HARM", "probability": "LOW"}],
             images=img_data,
@@ -53,6 +55,7 @@ class TestAIResponseCreation:
         assert r.reasoning_tokens == 50
         assert r.cost == 0.005
         assert r.duration_seconds == 1.23
+        assert r.total_duration_seconds == 1.45
         assert r.grounding_metadata == {"key": "val"}
         assert r.safety_ratings[0]["category"] == "HARM"
         assert r.images == img_data

@@ -236,8 +236,10 @@ def _call_anthropic_direct(model_name: str, messages: list[dict], system_prompt:
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
         try:
+            request_start = time.perf_counter()
             response = client.messages.create(**call_kwargs)
-            return response
+            request_duration = time.perf_counter() - request_start
+            return response, request_duration
         except Exception as e:
             if _is_transient_anthropic_error(e) and attempt < max_attempts:
                 wait_time = 2 ** attempt  # 2s, 4s
@@ -299,7 +301,7 @@ def _is_transient_anthropic_error(e: Exception) -> bool:
     return False
 
 
-def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
+def _build_response(response, model_name: str, duration_s: float, total_duration_s: float | None = None) -> AIResponse:
     """Convert Anthropic SDK response to AIResponse."""
     # Strip prefix for display
     display_model = model_name.replace("anthropic/", "")
@@ -352,6 +354,7 @@ def _build_response(response, model_name: str, duration_s: float) -> AIResponse:
         total_tokens=total_tokens,
         cost=cost,
         duration_seconds=duration_s,
+        total_duration_seconds=total_duration_s,
         tool_calls=tool_calls,
         raw_response=response,
     )

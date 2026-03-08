@@ -794,7 +794,7 @@ class TestBuildAIResponse:
         )
         with patch("skell_e_router.utils.litellm") as mock_litellm:
             mock_litellm.completion_cost.return_value = 0.01
-            result = _build_ai_response(mock_resp, request_duration_s=1.5)
+            result = _build_ai_response(mock_resp, request_duration_s=1.5, total_duration_s=2.0)
 
         assert result.content == "test output"
         assert result.model == "openai/gpt-5"
@@ -804,6 +804,7 @@ class TestBuildAIResponse:
         assert result.total_tokens == 150
         assert result.cost == 0.01
         assert result.duration_seconds == 1.5
+        assert result.total_duration_seconds == 2.0
 
     def test_handles_cost_exception(self):
         mock_resp = make_litellm_response()
