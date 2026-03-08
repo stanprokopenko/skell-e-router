@@ -296,6 +296,12 @@ class TestBuildGenerateConfig:
 class TestCallGeminiDirect:
     """Tests for _call_gemini_direct."""
 
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.gemini_direct import _client_cache
+        _client_cache.clear()
+
     def test_strips_gemini_prefix(self):
         mock_genai = MagicMock()
         mock_response = MagicMock()
@@ -454,6 +460,12 @@ class TestBuildResponse:
 
 class TestStreamGeminiDirect:
     """Tests for _call_gemini_direct_stream."""
+
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.gemini_direct import _client_cache
+        _client_cache.clear()
 
     def test_returns_stream_iterator(self):
         mock_genai = MagicMock()

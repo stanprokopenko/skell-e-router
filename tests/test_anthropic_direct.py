@@ -243,6 +243,12 @@ class TestBuildCreateParams:
 class TestCallAnthropicDirect:
     """Tests for _call_anthropic_direct."""
 
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.anthropic_direct import _client_cache
+        _client_cache.clear()
+
     def test_strips_anthropic_prefix(self):
         mock_anthropic = MagicMock()
         mock_response = MagicMock()
@@ -387,6 +393,12 @@ class TestBuildResponse:
 
 class TestStreamAnthropicDirect:
     """Tests for _call_anthropic_direct_stream."""
+
+    @pytest.fixture(autouse=True)
+    def clear_client_cache(self):
+        """Clear cached clients so each test gets its own mock client."""
+        from skell_e_router.anthropic_direct import _client_cache
+        _client_cache.clear()
 
     def test_returns_stream_manager(self):
         mock_anthropic = MagicMock()
