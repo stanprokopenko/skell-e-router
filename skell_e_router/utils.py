@@ -818,6 +818,7 @@ def ask_ai(
     rich_response: Literal[False] = False,
     config: dict | None = None,
     images: list[str] | None = None,
+    files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     **kwargs
 ) -> str: ...
@@ -831,11 +832,12 @@ def ask_ai(
     rich_response: Literal[True] = ...,
     config: dict | None = None,
     images: list[str] | None = None,
+    files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -845,7 +847,6 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # These helpers will raise RouterError on failure
     ai_model = resolve_model_alias(model_alias)
     _check_provider_key(ai_model, config, verbosity)
-    files = kwargs.pop("files", None)
     messages = _construct_messages(user_input, system_message, images=images, files=files)
 
     # Resolve API key from config (None falls back to litellm env var lookup)
