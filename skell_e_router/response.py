@@ -1,6 +1,15 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+
+@dataclass
+class GeminiFileRef:
+    """Reference to a file uploaded via Gemini's Files API."""
+    uri: str           # "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+    mime_type: str     # "video/mp4"
+    display_name: str | None = None
+
+
 @dataclass
 class AIResponse:
     # Core content

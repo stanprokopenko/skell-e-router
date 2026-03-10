@@ -1,13 +1,14 @@
 import litellm
 import os
+import io
 import json
 import time
 import base64
 import mimetypes
-from typing import overload, Literal
+from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
-from .response import AIResponse
+from .response import AIResponse, GeminiFileRef
 from .gemini_direct import (
     _convert_messages_to_contents,
     _build_generate_config,
@@ -85,8 +86,51 @@ def _encode_image(source: str) -> dict:
     return {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}}
 
 
+def upload_file(
+    file: bytes | BinaryIO,
+    mime_type: str,
+    display_name: str | None = None,
+    config: dict | None = None,
+) -> GeminiFileRef:
+    """Upload a file to Gemini's Files API and return a GeminiFileRef.
+
+    Uses litellm.create_file under the hood.  The returned ref can be passed
+    to ask_ai via the ``files`` parameter.
+    """
+    # Resolve API key: config dict first, then env var
+    config = config or {}
+    api_key = config.get("gemini_api_key") or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RouterError(
+            code="MISSING_ENV",
+            message="GEMINI_API_KEY is required for file uploads.",
+            details={"required": "GEMINI_API_KEY"},
+        )
+
+    # Read bytes from BinaryIO if needed
+    file_content = file if isinstance(file, bytes) else file.read()
+
+    filename = display_name or "upload"
+    try:
+        result = litellm.create_file(
+            file=(filename, file_content, mime_type),
+            purpose="assistants",
+            custom_llm_provider="gemini",
+            api_key=api_key,
+        )
+    except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
+        raise RouterError(
+            code="UPLOAD_ERROR",
+            message=safe_msg,
+            details={"mime_type": mime_type},
+        ) from e
+
+    return GeminiFileRef(uri=result.id, mime_type=mime_type, display_name=display_name)
+
+
 # Constructs the messages list for the AI call.
-def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None):
+def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None, files: list[GeminiFileRef] | None = None):
     messages = []
 
     if images and not isinstance(user_input, str):
@@ -96,14 +140,23 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
                     "For list input, embed image content parts directly in your messages."
         )
 
+    if files and not isinstance(user_input, str):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message="'files' parameter is only supported when 'user_input' is a string. "
+                    "For list input, embed file content parts directly in your messages."
+        )
+
     if system_message:
         messages.append({"role": "system", "content": system_message})
 
     if isinstance(user_input, str):
-        if images:
+        if images or files:
             content_parts = [{"type": "text", "text": user_input}]
-            for img in images:
+            for img in (images or []):
                 content_parts.append(_encode_image(img))
+            for ref in (files or []):
+                content_parts.append({"type": "file", "file": {"file_id": ref.uri, "format": ref.mime_type}})
             messages.append({"role": "user", "content": content_parts})
         else:
             messages.append({"role": "user", "content": user_input})
@@ -564,6 +617,13 @@ def _perform_completion(model_name: str, messages: list[dict], api_key: str | No
         completion_kwargs["api_key"] = api_key
     request_start = time.perf_counter()
     response = litellm.completion(**completion_kwargs)
+
+    # When streaming, collect all chunks and rebuild into a complete response
+    # so callers always get a normal response object with .choices, .usage, etc.
+    if kwargs.get("stream"):
+        chunks = list(response)
+        response = litellm.stream_chunk_builder(chunks, messages=messages)
+
     request_duration = time.perf_counter() - request_start
     return response, request_duration
 
@@ -785,7 +845,8 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # These helpers will raise RouterError on failure
     ai_model = resolve_model_alias(model_alias)
     _check_provider_key(ai_model, config, verbosity)
-    messages = _construct_messages(user_input, system_message, images=images)
+    files = kwargs.pop("files", None)
+    messages = _construct_messages(user_input, system_message, images=images, files=files)
 
     # Resolve API key from config (None falls back to litellm env var lookup)
     api_key = _resolve_api_key(ai_model, config)

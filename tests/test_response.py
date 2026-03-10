@@ -1,6 +1,6 @@
-"""Tests for the AIResponse dataclass."""
+"""Tests for the AIResponse and GeminiFileRef dataclasses."""
 
-from skell_e_router.response import AIResponse
+from skell_e_router.response import AIResponse, GeminiFileRef
 
 
 class TestAIResponseCreation:
@@ -115,4 +115,40 @@ class TestAIResponseEquality:
     def test_unequal_instances(self):
         r1 = AIResponse(content="x", model="m")
         r2 = AIResponse(content="y", model="m")
+        assert r1 != r2
+
+
+# ---------------------------------------------------------------------------
+# GeminiFileRef
+# ---------------------------------------------------------------------------
+
+class TestGeminiFileRef:
+
+    def test_creation_with_all_fields(self):
+        ref = GeminiFileRef(
+            uri="https://generativelanguage.googleapis.com/v1beta/files/abc123",
+            mime_type="video/mp4",
+            display_name="my_video.mp4",
+        )
+        assert ref.uri == "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+        assert ref.mime_type == "video/mp4"
+        assert ref.display_name == "my_video.mp4"
+
+    def test_creation_without_display_name(self):
+        ref = GeminiFileRef(
+            uri="https://generativelanguage.googleapis.com/v1beta/files/xyz",
+            mime_type="audio/mpeg",
+        )
+        assert ref.uri == "https://generativelanguage.googleapis.com/v1beta/files/xyz"
+        assert ref.mime_type == "audio/mpeg"
+        assert ref.display_name is None
+
+    def test_equality(self):
+        r1 = GeminiFileRef(uri="u", mime_type="m")
+        r2 = GeminiFileRef(uri="u", mime_type="m")
+        assert r1 == r2
+
+    def test_inequality(self):
+        r1 = GeminiFileRef(uri="u1", mime_type="m")
+        r2 = GeminiFileRef(uri="u2", mime_type="m")
         assert r1 != r2

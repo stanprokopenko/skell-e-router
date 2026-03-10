@@ -6,6 +6,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 from skell_e_router.model_config import AIModel, MODEL_CONFIG
+from skell_e_router.response import AIResponse, GeminiFileRef
 from skell_e_router.utils import (
     _construct_messages,
     _encode_image,
@@ -21,6 +22,7 @@ from skell_e_router.utils import (
     resolve_model_alias,
     check_environment_variables,
     _check_provider_key,
+    upload_file,
     ask_ai,
     RouterError,
     PROVIDER_ENV_KEY,
@@ -129,6 +131,52 @@ class TestConstructMessages:
     def test_images_empty_list_no_effect(self):
         """An empty images list should not create multimodal content."""
         msgs = _construct_messages("hello", images=[])
+        assert msgs == [{"role": "user", "content": "hello"}]
+
+    # --- files parameter ---
+
+    def test_files_only(self):
+        ref = GeminiFileRef(uri="https://files.example/abc", mime_type="video/mp4")
+        msgs = _construct_messages("describe this video", files=[ref])
+        assert len(msgs) == 1
+        content = msgs[0]["content"]
+        assert isinstance(content, list)
+        assert content[0] == {"type": "text", "text": "describe this video"}
+        assert content[1] == {"type": "file", "file": {"file_id": "https://files.example/abc", "format": "video/mp4"}}
+
+    def test_files_and_images(self):
+        ref = GeminiFileRef(uri="https://files.example/abc", mime_type="video/mp4")
+        msgs = _construct_messages("compare", images=["https://img.jpg"], files=[ref])
+        content = msgs[0]["content"]
+        assert len(content) == 3  # text + image + file
+        assert content[0]["type"] == "text"
+        assert content[1]["type"] == "image_url"
+        assert content[2]["type"] == "file"
+
+    def test_files_with_system_message(self):
+        ref = GeminiFileRef(uri="uri", mime_type="audio/mpeg")
+        msgs = _construct_messages("transcribe", system_message="Be precise", files=[ref])
+        assert len(msgs) == 2
+        assert msgs[0]["role"] == "system"
+        content = msgs[1]["content"]
+        assert isinstance(content, list)
+        assert content[1]["type"] == "file"
+
+    def test_files_with_list_input_raises(self):
+        ref = GeminiFileRef(uri="uri", mime_type="video/mp4")
+        with pytest.raises(RouterError) as exc_info:
+            _construct_messages(
+                [{"role": "user", "content": "hi"}],
+                files=[ref],
+            )
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_files_none_no_effect(self):
+        msgs = _construct_messages("hello", files=None)
+        assert msgs == [{"role": "user", "content": "hello"}]
+
+    def test_files_empty_list_no_effect(self):
+        msgs = _construct_messages("hello", files=[])
         assert msgs == [{"role": "user", "content": "hello"}]
 
 
@@ -1017,6 +1065,52 @@ class TestAskAi:
         assert isinstance(result, str)
         assert result == "Here is your image"
 
+    @patch("skell_e_router.utils.litellm")
+    def test_stream_true_returns_string(self, mock_litellm):
+        """When stream=True, ask_ai should collect chunks and return content string."""
+        # litellm.completion returns an iterator when stream=True
+        mock_litellm.completion.return_value = iter(["chunk1", "chunk2"])
+        mock_litellm.stream_chunk_builder.return_value = make_litellm_response("streamed output")
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-5", "Hi", stream=True)
+
+        assert result == "streamed output"
+        assert isinstance(result, str)
+        mock_litellm.stream_chunk_builder.assert_called_once()
+
+    @patch("skell_e_router.utils.litellm")
+    def test_stream_true_rich_response(self, mock_litellm):
+        """When stream=True and rich_response=True, should return AIResponse."""
+        mock_litellm.completion.return_value = iter(["chunk1", "chunk2"])
+        mock_litellm.stream_chunk_builder.return_value = make_litellm_response(
+            "streamed rich", model="anthropic/claude-sonnet-4-20250514",
+            prompt_tokens=100, completion_tokens=200, total_tokens=300,
+        )
+        mock_litellm.completion_cost.return_value = 0.005
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-5", "Hi", stream=True, rich_response=True)
+
+        assert isinstance(result, AIResponse)
+        assert result.content == "streamed rich"
+        assert result.prompt_tokens == 100
+        assert result.completion_tokens == 200
+
+    @patch("skell_e_router.utils.litellm")
+    def test_stream_false_does_not_call_chunk_builder(self, mock_litellm):
+        """When stream is not set, stream_chunk_builder should not be called."""
+        mock_litellm.completion.return_value = make_litellm_response("normal output")
+        mock_litellm.drop_params = True
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gpt-5", "Hi")
+
+        assert result == "normal output"
+        mock_litellm.stream_chunk_builder.assert_not_called()
+
 
 # ---------------------------------------------------------------------------
 # RouterError
@@ -1041,3 +1135,143 @@ class TestRouterError:
 
     def test_is_exception(self):
         assert issubclass(RouterError, Exception)
+
+
+# ---------------------------------------------------------------------------
+# upload_file
+# ---------------------------------------------------------------------------
+
+class TestUploadFile:
+
+    @patch("skell_e_router.utils.litellm")
+    def test_returns_gemini_file_ref(self, mock_litellm):
+        mock_result = MagicMock()
+        mock_result.id = "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+        mock_litellm.create_file.return_value = mock_result
+
+        ref = upload_file(
+            file=b"video-bytes",
+            mime_type="video/mp4",
+            display_name="clip.mp4",
+            config={"gemini_api_key": FAKE_GEMINI_KEY},
+        )
+
+        assert isinstance(ref, GeminiFileRef)
+        assert ref.uri == "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+        assert ref.mime_type == "video/mp4"
+        assert ref.display_name == "clip.mp4"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_passes_api_key_from_config(self, mock_litellm):
+        mock_result = MagicMock()
+        mock_result.id = "uri"
+        mock_litellm.create_file.return_value = mock_result
+
+        upload_file(b"data", "audio/mpeg", config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        call_kwargs = mock_litellm.create_file.call_args
+        assert call_kwargs.kwargs["api_key"] == FAKE_GEMINI_KEY
+
+    @patch("skell_e_router.utils.litellm")
+    def test_uses_env_key(self, mock_litellm):
+        mock_result = MagicMock()
+        mock_result.id = "uri"
+        mock_litellm.create_file.return_value = mock_result
+
+        with patch.dict(os.environ, {"GEMINI_API_KEY": FAKE_GEMINI_KEY}):
+            upload_file(b"data", "video/mp4")
+
+        call_kwargs = mock_litellm.create_file.call_args
+        assert call_kwargs.kwargs["api_key"] == FAKE_GEMINI_KEY
+
+    def test_raises_without_key(self):
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(RouterError) as exc_info:
+                upload_file(b"data", "video/mp4")
+            assert exc_info.value.code == "MISSING_ENV"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_wraps_exceptions(self, mock_litellm):
+        mock_litellm.create_file.side_effect = Exception("upload failed")
+
+        with pytest.raises(RouterError) as exc_info:
+            upload_file(b"data", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+        assert exc_info.value.code == "UPLOAD_ERROR"
+        assert "upload failed" in exc_info.value.message
+
+    @patch("skell_e_router.utils.litellm")
+    def test_redacts_keys_in_errors(self, mock_litellm):
+        mock_litellm.create_file.side_effect = Exception(f"Bad key: {FAKE_GEMINI_KEY}")
+
+        with pytest.raises(RouterError) as exc_info:
+            upload_file(b"data", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+        assert FAKE_GEMINI_KEY not in exc_info.value.message
+        assert "[REDACTED]" in exc_info.value.message
+
+    @patch("skell_e_router.utils.litellm")
+    def test_display_name_none(self, mock_litellm):
+        mock_result = MagicMock()
+        mock_result.id = "uri"
+        mock_litellm.create_file.return_value = mock_result
+
+        ref = upload_file(b"data", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+        assert ref.display_name is None
+
+    @patch("skell_e_router.utils.litellm")
+    def test_reads_binary_io(self, mock_litellm):
+        import io
+        mock_result = MagicMock()
+        mock_result.id = "uri"
+        mock_litellm.create_file.return_value = mock_result
+
+        buf = io.BytesIO(b"file-content")
+        upload_file(buf, "audio/wav", config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        call_kwargs = mock_litellm.create_file.call_args
+        file_tuple = call_kwargs.kwargs["file"]
+        assert file_tuple[1] == b"file-content"
+
+
+# ---------------------------------------------------------------------------
+# ask_ai with files
+# ---------------------------------------------------------------------------
+
+class TestAskAiWithFiles:
+
+    @patch("skell_e_router.utils.litellm")
+    def test_files_passed_to_messages(self, mock_litellm):
+        mock_litellm.completion.return_value = make_litellm_response("I see a video")
+        mock_litellm.drop_params = True
+
+        ref = GeminiFileRef(uri="https://files.example/abc", mime_type="video/mp4")
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            result = ask_ai("gemini-2.5-pro", "What is in this video?", files=[ref])
+
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        user_msg = messages[-1]
+        assert isinstance(user_msg["content"], list)
+        assert user_msg["content"][0]["type"] == "text"
+        assert user_msg["content"][1]["type"] == "file"
+        assert user_msg["content"][1]["file"]["file_id"] == "https://files.example/abc"
+        assert user_msg["content"][1]["file"]["format"] == "video/mp4"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_files_and_images_combined(self, mock_litellm):
+        mock_litellm.completion.return_value = make_litellm_response("combined")
+        mock_litellm.drop_params = True
+
+        ref = GeminiFileRef(uri="https://files.example/vid", mime_type="video/mp4")
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            ask_ai(
+                "gemini-2.5-pro",
+                "Compare",
+                images=["https://img.example/photo.jpg"],
+                files=[ref],
+            )
+
+        call_kwargs = mock_litellm.completion.call_args
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
+        content = messages[-1]["content"]
+        types = [part["type"] for part in content]
+        assert types == ["text", "image_url", "file"]

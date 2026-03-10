@@ -1,5 +1,5 @@
-from .response import AIResponse
-from .utils import ask_ai, resolve_model_alias, check_environment_variables, RouterError
+from .response import AIResponse, GeminiFileRef
+from .utils import ask_ai, upload_file, resolve_model_alias, check_environment_variables, RouterError
 from .gemini_deep_research import (
     ask_deep_research,
     deep_research_follow_up,
@@ -18,10 +18,12 @@ from .gemini_deep_research import (
 __all__ = [
     # Core LiteLLM-based functions
     "ask_ai",
+    "upload_file",
     "resolve_model_alias",
     "check_environment_variables",
     "RouterError",
     "AIResponse",
+    "GeminiFileRef",
     # Gemini Deep Research Agent
     "ask_deep_research",
     "deep_research_follow_up",
@@ -37,4 +39,4 @@ __all__ = [
     "ParsedCitation",
 ]
 
-__version__ = "3.1.1"
+__version__ = "3.2.0"
