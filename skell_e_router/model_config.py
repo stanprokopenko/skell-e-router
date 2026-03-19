@@ -40,6 +40,20 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    "gpt-5.4-mini": AIModel(
+        name="openai/gpt-5.4-mini",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+    ),
+    "gpt-5.4-nano": AIModel(
+        name="openai/gpt-5.4-nano",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+    ),
     "gpt-5.3-codex": AIModel(
         name="openai/gpt-5.3-codex",
         provider="openai",

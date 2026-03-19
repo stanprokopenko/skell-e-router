@@ -82,6 +82,7 @@ class TestModelConfig:
         assert len(MODEL_CONFIG) > 0
 
     @pytest.mark.parametrize("alias", [
+        "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
@@ -191,3 +192,13 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
         assert model.name == "gemini/gemini-3-pro-image-preview"
+
+    @pytest.mark.parametrize("alias", ["gpt-5.4-mini", "gpt-5.4-nano"])
+    def test_gpt_5_4_models_config(self, alias):
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "openai"
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert "stream" in model.supported_params
+        assert "tools" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
