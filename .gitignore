@@ -72,6 +72,10 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
+# Claude Code
+.claude/worktrees/
+nul
+
 # Project specific
 *.log
 ev_battery_report.md
