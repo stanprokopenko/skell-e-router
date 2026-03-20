@@ -33,6 +33,10 @@ class TestAIModelProviderProperties:
         m = AIModel("groq/compound", "groq", False, set())
         assert m.is_groq is True
 
+    def test_is_deepinfra(self):
+        m = AIModel("deepinfra/nvidia/test", "deepinfra", False, set())
+        assert m.is_deepinfra is True
+
     def test_is_openai_o_series_true(self):
         m = AIModel("openai/o3", "openai", True, set())
         assert m.is_openai_o_series is True
@@ -90,6 +94,8 @@ class TestModelConfig:
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
+        "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
+        "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
     ])
     def test_known_aliases_exist(self, alias):
         assert alias in MODEL_CONFIG
@@ -202,3 +208,22 @@ class TestModelConfig:
         assert "stream" in model.supported_params
         assert "tools" in model.supported_params
         assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
+
+    @pytest.mark.parametrize("alias", [
+        "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
+        "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
+    ])
+    def test_deepinfra_nemotron_models(self, alias):
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "deepinfra"
+        assert model.is_deepinfra is True
+        assert model.supports_thinking is False
+        assert "stream" in model.supported_params
+        assert "tools" in model.supported_params
+        assert "temperature" in model.supported_params
+        assert model.name.startswith("deepinfra/nvidia/")
+
+    def test_nemotron_3_super_is_120b_moe(self):
+        model = MODEL_CONFIG["nemotron-3-super"]
+        assert "120B" in model.name
+        assert "A12B" in model.name  # 12B active params

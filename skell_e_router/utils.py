@@ -49,7 +49,7 @@ class RouterError(Exception):
 # CONSTANTS
 #-----------
 
-REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY", "XAI_API_KEY"]
+REQUIRED_ENV_KEYS = ["OPENAI_API_KEY", "GEMINI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY", "XAI_API_KEY", "DEEPINFRA_API_KEY"]
 FALLBACK_WAIT = wait_random_exponential(min=1, max=10)
 
 # Maps model provider names to their corresponding environment variable key names.
@@ -60,6 +60,7 @@ PROVIDER_ENV_KEY = {
     "anthropic": "ANTHROPIC_API_KEY",
     "groq": "GROQ_API_KEY",
     "xai": "XAI_API_KEY",
+    "deepinfra": "DEEPINFRA_API_KEY",
 }
 
 

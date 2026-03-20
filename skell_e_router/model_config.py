@@ -34,6 +34,10 @@ class AIModel:
     def is_groq(self) -> bool:
         return self.provider == "groq"
 
+    @property
+    def is_deepinfra(self) -> bool:
+        return self.provider == "deepinfra"
+
 
 # Models are sorted by provider, then by latest models on top
 MODEL_CONFIG = {
@@ -332,6 +336,44 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice"},
     ),
 
+    # DEEPINFRA (NVIDIA NEMOTRON)
+
+    "nemotron-3-super": AIModel(
+        name="deepinfra/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "nemotron-super-49b": AIModel(
+        name="deepinfra/nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "nemotron-70b": AIModel(
+        name="deepinfra/nvidia/Llama-3.1-Nemotron-70B-Instruct",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "nemotron-3-nano-30b": AIModel(
+        name="deepinfra/nvidia/Nemotron-3-Nano-30B-A3B",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "nemotron-nano-12b-vl": AIModel(
+        name="deepinfra/nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    "nemotron-nano-9b": AIModel(
+        name="deepinfra/nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
 
 }
 
