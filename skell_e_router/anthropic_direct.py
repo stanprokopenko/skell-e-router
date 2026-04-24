@@ -30,6 +30,7 @@ def _get_anthropic_client(api_key: str):
 
 # Known pricing per 1M tokens (USD) for direct-SDK models
 _PRICING = {
+    "claude-opus-4-7": {"input": 5.00, "output": 25.00},
     "claude-opus-4-6": {"input": 5.00, "output": 25.00},
     "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
     "claude-opus-4-5": {"input": 5.00, "output": 25.00},
@@ -111,9 +112,10 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
     # max_tokens (required by Anthropic, default 4096)
     params["max_tokens"] = kwargs.get("max_tokens", 4096)
 
-    # Direct pass-through params
+    # Direct pass-through params — skip any that the model doesn't accept
+    # (Opus 4.7 rejects temperature/top_p/top_k with a 400 error).
     for param in ("temperature", "top_p", "top_k"):
-        if param in kwargs:
+        if param in kwargs and param in ai_model.supported_params:
             params[param] = kwargs[param]
 
     # stop -> stop_sequences (ensure list)
@@ -164,9 +166,11 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
                 params["thinking"] = {"type": "disabled"}
 
     # Anthropic constraint: when thinking active, force temperature=1 and drop top_p < 0.95
+    # — but only if the model supports those sampling params (Opus 4.7 rejects them outright).
     thinking_cfg = params.get("thinking")
     if isinstance(thinking_cfg, dict) and thinking_cfg.get("type") in ("enabled", "adaptive"):
-        params["temperature"] = 1
+        if "temperature" in ai_model.supported_params:
+            params["temperature"] = 1
         top_p_val = params.get("top_p")
         if isinstance(top_p_val, (int, float)) and top_p_val < 0.95:
             params.pop("top_p")

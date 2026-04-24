@@ -96,7 +96,7 @@ class TestBuildCreateParams:
         defaults = dict(
             provider="anthropic",
             name="anthropic/claude-sonnet-4-6",
-            supported_params={"temperature", "stop", "max_tokens", "budget_tokens",
+            supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens",
                               "thinking", "reasoning_effort", "stream", "tools",
                               "tool_choice", "betas"},
             accepted_reasoning_efforts={"low", "medium", "high"},
@@ -192,6 +192,19 @@ class TestBuildCreateParams:
         """top_p >= 0.95 should be kept even with thinking."""
         params, _ = self._call(self._claude_model(), {"top_p": 0.95, "budget_tokens": 2048})
         assert params.get("top_p") == 0.95
+
+    def test_opus_4_7_skips_sampling_params_with_thinking(self):
+        """Opus 4.7 rejects temperature/top_p entirely — even when thinking is active, don't set them."""
+        opus_4_7 = self._claude_model(
+            name="anthropic/claude-opus-4-7",
+            supported_params={"stop", "max_tokens", "thinking", "reasoning_effort",
+                              "stream", "tools", "tool_choice", "betas"},
+            accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+        )
+        params, _ = self._call(opus_4_7, {"temperature": 0.5, "top_p": 0.5, "reasoning_effort": "high"})
+        assert "temperature" not in params
+        assert "top_p" not in params
+        assert params["thinking"] == {"type": "adaptive"}
 
     def test_tools_conversion(self):
         openai_tools = [

@@ -44,6 +44,13 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    "gpt-5.5": AIModel(
+        name="openai/gpt-5.5",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+    ),
     "gpt-5.4-mini": AIModel(
         name="openai/gpt-5.4-mini",
         provider="openai",
@@ -196,6 +203,15 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    # Opus 4.7 removes temperature/top_p/top_k and budget_tokens; only adaptive thinking is supported.
+    "claude-opus-4-7": AIModel(
+        name="anthropic/claude-opus-4-7",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+        use_direct_sdk=True,
+    ),
     "claude-opus-4-6": AIModel(
         name="anthropic/claude-opus-4-6",
         provider="anthropic",

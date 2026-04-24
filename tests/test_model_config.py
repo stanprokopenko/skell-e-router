@@ -86,11 +86,11 @@ class TestModelConfig:
         assert len(MODEL_CONFIG) > 0
 
     @pytest.mark.parametrize("alias", [
-        "gpt-5.4-mini", "gpt-5.4-nano",
+        "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
-        "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
+        "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
@@ -157,6 +157,22 @@ class TestModelConfig:
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
 
+    def test_opus_4_7_config(self):
+        """Opus 4.7 drops sampling params and budget_tokens; only adaptive thinking via reasoning_effort."""
+        model = MODEL_CONFIG["claude-opus-4-7"]
+        assert model.provider == "anthropic"
+        assert model.is_anthropic is True
+        assert model.use_direct_sdk is True
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert "thinking" in model.supported_params
+        # Removed in 4.7 — these return 400 from the API
+        assert "temperature" not in model.supported_params
+        assert "top_p" not in model.supported_params
+        assert "top_k" not in model.supported_params
+        assert "budget_tokens" not in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh"}
+
     def test_sonnet_4_6_supports_adaptive_thinking(self):
         model = MODEL_CONFIG["claude-sonnet-4-6"]
         assert "reasoning_effort" in model.supported_params
@@ -198,6 +214,15 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
         assert model.name == "gemini/gemini-3-pro-image-preview"
+
+    def test_gpt_5_5_config(self):
+        model = MODEL_CONFIG["gpt-5.5"]
+        assert model.provider == "openai"
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert "stream" in model.supported_params
+        assert "tools" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
 
     @pytest.mark.parametrize("alias", ["gpt-5.4-mini", "gpt-5.4-nano"])
     def test_gpt_5_4_models_config(self, alias):
