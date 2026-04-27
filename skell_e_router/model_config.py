@@ -44,12 +44,13 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    # gpt-5.5 uses a different effort vocabulary than 5.4/5.3/5: no "minimal", new "xhigh".
     "gpt-5.5": AIModel(
         name="openai/gpt-5.5",
         provider="openai",
         supports_thinking=True,
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
-        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
     ),
     "gpt-5.4-mini": AIModel(
         name="openai/gpt-5.4-mini",

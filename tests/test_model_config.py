@@ -222,7 +222,8 @@ class TestModelConfig:
         assert "reasoning_effort" in model.supported_params
         assert "stream" in model.supported_params
         assert "tools" in model.supported_params
-        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
+        # gpt-5.5 uses a different effort vocabulary: drops "minimal", adds "none" + "xhigh"
+        assert model.accepted_reasoning_efforts == {"none", "low", "medium", "high", "xhigh"}
 
     @pytest.mark.parametrize("alias", ["gpt-5.4-mini", "gpt-5.4-nano"])
     def test_gpt_5_4_models_config(self, alias):
