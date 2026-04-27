@@ -91,6 +91,7 @@ class TestModelConfig:
         "gemini-2.5-pro", "gemini-2.5-flash",
         "nano-banana-3", "gemini-3-pro-image",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
+        "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
@@ -214,6 +215,24 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
         assert model.name == "gemini/gemini-3-pro-image-preview"
+
+    def test_grok_4_20_reasoning_config(self):
+        """grok-4.20 has reasoning always on; rejects reasoning_effort and stop per xAI docs."""
+        model = MODEL_CONFIG["grok-4.20"]
+        assert model.provider == "xai"
+        assert model.is_xai is True
+        assert model.supports_thinking is True
+        assert "reasoning_effort" not in model.supported_params
+        assert "stop" not in model.supported_params  # rejected by reasoning models per xAI docs
+        assert "tools" in model.supported_params
+
+    def test_grok_4_20_non_reasoning_config(self):
+        """grok-4.20-non-reasoning is the latency-optimized sibling; reasoning off, stop allowed."""
+        model = MODEL_CONFIG["grok-4.20-non-reasoning"]
+        assert model.provider == "xai"
+        assert model.supports_thinking is False
+        assert "stop" in model.supported_params
+        assert "reasoning_effort" not in model.supported_params
 
     def test_gpt_5_5_config(self):
         model = MODEL_CONFIG["gpt-5.5"]

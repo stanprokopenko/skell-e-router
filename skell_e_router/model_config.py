@@ -282,6 +282,21 @@ MODEL_CONFIG = {
 
     # XAI
 
+    # grok-4.20: reasoning is always on. reasoning_effort/stop/frequency_penalty/presence_penalty
+    # are rejected by the API. 2M context window.
+    "grok-4.20": AIModel(
+        name="xai/grok-4.20",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
+    # grok-4.20-non-reasoning: thinking off, supports stop and the usual sampling params.
+    "grok-4.20-non-reasoning": AIModel(
+        name="xai/grok-4.20-non-reasoning",
+        provider="xai",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+    ),
     "grok-4-0220": AIModel(
         name="xai/grok-4-0220",
         provider="xai",
