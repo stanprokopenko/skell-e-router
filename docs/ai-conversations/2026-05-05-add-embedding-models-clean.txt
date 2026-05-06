@@ -1,0 +1,802 @@
+==============================================================================
+Source jsonl   : 787a859b-2a2d-4f47-9864-cac884ab9ae6.jsonl
+Session id     : 787a859b-2a2d-4f47-9864-cac884ab9ae6
+Working dir    : C:\Users\Stan\Documents\GitHub\skell-e-router
+Git branch     : main
+First timestamp: 2026-05-05T22:29:59.482Z
+Last timestamp : 2026-05-06T03:08:29.222Z
+Mode           : clean (user/assistant text only)
+==============================================================================
+---- USER ----
+**Add embedding-model support to skell-e-router**
+
+Skell-e-router currently supports chat/text-generation calls but does not expose embedding models. Please add embedding support so users can route embedding calls through the standard skell-e-router interface instead of hitting provider SDKs directly.
+
+**Initial scope:**
+
+- OpenAI embedding models: `text-embedding-3-large` `medium` and `small`.
+- Gemini embedding models: research the latest multimodal embedding model from Google and confirm with me.
+- Two operations: single-text and batch (list of texts). Batch is the hot path — the use case we need it for now calls in batches of 250. BUT if we dont support batch anywhere else, then we should not support batch here either because user can just batch the calls themselves..
+- Standard retry/backoff like existing skell-e-router calls.
+
+---- ASSISTANT ----
+Got enough context. Moving to research.
+
+---- ASSISTANT ----
+Quick verify — OpenAI never shipped a "text-embedding-3-medium" in my recollection. Let me confirm.
+
+---- ASSISTANT ----
+Quick context dump before I start asking — two things from research that affect scope:
+
+**OpenAI:** there is no `text-embedding-3-medium`. Only `-large` and `-small` exist (plus the legacy `text-embedding-ada-002`). I'll assume you meant just `-large` and `-small` unless you tell me otherwise.
+
+**Gemini:** the latest is `gemini-embedding-2` (April 2026, GA). It's natively multimodal (text/image/video/audio/PDF), 8192 input tokens, output dims flexible 128–3072 (recommended 768/1536/3072). One notable wrinkle: when you pass *multiple inputs* in a single call, Gemini 2 produces **one aggregated embedding** rather than N separate embeddings. So "batch" on Gemini means N separate API calls under the hood, not one API call with a list — opposite of OpenAI which natively batches up to 2048 inputs per request.
+
+There's also `gemini-embedding-001` (text-only, predates multimodal). I'd skip it unless you want it.
+
+Now — **Question 1 of ~6**:
+
+**For the API shape, which do you prefer?**
+
+- **A.** Single new function `get_embedding(model, input, ...)` that mirrors `ask_ai`'s signature style — `input` accepts `str | list[str]`, returns `list[float]` for str input or `list[list[float]]` for list input. Simple, matches existing pattern.
+- **B.** Two functions: `embed(model, text)` (single) and `embed_batch(model, texts)` (batch). More explicit but doubles the surface area.
+- **C.** Single function with always-list semantics: always takes `list[str]`, always returns `list[list[float]]`. Caller wraps singles in a list. Simplest internals.
+
+My recommendation is **A** — it's idiomatic Python (mirrors `openai.embeddings.create`), matches how `ask_ai` already accepts polymorphic input, and the type overload pattern already used in `ask_ai` covers the return-type narrowing cleanly.
+
+Sources:
+- [Gemini Embedding 2 model docs](https://ai.google.dev/gemini-api/docs/models/gemini-embedding-2-preview)
+- [Gemini Embedding 2 announcement](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-embedding-2/)
+- [OpenAI embeddings docs](https://developers.openai.com/api/docs/guides/embeddings)
+
+---- USER ----
+Would option A allows for the shape that gemini requires for its input of multiple things to get a single embedding?
+
+---- ASSISTANT ----
+Short answer: **not as I described it**, but it can be extended.
+
+In Option A, `list[str]` means "batch — N inputs, N embeddings." That conflicts with Gemini's "N inputs aggregated into 1 embedding" mode, which is a different semantic.
+
+For your scoped use case (text-only, single + batch of 250) Option A is fine — we never hit the aggregation mode. If you want multimodal aggregation later, we'd add it explicitly via a separate parameter (e.g., `parts=[text, image_path, ...] → 1 embedding`) rather than overloading `list[str]`.
+
+Want me to keep aggregation out of v1, or design it in now?
+
+---- USER ----
+we need to design it in now since we want the gemini multimodal abilities right off the bat
+
+---- ASSISTANT ----
+Good. Here's the proposed shape — it mirrors `ask_ai` exactly so the mental model stays consistent.
+
+```python
+get_embedding(
+    model: str,
+    input: str | list[str],            # str → 1 embedding, list → N embeddings (batch)
+    images: list[str] | None = None,   # paths/URLs/data URIs — Gemini only
+    files: list[GeminiFileRef] | None = None,  # uploaded video/audio/PDF — Gemini only
+    dimensions: int | None = None,     # truncate output (768/1536/3072 for Gemini, ≤3072 for OpenAI)
+    config: dict | None = None,
+    rich_response: bool = False,
+) -> list[float] | list[list[float]] | EmbeddingResponse
+```
+
+Semantics:
+- `input="hello"` → 1 embedding
+- `input=["a","b","c"]` → 3 embeddings (batch)
+- `input="caption this", images=["x.jpg"], files=[video_ref]` → 1 aggregated embedding (Gemini multimodal)
+- `images`/`files` + OpenAI model → `RouterError("INVALID_INPUT", ...)`
+- `images`/`files` + `list[str]` input → `RouterError` (mixing batch with aggregation isn't supported in v1, YAGNI)
+
+Reuses existing `_encode_image` and `GeminiFileRef`/`upload_file` so users already know the inputs.
+
+**Question 2: Does this shape look right?** Specifically:
+- (a) Function name `get_embedding` — or do you prefer `embed`, `ask_embedding`, something else?
+- (b) Disallowing `images` + `list[str]` input in v1 — OK to defer, or is "batch of multimodal items" a real use case for you?
+
+---- USER ----
+but doesnt gemini also allow to pass multiple strings to get a single embeddding? I think that proposed shape makes it hard to predict what we'll get back
+
+---- ASSISTANT ----
+You're right. Same input shape returning different things on different providers is bad. Let me revise with two functions and a `Content` aggregate so the *return shape is determined by which function you call*, not by the model.
+
+```python
+# Always returns ONE embedding
+get_embedding(
+    model: str,
+    content: str | EmbeddingContent,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: bool = False,
+) -> list[float] | EmbeddingResponse
+
+
+# Always returns N embeddings, one per item
+get_embeddings(
+    model: str,
+    items: list[str] | list[EmbeddingContent],
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: bool = False,
+) -> list[list[float]] | EmbeddingResponse
+
+
+# Multimodal/multi-part aggregate — produces ONE embedding from many parts
+@dataclass
+class EmbeddingContent:
+    texts: list[str] | None = None       # multiple text snippets aggregated
+    images: list[str] | None = None      # paths/URLs/data URIs
+    files: list[GeminiFileRef] | None = None  # video/audio/PDF
+```
+
+Predictable rules:
+
+| Call | Returns | Notes |
+|---|---|---|
+| `get_embedding(m, "hello")` | 1 emb | |
+| `get_embedding(m, EmbeddingContent(texts=["a","b"]))` | 1 emb | aggregated — Gemini only |
+| `get_embedding(m, EmbeddingContent(texts=["caption"], images=["x.jpg"]))` | 1 emb | multimodal — Gemini only |
+| `get_embeddings(m, ["a","b","c"])` | 3 embs | OpenAI: native batch. Gemini: looped under the hood |
+| `get_embeddings(m, [Content(...), Content(...)])` | N embs | batch of aggregates — Gemini only |
+
+Function name (`embedding` vs `embeddings`) tells you cardinality. `EmbeddingContent` makes aggregation an explicit *type*, not a hidden flag. OpenAI + `EmbeddingContent` → `RouterError`.
+
+**Does this resolve the predictability concern?** If yes, I'll move to question 3 (dimensions parameter, retry behavior, response shape).
+
+---- USER ----
+that looks much better but before we commit, can you check if litellm already has a solution?
+
+---- ASSISTANT ----
+Yes — and LiteLLM has a really clean answer that obviates my custom `EmbeddingContent` dataclass.
+
+**LiteLLM's `litellm.embedding()` already handles all this.** Their input shape uses nesting to express cardinality:
+
+```python
+# Each top-level element → one output embedding.
+# Nesting = aggregation (multiple parts → one embedding).
+
+input=["text"]                                  # → 1 emb
+input=["text1", "text2", "text3"]               # → 3 embs (batch)
+input=[["caption", "data:image/png;base64..."]] # → 1 emb (aggregated multimodal)
+input=[["a", "b"], ["c", "d"]]                  # → 2 embs (batch of aggregates)
+input=[["caption", "img"], "plain text"]        # → 2 embs (mixed)
+```
+
+LiteLLM already supports `text-embedding-3-large/small`, `gemini-embedding-2`, and routes Gemini correctly (Vertex single-content vs Gemini API `batchEmbedContents`). Returns OpenAI-shape `data: [{embedding, index}]`.
+
+**Implication:** we should be a thin wrapper around `litellm.embedding()`, NOT build a parallel abstraction. Drop `EmbeddingContent` entirely.
+
+**Revised proposal — single function, mirror LiteLLM shape:**
+
+```python
+get_embedding(
+    model: str,
+    input: str | list[str | list[str]],   # str shorthand → 1 emb; list → N embs (one per top-level item)
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: bool = False,
+) -> list[float] | list[list[float]] | EmbeddingResponse
+```
+
+What we add on top of LiteLLM:
+- Model alias lookup (`"openai-3-large"` → `openai/text-embedding-3-large`)
+- File-path → data-URI resolution (so `"./img.jpg"` works alongside data URIs)
+- Tenacity retry/backoff (same `_perform_*` pattern as chat)
+- `RouterError` wrapping
+- `EmbeddingResponse` rich object (model, tokens, cost, dimensions)
+
+Predictability rule: **top-level list length = number of output embeddings**. `str` shorthand returns a flat `list[float]` (single embedding) instead of `list[list[float]]`.
+
+**Question 2 (revised):** sound good? Specifically:
+- (a) Adopt LiteLLM's nested-list shape directly (above)?
+- (b) Accept local file paths anywhere a data URI is accepted (we encode internally)?
+
+Sources:
+- [LiteLLM Gemini Embedding 2 GA blog](https://docs.litellm.ai/blog/gemini_embedding_2_ga)
+- [LiteLLM /embeddings docs](https://docs.litellm.ai/docs/embedding/supported_embedding)
+
+---- USER ----
+thats wonderful. just make sure to add clear documentation for users so they know all teh shapes they can pass and what will happen. Also not all models support all input types.
+
+("openai-3-large" is too shortened. use "openai-embedding-3-large"
+
+yes allow a file path.
+
+---- ASSISTANT ----
+Noted — aliases are `openai-embedding-3-large`, `openai-embedding-3-small`, `gemini-embedding-2`. Comprehensive docstring + capability matrix + README section will be part of deliverables.
+
+**Question 3: where do embedding models live in the registry?**
+
+Embedding models have different metadata than chat models (no `thinking`, no `tools`, no `reasoning_effort` — but they need `supported_inputs={"text","image","audio","video","pdf"}`, `max_dimensions`, `recommended_dimensions`). Two options:
+
+- **A.** New `EmbeddingModel` class + new `EMBEDDING_MODEL_CONFIG` dict, both in `model_config.py`. Keeps the two model types cleanly separated; `resolve_model_alias` gets a sibling `resolve_embedding_alias`.
+- **B.** Add `is_embedding: bool` and embedding-specific fields to existing `AIModel`. One unified registry.
+
+I recommend **A**. Embedding models are a distinct domain — different operations, different request/response shapes, different capability fields. Mixing them into `AIModel` adds optional fields that are meaningless for chat models (and vice versa). The chat code in `utils.py` already implicitly assumes `AIModel` is a chat model. A separate type prevents bugs where an embedding model accidentally flows into `ask_ai`.
+
+Cost: a tiny bit of duplication (separate dict, separate resolver). Worth it.
+
+OK with **A**, or do you prefer **B**?
+
+---- USER ----
+A
+
+---- ASSISTANT ----
+**Question 4: response shape.**
+
+Embedding APIs return very different fields than chat (no `content`, no `finish_reason`, no `tool_calls`, no `reasoning_tokens`). Reusing `AIResponse` would leave most fields `None`. Cleaner to introduce a focused `EmbeddingResponse`:
+
+```python
+@dataclass
+class EmbeddingResponse:
+    embeddings: list[list[float]]   # always list-of-lists, even for single-input
+    model: str                      # provider's reported model name
+    dimensions: int                 # actual dimension count returned
+
+    # Usage (embedding APIs only report prompt tokens)
+    prompt_tokens: int | None = None
+    total_tokens: int | None = None
+
+    # Cost & timing (same pattern as AIResponse)
+    cost: float | None = None
+    duration_seconds: float | None = None
+    total_duration_seconds: float | None = None
+
+    # Escape hatch
+    raw_response: Any = None
+```
+
+Default return (`rich_response=False`):
+- `input="hello"` (str shorthand) → `list[float]` (the one embedding, unwrapped)
+- `input=[...]` → `list[list[float]]` (one inner list per top-level item)
+
+`rich_response=True` → always returns `EmbeddingResponse` with `embeddings` always as `list[list[float]]` (no unwrap, predictable for downstream code).
+
+Sound right? Anything missing from the response object — for example, do you need the `index` mapping per embedding (matters if you ever pass batch with `encoding_format` or expect partial failures)?
+
+---- USER ----
+no the index should just match the order of the input
+
+---- ASSISTANT ----
+**Question 5: direct SDK path — yes or no?**
+
+For chat, Gemini and Anthropic bypass LiteLLM via `gemini_direct.py` / `anthropic_direct.py` because LiteLLM adds 0.3–1.7s overhead per call. For embeddings, the equivalent decision matters more (your hot path is batches of 250):
+
+- **A.** Pure LiteLLM (`litellm.embedding()`) for both OpenAI and Gemini. Simplest. LiteLLM already handles Gemini Embedding 2 multimodal + the Vertex/Gemini-API routing distinction correctly.
+- **B.** LiteLLM for OpenAI, direct `google-genai` SDK for Gemini (mirror the chat pattern).
+
+I lean **A** for v1, because:
+- LiteLLM's overhead is per-call. For embedding-heavy workloads you usually care about throughput, not single-call latency, and the overhead amortizes across the batch.
+- LiteLLM already implemented Gemini Embedding 2 + multimodal correctly per their published docs (so we'd just be re-implementing what they have).
+- We can add a direct path later if benchmarking shows it matters. YAGNI for now.
+
+Cost of **A** if we change our minds: minimal — refactor is contained to one function (`_perform_embedding`).
+
+Pick **A** or **B**?
+
+---- USER ----
+no the index should just match the order of the input
+
+---- USER ----
+no the index should just match the order of the input. But also check litellm..
+
+---- ASSISTANT ----
+Confirmed. LiteLLM returns OpenAI-shape: `data[{object, index, embedding}]`, `model`, `usage{prompt_tokens, total_tokens}`. Order preserved via `index`. No `cost` field (we compute via `litellm.completion_cost()`), no per-item errors (failures throw), no `dimensions` field returned (we compute `len(embeddings[0])` ourselves).
+
+So `EmbeddingResponse` as proposed is correct. Note: `dimensions` is observed (`len(embeddings[0])`), not echoed by the provider.
+
+**Question 5: direct SDK path?**
+
+Existing chat models bypass LiteLLM for Gemini/Anthropic via `use_direct_sdk` to skip 0.3–1.7s of overhead per call. For embeddings, this matters less but isn't zero — at 250 calls/batch, a 100ms overhead per LiteLLM hop could add up *if Gemini gets looped under the hood* (which it does, for `gemini-embedding-2` non-aggregate batch).
+
+Options:
+
+- **A.** Pure LiteLLM, no direct SDK path. Simplest. LiteLLM handles Gemini Embedding 2 multimodal correctly; we add nothing.
+- **B.** LiteLLM by default; add direct SDK path later if benchmarks show batch-of-250 latency is unacceptable.
+
+I recommend **A** for v1. We can re-add direct SDK if the hot path turns out too slow — the architecture I'm proposing keeps LiteLLM behind a thin internal function so swapping is a localized change.
+
+OK with **A**?
+
+---- USER ----
+A
+
+---- ASSISTANT ----
+I have enough to present the full design. Moving on.
+
+---- ASSISTANT ----
+# Consolidated design — section 1 of 4: Architecture & file layout
+
+**New file:** `skell_e_router/embeddings.py` — owns `get_embedding`, the LiteLLM call wrapper, retry decorator, response builder, and input normalization (file paths → data URIs).
+
+**Modified file:** `skell_e_router/model_config.py` — adds `EmbeddingModel` class and `EMBEDDING_MODEL_CONFIG` dict alongside existing `AIModel` / `MODEL_CONFIG`. Adds `resolve_embedding_alias`.
+
+**Modified file:** `skell_e_router/response.py` — adds `EmbeddingResponse` dataclass.
+
+**Modified file:** `skell_e_router/utils.py` — exports a small set of helpers reused from chat path: `_is_retryable_exception`, `_retry_after_wait`, `_resolve_api_key`, `_redact_keys`, `_check_provider_key`. (Move into a private `_shared.py` if cleaner, or just keep them in `utils.py` and import. Lean toward keep-and-import — minimal churn.)
+
+**Modified file:** `skell_e_router/__init__.py` — exports `get_embedding`, `EmbeddingResponse`, `EmbeddingModel`, `resolve_embedding_alias`.
+
+**Modified file:** `README.md` — new "Embeddings" section with capability matrix and shape examples.
+
+**Tests:** new `tests/test_embeddings.py` covering input shapes, capability validation, retry behavior, response shape, and alias resolution.
+
+Reuse strategy: chat-path helpers are not duplicated — embeddings imports them. The two paths share retry policy, error wrapping, key resolution, and key redaction. They diverge only at the call site (`litellm.embedding` vs `litellm.completion`) and response shape.
+
+**Look right? Anything to add, move, or remove?**
+
+---- USER ----
+you forgot about updating the documentation doc and making an example file
+
+---- ASSISTANT ----
+Good catch. Updated section 1:
+
+**Adding:**
+- **New file:** `skell_e_router/examples/example_embeddings.py` — runnable examples covering all input shapes (single string, batch, multimodal aggregation with image path, batch of multimodal aggregates), `dimensions` param, `rich_response`, and capability-error case (OpenAI + image → RouterError).
+- **Modified file:** `skell_e_router/Skell-E-Router-DOCUMENTATION.md` — full embeddings section with capability matrix, input-shape rules, and per-model behavior notes.
+
+**Full revised file list:**
+
+| File | Status | Purpose |
+|---|---|---|
+| `skell_e_router/embeddings.py` | new | `get_embedding`, LiteLLM call wrapper, response builder |
+| `skell_e_router/model_config.py` | modified | `EmbeddingModel` class + `EMBEDDING_MODEL_CONFIG` + `resolve_embedding_alias` |
+| `skell_e_router/response.py` | modified | `EmbeddingResponse` dataclass |
+| `skell_e_router/utils.py` | modified | export shared retry/key helpers (no behavior change) |
+| `skell_e_router/__init__.py` | modified | export new symbols |
+| `skell_e_router/examples/example_embeddings.py` | new | runnable usage examples |
+| `skell_e_router/Skell-E-Router-DOCUMENTATION.md` | modified | embeddings section + capability matrix |
+| `README.md` | modified | quick-start "Embeddings" section |
+| `tests/test_embeddings.py` | new | shape, validation, retry, response, alias tests |
+
+OK to proceed to section 2 (registry + capability matrix)?
+
+---- USER ----
+continue
+
+---- ASSISTANT ----
+# Section 2 of 4: model registry & capability matrix
+
+```python
+# model_config.py — added below existing AIModel/MODEL_CONFIG
+
+class EmbeddingModel:
+    def __init__(
+        self,
+        name: str,                          # full LiteLLM model string
+        provider: str,                      # "openai" | "gemini"
+        supported_inputs: set[str],         # subset of {"text","image","audio","video","pdf"}
+        max_dimensions: int,                # hard upper bound
+        default_dimensions: int,            # used when caller omits `dimensions`
+        recommended_dimensions: tuple[int, ...] = (),  # for docs/validation hints
+        max_input_tokens: int | None = None,           # per-input token cap (text)
+        supports_aggregation: bool = False,            # multimodal/multi-text → 1 emb
+        native_batch: bool = True,                     # provider batches in one HTTP call
+    ):
+        ...
+
+    @property
+    def is_openai(self) -> bool: return self.provider == "openai"
+    @property
+    def is_gemini(self) -> bool: return self.provider == "gemini"
+```
+
+**Three initial entries:**
+
+```python
+EMBEDDING_MODEL_CONFIG = {
+    "openai-embedding-3-large": EmbeddingModel(
+        name="openai/text-embedding-3-large",
+        provider="openai",
+        supported_inputs={"text"},
+        max_dimensions=3072,
+        default_dimensions=3072,
+        recommended_dimensions=(256, 1024, 3072),
+        max_input_tokens=8191,
+        supports_aggregation=False,
+        native_batch=True,
+    ),
+    "openai-embedding-3-small": EmbeddingModel(
+        name="openai/text-embedding-3-small",
+        provider="openai",
+        supported_inputs={"text"},
+        max_dimensions=1536,
+        default_dimensions=1536,
+        recommended_dimensions=(512, 1536),
+        max_input_tokens=8191,
+        supports_aggregation=False,
+        native_batch=True,
+    ),
+    "gemini-embedding-2": EmbeddingModel(
+        name="gemini/gemini-embedding-2",
+        provider="gemini",
+        supported_inputs={"text", "image", "audio", "video", "pdf"},
+        max_dimensions=3072,
+        default_dimensions=3072,
+        recommended_dimensions=(768, 1536, 3072),
+        max_input_tokens=8192,
+        supports_aggregation=True,
+        native_batch=False,   # LiteLLM loops batchEmbedContents under the hood
+    ),
+}
+
+# Allow lookup by full LiteLLM name too
+for cfg in list(EMBEDDING_MODEL_CONFIG.values()):
+    if cfg.name not in EMBEDDING_MODEL_CONFIG:
+        EMBEDDING_MODEL_CONFIG[cfg.name] = cfg
+
+
+def resolve_embedding_alias(alias: str) -> EmbeddingModel:
+    model = EMBEDDING_MODEL_CONFIG.get(alias)
+    if not model:
+        raise RouterError(
+            code="INVALID_MODEL",
+            message=f"Invalid embedding model alias '{alias}'. "
+                    f"Available: {sorted(k for k in EMBEDDING_MODEL_CONFIG if '/' not in k)}"
+        )
+    return model
+```
+
+**Capability matrix (lives in `Skell-E-Router-DOCUMENTATION.md`):**
+
+| Alias | Provider | Inputs | Max dims | Recommended dims | Aggregation | Native batch |
+|---|---|---|---|---|---|---|
+| `openai-embedding-3-large` | OpenAI | text | 3072 | 256 / 1024 / 3072 | no | yes (≤2048 inputs/req) |
+| `openai-embedding-3-small` | OpenAI | text | 1536 | 512 / 1536 | no | yes (≤2048 inputs/req) |
+| `gemini-embedding-2` | Gemini | text, image, audio, video, pdf | 3072 | 768 / 1536 / 3072 | yes | no (looped per-input) |
+
+**Validation enforced at runtime in `get_embedding`:**
+- Inferred input modality (text / image / audio / video / pdf) must be a subset of the model's `supported_inputs`. Otherwise `RouterError("INVALID_INPUT", "<model> does not support <modality> inputs")`.
+- Aggregated input (nested list, length > 1) requires `supports_aggregation=True`. Otherwise `RouterError("INVALID_INPUT", "<model> does not support multimodal/multi-part aggregation; use a flat list for batch")`.
+- `dimensions > max_dimensions` → `RouterError("INVALID_PARAM", ...)`.
+
+**Look right? Anything to adjust before section 3 (function signature + input handling)?**
+
+---- USER ----
+I'm assuming that all of those are right. I did not confirm them myself. If you're not sure, then maybe have a sub-agent to do the research and confirm that everything is correct there.
+
+---- ASSISTANT ----
+Smart call. Dispatching a research agent to verify each model's spec.
+
+---- ASSISTANT ----
+The agent's report on Gemini batch behavior contradicts my earlier research and seems inconsistent with how `batchEmbedContents` actually works. Let me verify directly.
+
+---- ASSISTANT ----
+Verified. The first agent got Gemini batch behavior wrong. Authoritative LiteLLM blog confirms my original semantics:
+
+- `input=["a","b","c"]` (flat) → **3 embeddings**, indexed 0..N-1 — same as OpenAI shape
+- `input=[["caption", "data:image/png;base64,..."]]` (nested) → **1 fused embedding** (multimodal aggregation)
+
+LiteLLM routes through Gemini's `batchEmbedContents` endpoint, which is a true batch endpoint that returns N per-input embeddings. Aggregation requires explicit nesting.
+
+**Corrections to the registry:**
+
+| Field | Was | Corrected |
+|---|---|---|
+| `gemini-embedding-2.native_batch` | `False` | `True` (LiteLLM does batch in one HTTP call via `batchEmbedContents`) |
+| `*.max_input_tokens` (OpenAI) | `8191` | `8192` |
+| OpenAI batch limit | (not coded) | document: `≤2048 inputs/req` and `≤300,000 total tokens/req` |
+
+Other values (dimensions, modalities, aggregation flag, model strings) all confirmed correct. Will use `openai/text-embedding-3-large` and `gemini/gemini-embedding-2` as LiteLLM identifiers (the `provider/` prefix is accepted and consistent with the chat-side pattern).
+
+**Updated entries:**
+
+```python
+"openai-embedding-3-large": EmbeddingModel(
+    name="openai/text-embedding-3-large",
+    provider="openai",
+    supported_inputs={"text"},
+    max_dimensions=3072,
+    default_dimensions=3072,
+    recommended_dimensions=(256, 1024, 3072),
+    max_input_tokens=8192,
+    supports_aggregation=False,
+    native_batch=True,
+),
+"openai-embedding-3-small": EmbeddingModel(
+    name="openai/text-embedding-3-small",
+    provider="openai",
+    supported_inputs={"text"},
+    max_dimensions=1536,
+    default_dimensions=1536,
+    recommended_dimensions=(512, 1536),
+    max_input_tokens=8192,
+    supports_aggregation=False,
+    native_batch=True,
+),
+"gemini-embedding-2": EmbeddingModel(
+    name="gemini/gemini-embedding-2",
+    provider="gemini",
+    supported_inputs={"text", "image", "audio", "video", "pdf"},
+    max_dimensions=3072,
+    default_dimensions=3072,
+    recommended_dimensions=(768, 1536, 3072),
+    max_input_tokens=8192,
+    supports_aggregation=True,
+    native_batch=True,
+),
+```
+
+Continue to section 3 (function signature, input handling, retry)?
+
+---- USER ----
+continue
+
+---- ASSISTANT ----
+# Section 3 of 4: function signature, input handling, retry
+
+```python
+# embeddings.py
+
+from typing import overload, Literal, Any
+from .response import EmbeddingResponse, GeminiFileRef
+
+
+@overload
+def get_embedding(
+    model: str,
+    input: str,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[False] = False,
+    verbosity: str = "none",
+) -> list[float]: ...
+
+@overload
+def get_embedding(
+    model: str,
+    input: list[str | list[str | GeminiFileRef]],
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[False] = False,
+    verbosity: str = "none",
+) -> list[list[float]]: ...
+
+@overload
+def get_embedding(
+    model: str,
+    input: str | list[str | list[str | GeminiFileRef]],
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[True],
+    verbosity: str = "none",
+) -> EmbeddingResponse: ...
+
+def get_embedding(
+    model: str,
+    input,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: bool = False,
+    verbosity: str = "none",
+) -> list[float] | list[list[float]] | EmbeddingResponse:
+    ...
+```
+
+**Input handling pipeline (in order):**
+
+1. **Resolve model** — `resolve_embedding_alias(model)` → `EmbeddingModel`. Raises `RouterError("INVALID_MODEL")` if unknown.
+2. **Provider key check** — `_check_provider_key(...)` (reused from chat path).
+3. **Normalize input shape** — internal helper `_normalize_input(input, embedding_model)`:
+   - `str` → wrap as `[input]` for LiteLLM, remember `was_str=True` (for unwrapping return).
+   - Each top-level element is one of: `str`, `GeminiFileRef`, `list[str | GeminiFileRef]` (nested = aggregate), or a local file path (string starting with `./`, `/`, drive letter, or existing file).
+   - For each `str` element: detect modality (text vs file path) via `_classify_input_part`. File paths get `_encode_to_data_uri` (reuses `_encode_image` logic, extended to other MIME types).
+   - For each `GeminiFileRef`: convert to LiteLLM file reference dict.
+   - Validate inferred modalities against `embedding_model.supported_inputs` — raise `RouterError("INVALID_INPUT", "<model> does not support <modality>")`.
+   - Validate aggregation — if any top-level element is a `list`, require `embedding_model.supports_aggregation` — else `RouterError("INVALID_INPUT", "...does not support aggregation; flatten the list for batch")`.
+4. **Validate `dimensions`** — if set, must be `≤ embedding_model.max_dimensions` and `≥ 1`. Else `RouterError("INVALID_PARAM")`. Pass-through to LiteLLM (LiteLLM maps to `dimensions` for OpenAI / `output_dimensionality` for Gemini).
+5. **Call LiteLLM with retry** — see below.
+6. **Build response** — extract `data[*].embedding` in index order, unwrap if `was_str`, optionally wrap in `EmbeddingResponse`.
+
+**`_classify_input_part(part: str)` — detection rules:**
+
+| Pattern | Inferred modality |
+|---|---|
+| `data:image/...` | image |
+| `data:audio/...` | audio |
+| `data:video/...` | video |
+| `data:application/pdf` | pdf |
+| `https://...` or `http://...` ending in known image/audio/video/pdf MIME extension | by extension |
+| `gs://...` | passes through (Vertex GCS — modality from extension) |
+| Existing file path (`os.path.isfile`) | by `mimetypes.guess_type` → image/audio/video/pdf/text |
+| Anything else | text |
+
+Failure path: if a string looks like a file path (e.g., starts with `./` or `/`) but the file doesn't exist → `RouterError("INVALID_INPUT", "File not found: <path>")`. Plain text is never misclassified because it only matches text after no other pattern hits.
+
+**Retry / backoff:**
+
+```python
+@retry(
+    retry=retry_if_exception(_is_retryable_exception),
+    wait=_retry_after_wait,
+    stop=stop_after_attempt(3),
+)
+def _perform_embedding(model_name: str, input: list, api_key: str | None, **kwargs):
+    embedding_kwargs = dict(model=model_name, input=input, **kwargs)
+    if api_key:
+        embedding_kwargs["api_key"] = api_key
+    request_start = time.perf_counter()
+    response = litellm.embedding(**embedding_kwargs)
+    return response, time.perf_counter() - request_start
+```
+
+Same retry policy as chat path: 3 attempts, `_is_retryable_exception` (5xx, 429, timeouts; respects `Retry-After`; skips quota errors). Imported from `utils.py`. No streaming for embeddings (provider APIs don't support it). No direct-SDK path.
+
+**Error wrapping:**
+
+LiteLLM exceptions → `_redact_keys(...)` → `RouterError("PROVIDER_ERROR", safe_msg, details={provider, model})`. Same pattern as `ask_ai`'s `try/except`.
+
+Sound right? Next up is section 4 (response building, examples, and tests).
+
+---- USER ----
+continue
+
+---- ASSISTANT ----
+# Section 4 of 4: response building, examples, tests
+
+**Response building (in `embeddings.py`):**
+
+```python
+def _build_embedding_response(
+    response, embedding_model, request_duration_s, total_duration_s
+) -> EmbeddingResponse:
+    # data is sorted by index already; defensive sort just in case
+    data = sorted(response.data, key=lambda d: d["index"] if isinstance(d, dict) else d.index)
+    embeddings = [
+        d["embedding"] if isinstance(d, dict) else d.embedding
+        for d in data
+    ]
+    usage = getattr(response, "usage", None)
+    try:
+        cost = litellm.completion_cost(completion_response=response)
+    except Exception:
+        cost = None
+
+    return EmbeddingResponse(
+        embeddings=embeddings,
+        model=getattr(response, "model", embedding_model.name),
+        dimensions=len(embeddings[0]) if embeddings else 0,
+        prompt_tokens=getattr(usage, "prompt_tokens", None),
+        total_tokens=getattr(usage, "total_tokens", None),
+        cost=cost,
+        duration_seconds=request_duration_s,
+        total_duration_seconds=total_duration_s,
+        raw_response=response,
+    )
+```
+
+The plain-mode return path:
+- If `was_str=True` (user passed a single string): return `embeddings[0]` (a flat `list[float]`).
+- Else: return `embeddings` (a `list[list[float]]`).
+
+The verbosity hooks mirror `ask_ai`'s — `_print_request_details` and a tiny `_print_embedding_response_details` that shows model, dim count, token usage, cost, duration. No `RESPONSE` block (vectors are noise to print).
+
+**Documentation contract — `Skell-E-Router-DOCUMENTATION.md` embeddings section:**
+
+Required content:
+
+1. **Quick reference** — three input shapes with concrete examples and what each returns.
+2. **Capability matrix** — the table from section 2, exactly as shown.
+3. **Per-model notes** — gemini-embedding-2 dim auto-normalization, OpenAI batch limits (≤2048 inputs, ≤300k tokens/req), no `task_type` exposed.
+4. **Multimodal aggregation** — when to nest, how a `Content(parts=[...])` mental model maps onto the nested-list shape.
+5. **File-path resolution rules** — the `_classify_input_part` table.
+6. **Errors** — every `RouterError` code emitted (`INVALID_MODEL`, `INVALID_INPUT`, `INVALID_PARAM`, `MISSING_ENV`, `PROVIDER_ERROR`) with example trigger.
+
+**`example_embeddings.py` — runnable examples:**
+
+```python
+from skell_e_router import get_embedding
+
+# 1. Single string → list[float]
+v = get_embedding("openai-embedding-3-large", "hello world")
+print(len(v), v[:3])
+
+# 2. Batch of strings → list[list[float]]
+vs = get_embedding("openai-embedding-3-large", ["hello", "world", "foo"])
+print(len(vs), len(vs[0]))
+
+# 3. Truncated dimensions
+v = get_embedding("openai-embedding-3-small", "hello", dimensions=512)
+assert len(v) == 512
+
+# 4. Multimodal aggregation: text + image → 1 fused embedding
+v = get_embedding(
+    "gemini-embedding-2",
+    [["a red shoe on a wooden floor", "skell_e_router/examples/vision-test.jpg"]],
+)
+print("fused dim:", len(v[0]))
+
+# 5. Mixed batch: aggregate + plain text → 2 embeddings
+vs = get_embedding(
+    "gemini-embedding-2",
+    [
+        ["product caption", "skell_e_router/examples/vision-test.jpg"],
+        "plain text query",
+    ],
+)
+assert len(vs) == 2
+
+# 6. Rich response
+from skell_e_router import EmbeddingResponse
+resp: EmbeddingResponse = get_embedding(
+    "openai-embedding-3-large", "hello", rich_response=True,
+)
+print(resp.model, resp.dimensions, resp.prompt_tokens, resp.cost)
+
+# 7. Capability error: OpenAI rejects multimodal input
+try:
+    get_embedding("openai-embedding-3-large", [["text", "img.jpg"]])
+except Exception as e:
+    print("expected:", e)
+```
+
+**Tests — `tests/test_embeddings.py`:**
+
+Test groups (mocked `litellm.embedding`):
+
+| Group | Tests |
+|---|---|
+| Alias resolution | unknown alias raises `INVALID_MODEL`; full-name lookup works; both aliases for each provider resolve |
+| Input normalization — single | `str` input becomes `[str]` for LiteLLM; return is unwrapped to `list[float]` |
+| Input normalization — batch | flat `list[str]` passes through; return is `list[list[float]]` |
+| Input normalization — aggregation | nested list flagged as aggregate; rejected on OpenAI; allowed on Gemini |
+| File-path encoding | `vision-test.jpg` path → data URI; missing file → `INVALID_INPUT` |
+| Modality classification | data URI / file path / URL / plain text classifications |
+| Capability validation | OpenAI + image → `INVALID_INPUT`; Gemini + audio file → ok |
+| Dimension validation | `dimensions=4096` on small → `INVALID_PARAM`; valid dim passes through |
+| Retry behavior | 503 retries; 429 with quota → no retry; 200 → no retry |
+| Response building | `EmbeddingResponse` fields populated; `dimensions = len(embeddings[0])`; `cost` handled when LiteLLM raises |
+| API-key plumbing | `config={"openai_api_key": "..."}` overrides env; missing key raises `MISSING_ENV` |
+
+Mocking strategy: same as existing `test_utils.py` pattern — patch `litellm.embedding` at module import path, return a fake response object with `data`, `model`, `usage`.
+
+---
+
+That's the full design. Once you approve, I'll commit it to `docs/superpowers/specs/2026-05-05-embedding-models-design.md`, run the spec self-review, then hand off to the writing-plans skill.
+
+**Approve section 4 / overall design?**
+
+---- USER ----
+approved
+
+---- ASSISTANT ----
+Running spec self-review.
+
+---- ASSISTANT ----
+Found four issues to fix inline:
+
+1. "Two locations" but three items listed
+2. `native_batch` field in `EmbeddingModel` is unused — YAGNI, drop it
+3. `_encode_image` reuse note is ambiguous ("if needed")
+4. The shape passed to LiteLLM for nested parts isn't pinned down (strings/data URIs vs typed dicts)
+
+---- ASSISTANT ----
+Spec written and committed to `docs/superpowers/specs/2026-05-05-embedding-models-design.md`. Self-review pass fixed an unused `native_batch` field, clarified the `_encode_image` refactor, pinned down the LiteLLM input shape for nested parts, and fixed a "two/three" count typo.
+
+Please review the spec and let me know if you want to make any changes before we start writing out the implementation plan.
+
+---- USER ----
+write the plan
+
+---- ASSISTANT ----
+I'm using the writing-plans skill to create the implementation plan.
+
+---- ASSISTANT ----
+Running self-review of the plan against the spec.
+
+---- ASSISTANT ----
+Self-review pass: the only TODO/TBD hit is in the self-review checklist itself ("No TODO/XXX/TBD strings introduced") — that's the rubric, not a placeholder. Every spec requirement maps to a concrete task with exact code.
+
+---- ASSISTANT ----
+Plan complete and saved to `docs/superpowers/plans/2026-05-05-embedding-models.md`. Two execution options:
+
+**1. Subagent-Driven (recommended)** — I dispatch a fresh subagent per task, review between tasks, fast iteration.
+
+**2. Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints.
+
+Which approach?
+
+---- USER ----
+/export-claude-conversation

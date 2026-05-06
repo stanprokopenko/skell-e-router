@@ -69,7 +69,7 @@ def _classify_input_part(part: str) -> Modality:
     return "text"
 
 
-def _convert_part(part, model: EmbeddingModel) -> tuple[str | dict, Modality]:
+def _convert_part(part) -> tuple[str | dict, Modality]:
     """Convert a single part to its LiteLLM representation and infer its modality.
 
     Returns:
@@ -137,12 +137,12 @@ def _normalize_input(
             has_aggregation = has_aggregation or len(item) > 1
             inner: list = []
             for part in item:
-                value, modality = _convert_part(part, model)
+                value, modality = _convert_part(part)
                 seen_modalities.add(modality)
                 inner.append(value)
             normalized.append(inner)
         else:
-            value, modality = _convert_part(item, model)
+            value, modality = _convert_part(item)
             seen_modalities.add(modality)
             normalized.append(value)
 
@@ -299,6 +299,7 @@ def get_embedding(
 ):
     verbosity = (verbosity or "none").lower()
     if verbosity not in ("none", "response", "info", "debug"):
+        print(f"WARNING: Invalid verbosity '{verbosity}'. Must be 'none', 'response', 'info', or 'debug'.\nSetting to 'response'.")
         verbosity = "response"
 
     embedding_model = resolve_embedding_alias(model)

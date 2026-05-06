@@ -189,6 +189,15 @@ class TestNormalizeInput:
             _normalize_input([["caption", 999]], m)
         assert exc.value.code == "INVALID_INPUT"
 
+    def test_empty_list_passes_through(self):
+        """Empty list normalizes to empty list — provider decides what to do."""
+        from skell_e_router.embeddings import _normalize_input
+        from skell_e_router.model_config import EMBEDDING_MODEL_CONFIG
+        m = EMBEDDING_MODEL_CONFIG["openai-embedding-3-large"]
+        normalized, was_str = _normalize_input([], m)
+        assert normalized == []
+        assert was_str is False
+
 
 class TestPerformEmbedding:
 
@@ -342,7 +351,7 @@ class TestBuildEmbeddingResponse:
 
         m = EMBEDDING_MODEL_CONFIG["openai-embedding-3-large"]
         raw = make_litellm_embedding_response()
-        # Remove the `model` attribute by setting it to ""
+        # Empty model string is falsy, so the `or` fallback fires.
         raw.model = ""
         with patch("skell_e_router.embeddings.litellm.completion_cost") as mock_cost:
             mock_cost.return_value = None
@@ -350,9 +359,7 @@ class TestBuildEmbeddingResponse:
                 response=raw, embedding_model=m,
                 request_duration_s=0, total_duration_s=0,
             )
-        # Empty string still wins over fallback (we only fall back if attr is missing/None).
-        # We accept either behavior — assert non-None.
-        assert resp.model is not None
+        assert resp.model == "openai/text-embedding-3-large"
 
 
 class TestGetEmbedding:

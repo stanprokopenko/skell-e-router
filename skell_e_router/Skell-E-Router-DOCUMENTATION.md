@@ -57,7 +57,7 @@ Keys passed via `config` are never logged or included in error messages.
 
 ## Embeddings
 
-`get_embedding()` routes embedding calls through LiteLLM with the same retry/backoff and error wrapping as `ask_ai()`.
+`get_embedding()` routes embedding calls through LiteLLM with the same retry/backoff and error wrapping as `ask_ai()`. Unlike chat models, embeddings always go through LiteLLM — there is no direct-SDK fast path (the `use_direct_sdk` flag on `AIModel` does not apply).
 
 ### Quick Reference
 
