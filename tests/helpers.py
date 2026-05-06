@@ -13,6 +13,7 @@ FAKE_GEMINI_KEY = "AIzaSy-test-gemini-key-xyz789"
 FAKE_ANTHROPIC_KEY = "sk-ant-test-anthropic-key-def456"
 FAKE_GROQ_KEY = "gsk-test-groq-key"
 FAKE_XAI_KEY = "xai-test-key"
+FAKE_DEEPINFRA_KEY = "deepinfra-test-key"
 
 FULL_CONFIG = {
     "openai_api_key": FAKE_OPENAI_KEY,
@@ -20,6 +21,7 @@ FULL_CONFIG = {
     "anthropic_api_key": FAKE_ANTHROPIC_KEY,
     "groq_api_key": FAKE_GROQ_KEY,
     "xai_api_key": FAKE_XAI_KEY,
+    "deepinfra_api_key": FAKE_DEEPINFRA_KEY,
 }
 
 

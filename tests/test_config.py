@@ -49,6 +49,7 @@ FULL_CONFIG = {
     "anthropic_api_key": FAKE_ANTHROPIC_KEY,
     "groq_api_key": "gsk-test-groq-key",
     "xai_api_key": "xai-test-key",
+    "deepinfra_api_key": "deepinfra-test-key",
 }
 
 
@@ -188,6 +189,7 @@ class TestCheckEnvironmentVariables:
             "OPENAI_API_KEY": "x",
             "GROQ_API_KEY": "x",
             "XAI_API_KEY": "x",
+            "DEEPINFRA_API_KEY": "x",
         }
         config = {
             "gemini_api_key": "x",
