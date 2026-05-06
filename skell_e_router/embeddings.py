@@ -235,7 +235,8 @@ def _build_embedding_response(
 def _validate_dimensions(dimensions: int | None, model: EmbeddingModel) -> None:
     if dimensions is None:
         return
-    if not isinstance(dimensions, int):
+    # Reject bools too — bool is a subclass of int but `dimensions=True` is nonsense.
+    if not isinstance(dimensions, int) or isinstance(dimensions, bool):
         raise RouterError(
             code="INVALID_PARAM",
             message=f"`dimensions` must be int or None, got {type(dimensions).__name__}",
