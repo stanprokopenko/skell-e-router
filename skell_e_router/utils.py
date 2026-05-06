@@ -67,24 +67,32 @@ PROVIDER_ENV_KEY = {
 # HELPER FUNCTIONS
 #-----------------
 
-def _encode_image(source: str) -> dict:
-    """Convert an image source (URL, data URI, or file path) to an OpenAI-format content part."""
-    if source.startswith(("http://", "https://")):
-        return {"type": "image_url", "image_url": {"url": source}}
-    if source.startswith("data:"):
-        return {"type": "image_url", "image_url": {"url": source}}
-    # File path -- read, detect MIME, base64 encode
+def _encode_to_data_uri(source: str) -> str:
+    """Convert a string source (URL, data URI, or file path) to a data-URI / URL string.
+
+    Returns:
+        - the input unchanged if it is already an http(s) URL or data URI
+        - a `data:<mime>;base64,<...>` string if `source` is an existing file path
+    Raises RouterError("INVALID_INPUT") if a path-like string is not an existing file.
+    """
+    if source.startswith(("http://", "https://", "data:")):
+        return source
     if not os.path.isfile(source):
         raise RouterError(
             code="INVALID_INPUT",
-            message=f"Image file not found: {source}"
+            message=f"File not found: {source}",
         )
     mime_type, _ = mimetypes.guess_type(source)
     if mime_type is None:
         mime_type = "application/octet-stream"
     with open(source, "rb") as f:
         encoded = base64.b64encode(f.read()).decode("utf-8")
-    return {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{encoded}"}}
+    return f"data:{mime_type};base64,{encoded}"
+
+
+def _encode_image(source: str) -> dict:
+    """Convert an image source to an OpenAI chat-completion `image_url` content part."""
+    return {"type": "image_url", "image_url": {"url": _encode_to_data_uri(source)}}
 
 
 def upload_file(

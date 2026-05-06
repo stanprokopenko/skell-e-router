@@ -1275,3 +1275,50 @@ class TestAskAiWithFiles:
         content = messages[-1]["content"]
         types = [part["type"] for part in content]
         assert types == ["text", "image_url", "file"]
+
+
+# ---------------------------------------------------------------------------
+# _encode_to_data_uri
+# ---------------------------------------------------------------------------
+
+class TestEncodeToDataUri:
+
+    def test_passes_through_data_uri(self):
+        from skell_e_router.utils import _encode_to_data_uri
+        assert _encode_to_data_uri("data:image/png;base64,abc") == "data:image/png;base64,abc"
+
+    def test_passes_through_http_url(self):
+        from skell_e_router.utils import _encode_to_data_uri
+        assert _encode_to_data_uri("https://example.com/x.jpg") == "https://example.com/x.jpg"
+        assert _encode_to_data_uri("http://example.com/x.jpg") == "http://example.com/x.jpg"
+
+    def test_encodes_local_file(self, tmp_path):
+        from skell_e_router.utils import _encode_to_data_uri
+        p = tmp_path / "tiny.png"
+        p.write_bytes(b"\x89PNG\r\n\x1a\n")
+        result = _encode_to_data_uri(str(p))
+        assert result.startswith("data:image/png;base64,")
+
+    def test_unknown_mime_falls_back_to_octet_stream(self, tmp_path):
+        from skell_e_router.utils import _encode_to_data_uri
+        p = tmp_path / "weird.xyz"
+        p.write_bytes(b"\x00\x01\x02")
+        result = _encode_to_data_uri(str(p))
+        assert result.startswith("data:application/octet-stream;base64,")
+
+    def test_missing_file_raises(self):
+        from skell_e_router.utils import _encode_to_data_uri
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc:
+            _encode_to_data_uri("./does-not-exist-12345.png")
+        assert exc.value.code == "INVALID_INPUT"
+        assert "not found" in exc.value.message.lower()
+
+    def test_encode_image_still_returns_chat_part_shape(self, tmp_path):
+        """Ensure refactor preserves _encode_image's return shape."""
+        from skell_e_router.utils import _encode_image
+        p = tmp_path / "tiny.png"
+        p.write_bytes(b"\x89PNG\r\n\x1a\n")
+        out = _encode_image(str(p))
+        assert out["type"] == "image_url"
+        assert out["image_url"]["url"].startswith("data:image/png;base64,")
