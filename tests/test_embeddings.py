@@ -353,3 +353,162 @@ class TestBuildEmbeddingResponse:
         # Empty string still wins over fallback (we only fall back if attr is missing/None).
         # We accept either behavior — assert non-None.
         assert resp.model is not None
+
+
+class TestGetEmbedding:
+
+    def _patch_litellm(self, embeddings, model_name="openai/text-embedding-3-large"):
+        """Helper: patch litellm.embedding to return a fake response."""
+        from tests.helpers import make_litellm_embedding_response
+        return patch(
+            "skell_e_router.embeddings.litellm.embedding",
+            return_value=make_litellm_embedding_response(
+                embeddings=embeddings, model=model_name,
+            ),
+        )
+
+    def test_string_input_returns_flat_list(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        with self._patch_litellm([[0.1, 0.2, 0.3]]):
+            result = get_embedding("openai-embedding-3-large", "hello")
+        assert result == [0.1, 0.2, 0.3]
+
+    def test_list_input_returns_nested_list(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        with self._patch_litellm([[0.1], [0.2], [0.3]]):
+            result = get_embedding("openai-embedding-3-large", ["a", "b", "c"])
+        assert result == [[0.1], [0.2], [0.3]]
+
+    def test_rich_response_returns_dataclass(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.response import EmbeddingResponse
+        with self._patch_litellm([[0.1, 0.2]]):
+            result = get_embedding(
+                "openai-embedding-3-large", "hello", rich_response=True,
+            )
+        assert isinstance(result, EmbeddingResponse)
+        assert result.embeddings == [[0.1, 0.2]]
+        assert result.dimensions == 2
+
+    def test_rich_response_with_string_does_not_unwrap(self, monkeypatch):
+        """rich_response always returns nested list[list[float]]."""
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        with self._patch_litellm([[0.5, 0.6]]):
+            result = get_embedding(
+                "openai-embedding-3-large", "hello", rich_response=True,
+            )
+        assert result.embeddings == [[0.5, 0.6]]  # not [0.5, 0.6]
+
+    def test_dimensions_passed_to_litellm(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            from tests.helpers import make_litellm_embedding_response
+            mock_emb.return_value = make_litellm_embedding_response(
+                embeddings=[[0.1] * 512]
+            )
+            get_embedding(
+                "openai-embedding-3-large", "hello", dimensions=512,
+            )
+        assert mock_emb.call_args.kwargs["dimensions"] == 512
+
+    def test_dimensions_not_passed_when_none(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            from tests.helpers import make_litellm_embedding_response
+            mock_emb.return_value = make_litellm_embedding_response()
+            get_embedding("openai-embedding-3-large", "hello")
+        assert "dimensions" not in mock_emb.call_args.kwargs
+
+    def test_dimensions_too_large_raises(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc:
+            get_embedding(
+                "openai-embedding-3-small", "hello", dimensions=4096,
+            )
+        assert exc.value.code == "INVALID_PARAM"
+
+    def test_dimensions_zero_raises(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc:
+            get_embedding(
+                "openai-embedding-3-large", "hello", dimensions=0,
+            )
+        assert exc.value.code == "INVALID_PARAM"
+
+    def test_unknown_model_raises(self, monkeypatch):
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc:
+            get_embedding("not-a-model", "hello")
+        assert exc.value.code == "INVALID_MODEL"
+
+    def test_missing_api_key_raises(self, monkeypatch):
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc:
+            get_embedding("openai-embedding-3-large", "hello")
+        assert exc.value.code == "MISSING_ENV"
+
+    def test_api_key_from_config_overrides_env(self, monkeypatch):
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        from skell_e_router.embeddings import get_embedding
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            from tests.helpers import make_litellm_embedding_response
+            mock_emb.return_value = make_litellm_embedding_response()
+            get_embedding(
+                "openai-embedding-3-large", "hello",
+                config={"openai_api_key": "sk-from-config"},
+            )
+        assert mock_emb.call_args.kwargs["api_key"] == "sk-from-config"
+
+    def test_litellm_error_wraps_in_provider_error(self, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+        from skell_e_router.embeddings import get_embedding
+        from skell_e_router.utils import RouterError
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            mock_emb.side_effect = ValueError("provider exploded: sk-test secret")
+            with pytest.raises(RouterError) as exc:
+                get_embedding(
+                    "openai-embedding-3-large", "hello",
+                    config={"openai_api_key": "sk-test"},
+                )
+        assert exc.value.code == "PROVIDER_ERROR"
+        # API key must be redacted from error message.
+        assert "sk-test" not in exc.value.message
+        assert "[REDACTED]" in exc.value.message
+
+    def test_gemini_multimodal_aggregation(self, monkeypatch, tmp_path):
+        monkeypatch.setenv("GEMINI_API_KEY", "AIzaSy-test")
+        from skell_e_router.embeddings import get_embedding
+
+        img = tmp_path / "tiny.png"
+        img.write_bytes(b"\x89PNG\r\n\x1a\n")
+
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            from tests.helpers import make_litellm_embedding_response
+            mock_emb.return_value = make_litellm_embedding_response(
+                embeddings=[[0.9] * 768], model="gemini/gemini-embedding-2",
+            )
+            result = get_embedding(
+                "gemini-embedding-2",
+                [["a red shoe", str(img)]],
+            )
+        # 1 nested element → 1 output embedding
+        assert len(result) == 1
+        assert len(result[0]) == 768
+        # The input passed to litellm should have the image as a data URI
+        sent = mock_emb.call_args.kwargs["input"]
+        assert isinstance(sent[0], list)
+        assert sent[0][0] == "a red shoe"
+        assert sent[0][1].startswith("data:image/png;base64,")

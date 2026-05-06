@@ -230,3 +230,135 @@ def _build_embedding_response(
         total_duration_seconds=total_duration_s,
         raw_response=response,
     )
+
+
+def _validate_dimensions(dimensions: int | None, model: EmbeddingModel) -> None:
+    if dimensions is None:
+        return
+    if not isinstance(dimensions, int):
+        raise RouterError(
+            code="INVALID_PARAM",
+            message=f"`dimensions` must be int or None, got {type(dimensions).__name__}",
+        )
+    if dimensions < 1 or dimensions > model.max_dimensions:
+        raise RouterError(
+            code="INVALID_PARAM",
+            message=(
+                f"`dimensions={dimensions}` out of range for '{model.name}'. "
+                f"Allowed: 1..{model.max_dimensions}. "
+                f"Recommended: {list(model.recommended_dimensions)}"
+            ),
+        )
+
+
+@overload
+def get_embedding(
+    model: str,
+    input: str,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[False] = False,
+    verbosity: str = "none",
+) -> list[float]: ...
+
+
+@overload
+def get_embedding(
+    model: str,
+    input: list,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[False] = False,
+    verbosity: str = "none",
+) -> list[list[float]]: ...
+
+
+@overload
+def get_embedding(
+    model: str,
+    input,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: Literal[True],
+    verbosity: str = "none",
+) -> EmbeddingResponse: ...
+
+
+def get_embedding(
+    model: str,
+    input,
+    *,
+    dimensions: int | None = None,
+    config: dict | None = None,
+    rich_response: bool = False,
+    verbosity: str = "none",
+):
+    verbosity = (verbosity or "none").lower()
+    if verbosity not in ("none", "response", "info", "debug"):
+        verbosity = "response"
+
+    embedding_model = resolve_embedding_alias(model)
+    _check_provider_key(embedding_model, config, verbosity)
+
+    normalized, was_str = _normalize_input(input, embedding_model)
+    _validate_dimensions(dimensions, embedding_model)
+
+    api_key = _resolve_api_key(embedding_model, config)
+
+    extra_kwargs = {}
+    if dimensions is not None:
+        extra_kwargs["dimensions"] = dimensions
+
+    if verbosity != "none":
+        n = len(normalized)
+        print(f"\nEMBEDDING ({embedding_model.name}) — {n} input(s)...\n")
+    if verbosity == "debug":
+        print(f"INPUT: {normalized}")
+        print(f"KWARGS: {extra_kwargs}")
+
+    try:
+        start_time = time.perf_counter()
+        response, request_duration_s = _perform_embedding(
+            model_name=embedding_model.name,
+            input=normalized,
+            api_key=api_key,
+            **extra_kwargs,
+        )
+        total_duration_s = time.perf_counter() - start_time
+    except RouterError:
+        raise
+    except Exception as e:
+        safe_msg = _redact_keys(str(e), config)
+        if verbosity != "none":
+            print(f"ERROR calling {embedding_model.name}: {safe_msg}")
+        raise RouterError(
+            code="PROVIDER_ERROR",
+            message=safe_msg,
+            details={"provider": embedding_model.provider, "model": embedding_model.name},
+        ) from e
+
+    embedding_response = _build_embedding_response(
+        response=response,
+        embedding_model=embedding_model,
+        request_duration_s=request_duration_s,
+        total_duration_s=total_duration_s,
+    )
+
+    if verbosity in ("info", "debug"):
+        print(
+            f"  model={embedding_response.model} "
+            f"dim={embedding_response.dimensions} "
+            f"prompt_tokens={embedding_response.prompt_tokens} "
+            f"cost={embedding_response.cost} "
+            f"duration={total_duration_s:.3f}s"
+        )
+
+    if rich_response:
+        return embedding_response
+
+    if was_str:
+        return embedding_response.embeddings[0]
+    return embedding_response.embeddings
