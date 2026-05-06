@@ -67,3 +67,105 @@ def _classify_input_part(part: str) -> Modality:
 
     # 4. Anything else — including path-like strings that don't exist
     return "text"
+
+
+def _convert_part(part, model: EmbeddingModel) -> tuple[str | dict, Modality]:
+    """Convert a single part to its LiteLLM representation and infer its modality.
+
+    Returns:
+        (normalized_value, modality) where normalized_value is either a string
+        (plain text, data URI, or http/gs URL) or a dict (for GeminiFileRef).
+    """
+    if isinstance(part, GeminiFileRef):
+        modality = _modality_from_mime(part.mime_type)
+        return (
+            {"file_data": {"file_uri": part.uri, "mime_type": part.mime_type}},
+            modality,
+        )
+
+    if isinstance(part, str):
+        # If it's a real file path, encode to data URI and use the encoded form
+        # for both downstream transport AND modality classification.
+        if os.path.isfile(part):
+            data_uri = _encode_to_data_uri(part)
+            return data_uri, _classify_input_part(data_uri)
+        # Otherwise pass through as-is; modality classification handles
+        # data URIs / URLs / plain text.
+        return part, _classify_input_part(part)
+
+    raise RouterError(
+        code="INVALID_INPUT",
+        message=f"Embedding input part must be str or GeminiFileRef, got {type(part).__name__}",
+    )
+
+
+def _normalize_input(
+    input,
+    model: EmbeddingModel,
+) -> tuple[list, bool]:
+    """Normalize the user's `input` argument to the LiteLLM-expected list shape.
+
+    Returns:
+        (normalized, was_str) — `normalized` is a list[str | dict | list[str | dict]]
+        ready for litellm.embedding(input=...). `was_str` is True iff the caller
+        passed a single string (used for unwrapping the return type).
+
+    Raises:
+        RouterError("INVALID_INPUT") for: wrong top-level type, invalid part type,
+        modality not supported by the model, or aggregation on a non-aggregating model.
+    """
+    was_str = isinstance(input, str)
+    if was_str:
+        items = [input]
+    elif isinstance(input, list):
+        items = input
+    else:
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                f"Embedding `input` must be a string or a list, "
+                f"got {type(input).__name__}"
+            ),
+        )
+
+    seen_modalities: set[str] = set()
+    has_aggregation = False
+    normalized: list = []
+
+    for item in items:
+        if isinstance(item, list):
+            has_aggregation = has_aggregation or len(item) > 1
+            inner: list = []
+            for part in item:
+                value, modality = _convert_part(part, model)
+                seen_modalities.add(modality)
+                inner.append(value)
+            normalized.append(inner)
+        else:
+            value, modality = _convert_part(item, model)
+            seen_modalities.add(modality)
+            normalized.append(value)
+
+    # Capability check: every observed modality must be in supported_inputs.
+    unsupported = seen_modalities - model.supported_inputs
+    if unsupported:
+        bad = sorted(unsupported)
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                f"Model '{model.name}' does not support {bad} inputs "
+                f"(supports: {sorted(model.supported_inputs)})"
+            ),
+        )
+
+    # Aggregation check: nested lists with multiple parts require model support.
+    if has_aggregation and not model.supports_aggregation:
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                f"Model '{model.name}' does not support aggregation; "
+                f"flatten the list for batch embeddings"
+            ),
+        )
+
+    return normalized, was_str
