@@ -152,3 +152,45 @@ class TestGeminiFileRef:
         r1 = GeminiFileRef(uri="u1", mime_type="m")
         r2 = GeminiFileRef(uri="u2", mime_type="m")
         assert r1 != r2
+
+
+# ---------------------------------------------------------------------------
+# EmbeddingResponse
+# ---------------------------------------------------------------------------
+
+from skell_e_router.response import EmbeddingResponse
+
+
+class TestEmbeddingResponse:
+
+    def test_minimal_construction(self):
+        resp = EmbeddingResponse(
+            embeddings=[[0.1, 0.2, 0.3]],
+            model="text-embedding-3-large",
+            dimensions=3,
+        )
+        assert resp.embeddings == [[0.1, 0.2, 0.3]]
+        assert resp.model == "text-embedding-3-large"
+        assert resp.dimensions == 3
+        assert resp.prompt_tokens is None
+        assert resp.cost is None
+        assert resp.raw_response is None
+
+    def test_full_construction(self):
+        resp = EmbeddingResponse(
+            embeddings=[[0.1], [0.2]],
+            model="gemini-embedding-2",
+            dimensions=1,
+            prompt_tokens=4,
+            total_tokens=4,
+            cost=0.0001,
+            duration_seconds=0.5,
+            total_duration_seconds=0.6,
+            raw_response={"hi": "there"},
+        )
+        assert resp.prompt_tokens == 4
+        assert resp.total_tokens == 4
+        assert resp.cost == 0.0001
+        assert resp.duration_seconds == 0.5
+        assert resp.total_duration_seconds == 0.6
+        assert resp.raw_response == {"hi": "there"}
