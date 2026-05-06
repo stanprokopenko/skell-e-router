@@ -228,3 +228,40 @@ def make_anthropic_response(
     response.model = model
     response.id = message_id
     return response
+
+
+# ---------------------------------------------------------------------------
+# Mock LiteLLM embedding response builder
+# ---------------------------------------------------------------------------
+
+def make_litellm_embedding_response(
+    embeddings: list[list[float]] | None = None,
+    model: str = "openai/text-embedding-3-large",
+    prompt_tokens: int = 5,
+    total_tokens: int = 5,
+):
+    """Build a mock that looks like a litellm.embedding response.
+
+    Mirrors LiteLLM's OpenAI-shape `data: [{object, index, embedding}]` structure.
+    """
+    if embeddings is None:
+        embeddings = [[0.1, 0.2, 0.3]]
+
+    data = []
+    for i, emb in enumerate(embeddings):
+        item = MagicMock()
+        item.object = "embedding"
+        item.index = i
+        item.embedding = emb
+        data.append(item)
+
+    usage = MagicMock()
+    usage.prompt_tokens = prompt_tokens
+    usage.total_tokens = total_tokens
+
+    response = MagicMock()
+    response.object = "list"
+    response.data = data
+    response.model = model
+    response.usage = usage
+    return response
