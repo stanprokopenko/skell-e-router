@@ -72,6 +72,31 @@ response = ask_ai(
 )
 ```
 
+### Embeddings
+
+Route embedding calls through skell-e-router with `get_embedding()`. Supports OpenAI text embeddings and Gemini multimodal embeddings.
+
+```python
+from skell_e_router import get_embedding
+
+# Single text → list[float]
+v = get_embedding("openai-embedding-3-large", "hello world")
+
+# Batch → list[list[float]]
+vs = get_embedding(
+    "openai-embedding-3-large",
+    ["doc 1", "doc 2", "doc 3"],
+)
+
+# Multimodal aggregation (Gemini): text + image → one fused embedding
+v = get_embedding(
+    "gemini-embedding-2",
+    [["a red shoe on wood", "shoe.jpg"]],
+)
+```
+
+Available models: `openai-embedding-3-large`, `openai-embedding-3-small`, `gemini-embedding-2`. See [the technical reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#embeddings) for the capability matrix, input shape rules, and error codes.
+
 ### Deep Research
 
 ```python
