@@ -24,6 +24,22 @@ from .utils import (
 Modality = Literal["text", "image", "audio", "video", "pdf"]
 
 
+def _modality_from_mime(mime: str | None) -> Modality:
+    """Map a MIME type string to a Modality. Unknown / None → 'text'."""
+    if not mime:
+        return "text"
+    mime = mime.lower()
+    if mime.startswith("image/"):
+        return "image"
+    if mime.startswith("audio/"):
+        return "audio"
+    if mime.startswith("video/"):
+        return "video"
+    if mime == "application/pdf":
+        return "pdf"
+    return "text"
+
+
 def _classify_input_part(part: str) -> Modality:
     """Classify a single string part by its inferred modality.
 
@@ -35,47 +51,19 @@ def _classify_input_part(part: str) -> Modality:
     """
     # 1. data: URIs
     if part.startswith("data:"):
-        # Extract the MIME prefix between "data:" and ";"
-        mime = part[5:].split(";", 1)[0].lower()
-        if mime.startswith("image/"):
-            return "image"
-        if mime.startswith("audio/"):
-            return "audio"
-        if mime.startswith("video/"):
-            return "video"
-        if mime == "application/pdf":
-            return "pdf"
-        return "text"
+        mime = part.removeprefix("data:").split(";", 1)[0]
+        return _modality_from_mime(mime)
 
-    # 2. URLs and gs:// — use file extension
+    # 2. URLs and gs:// — guess_type only inspects the trailing extension,
+    # so it works equally for gs:// despite stdlib not documenting that.
     if part.startswith(("http://", "https://", "gs://")):
         guessed, _ = mimetypes.guess_type(part)
-        if guessed:
-            if guessed.startswith("image/"):
-                return "image"
-            if guessed.startswith("audio/"):
-                return "audio"
-            if guessed.startswith("video/"):
-                return "video"
-            if guessed == "application/pdf":
-                return "pdf"
-        return "text"
+        return _modality_from_mime(guessed)
 
     # 3. Existing local file
     if os.path.isfile(part):
         guessed, _ = mimetypes.guess_type(part)
-        if guessed:
-            if guessed.startswith("image/"):
-                return "image"
-            if guessed.startswith("audio/"):
-                return "audio"
-            if guessed.startswith("video/"):
-                return "video"
-            if guessed == "application/pdf":
-                return "pdf"
-        # Unknown MIME on a real file — treat as text-ish (rare edge case;
-        # caller can override by passing GeminiFileRef explicitly).
-        return "text"
+        return _modality_from_mime(guessed)
 
     # 4. Anything else — including path-like strings that don't exist
     return "text"

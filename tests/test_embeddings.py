@@ -60,3 +60,15 @@ class TestClassifyInputPart:
         # _encode_to_data_uri, which raises INVALID_INPUT for missing paths
         # (only if the caller intended a file).
         assert _classify_input_part("not/a/real/file.png") == "text"
+
+    def test_data_uri_with_charset_param(self):
+        from skell_e_router.embeddings import _classify_input_part
+        assert _classify_input_part("data:image/png;charset=utf-8;base64,abc") == "image"
+
+    def test_data_uri_uppercase_mime(self):
+        from skell_e_router.embeddings import _classify_input_part
+        assert _classify_input_part("data:IMAGE/PNG;base64,abc") == "image"
+
+    def test_data_uri_unknown_mime_is_text(self):
+        from skell_e_router.embeddings import _classify_input_part
+        assert _classify_input_part("data:application/octet-stream;base64,abc") == "text"
