@@ -1,6 +1,6 @@
 """Tests for the AIResponse and GeminiFileRef dataclasses."""
 
-from skell_e_router.response import AIResponse, GeminiFileRef
+from skell_e_router.response import AIResponse, EmbeddingResponse, GeminiFileRef
 
 
 class TestAIResponseCreation:
@@ -157,8 +157,6 @@ class TestGeminiFileRef:
 # ---------------------------------------------------------------------------
 # EmbeddingResponse
 # ---------------------------------------------------------------------------
-
-from skell_e_router.response import EmbeddingResponse
 
 
 class TestEmbeddingResponse:
