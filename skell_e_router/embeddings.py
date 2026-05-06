@@ -190,3 +190,43 @@ def _perform_embedding(
     response = litellm.embedding(**embedding_kwargs)
     request_duration = time.perf_counter() - request_start
     return response, request_duration
+
+
+def _build_embedding_response(
+    response,
+    embedding_model: EmbeddingModel,
+    request_duration_s: float | None,
+    total_duration_s: float | None,
+) -> EmbeddingResponse:
+    """Convert a LiteLLM embedding response into our EmbeddingResponse dataclass."""
+    # Sort by `index` defensively — providers should return in order, but
+    # protect against any reordering.
+    data = sorted(
+        response.data,
+        key=lambda d: d["index"] if isinstance(d, dict) else d.index,
+    )
+    embeddings = [
+        d["embedding"] if isinstance(d, dict) else d.embedding
+        for d in data
+    ]
+
+    usage = getattr(response, "usage", None)
+    try:
+        cost = litellm.completion_cost(completion_response=response)
+    except Exception:
+        cost = None
+
+    model_name = getattr(response, "model", None) or embedding_model.name
+    dimensions = len(embeddings[0]) if embeddings else 0
+
+    return EmbeddingResponse(
+        embeddings=embeddings,
+        model=model_name,
+        dimensions=dimensions,
+        prompt_tokens=getattr(usage, "prompt_tokens", None),
+        total_tokens=getattr(usage, "total_tokens", None),
+        cost=cost,
+        duration_seconds=request_duration_s,
+        total_duration_seconds=total_duration_s,
+        raw_response=response,
+    )
