@@ -128,7 +128,8 @@ The chat path's helpers in `utils.py` are imported, not duplicated:
 
 - `_is_retryable_exception`, `_retry_after_wait` — retry policy
 - `_resolve_api_key`, `_check_provider_key`, `_redact_keys` — auth + redaction
-- `_encode_image` — extended/generalized into `_encode_to_data_uri` if needed for non-image MIME types
+
+The chat-side `_encode_image` is **not** reused as-is: it returns an OpenAI chat-completion content part (`{"type": "image_url", "image_url": {...}}`), which is the wrong shape for embeddings. Instead, we extract its data-URI core into a new helper `_encode_to_data_uri(path) -> str` that lives in `embeddings.py` and returns just the `data:<mime>;base64,<...>` string. `_encode_image` is then refactored to call `_encode_to_data_uri` so the chat path keeps working without behavior change.
 
 The two paths share retry policy, error wrapping, key resolution, and key redaction. They diverge only at the call site (`litellm.embedding` vs `litellm.completion`) and response shape.
 
@@ -148,7 +149,6 @@ class EmbeddingModel:
         recommended_dimensions: tuple[int, ...] = (),
         max_input_tokens: int | None = None,
         supports_aggregation: bool = False,
-        native_batch: bool = True,
     ): ...
 
     @property
@@ -189,8 +189,10 @@ class EmbeddingResponse:
 4. **Normalize input**:
    - Track `was_str = isinstance(input, str)`; if so, wrap as `[input]`.
    - Walk the (now always-list) input. For each top-level element:
-     - If it's a string or `GeminiFileRef`, classify modality and convert to a single LiteLLM part.
-     - If it's a `list`, mark aggregation; classify each part; produce a nested LiteLLM list.
+     - If it's a `str`: classify modality. If text, leave as-is. If file path, encode via `_encode_to_data_uri` to a data URI string. Data URIs / URLs / `gs://` strings pass through unchanged.
+     - If it's a `GeminiFileRef`: convert to LiteLLM's expected file reference dict (`{"file_data": {"file_uri": ref.uri, "mime_type": ref.mime_type}}`, matching LiteLLM's documented Gemini file shape).
+     - If it's a `list`: mark aggregation; recursively normalize each part using the rules above; produce a nested list of normalized parts (strings and/or file-ref dicts) — this matches LiteLLM's nested-list aggregation shape exactly.
+   - The final shape sent to `litellm.embedding(input=...)` is therefore `list[str | dict | list[str | dict]]` — strings for text/data-URIs/URLs, dicts for `GeminiFileRef`, nested lists for aggregation.
    - Validate inferred modality set ⊆ `embedding_model.supported_inputs`.
    - If any aggregation occurred, require `embedding_model.supports_aggregation`.
 5. **Validate `dimensions`** — `1 ≤ dimensions ≤ max_dimensions` if provided.
@@ -250,7 +252,7 @@ No live network calls in unit tests. A small set of integration smoke tests can 
 
 ## Documentation deliverables
 
-The user explicitly requested clear documentation covering input shapes, expected outputs, and per-model capability differences. Two locations:
+The user explicitly requested clear documentation covering input shapes, expected outputs, and per-model capability differences. Three deliverables:
 
 1. **`Skell-E-Router-DOCUMENTATION.md`** gets a full "Embeddings" section containing:
    - Quick reference: three input shapes with example calls and described outputs.
