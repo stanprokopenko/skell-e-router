@@ -41,17 +41,14 @@ def main() -> None:
     )
     print(f"  count={len(v)}  fused_dim={len(v[0])}")
 
-    # 5. Mixed batch: aggregate + plain text → 2 embeddings (Gemini)
-    section("5. Mixed batch (Gemini)")
+    # 5. Gemini text batch (the high-throughput path)
+    section("5. Gemini text batch")
     vs = get_embedding(
         "gemini-embedding-2",
-        [
-            ["product caption", "skell_e_router/examples/vision-test.jpg"],
-            "plain text query",
-        ],
+        ["one", "two", "three"],
     )
-    print(f"  count={len(vs)}")
-    assert len(vs) == 2
+    print(f"  count={len(vs)}  dim_each={len(vs[0])}")
+    assert len(vs) == 3
 
     # 6. Rich response
     section("6. Rich response")

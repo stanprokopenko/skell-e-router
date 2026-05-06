@@ -106,13 +106,22 @@ def _normalize_input(
     """Normalize the user's `input` argument to the LiteLLM-expected list shape.
 
     Returns:
-        (normalized, was_str) — `normalized` is a list[str | dict | list[str | dict]]
-        ready for litellm.embedding(input=...). `was_str` is True iff the caller
-        passed a single string (used for unwrapping the return type).
+        (normalized, was_str) — `normalized` is a list[str | dict] ready for
+        litellm.embedding(input=...). `was_str` is True iff the caller passed
+        a single string (used for unwrapping the return type).
+
+    LiteLLM's Gemini handler routes flat lists to two endpoints based on
+    content: all-text → batchEmbedContents (N embeddings); any media element
+    → embedContent (one fused embedding). Nested lists are NOT supported by
+    either path, so an aggregation request like ``[["caption", "img"]]`` is
+    flattened here into a flat multimodal list ``["caption", "data:image..."]``
+    before reaching LiteLLM.
 
     Raises:
-        RouterError("INVALID_INPUT") for: wrong top-level type, invalid part type,
-        modality not supported by the model, or aggregation on a non-aggregating model.
+        RouterError("INVALID_INPUT") for: wrong top-level type, invalid part
+        type, modality not supported by the model, aggregation on a non-
+        aggregating model, or shapes LiteLLM cannot handle in one call
+        (mixing aggregation with batch, multiple aggregates in one call).
     """
     was_str = isinstance(input, str)
     if was_str:
@@ -128,20 +137,33 @@ def _normalize_input(
             ),
         )
 
+    aggregate_count = sum(1 for item in items if isinstance(item, list))
+    has_aggregation = aggregate_count > 0
+
+    # LiteLLM can't combine aggregation with batch, or do multiple aggregates,
+    # in a single call. Reject early with a clear message.
+    if has_aggregation and len(items) > 1:
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                "Cannot mix aggregation with batch in one call. "
+                "Pass a single nested list for one aggregated embedding, "
+                "or a flat list of strings for batch."
+            ),
+        )
+
     seen_modalities: set[str] = set()
-    has_aggregation = False
     normalized: list = []
 
-    for item in items:
-        if isinstance(item, list):
-            has_aggregation = has_aggregation or len(item) > 1
-            inner: list = []
-            for part in item:
-                value, modality = _convert_part(part)
-                seen_modalities.add(modality)
-                inner.append(value)
-            normalized.append(inner)
-        else:
+    if has_aggregation:
+        # Single nested list → flatten its parts to top level so LiteLLM's
+        # multimodal detector picks up the data URIs.
+        for part in items[0]:
+            value, modality = _convert_part(part)
+            seen_modalities.add(modality)
+            normalized.append(value)
+    else:
+        for item in items:
             value, modality = _convert_part(item)
             seen_modalities.add(modality)
             normalized.append(value)
@@ -158,7 +180,7 @@ def _normalize_input(
             ),
         )
 
-    # Aggregation check: nested lists with multiple parts require model support.
+    # Aggregation requires explicit model support.
     if has_aggregation and not model.supports_aggregation:
         raise RouterError(
             code="INVALID_INPUT",

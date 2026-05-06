@@ -93,23 +93,40 @@ class TestNormalizeInput:
         assert was_str is False
 
     def test_nested_list_aggregation_on_gemini(self):
+        """Nested aggregation flattens to a flat multimodal list for LiteLLM."""
         from skell_e_router.embeddings import _normalize_input
         from skell_e_router.model_config import EMBEDDING_MODEL_CONFIG
         m = EMBEDDING_MODEL_CONFIG["gemini-embedding-2"]
         normalized, was_str = _normalize_input(
             [["caption", "data:image/png;base64,abc"]], m
         )
-        assert normalized == [["caption", "data:image/png;base64,abc"]]
+        assert normalized == ["caption", "data:image/png;base64,abc"]
         assert was_str is False
 
-    def test_mixed_aggregate_and_plain_on_gemini(self):
+    def test_mixed_aggregate_and_plain_rejected(self):
+        """LiteLLM cannot mix aggregation with batch in one call."""
         from skell_e_router.embeddings import _normalize_input
         from skell_e_router.model_config import EMBEDDING_MODEL_CONFIG
+        from skell_e_router.utils import RouterError
         m = EMBEDDING_MODEL_CONFIG["gemini-embedding-2"]
-        normalized, _ = _normalize_input(
-            [["caption", "data:image/png;base64,abc"], "plain"], m
-        )
-        assert normalized == [["caption", "data:image/png;base64,abc"], "plain"]
+        with pytest.raises(RouterError) as exc:
+            _normalize_input(
+                [["caption", "data:image/png;base64,abc"], "plain"], m
+            )
+        assert exc.value.code == "INVALID_INPUT"
+        assert "mix" in exc.value.message.lower()
+
+    def test_multiple_aggregates_rejected(self):
+        """LiteLLM cannot do multiple aggregations in one call."""
+        from skell_e_router.embeddings import _normalize_input
+        from skell_e_router.model_config import EMBEDDING_MODEL_CONFIG
+        from skell_e_router.utils import RouterError
+        m = EMBEDDING_MODEL_CONFIG["gemini-embedding-2"]
+        with pytest.raises(RouterError) as exc:
+            _normalize_input(
+                [["a", "data:image/png;base64,x"], ["b", "data:image/png;base64,y"]], m
+            )
+        assert exc.value.code == "INVALID_INPUT"
 
     def test_local_file_path_encoded_to_data_uri(self, tmp_path):
         from skell_e_router.embeddings import _normalize_input
@@ -118,8 +135,8 @@ class TestNormalizeInput:
         p = tmp_path / "tiny.png"
         p.write_bytes(b"\x89PNG\r\n\x1a\n")
         normalized, _ = _normalize_input([["caption", str(p)]], m)
-        assert normalized[0][0] == "caption"
-        assert normalized[0][1].startswith("data:image/png;base64,")
+        assert normalized[0] == "caption"
+        assert normalized[1].startswith("data:image/png;base64,")
 
     def test_nested_on_openai_raises(self):
         from skell_e_router.embeddings import _normalize_input
@@ -148,7 +165,7 @@ class TestNormalizeInput:
         normalized, _ = _normalize_input(
             [["transcribe", "data:audio/mpeg;base64,xyz"]], m
         )
-        assert normalized[0][1] == "data:audio/mpeg;base64,xyz"
+        assert normalized[1] == "data:audio/mpeg;base64,xyz"
 
     def test_gemini_file_ref_in_aggregate(self):
         from skell_e_router.embeddings import _normalize_input
@@ -157,8 +174,8 @@ class TestNormalizeInput:
         m = EMBEDDING_MODEL_CONFIG["gemini-embedding-2"]
         ref = GeminiFileRef(uri="files/abc123", mime_type="video/mp4")
         normalized, _ = _normalize_input([["watch this", ref]], m)
-        assert normalized[0][0] == "watch this"
-        assert normalized[0][1] == {
+        assert normalized[0] == "watch this"
+        assert normalized[1] == {
             "file_data": {"file_uri": "files/abc123", "mime_type": "video/mp4"}
         }
 
@@ -514,11 +531,11 @@ class TestGetEmbedding:
         # 1 nested element → 1 output embedding
         assert len(result) == 1
         assert len(result[0]) == 768
-        # The input passed to litellm should have the image as a data URI
+        # The input passed to litellm should be a flat list (LiteLLM auto-detects
+        # multimodal from data URI presence and routes to embedContent endpoint).
         sent = mock_emb.call_args.kwargs["input"]
-        assert isinstance(sent[0], list)
-        assert sent[0][0] == "a red shoe"
-        assert sent[0][1].startswith("data:image/png;base64,")
+        assert sent[0] == "a red shoe"
+        assert sent[1].startswith("data:image/png;base64,")
 
 
 class TestPackageExports:

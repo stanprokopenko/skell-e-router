@@ -75,15 +75,14 @@ v = get_embedding(
     "gemini-embedding-2",
     [["a red shoe", "shoe.jpg"]],
 )  # → list[list[float]] of length 1
-
-# Mixed batch: aggregate + plain → 2 embeddings (Gemini only)
-vs = get_embedding(
-    "gemini-embedding-2",
-    [["product", "img.jpg"], "plain text"],
-)  # → list[list[float]] of length 2
 ```
 
-**Predictability rule:** *Number of top-level elements in `input` = number of output embeddings.* The string-shorthand is the only exception — it returns the one embedding unwrapped as `list[float]`.
+**Cardinality rules:**
+- A single `str` returns one embedding unwrapped as `list[float]`.
+- A flat `list[str]` returns `list[list[float]]` — one embedding per element.
+- A single nested list (one top-level element that is itself a list) is an *aggregation* request: all inner parts are fused into one embedding. Returns `list[list[float]]` of length 1.
+
+**Not supported in one call:** mixing aggregation with batch (e.g. `[["a","b"], "c"]`) or doing multiple aggregations at once (e.g. `[["a","b"], ["c","d"]]`). Both raise `RouterError("INVALID_INPUT")`. To embed multiple multimodal items, call `get_embedding` once per item.
 
 ### Capability Matrix
 
