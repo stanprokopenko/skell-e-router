@@ -319,6 +319,45 @@ def get_embedding(
     rich_response: bool = False,
     verbosity: str = "none",
 ):
+    """Compute embeddings via LiteLLM.
+
+    Args:
+        model: Alias from EMBEDDING_MODEL_CONFIG (e.g., "openai-embedding-3-large",
+            "openai-embedding-3-small", "gemini-embedding-2") or a full LiteLLM
+            model name.
+        input: One of:
+            - ``str`` — single text. Returns one embedding as ``list[float]``.
+            - ``list[str]`` — flat batch. Returns ``list[list[float]]`` with one
+              embedding per element.
+            - ``[[part, part, ...]]`` — single nested list = aggregation. All
+              inner parts are fused into one embedding (Gemini only). Each
+              part may be a text string, a ``data:`` URI, an http(s) URL, a
+              ``gs://`` URI, a local file path (encoded to a data URI), or a
+              ``GeminiFileRef``. Returns ``list[list[float]]`` of length 1.
+
+            Mixing aggregation with batch (``[["a","b"], "c"]``) or doing
+            multiple aggregations in one call (``[["a","b"], ["c","d"]]``) is
+            not supported and raises ``RouterError("INVALID_INPUT")``. To embed
+            multiple multimodal items, call this function once per item.
+        dimensions: Optional output dimension count, ``1 ≤ dimensions ≤
+            model.max_dimensions``. The provider truncates and (for Gemini and
+            OpenAI text-embedding-3) renormalizes.
+        config: Optional dict of API keys (overrides env vars), e.g.
+            ``{"openai_api_key": "sk-..."}``.
+        rich_response: If True, return the full ``EmbeddingResponse`` (model,
+            dimensions, token usage, cost, timing, raw response).
+        verbosity: ``"none" | "response" | "info" | "debug"``.
+
+    Returns:
+        - ``rich_response=True`` → ``EmbeddingResponse``.
+        - input was ``str`` → ``list[float]`` (flat).
+        - input was list → ``list[list[float]]`` (one embedding per top-level
+          element; aggregation collapses to length 1).
+
+    Raises:
+        RouterError: codes ``INVALID_MODEL``, ``MISSING_ENV``, ``INVALID_INPUT``,
+        ``INVALID_PARAM``, or ``PROVIDER_ERROR``.
+    """
     verbosity = (verbosity or "none").lower()
     if verbosity not in ("none", "response", "info", "debug"):
         print(f"WARNING: Invalid verbosity '{verbosity}'. Must be 'none', 'response', 'info', or 'debug'.\nSetting to 'response'.")

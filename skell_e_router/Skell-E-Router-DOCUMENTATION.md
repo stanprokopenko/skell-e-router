@@ -124,6 +124,8 @@ get_embedding(
 
 Aggregation requires `gemini-embedding-2`. Trying to nest with an OpenAI model raises `RouterError("INVALID_INPUT", "...does not support aggregation")`.
 
+**One aggregation per call.** You cannot mix aggregation with a batch (e.g. `[["a","b"], "c"]`) or do multiple aggregations at once (e.g. `[["a","b"], ["c","d"]]`) — both raise `RouterError("INVALID_INPUT")`. The constraint comes from how the underlying API splits its endpoints: text batch and multimodal aggregation are separate calls. To embed multiple multimodal items, loop and call `get_embedding` once per item.
+
 ### `dimensions` Parameter
 
 Optionally truncate the output vector. Must be `1 ≤ dimensions ≤ max_dimensions`. The provider auto-normalizes truncated vectors (Gemini Embedding 2 does this automatically; OpenAI text-embedding-3 returns Matryoshka-truncated vectors).
@@ -149,7 +151,7 @@ All errors are `RouterError` with one of these codes:
 |---|---|
 | `INVALID_MODEL` | unknown alias passed to `get_embedding(model=...)` |
 | `MISSING_ENV` | required API key not in env or `config` |
-| `INVALID_INPUT` | wrong input type, modality unsupported by model, aggregation on non-aggregating model |
+| `INVALID_INPUT` | wrong input type, modality unsupported by model, aggregation on non-aggregating model, or mixing aggregation with batch / multiple aggregations in one call |
 | `INVALID_PARAM` | `dimensions` out of range or wrong type |
 | `PROVIDER_ERROR` | LiteLLM/provider-side failure (after retry budget exhausted); message has any `config` keys redacted |
 
