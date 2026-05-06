@@ -512,3 +512,22 @@ class TestGetEmbedding:
         assert isinstance(sent[0], list)
         assert sent[0][0] == "a red shoe"
         assert sent[0][1].startswith("data:image/png;base64,")
+
+
+class TestPackageExports:
+
+    def test_get_embedding_importable_from_top_level(self):
+        from skell_e_router import get_embedding
+        assert callable(get_embedding)
+
+    def test_embedding_response_importable_from_top_level(self):
+        from skell_e_router import EmbeddingResponse
+        assert EmbeddingResponse is not None
+
+    def test_embedding_model_importable_from_top_level(self):
+        from skell_e_router import EmbeddingModel
+        assert EmbeddingModel is not None
+
+    def test_resolve_embedding_alias_importable_from_top_level(self):
+        from skell_e_router import resolve_embedding_alias
+        assert callable(resolve_embedding_alias)

@@ -1,4 +1,4 @@
-from .response import AIResponse, GeminiFileRef
+from .response import AIResponse, GeminiFileRef, EmbeddingResponse
 from .utils import ask_ai, upload_file, resolve_model_alias, check_environment_variables, RouterError
 from .gemini_deep_research import (
     ask_deep_research,
@@ -14,6 +14,8 @@ from .gemini_deep_research import (
     DeepResearchError,
     ParsedCitation,
 )
+from .embeddings import get_embedding
+from .model_config import EmbeddingModel, resolve_embedding_alias
 
 __all__ = [
     # Core LiteLLM-based functions
@@ -24,6 +26,11 @@ __all__ = [
     "RouterError",
     "AIResponse",
     "GeminiFileRef",
+    # Embeddings
+    "get_embedding",
+    "EmbeddingResponse",
+    "EmbeddingModel",
+    "resolve_embedding_alias",
     # Gemini Deep Research Agent
     "ask_deep_research",
     "deep_research_follow_up",
@@ -39,4 +46,4 @@ __all__ = [
     "ParsedCitation",
 ]
 
-__version__ = "3.2.1"
+__version__ = "3.5.0"
