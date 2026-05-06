@@ -1,7 +1,11 @@
 """Tests for AIModel and MODEL_CONFIG."""
 
 import pytest
-from skell_e_router.model_config import AIModel, MODEL_CONFIG
+from skell_e_router.model_config import (
+    AIModel, MODEL_CONFIG,
+    EmbeddingModel, EMBEDDING_MODEL_CONFIG, resolve_embedding_alias,
+)
+from skell_e_router.utils import RouterError
 
 
 # ---------------------------------------------------------------------------
@@ -272,3 +276,102 @@ class TestModelConfig:
         model = MODEL_CONFIG["nemotron-3-super"]
         assert "120B" in model.name
         assert "A12B" in model.name  # 12B active params
+
+
+# ---------------------------------------------------------------------------
+# EmbeddingModel registry
+# ---------------------------------------------------------------------------
+
+class TestEmbeddingModel:
+
+    def test_class_basic_fields(self):
+        m = EmbeddingModel(
+            name="provider/some-model",
+            provider="openai",
+            supported_inputs={"text"},
+            max_dimensions=1024,
+            default_dimensions=1024,
+        )
+        assert m.name == "provider/some-model"
+        assert m.provider == "openai"
+        assert m.supported_inputs == {"text"}
+        assert m.max_dimensions == 1024
+        assert m.default_dimensions == 1024
+        assert m.recommended_dimensions == ()
+        assert m.max_input_tokens is None
+        assert m.supports_aggregation is False
+
+    def test_provider_helpers(self):
+        oa = EmbeddingModel(
+            name="openai/x", provider="openai",
+            supported_inputs={"text"}, max_dimensions=1, default_dimensions=1,
+        )
+        gm = EmbeddingModel(
+            name="gemini/x", provider="gemini",
+            supported_inputs={"text"}, max_dimensions=1, default_dimensions=1,
+        )
+        assert oa.is_openai is True and oa.is_gemini is False
+        assert gm.is_openai is False and gm.is_gemini is True
+
+
+class TestEmbeddingRegistry:
+
+    def test_three_aliases_registered(self):
+        assert "openai-embedding-3-large" in EMBEDDING_MODEL_CONFIG
+        assert "openai-embedding-3-small" in EMBEDDING_MODEL_CONFIG
+        assert "gemini-embedding-2" in EMBEDDING_MODEL_CONFIG
+
+    def test_full_names_also_keyed(self):
+        assert "openai/text-embedding-3-large" in EMBEDDING_MODEL_CONFIG
+        assert "openai/text-embedding-3-small" in EMBEDDING_MODEL_CONFIG
+        assert "gemini/gemini-embedding-2" in EMBEDDING_MODEL_CONFIG
+
+    def test_alias_and_fullname_resolve_to_same_object(self):
+        a = EMBEDDING_MODEL_CONFIG["openai-embedding-3-large"]
+        b = EMBEDDING_MODEL_CONFIG["openai/text-embedding-3-large"]
+        assert a is b
+
+    def test_openai_large_specs(self):
+        m = EMBEDDING_MODEL_CONFIG["openai-embedding-3-large"]
+        assert m.provider == "openai"
+        assert m.supported_inputs == {"text"}
+        assert m.max_dimensions == 3072
+        assert m.default_dimensions == 3072
+        assert m.recommended_dimensions == (256, 1024, 3072)
+        assert m.max_input_tokens == 8192
+        assert m.supports_aggregation is False
+
+    def test_openai_small_specs(self):
+        m = EMBEDDING_MODEL_CONFIG["openai-embedding-3-small"]
+        assert m.max_dimensions == 1536
+        assert m.default_dimensions == 1536
+        assert m.recommended_dimensions == (512, 1536)
+        assert m.supported_inputs == {"text"}
+        assert m.supports_aggregation is False
+
+    def test_gemini_specs(self):
+        m = EMBEDDING_MODEL_CONFIG["gemini-embedding-2"]
+        assert m.provider == "gemini"
+        assert m.supported_inputs == {"text", "image", "audio", "video", "pdf"}
+        assert m.max_dimensions == 3072
+        assert m.default_dimensions == 3072
+        assert m.recommended_dimensions == (768, 1536, 3072)
+        assert m.max_input_tokens == 8192
+        assert m.supports_aggregation is True
+
+
+class TestResolveEmbeddingAlias:
+
+    def test_known_alias(self):
+        m = resolve_embedding_alias("openai-embedding-3-large")
+        assert m.name == "openai/text-embedding-3-large"
+
+    def test_full_name_lookup(self):
+        m = resolve_embedding_alias("gemini/gemini-embedding-2")
+        assert m.provider == "gemini"
+
+    def test_unknown_alias_raises(self):
+        with pytest.raises(RouterError) as exc:
+            resolve_embedding_alias("not-a-real-model")
+        assert exc.value.code == "INVALID_MODEL"
+        assert "not-a-real-model" in exc.value.message

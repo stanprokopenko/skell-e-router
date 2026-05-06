@@ -417,3 +417,95 @@ MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)
     if config.name not in MODEL_CONFIG:
         MODEL_CONFIG[config.name] = config
+
+
+# ============================================================
+# EMBEDDING MODEL CONFIGURATION
+# ============================================================
+
+
+class EmbeddingModel:
+    """Registry entry for an embedding model. Distinct from chat AIModel."""
+
+    def __init__(
+        self,
+        name: str,                                  # full LiteLLM identifier
+        provider: str,                              # "openai" | "gemini"
+        supported_inputs: set[str],                 # subset of {"text","image","audio","video","pdf"}
+        max_dimensions: int,
+        default_dimensions: int,
+        recommended_dimensions: tuple[int, ...] = (),
+        max_input_tokens: int | None = None,
+        supports_aggregation: bool = False,
+    ):
+        self.name = name
+        self.provider = provider
+        self.supported_inputs = supported_inputs
+        self.max_dimensions = max_dimensions
+        self.default_dimensions = default_dimensions
+        self.recommended_dimensions = recommended_dimensions
+        self.max_input_tokens = max_input_tokens
+        self.supports_aggregation = supports_aggregation
+
+    @property
+    def is_openai(self) -> bool:
+        return self.provider == "openai"
+
+    @property
+    def is_gemini(self) -> bool:
+        return self.provider == "gemini"
+
+
+EMBEDDING_MODEL_CONFIG: dict[str, EmbeddingModel] = {
+    "openai-embedding-3-large": EmbeddingModel(
+        name="openai/text-embedding-3-large",
+        provider="openai",
+        supported_inputs={"text"},
+        max_dimensions=3072,
+        default_dimensions=3072,
+        recommended_dimensions=(256, 1024, 3072),
+        max_input_tokens=8192,
+        supports_aggregation=False,
+    ),
+    "openai-embedding-3-small": EmbeddingModel(
+        name="openai/text-embedding-3-small",
+        provider="openai",
+        supported_inputs={"text"},
+        max_dimensions=1536,
+        default_dimensions=1536,
+        recommended_dimensions=(512, 1536),
+        max_input_tokens=8192,
+        supports_aggregation=False,
+    ),
+    "gemini-embedding-2": EmbeddingModel(
+        name="gemini/gemini-embedding-2",
+        provider="gemini",
+        supported_inputs={"text", "image", "audio", "video", "pdf"},
+        max_dimensions=3072,
+        default_dimensions=3072,
+        recommended_dimensions=(768, 1536, 3072),
+        max_input_tokens=8192,
+        supports_aggregation=True,
+    ),
+}
+
+# Allow lookup by full LiteLLM name in addition to alias.
+for _cfg in list(EMBEDDING_MODEL_CONFIG.values()):
+    if _cfg.name not in EMBEDDING_MODEL_CONFIG:
+        EMBEDDING_MODEL_CONFIG[_cfg.name] = _cfg
+
+
+def resolve_embedding_alias(model_alias: str) -> EmbeddingModel:
+    """Resolve an embedding model alias (or full LiteLLM name) to its EmbeddingModel."""
+    # Local import avoids a circular reference (utils.py imports model_config at module load).
+    from .utils import RouterError
+
+    model = EMBEDDING_MODEL_CONFIG.get(model_alias)
+    if not model:
+        # Show only the short aliases (full-name duplicates would clutter the message).
+        available = sorted(k for k in EMBEDDING_MODEL_CONFIG if "/" not in k)
+        raise RouterError(
+            code="INVALID_MODEL",
+            message=f"Invalid embedding model alias '{model_alias}'. Available: {available}",
+        )
+    return model
