@@ -55,6 +55,107 @@ Keys passed via `config` are never logged or included in error messages.
 
 ---
 
+## Embeddings
+
+`get_embedding()` routes embedding calls through LiteLLM with the same retry/backoff and error wrapping as `ask_ai()`.
+
+### Quick Reference
+
+```python
+from skell_e_router import get_embedding
+
+# Single string → list[float]
+v = get_embedding("openai-embedding-3-large", "hello")
+
+# Batch → list[list[float]] (one per top-level element)
+vs = get_embedding("openai-embedding-3-large", ["a", "b", "c"])
+
+# Multimodal aggregation: nested list → 1 fused embedding (Gemini only)
+v = get_embedding(
+    "gemini-embedding-2",
+    [["a red shoe", "shoe.jpg"]],
+)  # → list[list[float]] of length 1
+
+# Mixed batch: aggregate + plain → 2 embeddings (Gemini only)
+vs = get_embedding(
+    "gemini-embedding-2",
+    [["product", "img.jpg"], "plain text"],
+)  # → list[list[float]] of length 2
+```
+
+**Predictability rule:** *Number of top-level elements in `input` = number of output embeddings.* The string-shorthand is the only exception — it returns the one embedding unwrapped as `list[float]`.
+
+### Capability Matrix
+
+| Alias | Provider | Inputs | Max dims | Recommended dims | Aggregation | Notes |
+|---|---|---|---|---|---|---|
+| `openai-embedding-3-large` | OpenAI | text | 3072 | 256 / 1024 / 3072 | no | ≤2048 inputs/req, ≤300k tokens/req |
+| `openai-embedding-3-small` | OpenAI | text | 1536 | 512 / 1536 | no | ≤2048 inputs/req, ≤300k tokens/req |
+| `gemini-embedding-2` | Gemini | text, image, audio, video, pdf | 3072 | 768 / 1536 / 3072 | yes | per-input limits: 6 images, 120s video, 180s audio, 6 PDF pages; auto-normalizes truncated dims |
+
+### Accepted Part Values
+
+A "part" is each string in a flat input *or* each string/`GeminiFileRef` inside a nested list:
+
+| Pattern | Inferred modality | Handling |
+|---|---|---|
+| `data:image/...` | image | passed through as data URI |
+| `data:audio/...` | audio | passed through |
+| `data:video/...` | video | passed through |
+| `data:application/pdf` | pdf | passed through |
+| `https://…` / `http://…` | from URL extension | passed through |
+| `gs://…` | from extension | passed through (Vertex GCS reference) |
+| Local file path that exists on disk | from `mimetypes.guess_type` | base64-encoded to data URI |
+| `GeminiFileRef` instance | from `mime_type` | converted to file reference dict |
+| Anything else | text | sent as text |
+
+A path-like string that doesn't exist on disk is treated as plain text — it is **not** an error. To embed a file, the file must exist or you must pass it as a `data:` URI / URL / `GeminiFileRef`.
+
+### Multimodal Aggregation
+
+Aggregation fuses multiple parts (text + image, multiple texts, etc.) into a single vector. Wrap the parts in a nested list:
+
+```python
+# 1 aggregated embedding from a caption + image
+get_embedding(
+    "gemini-embedding-2",
+    [["caption text", "image.jpg"]],
+)
+```
+
+Aggregation requires `gemini-embedding-2`. Trying to nest with an OpenAI model raises `RouterError("INVALID_INPUT", "...does not support aggregation")`.
+
+### `dimensions` Parameter
+
+Optionally truncate the output vector. Must be `1 ≤ dimensions ≤ max_dimensions`. The provider auto-normalizes truncated vectors (Gemini Embedding 2 does this automatically; OpenAI text-embedding-3 returns Matryoshka-truncated vectors).
+
+```python
+v = get_embedding("openai-embedding-3-small", "hello", dimensions=512)
+assert len(v) == 512
+```
+
+### Rich Response
+
+```python
+resp = get_embedding("openai-embedding-3-large", ["a", "b"], rich_response=True)
+print(resp.model, resp.dimensions, resp.prompt_tokens, resp.cost)
+print(resp.embeddings)  # always list[list[float]]
+```
+
+### Errors
+
+All errors are `RouterError` with one of these codes:
+
+| Code | Triggered by |
+|---|---|
+| `INVALID_MODEL` | unknown alias passed to `get_embedding(model=...)` |
+| `MISSING_ENV` | required API key not in env or `config` |
+| `INVALID_INPUT` | wrong input type, modality unsupported by model, aggregation on non-aggregating model |
+| `INVALID_PARAM` | `dimensions` out of range or wrong type |
+| `PROVIDER_ERROR` | LiteLLM/provider-side failure (after retry budget exhausted); message has any `config` keys redacted |
+
+---
+
 ## Rich Response Object
 
 By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
