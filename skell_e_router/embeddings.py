@@ -169,3 +169,24 @@ def _normalize_input(
         )
 
     return normalized, was_str
+
+
+@retry(
+    retry=retry_if_exception(_is_retryable_exception),
+    wait=_retry_after_wait,
+    stop=stop_after_attempt(3),
+)
+def _perform_embedding(
+    model_name: str,
+    input: list,
+    api_key: str | None = None,
+    **kwargs,
+):
+    """Call litellm.embedding() with retry + Retry-After backoff."""
+    embedding_kwargs = dict(model=model_name, input=input, **kwargs)
+    if api_key:
+        embedding_kwargs["api_key"] = api_key
+    request_start = time.perf_counter()
+    response = litellm.embedding(**embedding_kwargs)
+    request_duration = time.perf_counter() - request_start
+    return response, request_duration

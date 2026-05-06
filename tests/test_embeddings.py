@@ -188,3 +188,80 @@ class TestNormalizeInput:
         with pytest.raises(RouterError) as exc:
             _normalize_input([["caption", 999]], m)
         assert exc.value.code == "INVALID_INPUT"
+
+
+class TestPerformEmbedding:
+
+    def test_calls_litellm_with_correct_kwargs(self):
+        from skell_e_router.embeddings import _perform_embedding
+        from tests.helpers import make_litellm_embedding_response
+
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            mock_emb.return_value = make_litellm_embedding_response(
+                embeddings=[[0.1, 0.2]]
+            )
+            response, duration = _perform_embedding(
+                model_name="openai/text-embedding-3-large",
+                input=["hello"],
+                api_key="sk-test",
+                dimensions=512,
+            )
+        mock_emb.assert_called_once()
+        kwargs = mock_emb.call_args.kwargs
+        assert kwargs["model"] == "openai/text-embedding-3-large"
+        assert kwargs["input"] == ["hello"]
+        assert kwargs["api_key"] == "sk-test"
+        assert kwargs["dimensions"] == 512
+        assert duration >= 0
+
+    def test_no_api_key_omits_kwarg(self):
+        from skell_e_router.embeddings import _perform_embedding
+        from tests.helpers import make_litellm_embedding_response
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            mock_emb.return_value = make_litellm_embedding_response()
+            _perform_embedding(
+                model_name="openai/text-embedding-3-large",
+                input=["hello"],
+                api_key=None,
+            )
+        kwargs = mock_emb.call_args.kwargs
+        assert "api_key" not in kwargs
+
+    def test_retries_on_503(self):
+        from skell_e_router.embeddings import _perform_embedding
+        from tests.helpers import make_litellm_embedding_response
+
+        # First two calls raise a 503, third succeeds.
+        err = Exception("server down")
+        err.status_code = 503
+        err.headers = {}
+
+        ok = make_litellm_embedding_response()
+
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            mock_emb.side_effect = [err, err, ok]
+            response, _ = _perform_embedding(
+                model_name="openai/text-embedding-3-large",
+                input=["hi"],
+                api_key=None,
+            )
+        assert mock_emb.call_count == 3
+        assert response is ok
+
+    def test_does_not_retry_on_quota_429(self):
+        from skell_e_router.embeddings import _perform_embedding
+
+        err = Exception("quota exceeded")
+        err.status_code = 429
+        err.code = "insufficient_quota"
+        err.headers = {}
+
+        with patch("skell_e_router.embeddings.litellm.embedding") as mock_emb:
+            mock_emb.side_effect = err
+            with pytest.raises(Exception):
+                _perform_embedding(
+                    model_name="openai/text-embedding-3-large",
+                    input=["hi"],
+                    api_key=None,
+                )
+        assert mock_emb.call_count == 1
