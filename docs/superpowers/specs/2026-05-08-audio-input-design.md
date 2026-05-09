@@ -157,6 +157,8 @@ _AUDIO_MIME_TO_FORMAT = {
 }
 ```
 
+The reverse lookup `_AUDIO_FORMAT_TO_MIME` (used by `gemini_direct.py` to reconstruct MIME from the OpenAI-style format suffix) is derived from `_AUDIO_MIME_TO_FORMAT` by picking a canonical MIME per format value (e.g., `mp3 → audio/mpeg`, `wav → audio/wav`, etc., dropping the "tolerant" duplicates). Either define it explicitly in `gemini_direct.py` or compute it once at module load — implementation choice.
+
 ### `_convert_messages_to_contents` (`skell_e_router/gemini_direct.py`)
 
 Extend the existing per-part dispatch (`gemini_direct.py:74-92`) with a new branch that handles `input_audio`. After base64-decoding the data and mapping format → MIME, append `types.Part.from_bytes(data=<bytes>, mime_type=<mime>)`. The reverse format → MIME map lives in `gemini_direct.py` (or is imported from `utils.py` — implementation choice during build).
