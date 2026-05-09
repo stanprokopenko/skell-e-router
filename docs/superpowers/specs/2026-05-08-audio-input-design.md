@@ -46,9 +46,39 @@ response = ask_ai(
 )
 ```
 
-The new `audio` parameter is added to both `@overload` declarations and the implementation:
+The new `audio` parameter is added to **both `@overload` declarations and the implementation signature** at `utils.py:821-849`:
 
 ```python
+@overload
+def ask_ai(
+    model_alias: str,
+    user_input: str | list[dict],
+    system_message: str = None,
+    verbosity: str = 'none',
+    rich_response: Literal[False] = False,
+    config: dict | None = None,
+    images: list[str] | None = None,
+    audio: list[str] | None = None,        # NEW
+    files: list[GeminiFileRef] | None = None,
+    direct_sdk: bool | None = None,
+    **kwargs,
+) -> str: ...
+
+@overload
+def ask_ai(
+    model_alias: str,
+    user_input: str | list[dict],
+    system_message: str = None,
+    verbosity: str = 'none',
+    rich_response: Literal[True] = ...,
+    config: dict | None = None,
+    images: list[str] | None = None,
+    audio: list[str] | None = None,        # NEW
+    files: list[GeminiFileRef] | None = None,
+    direct_sdk: bool | None = None,
+    **kwargs,
+) -> AIResponse: ...
+
 def ask_ai(
     model_alias: str,
     user_input: str | list[dict],
@@ -62,7 +92,12 @@ def ask_ai(
     direct_sdk: bool | None = None,
     **kwargs,
 ) -> str | AIResponse:
+    ...
+    # Existing call site at utils.py:859 must thread `audio` through:
+    messages = _construct_messages(user_input, system_message, images=images, audio=audio, files=files)
 ```
+
+The `_construct_messages` call site update is the single most error-prone change — without it, `audio` is silently ignored on all three call paths.
 
 ### Accepted source forms
 
@@ -117,7 +152,22 @@ Considered. Trade-off: prettier symmetry with `image_url`, but adds a shape-conv
 
 ### `_construct_messages` (`skell_e_router/utils.py`)
 
-Extend the signature with `audio: list[str] | None = None`. In the `isinstance(user_input, str)` branch, when *any* of `images`, `audio`, or `files` is non-empty, build the multipart content list. Iterate `audio` after `images` and append one part per audio source via a new `_encode_audio()` helper.
+Extend the signature with `audio: list[str] | None = None`. **The existing multipart trigger condition at `utils.py:163` (`if images or files:`) must be widened to `if images or audio or files:`** — without this, an audio-only call with no images or files falls through to the bare-string branch and silently drops audio. Iterate `audio` after `images` and append one part per audio source via a new `_encode_audio()` helper:
+
+```python
+if isinstance(user_input, str):
+    if images or audio or files:                      # was: images or files
+        content_parts = [{"type": "text", "text": user_input}]
+        for img in (images or []):
+            content_parts.append(_encode_image(img))
+        for aud in (audio or []):                     # NEW
+            content_parts.append(_encode_audio(aud))
+        for ref in (files or []):
+            content_parts.append({"type": "file", "file": {"file_id": ref.uri, "format": ref.mime_type}})
+        messages.append({"role": "user", "content": content_parts})
+    else:
+        messages.append({"role": "user", "content": user_input})
+```
 
 The list-input guard mirrors the existing image guard:
 
@@ -134,12 +184,14 @@ if audio and not isinstance(user_input, str):
 
 Resolves a string source to an OpenAI-canonical `input_audio` content part.
 
+This helper does **not** delegate to `_encode_to_data_uri` for the file-path case, because `_encode_to_data_uri` falls back to `application/octet-stream` when `mimetypes.guess_type` returns `None` (`utils.py:87`), which would defeat the promised "unknown MIME → INVALID_INPUT" error contract. Instead, `_encode_audio` does its own MIME inference so the unknown-MIME error fires on the audio-specific code path.
+
 Steps:
 
 1. Reject `http://` / `https://` with `RouterError("INVALID_INPUT", ...)` pointing the caller at `upload_file()` + `files=[]`.
-2. If `source` starts with `data:`, parse the MIME and base64 payload from the prefix.
-3. Otherwise, treat as a local file path. Reuse `_encode_to_data_uri()` to base64-encode and infer MIME via `mimetypes.guess_type`. Then strip the `data:<mime>;base64,` prefix to extract raw base64 + MIME (since OpenAI's spec wants them separately).
-4. Map MIME → format suffix via `_AUDIO_MIME_TO_FORMAT`. Unknown MIME → `RouterError("INVALID_INPUT")`.
+2. If `source` starts with `data:`, parse MIME and base64 from the prefix (`data:<mime>;base64,<data>`). Malformed → `RouterError("INVALID_INPUT")`.
+3. Otherwise, treat as a local file path. Verify the file exists (else `RouterError("INVALID_INPUT", "File not found: ...")`). Infer MIME via `mimetypes.guess_type(path)`. If `guess_type` returns `None`, raise `RouterError("INVALID_INPUT", "Cannot determine audio MIME type from extension: <path>")` — do NOT fall back to `application/octet-stream`. Read the file and base64-encode.
+4. Map MIME → format suffix via `_AUDIO_MIME_TO_FORMAT`. Unknown MIME → `RouterError("INVALID_INPUT", "Unsupported audio MIME type: <mime>")`.
 5. Return `{"type": "input_audio", "input_audio": {"data": <base64>, "format": <format>}}`.
 
 A new module-level constant in `utils.py`:
@@ -187,7 +239,7 @@ elif part.get("type") == "input_audio":
     )
 ```
 
-`RouterError` is imported lazily inside the function body to avoid a circular import (matching the pattern in `_build_create_params`).
+`RouterError` is imported lazily inside the function body to avoid a circular import — `_convert_messages_for_anthropic` does not currently import from `utils.py`, so this is a new lazy import (mirroring the existing pattern in `_build_create_params` at `anthropic_direct.py:107`).
 
 ### LiteLLM path (`utils.py` `_perform_completion`)
 
