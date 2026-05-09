@@ -95,6 +95,78 @@ def _encode_image(source: str) -> dict:
     return {"type": "image_url", "image_url": {"url": _encode_to_data_uri(source)}}
 
 
+# OpenAI's `input_audio` content-part spec uses a short format suffix instead of
+# a MIME type. We accept any of the listed MIME variants and map to the canonical
+# format string OpenAI's API expects.
+_AUDIO_MIME_TO_FORMAT = {
+    "audio/mpeg": "mp3",
+    "audio/mp3":  "mp3",   # tolerant
+    "audio/wav":  "wav",
+    "audio/x-wav":"wav",   # tolerant
+    "audio/flac": "flac",
+    "audio/ogg":  "ogg",
+    "audio/mp4":  "mp4",   # m4a containers
+    "audio/webm": "webm",
+}
+
+
+def _encode_audio(source: str) -> dict:
+    """Convert an audio source to an OpenAI chat-completion `input_audio` content part.
+
+    Accepts a local file path or a `data:audio/<mime>;base64,<data>` URI. Raw
+    http(s) URLs are rejected — for URL-hosted audio, upload via Gemini Files
+    API (`upload_file()`) and pass the result through `files=[ref]`.
+
+    Returns: `{"type": "input_audio", "input_audio": {"data": <b64>, "format": <fmt>}}`.
+    Raises RouterError("INVALID_INPUT") on URL inputs, missing files, malformed
+    data URIs, or unsupported MIME types.
+    """
+    if source.startswith(("http://", "https://")):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                "audio sources must be a file path or a data: URI. "
+                "URL-hosted audio requires the Gemini Files API — "
+                "upload via `upload_file()` and pass through `files=[...]`."
+            ),
+        )
+
+    if source.startswith("data:"):
+        try:
+            header, b64_data = source.split(",", 1)
+            mime = header.removeprefix("data:").split(";", 1)[0]
+        except ValueError as e:
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Malformed audio data URI: {source[:60]}...",
+            ) from e
+    else:
+        if not os.path.isfile(source):
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Audio file not found: {source}",
+            )
+        mime, _ = mimetypes.guess_type(source)
+        if mime is None:
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Cannot determine audio MIME type from extension: {source}",
+            )
+        with open(source, "rb") as f:
+            b64_data = base64.b64encode(f.read()).decode("utf-8")
+
+    audio_format = _AUDIO_MIME_TO_FORMAT.get(mime.lower())
+    if audio_format is None:
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                f"Unsupported audio MIME type: {mime}. "
+                f"Supported: {sorted(set(_AUDIO_MIME_TO_FORMAT.values()))}"
+            ),
+        )
+    return {"type": "input_audio", "input_audio": {"data": b64_data, "format": audio_format}}
+
+
 def upload_file(
     file: bytes | BinaryIO,
     mime_type: str,
@@ -139,7 +211,7 @@ def upload_file(
 
 
 # Constructs the messages list for the AI call.
-def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None, files: list[GeminiFileRef] | None = None):
+def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None):
     messages = []
 
     if images and not isinstance(user_input, str):
@@ -147,6 +219,13 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
             code="INVALID_INPUT",
             message="'images' parameter is only supported when 'user_input' is a string. "
                     "For list input, embed image content parts directly in your messages."
+        )
+
+    if audio and not isinstance(user_input, str):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message="'audio' parameter is only supported when 'user_input' is a string. "
+                    "For list input, embed audio content parts directly in your messages."
         )
 
     if files and not isinstance(user_input, str):
@@ -160,10 +239,12 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
         messages.append({"role": "system", "content": system_message})
 
     if isinstance(user_input, str):
-        if images or files:
+        if images or audio or files:
             content_parts = [{"type": "text", "text": user_input}]
             for img in (images or []):
                 content_parts.append(_encode_image(img))
+            for aud in (audio or []):
+                content_parts.append(_encode_audio(aud))
             for ref in (files or []):
                 content_parts.append({"type": "file", "file": {"file_id": ref.uri, "format": ref.mime_type}})
             messages.append({"role": "user", "content": content_parts})
@@ -827,6 +908,7 @@ def ask_ai(
     rich_response: Literal[False] = False,
     config: dict | None = None,
     images: list[str] | None = None,
+    audio: list[str] | None = None,
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     **kwargs
@@ -841,12 +923,13 @@ def ask_ai(
     rich_response: Literal[True] = ...,
     config: dict | None = None,
     images: list[str] | None = None,
+    audio: list[str] | None = None,
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -856,7 +939,7 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # These helpers will raise RouterError on failure
     ai_model = resolve_model_alias(model_alias)
     _check_provider_key(ai_model, config, verbosity)
-    messages = _construct_messages(user_input, system_message, images=images, files=files)
+    messages = _construct_messages(user_input, system_message, images=images, audio=audio, files=files)
 
     # Resolve API key from config (None falls back to litellm env var lookup)
     api_key = _resolve_api_key(ai_model, config)

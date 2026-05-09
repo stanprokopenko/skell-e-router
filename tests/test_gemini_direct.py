@@ -125,6 +125,62 @@ class TestConvertMessagesToContents:
         parts = contents[0]["parts"]
         assert parts[0]["uri"] == "https://example.com/img.jpg"
 
+    def test_input_audio_mp3(self):
+        # base64 of b"hello"
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "input_audio", "input_audio": {"data": "aGVsbG8=", "format": "mp3"}}
+            ]},
+        ]
+        _, contents = self._call(msgs)
+        parts = contents[0]["parts"]
+        assert parts[0]["mime_type"] == "audio/mpeg"
+        assert parts[0]["bytes"] == b"hello"
+
+    def test_input_audio_wav(self):
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "input_audio", "input_audio": {"data": "aGVsbG8=", "format": "wav"}}
+            ]},
+        ]
+        _, contents = self._call(msgs)
+        parts = contents[0]["parts"]
+        assert parts[0]["mime_type"] == "audio/wav"
+
+    def test_input_audio_all_supported_formats(self):
+        expected_mimes = {
+            "mp3":  "audio/mpeg",
+            "wav":  "audio/wav",
+            "flac": "audio/flac",
+            "ogg":  "audio/ogg",
+            "mp4":  "audio/mp4",
+            "webm": "audio/webm",
+        }
+        for fmt, expected_mime in expected_mimes.items():
+            msgs = [
+                {"role": "user", "content": [
+                    {"type": "input_audio", "input_audio": {"data": "AAAA", "format": fmt}}
+                ]},
+            ]
+            _, contents = self._call(msgs)
+            parts = contents[0]["parts"]
+            assert parts[0]["mime_type"] == expected_mime, f"format {fmt} mapped wrong"
+
+    def test_input_audio_combined_with_text_and_image(self):
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "describe both"},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,aGVsbG8="}},
+                {"type": "input_audio", "input_audio": {"data": "aGVsbG8=", "format": "wav"}},
+            ]},
+        ]
+        _, contents = self._call(msgs)
+        parts = contents[0]["parts"]
+        assert len(parts) == 3
+        assert parts[0]["text"] == "describe both"
+        assert parts[1]["mime_type"] == "image/png"
+        assert parts[2]["mime_type"] == "audio/wav"
+
     def test_empty_list(self):
         sys_instr, contents = self._call([])
         assert sys_instr is None

@@ -19,6 +19,20 @@ except ImportError:
 from .response import AIResponse
 
 
+# Reverse of utils._AUDIO_MIME_TO_FORMAT — picks one canonical MIME per format
+# value, dropping the "tolerant" duplicates. Used to reconstruct the MIME type
+# Gemini's SDK expects from the format suffix carried in OpenAI-canonical
+# `input_audio` content parts.
+_AUDIO_FORMAT_TO_MIME = {
+    "mp3":  "audio/mpeg",
+    "wav":  "audio/wav",
+    "flac": "audio/flac",
+    "ogg":  "audio/ogg",
+    "mp4":  "audio/mp4",
+    "webm": "audio/webm",
+}
+
+
 # Cache genai.Client instances per API key to avoid ~0.8s construction overhead per call
 _client_cache: dict[str, object] = {}
 
@@ -90,6 +104,15 @@ def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, lis
                                 file_uri=url,
                                 mime_type="image/jpeg"  # Default; SDK may auto-detect
                             ))
+                    elif part.get("type") == "input_audio":
+                        audio_data = part["input_audio"]["data"]
+                        audio_format = part["input_audio"]["format"]
+                        mime = _AUDIO_FORMAT_TO_MIME.get(audio_format, f"audio/{audio_format}")
+                        import base64
+                        parts.append(types.Part.from_bytes(
+                            data=base64.b64decode(audio_data),
+                            mime_type=mime,
+                        ))
             if parts:
                 contents.append(types.Content(role=sdk_role, parts=parts))
 

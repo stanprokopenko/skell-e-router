@@ -80,6 +80,19 @@ class TestConvertMessagesForAnthropic:
         assert sys_prompt is None
         assert converted == []
 
+    def test_input_audio_raises_unsupported_modality(self):
+        from skell_e_router.utils import RouterError
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "describe"},
+                {"type": "input_audio", "input_audio": {"data": "AAAA", "format": "mp3"}},
+            ]},
+        ]
+        with pytest.raises(RouterError) as exc_info:
+            self._call(msgs)
+        assert exc_info.value.code == "UNSUPPORTED_MODALITY"
+        assert "audio" in exc_info.value.message.lower()
+
 
 # ===================================================================
 # TestBuildCreateParams
@@ -593,3 +606,32 @@ class TestAskAiDirectAnthropicIntegration:
                 model, [{"role": "user", "content": "hi"}],
                 FAKE_ANTHROPIC_KEY, "none", False, None, {}
             )
+
+    def test_audio_to_anthropic_raises_unsupported_modality_end_to_end(self):
+        """ask_ai with audio against a Claude model should surface UNSUPPORTED_MODALITY,
+        not get silently dropped or wrapped as PROVIDER_ERROR.
+
+        This proves the wiring between _construct_messages -> _ask_ai_direct_anthropic
+        -> _convert_messages_for_anthropic -> RouterError actually preserves the
+        UNSUPPORTED_MODALITY code through the full call stack.
+        """
+        from skell_e_router.utils import ask_ai, RouterError
+        from skell_e_router.model_config import MODEL_CONFIG
+
+        with patch.dict("skell_e_router.model_config.MODEL_CONFIG", {
+            "test-claude-audio": make_model(
+                provider="anthropic",
+                name="anthropic/claude-sonnet-4-6",
+                supported_params={"temperature", "stream", "max_tokens", "thinking"},
+            )
+        }):
+            MODEL_CONFIG["test-claude-audio"].use_direct_sdk = True
+            with pytest.raises(RouterError) as exc_info:
+                ask_ai(
+                    "test-claude-audio",
+                    "describe this clip",
+                    audio=["data:audio/mpeg;base64,SUQzAA=="],
+                    config={"anthropic_api_key": FAKE_ANTHROPIC_KEY},
+                )
+            assert exc_info.value.code == "UNSUPPORTED_MODALITY"
+            assert "audio" in exc_info.value.message.lower()

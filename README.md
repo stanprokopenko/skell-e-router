@@ -39,6 +39,26 @@ print(response)
 
 This works with any vision-capable model across providers (Gemini, GPT-4o, Claude, etc.).
 
+### Audio Input
+
+Send an audio clip alongside your prompt. Same accepted forms as `images` — a local file path or a base64 `data:audio/...` URI.
+
+```python
+from skell_e_router import ask_ai
+
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "Transcribe and summarize this clip.",
+    audio=["interview.mp3"],
+)
+```
+
+Supported on Gemini 2.5+/3.x and OpenAI GPT-4o audio models. Anthropic models raise `RouterError("UNSUPPORTED_MODALITY")`.
+
+**Format support**: `mp3` and `wav` work everywhere. `flac`, `ogg`, `m4a/mp4`, and `webm` are Gemini-only — OpenAI's `input_audio` spec accepts only `mp3` and `wav`, so passing other formats to a GPT-4o audio model returns a 400 from the provider.
+
+For audio files larger than ~20 MB, use `upload_file()` and pass via `files=[ref]` instead.
+
 ### Image Generation
 
 Generate images using the `nano-banana-3` model. Use `rich_response=True` to access the generated image data.

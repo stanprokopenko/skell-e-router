@@ -283,6 +283,105 @@ LiteLLM translates this to the correct provider-specific format for Gemini, Open
 
 ---
 
+## Audio Input
+
+The `audio` parameter on `ask_ai()` lets you send audio clips alongside a text prompt. Use cases include audio classification, audio-content QA, and transcription-with-context (audio + reference text in one call).
+
+### Supported Audio Sources
+
+Each item in the `audio` list is a string:
+
+| Format | Example | Behavior |
+|--------|---------|----------|
+| **Local file path** | `"interview.mp3"` | Read from disk, detect MIME from extension, base64-encode |
+| **Base64 data URI** | `"data:audio/wav;base64,UklGR..."` | Parsed for MIME and data, sent inline |
+| **URL** (`http://`, `https://`) | — | **Rejected.** Use `upload_file()` + `files=[ref]` for URL-hosted audio. |
+
+URLs are rejected because OpenAI's `input_audio` content-part spec requires inline base64. Hidden GET requests inside `_construct_messages` would surprise callers; for URL-hosted audio the explicit Files API path is the right tool.
+
+### Supported Formats
+
+| MIME | Format suffix | Common extension | OpenAI accepts? |
+|------|---------------|------------------|-----------------|
+| `audio/mpeg` (also `audio/mp3`) | `mp3` | `.mp3` | ✓ |
+| `audio/wav` (also `audio/x-wav`) | `wav` | `.wav` | ✓ |
+| `audio/flac` | `flac` | `.flac` | ✗ Gemini only |
+| `audio/ogg` | `ogg` | `.ogg` | ✗ Gemini only |
+| `audio/mp4` | `mp4` | `.m4a` / `.mp4` | ✗ Gemini only |
+| `audio/webm` | `webm` | `.webm` | ✗ Gemini only |
+
+OpenAI's `input_audio` content-part spec accepts only `mp3` and `wav` for the `format` field. Passing flac/ogg/mp4/webm to a GPT-4o audio model produces a 400 from the provider, surfaced as `RouterError("PROVIDER_ERROR")`. Gemini accepts all listed formats natively.
+
+Files with unrecognized extensions or unsupported MIME types raise `RouterError("INVALID_INPUT")`.
+
+### Usage
+
+```python
+from skell_e_router import ask_ai
+
+# Local file
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "Transcribe and summarize this clip.",
+    audio=["interview.mp3"],
+)
+
+# Combined with images and a system message
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "Compare what's said in the clip with what's shown in the photo.",
+    system_message="Be concise.",
+    audio=["clip.mp3"],
+    images=["scene.jpg"],
+)
+
+# Pre-encoded data URI
+response = ask_ai(
+    "gemini-3-pro-preview",
+    "What instrument is playing?",
+    audio=["data:audio/wav;base64,UklGRi..."],
+)
+```
+
+### How It Works
+
+The router builds an OpenAI-canonical `input_audio` content part:
+
+```python
+# What the router builds internally:
+{
+    "role": "user",
+    "content": [
+        {"type": "text", "text": "Transcribe and summarize this clip."},
+        {"type": "input_audio", "input_audio": {"data": "<base64>", "format": "mp3"}},
+    ]
+}
+```
+
+- **Gemini direct SDK**: parses the part and builds a native `Part.from_bytes(data, mime_type)`.
+- **OpenAI / LiteLLM-routed providers**: the canonical shape is forwarded as-is. Audio-capable models accept it; text-only models reject it (surfaces as `PROVIDER_ERROR`).
+- **Anthropic direct SDK**: raises `RouterError(code="UNSUPPORTED_MODALITY")` immediately — Claude does not support audio inputs.
+
+### Provider Behavior
+
+| Provider | Audio support | What happens |
+|----------|---------------|--------------|
+| Gemini (2.5+ / 3.x) | Yes — all formats | Forwarded via `Part.from_bytes` |
+| OpenAI (gpt-4o audio family) | mp3 / wav only | Forwarded as canonical `input_audio`. Other formats → `PROVIDER_ERROR` |
+| OpenAI (text-only models) | No | Provider rejects → `PROVIDER_ERROR` |
+| Anthropic | No | Router raises `UNSUPPORTED_MODALITY` |
+| xAI / Groq / DeepInfra | Provider-dependent | Provider rejects → `PROVIDER_ERROR` |
+
+### Constraints
+
+- The `audio` parameter only works when `user_input` is a **string**. For `list[dict]` input, embed `input_audio` content parts directly in your messages.
+- If the file path doesn't exist, the file extension is unrecognized, or the MIME type isn't in the supported set, `RouterError("INVALID_INPUT")` is raised.
+- An empty list (`audio=[]`) or `audio=None` has no effect.
+- For files larger than ~20 MB, use `upload_file()` to upload via Gemini's Files API and pass the resulting `GeminiFileRef` through `files=[ref]`.
+- May be combined freely with `images` and `files` in the same call.
+
+---
+
 ## Image Output (Generation)
 
 The `nano-banana-3` model (alias: `gemini-3-pro-image`) can generate images. Generated images are returned on the `AIResponse.images` field when using `rich_response=True`.

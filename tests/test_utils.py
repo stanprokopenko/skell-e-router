@@ -10,6 +10,7 @@ from skell_e_router.response import AIResponse, GeminiFileRef
 from skell_e_router.utils import (
     _construct_messages,
     _encode_image,
+    _encode_audio,
     _resolve_api_key,
     _redact_keys,
     _extract_status_and_headers,
@@ -133,6 +134,82 @@ class TestConstructMessages:
         msgs = _construct_messages("hello", images=[])
         assert msgs == [{"role": "user", "content": "hello"}]
 
+    # --- audio parameter ---
+
+    def test_string_input_with_audio(self):
+        data_uri = "data:audio/mpeg;base64,SUQzAA=="
+        msgs = _construct_messages("transcribe this", audio=[data_uri])
+        assert len(msgs) == 1
+        content = msgs[0]["content"]
+        assert isinstance(content, list)
+        assert content[0] == {"type": "text", "text": "transcribe this"}
+        assert content[1]["type"] == "input_audio"
+        assert content[1]["input_audio"]["format"] == "mp3"
+        assert content[1]["input_audio"]["data"] == "SUQzAA=="
+
+    def test_string_input_with_multiple_audio(self):
+        auds = [
+            "data:audio/mpeg;base64,AAAA",
+            "data:audio/wav;base64,BBBB",
+        ]
+        msgs = _construct_messages("compare these", audio=auds)
+        content = msgs[0]["content"]
+        assert len(content) == 3  # 1 text + 2 audio
+        assert content[1]["input_audio"]["format"] == "mp3"
+        assert content[2]["input_audio"]["format"] == "wav"
+
+    def test_audio_and_images_combined(self):
+        msgs = _construct_messages(
+            "describe both",
+            images=["https://example.com/a.jpg"],
+            audio=["data:audio/mpeg;base64,AAAA"],
+        )
+        content = msgs[0]["content"]
+        assert len(content) == 3  # text + image + audio
+        assert content[0]["type"] == "text"
+        assert content[1]["type"] == "image_url"
+        assert content[2]["type"] == "input_audio"
+
+    def test_audio_with_files_combined(self):
+        ref = GeminiFileRef(uri="uri", mime_type="video/mp4")
+        msgs = _construct_messages(
+            "summarize",
+            audio=["data:audio/wav;base64,AAAA"],
+            files=[ref],
+        )
+        content = msgs[0]["content"]
+        assert len(content) == 3  # text + audio + file
+        assert content[1]["type"] == "input_audio"
+        assert content[2]["type"] == "file"
+
+    def test_audio_with_system_message(self):
+        msgs = _construct_messages(
+            "transcribe",
+            system_message="Be precise",
+            audio=["data:audio/mpeg;base64,AAAA"],
+        )
+        assert len(msgs) == 2
+        assert msgs[0]["role"] == "system"
+        assert isinstance(msgs[1]["content"], list)
+        assert msgs[1]["content"][1]["type"] == "input_audio"
+
+    def test_audio_with_list_input_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _construct_messages(
+                [{"role": "user", "content": "hi"}],
+                audio=["data:audio/mpeg;base64,AAAA"],
+            )
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "audio" in exc_info.value.message
+
+    def test_audio_none_no_effect(self):
+        msgs = _construct_messages("hello", audio=None)
+        assert msgs == [{"role": "user", "content": "hello"}]
+
+    def test_audio_empty_list_no_effect(self):
+        msgs = _construct_messages("hello", audio=[])
+        assert msgs == [{"role": "user", "content": "hello"}]
+
     # --- files parameter ---
 
     def test_files_only(self):
@@ -226,6 +303,123 @@ class TestEncodeImage:
             _encode_image("/nonexistent/path/image.png")
         assert exc_info.value.code == "INVALID_INPUT"
         assert "not found" in exc_info.value.message
+
+
+# ---------------------------------------------------------------------------
+# _encode_audio
+# ---------------------------------------------------------------------------
+
+class TestEncodeAudio:
+
+    def test_data_uri_mp3(self):
+        result = _encode_audio("data:audio/mpeg;base64,SUQzAA==")
+        assert result == {
+            "type": "input_audio",
+            "input_audio": {"data": "SUQzAA==", "format": "mp3"},
+        }
+
+    def test_data_uri_wav(self):
+        result = _encode_audio("data:audio/wav;base64,UklGRg==")
+        assert result["input_audio"]["format"] == "wav"
+        assert result["input_audio"]["data"] == "UklGRg=="
+
+    def test_data_uri_flac(self):
+        result = _encode_audio("data:audio/flac;base64,ZkxhQw==")
+        assert result["input_audio"]["format"] == "flac"
+
+    def test_data_uri_ogg(self):
+        result = _encode_audio("data:audio/ogg;base64,T2dnUw==")
+        assert result["input_audio"]["format"] == "ogg"
+
+    def test_data_uri_mp4(self):
+        result = _encode_audio("data:audio/mp4;base64,AAAA")
+        assert result["input_audio"]["format"] == "mp4"
+
+    def test_data_uri_webm(self):
+        result = _encode_audio("data:audio/webm;base64,GkXfo0==")
+        assert result["input_audio"]["format"] == "webm"
+
+    def test_tolerant_audio_mp3_mime(self):
+        # Some servers serve mp3 as audio/mp3 instead of audio/mpeg
+        result = _encode_audio("data:audio/mp3;base64,SUQzAA==")
+        assert result["input_audio"]["format"] == "mp3"
+
+    def test_tolerant_audio_x_wav_mime(self):
+        result = _encode_audio("data:audio/x-wav;base64,UklGRg==")
+        assert result["input_audio"]["format"] == "wav"
+
+    def test_url_http_rejected(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_audio("http://example.com/clip.mp3")
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "Files API" in exc_info.value.message
+
+    def test_url_https_rejected(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_audio("https://example.com/clip.mp3")
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_unsupported_data_uri_mime(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_audio("data:audio/aac;base64,AAAA")
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "Unsupported audio MIME" in exc_info.value.message
+
+    def test_malformed_data_uri(self):
+        # No comma — split fails
+        with pytest.raises(RouterError) as exc_info:
+            _encode_audio("data:audio/mpeg;base64NO_COMMA")
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_file_not_found_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_audio("/nonexistent/path/clip.mp3")
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "not found" in exc_info.value.message
+
+    def test_file_path_mp3(self):
+        with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+            f.write(b"ID3\x04\x00\x00\x00\x00\x00\x00")  # ID3 tag bytes
+            tmp_path = f.name
+        try:
+            result = _encode_audio(tmp_path)
+            assert result["type"] == "input_audio"
+            assert result["input_audio"]["format"] == "mp3"
+            # Base64 of the bytes we wrote
+            import base64
+            expected = base64.b64encode(b"ID3\x04\x00\x00\x00\x00\x00\x00").decode("utf-8")
+            assert result["input_audio"]["data"] == expected
+        finally:
+            os.unlink(tmp_path)
+
+    def test_file_path_wav(self):
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            f.write(b"RIFF\x00\x00\x00\x00WAVE")
+            tmp_path = f.name
+        try:
+            result = _encode_audio(tmp_path)
+            assert result["input_audio"]["format"] == "wav"
+        finally:
+            os.unlink(tmp_path)
+
+    def test_file_path_unknown_extension_raises(self):
+        # mimetypes.guess_type returns None for unknown extensions —
+        # _encode_audio must raise INVALID_INPUT, NOT silently fall back.
+        with tempfile.NamedTemporaryFile(suffix=".weirdext", delete=False) as f:
+            f.write(b"\x00\x00")
+            tmp_path = f.name
+        try:
+            with pytest.raises(RouterError) as exc_info:
+                _encode_audio(tmp_path)
+            assert exc_info.value.code == "INVALID_INPUT"
+            # Either "Cannot determine" (guess_type returned None) or
+            # "Unsupported audio MIME" (guess_type returned a non-audio MIME).
+            assert (
+                "Cannot determine" in exc_info.value.message
+                or "Unsupported audio MIME" in exc_info.value.message
+            )
+        finally:
+            os.unlink(tmp_path)
 
 
 # ---------------------------------------------------------------------------

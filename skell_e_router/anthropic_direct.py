@@ -93,6 +93,15 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
                                     "url": url,
                                 }
                             })
+                    elif part.get("type") == "input_audio":
+                        from .utils import RouterError
+                        raise RouterError(
+                            code="UNSUPPORTED_MODALITY",
+                            message=(
+                                "Anthropic models do not support audio inputs. "
+                                "Use a Gemini or OpenAI audio-capable model."
+                            ),
+                        )
             if parts:
                 converted.append({"role": role, "content": parts})
 
