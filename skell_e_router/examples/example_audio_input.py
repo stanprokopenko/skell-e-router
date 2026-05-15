@@ -17,7 +17,7 @@ AUDIO_PATH = os.path.join(SCRIPT_DIR, "Ba Dum Outro.mp3")
 try:
     print("--- Audio Input (basic) ---")
     content = ask_ai(
-        "gemini-3.1-flash-lite-preview",
+        "gemini-3.1-flash-lite",
         "describe this sound effect",
         audio=[AUDIO_PATH],
         verbosity="info",
@@ -26,7 +26,7 @@ try:
 
     print("\n--- Audio Input (rich response) ---")
     response = ask_ai(
-        "gemini-3.1-flash-lite-preview",
+        "gemini-3.1-flash-lite",
         "how long is this sound",
         audio=[AUDIO_PATH],
         rich_response=True,

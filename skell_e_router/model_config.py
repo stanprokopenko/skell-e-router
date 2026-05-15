@@ -167,8 +167,8 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
         accepted_reasoning_efforts={"low", "medium", "high"},
     ),
-    "gemini-3.1-flash-lite-preview": AIModel(
-        name="gemini/gemini-3.1-flash-lite-preview",
+    "gemini-3.1-flash-lite": AIModel(
+        name="gemini/gemini-3.1-flash-lite",
         provider="gemini",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
@@ -411,6 +411,7 @@ MODEL_CONFIG = {
 
 # Additional aliases
 MODEL_CONFIG["gemini-3-pro-preview"] = MODEL_CONFIG["gemini-3.1-pro-preview"]  # Gemini 3 Pro discontinued March 9, 2026
+MODEL_CONFIG["gemini-3.1-flash-lite-preview"] = MODEL_CONFIG["gemini-3.1-flash-lite"]  # Renamed from preview on GA
 MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 
 # Allow lookup by full name too
