@@ -46,4 +46,4 @@ __all__ = [
     "ParsedCitation",
 ]
 
-__version__ = "3.6.2"
+__version__ = "3.7.0"

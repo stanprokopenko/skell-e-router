@@ -204,6 +204,26 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    # Fable 5: adaptive thinking is always on (thinking "disabled" is rejected).
+    # No temperature/top_p/top_k. 1M context, 128k max output. Safety classifiers
+    # may decline requests (stop_reason "refusal" on a 200 response).
+    "claude-fable-5": AIModel(
+        name="anthropic/claude-fable-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        use_direct_sdk=True,
+    ),
+    # Opus 4.8: same API surface as Opus 4.7 (adaptive thinking only, no temperature).
+    "claude-opus-4-8": AIModel(
+        name="anthropic/claude-opus-4-8",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        use_direct_sdk=True,
+    ),
     # Opus 4.7 removes temperature/top_p/top_k and budget_tokens; only adaptive thinking is supported.
     "claude-opus-4-7": AIModel(
         name="anthropic/claude-opus-4-7",

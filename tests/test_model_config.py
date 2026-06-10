@@ -95,6 +95,7 @@ class TestModelConfig:
         "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
+        "claude-fable-5", "claude-opus-4-8",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
@@ -162,6 +163,19 @@ class TestModelConfig:
         assert "thinking" in model.supported_params
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
+
+    @pytest.mark.parametrize("alias", ["claude-fable-5", "claude-opus-4-8"])
+    def test_fable_5_and_opus_4_8_config(self, alias):
+        """Fable 5 and Opus 4.8: adaptive thinking only, no sampling params, effort up to max."""
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "anthropic"
+        assert model.use_direct_sdk is True
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert "thinking" in model.supported_params
+        assert "temperature" not in model.supported_params
+        assert "budget_tokens" not in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh", "max"}
 
     def test_opus_4_7_config(self):
         """Opus 4.7 drops sampling params and budget_tokens; only adaptive thinking via reasoning_effort."""

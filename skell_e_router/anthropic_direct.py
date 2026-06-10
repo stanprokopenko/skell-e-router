@@ -30,6 +30,8 @@ def _get_anthropic_client(api_key: str):
 
 # Known pricing per 1M tokens (USD) for direct-SDK models
 _PRICING = {
+    "claude-fable-5": {"input": 10.00, "output": 50.00},
+    "claude-opus-4-8": {"input": 5.00, "output": 25.00},
     "claude-opus-4-7": {"input": 5.00, "output": 25.00},
     "claude-opus-4-6": {"input": 5.00, "output": 25.00},
     "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
