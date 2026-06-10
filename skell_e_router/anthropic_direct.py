@@ -164,9 +164,10 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
                 message=f"'reasoning_effort' must be one of: {sorted(list(accepted))}"
             )
 
-        # If model supports reasoning_effort natively -> adaptive thinking
+        # If model supports reasoning_effort natively -> adaptive thinking + effort
         if "reasoning_effort" in ai_model.supported_params:
             params["thinking"] = {"type": "adaptive"}
+            params["output_config"] = {"effort": effort}
         # If model supports budget_tokens -> map to budget
         elif "budget_tokens" in ai_model.supported_params:
             budget_map = {"low": 1024, "medium": 2048, "high": 4096}

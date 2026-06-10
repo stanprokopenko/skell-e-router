@@ -174,6 +174,12 @@ class TestBuildCreateParams:
         """reasoning_effort on model that supports it natively -> adaptive thinking."""
         params, _ = self._call(self._claude_model(), {"reasoning_effort": "high"})
         assert params["thinking"] == {"type": "adaptive"}
+        assert params["output_config"] == {"effort": "high"}
+
+    def test_reasoning_effort_low_passes_output_config(self):
+        params, _ = self._call(self._claude_model(), {"reasoning_effort": "low"})
+        assert params["thinking"] == {"type": "adaptive"}
+        assert params["output_config"] == {"effort": "low"}
 
     def test_reasoning_effort_to_budget_mapping(self):
         """reasoning_effort on model without reasoning_effort support -> budget mapping."""
