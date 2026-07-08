@@ -302,6 +302,15 @@ MODEL_CONFIG = {
 
     # XAI
 
+    # grok-4.5: reasoning always on with configurable reasoning_effort (low/medium/high, default high).
+    # 500K context window. Vision input supported. stop is rejected by xAI reasoning models.
+    "grok-4.5": AIModel(
+        name="xai/grok-4.5",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "medium", "high"},
+    ),
     # grok-4.20: reasoning is always on. reasoning_effort/stop/frequency_penalty/presence_penalty
     # are rejected by the API. 2M context window.
     "grok-4.20": AIModel(
