@@ -110,6 +110,41 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
     return system_prompt, converted
 
 
+def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tuple[str | list[dict] | None, list[dict]]:
+    """Add prompt-caching breakpoints to an Anthropic-format request.
+
+    Places one breakpoint on the system prompt and one on the last content
+    block of the last message, so the system prompt and the conversation
+    prefix are cached across requests within Anthropic's cache TTL (5 min).
+
+    Anthropic bills the first (cache-write) request at 1.25x input price and
+    cache reads at 0.1x, so this is opt-in per call — worth it for multi-turn
+    loops and repeated large system prompts, not for one-shot calls.
+    """
+    if isinstance(system_prompt, str) and system_prompt:
+        system_prompt = [{
+            "type": "text",
+            "text": system_prompt,
+            "cache_control": {"type": "ephemeral"},
+        }]
+
+    if messages:
+        last = messages[-1]
+        content = last.get("content")
+        if isinstance(content, str):
+            last["content"] = [{
+                "type": "text",
+                "text": content,
+                "cache_control": {"type": "ephemeral"},
+            }]
+        elif isinstance(content, list) and content:
+            last_block = content[-1]
+            if isinstance(last_block, dict):
+                last_block["cache_control"] = {"type": "ephemeral"}
+
+    return system_prompt, messages
+
+
 def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
     """Convert router kwargs to Anthropic messages.create params.
 
@@ -345,20 +380,38 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
 
     content = "".join(content_parts)
 
-    # Token usage
+    # Token usage. With prompt caching enabled, Anthropic reports cached
+    # tokens in separate fields that are NOT included in input_tokens:
+    # cache_creation_input_tokens (billed at 1.25x input price) and
+    # cache_read_input_tokens (billed at 0.1x input price).
     usage = getattr(response, 'usage', None)
     prompt_tokens = getattr(usage, 'input_tokens', None)
     completion_tokens = getattr(usage, 'output_tokens', None)
+
+    def _cache_tokens(attr: str) -> int:
+        value = getattr(usage, attr, 0)
+        return value if isinstance(value, int) else 0
+
+    cache_creation_tokens = _cache_tokens('cache_creation_input_tokens')
+    cache_read_tokens = _cache_tokens('cache_read_input_tokens')
+
+    # Report the full prompt size (uncached + cache-write + cache-read)
+    if prompt_tokens is not None:
+        prompt_tokens += cache_creation_tokens + cache_read_tokens
+
     total_tokens = (prompt_tokens or 0) + (completion_tokens or 0) if prompt_tokens is not None or completion_tokens is not None else None
 
     # Finish reason
     finish_reason = getattr(response, 'stop_reason', None)
 
-    # Compute cost from known pricing
+    # Compute cost from known pricing (cache writes 1.25x, cache reads 0.1x)
     cost = None
     pricing = _PRICING.get(display_model)
     if pricing and prompt_tokens is not None and completion_tokens is not None:
-        cost = (prompt_tokens * pricing["input"] / 1_000_000 +
+        uncached_tokens = prompt_tokens - cache_creation_tokens - cache_read_tokens
+        cost = (uncached_tokens * pricing["input"] / 1_000_000 +
+                cache_creation_tokens * pricing["input"] * 1.25 / 1_000_000 +
+                cache_read_tokens * pricing["input"] * 0.10 / 1_000_000 +
                 completion_tokens * pricing["output"] / 1_000_000)
 
     return AIResponse(

@@ -19,6 +19,7 @@ from .gemini_direct import (
 )
 from .anthropic_direct import (
     _convert_messages_for_anthropic,
+    _apply_cache_control,
     _build_create_params,
     _call_anthropic_direct,
     _call_anthropic_direct_stream,
@@ -840,7 +841,7 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
 
 def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: str | None,
                              verbosity: str, rich_response: bool, config: dict | None,
-                             kwargs: dict) -> str | AIResponse:
+                             kwargs: dict, enable_caching: bool = False) -> str | AIResponse:
     """Call Anthropic via anthropic SDK directly, bypassing LiteLLM for lower latency."""
     # Resolve API key: explicit > config > env
     if not api_key:
@@ -853,6 +854,8 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
 
     stream = kwargs.pop("stream", False)
     system_prompt, converted_messages = _convert_messages_for_anthropic(messages)
+    if enable_caching:
+        system_prompt, converted_messages = _apply_cache_control(system_prompt, converted_messages)
     params, extra_headers = _build_create_params(ai_model, kwargs)
 
     _print_request_details(messages, kwargs, ai_model.name + " (direct)", verbosity)
@@ -899,6 +902,35 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
         ) from e
 
 
+def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
+    """Add Anthropic cache_control breakpoints to OpenAI-format messages.
+
+    LiteLLM passes cache_control through to Anthropic. Mirrors
+    anthropic_direct._apply_cache_control: one breakpoint on the system
+    message, one on the last content block of the last message.
+    """
+    def _mark(msg: dict):
+        content = msg.get("content")
+        if isinstance(content, str):
+            msg["content"] = [{
+                "type": "text",
+                "text": content,
+                "cache_control": {"type": "ephemeral"},
+            }]
+        elif isinstance(content, list) and content and isinstance(content[-1], dict):
+            content[-1]["cache_control"] = {"type": "ephemeral"}
+
+    for msg in messages:
+        if msg.get("role") == "system":
+            _mark(msg)
+            break
+
+    if messages and messages[-1].get("role") != "system":
+        _mark(messages[-1])
+
+    return messages
+
+
 @overload
 def ask_ai(
     model_alias: str,
@@ -911,6 +943,7 @@ def ask_ai(
     audio: list[str] | None = None,
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
+    enable_caching: bool = False,
     **kwargs
 ) -> str: ...
 
@@ -926,10 +959,11 @@ def ask_ai(
     audio: list[str] | None = None,
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
+    enable_caching: bool = False,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, enable_caching: bool = False, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -951,7 +985,14 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         return _ask_ai_direct_gemini(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
 
     if use_direct and ai_model.is_anthropic:
-        return _ask_ai_direct_anthropic(ai_model, messages, api_key, verbosity, rich_response, config, kwargs)
+        return _ask_ai_direct_anthropic(ai_model, messages, api_key, verbosity, rich_response, config, kwargs,
+                                        enable_caching=enable_caching)
+
+    # Anthropic prompt caching is opt-in (unlike OpenAI/Gemini/xAI, which cache
+    # automatically). enable_caching only affects Anthropic models; it is a
+    # no-op for every other provider.
+    if enable_caching and ai_model.is_anthropic:
+        messages = _apply_cache_control_litellm(messages)
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)

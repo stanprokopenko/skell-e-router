@@ -795,6 +795,33 @@ with ask_ai("claude-sonnet-4-6", "Tell me a story", stream=True) as stream:
         print(text, end="", flush=True)
 ```
 
+### Prompt Caching (`enable_caching`)
+
+Anthropic prompt caching is **opt-in per call** — unlike OpenAI, Gemini, and xAI,
+which cache repeated prompt prefixes automatically, Anthropic requires explicit
+`cache_control` markers. Pass `enable_caching=True` to add them:
+
+```python
+response = ask_ai("claude-haiku-4-5", prompt, system_message, enable_caching=True)
+```
+
+- **Only affects Anthropic models.** For every other provider the flag is a no-op
+  (their server-side caching is already automatic).
+- Places two cache breakpoints: one on the system prompt, one on the last content
+  block of the last message — so the system prompt and conversation prefix are
+  served from cache on subsequent calls within Anthropic's 5-minute cache TTL.
+- **Off by default** because the first (cache-write) request is billed at 1.25x
+  the input price; cache reads are billed at 0.1x. It pays off from the second
+  request on the same prefix — use it for multi-turn agent loops and repeated
+  large system prompts, not one-shot calls.
+- Works on both the direct SDK path and the LiteLLM fallback (`direct_sdk=False`).
+- With caching active, `AIResponse.prompt_tokens` reports the full prompt size
+  (uncached + cache-write + cache-read tokens) and `cost` applies the correct
+  1.25x/0.1x rates to the cached portions.
+- Caching is a **prefix match**: any change early in the prompt (timestamps,
+  IDs, reordered content) invalidates everything after it. Keep volatile content
+  at the end of the last message.
+
 ### Function Calling (Tools)
 
 The direct SDK path converts OpenAI-format tool definitions to Anthropic format (`parameters` → `input_schema`):

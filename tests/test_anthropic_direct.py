@@ -4,7 +4,13 @@ import json
 import pytest
 from unittest.mock import patch, MagicMock
 
-from tests.helpers import make_model, make_anthropic_response, FAKE_ANTHROPIC_KEY
+from tests.helpers import (
+    make_model,
+    make_anthropic_response,
+    make_litellm_response,
+    FAKE_ANTHROPIC_KEY,
+    FAKE_OPENAI_KEY,
+)
 
 
 # ===================================================================
@@ -641,3 +647,188 @@ class TestAskAiDirectAnthropicIntegration:
                 )
             assert exc_info.value.code == "UNSUPPORTED_MODALITY"
             assert "audio" in exc_info.value.message.lower()
+
+
+# ===================================================================
+# TestApplyCacheControl
+# ===================================================================
+
+class TestApplyCacheControl:
+    """Tests for _apply_cache_control (Anthropic prompt caching, direct path)."""
+
+    def _call(self, system_prompt, messages):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        return _apply_cache_control(system_prompt, messages)
+
+    def test_system_string_becomes_cached_block(self):
+        sys_out, _ = self._call("You are helpful.", [])
+        assert isinstance(sys_out, list)
+        assert sys_out[0]["type"] == "text"
+        assert sys_out[0]["text"] == "You are helpful."
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_none_system_passes_through(self):
+        sys_out, _ = self._call(None, [{"role": "user", "content": "hi"}])
+        assert sys_out is None
+
+    def test_last_message_string_content_becomes_cached_block(self):
+        msgs = [
+            {"role": "user", "content": "first"},
+            {"role": "assistant", "content": "second"},
+            {"role": "user", "content": "third"},
+        ]
+        _, out = self._call(None, msgs)
+        # Earlier messages untouched
+        assert out[0]["content"] == "first"
+        assert out[1]["content"] == "second"
+        # Last message converted to block list with cache_control
+        last = out[2]["content"]
+        assert isinstance(last, list)
+        assert last[0]["text"] == "third"
+        assert last[0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_last_message_list_content_marks_last_block(self):
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "look"},
+                {"type": "text", "text": "here"},
+            ]},
+        ]
+        _, out = self._call(None, msgs)
+        blocks = out[0]["content"]
+        assert "cache_control" not in blocks[0]
+        assert blocks[1]["cache_control"] == {"type": "ephemeral"}
+
+    def test_empty_messages_ok(self):
+        sys_out, out = self._call("sys", [])
+        assert out == []
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral"}
+
+
+class TestBuildResponseCacheTokens:
+    """_build_response must account for cache-write and cache-read tokens."""
+
+    def test_cache_tokens_included_in_prompt_tokens_and_cost(self):
+        from skell_e_router.anthropic_direct import _build_response
+        resp = make_anthropic_response(
+            prompt_tokens=100, completion_tokens=50, model="claude-haiku-4-5"
+        )
+        resp.usage.cache_creation_input_tokens = 1000
+        resp.usage.cache_read_input_tokens = 9000
+
+        ai_resp = _build_response(resp, "anthropic/claude-haiku-4-5", 0.5)
+        # Full prompt size = uncached + cache-write + cache-read
+        assert ai_resp.prompt_tokens == 100 + 1000 + 9000
+        assert ai_resp.total_tokens == 10100 + 50
+        # haiku-4-5: $1/M input, $5/M output; write 1.25x, read 0.1x
+        expected_cost = (100 * 1.0 + 1000 * 1.25 + 9000 * 0.10) / 1_000_000 + 50 * 5.0 / 1_000_000
+        assert ai_resp.cost == pytest.approx(expected_cost)
+
+    def test_no_cache_fields_behaves_as_before(self):
+        from skell_e_router.anthropic_direct import _build_response
+        # make_anthropic_response usage is a MagicMock: cache fields resolve to
+        # non-int mocks and must be treated as 0
+        resp = make_anthropic_response(prompt_tokens=10, completion_tokens=20, model="claude-haiku-4-5")
+        ai_resp = _build_response(resp, "anthropic/claude-haiku-4-5", 0.5)
+        assert ai_resp.prompt_tokens == 10
+        assert ai_resp.total_tokens == 30
+        expected_cost = 10 * 1.0 / 1_000_000 + 20 * 5.0 / 1_000_000
+        assert ai_resp.cost == pytest.approx(expected_cost)
+
+
+class TestEnableCachingIntegration:
+    """enable_caching wiring through _ask_ai_direct_anthropic and ask_ai."""
+
+    def _make_claude_model(self):
+        return make_model(
+            provider="anthropic",
+            name="anthropic/claude-sonnet-4-6",
+            supported_params={"temperature", "stop", "max_tokens", "budget_tokens",
+                              "thinking", "reasoning_effort", "stream", "tools",
+                              "tool_choice", "betas"},
+            accepted_reasoning_efforts={"low", "medium", "high"},
+        )
+
+    @patch("skell_e_router.utils._call_anthropic_direct")
+    def test_enable_caching_true_adds_breakpoints(self, mock_call):
+        mock_call.return_value = (make_anthropic_response(), 0.5)
+
+        from skell_e_router.utils import _ask_ai_direct_anthropic
+        model = self._make_claude_model()
+        _ask_ai_direct_anthropic(
+            model,
+            [{"role": "system", "content": "You are helpful."},
+             {"role": "user", "content": "hi"}],
+            FAKE_ANTHROPIC_KEY, "none", False, None, {},
+            enable_caching=True,
+        )
+        call_kwargs = mock_call.call_args.kwargs
+        system = call_kwargs["system_prompt"]
+        assert isinstance(system, list)
+        assert system[0]["cache_control"] == {"type": "ephemeral"}
+        last_content = call_kwargs["messages"][-1]["content"]
+        assert last_content[-1]["cache_control"] == {"type": "ephemeral"}
+
+    @patch("skell_e_router.utils._call_anthropic_direct")
+    def test_enable_caching_default_off(self, mock_call):
+        mock_call.return_value = (make_anthropic_response(), 0.5)
+
+        from skell_e_router.utils import _ask_ai_direct_anthropic
+        model = self._make_claude_model()
+        _ask_ai_direct_anthropic(
+            model,
+            [{"role": "system", "content": "You are helpful."},
+             {"role": "user", "content": "hi"}],
+            FAKE_ANTHROPIC_KEY, "none", False, None, {},
+        )
+        call_kwargs = mock_call.call_args.kwargs
+        assert call_kwargs["system_prompt"] == "You are helpful."
+        assert call_kwargs["messages"][-1]["content"] == "hi"
+
+    @patch("skell_e_router.utils._perform_completion")
+    def test_enable_caching_litellm_anthropic_path(self, mock_completion):
+        mock_completion.return_value = (make_litellm_response(content="ok"), 0.5)
+
+        from skell_e_router.utils import ask_ai
+        from skell_e_router.model_config import MODEL_CONFIG
+
+        with patch.dict("skell_e_router.model_config.MODEL_CONFIG", {
+            "test-claude": make_model(
+                provider="anthropic",
+                name="anthropic/claude-sonnet-4-6",
+                supported_params={"temperature", "stream", "max_tokens", "thinking"},
+            )
+        }):
+            ask_ai(
+                "test-claude", "hi", "You are helpful.",
+                config={"anthropic_api_key": FAKE_ANTHROPIC_KEY},
+                direct_sdk=False,
+                enable_caching=True,
+            )
+        messages = mock_completion.call_args.kwargs["messages"]
+        sys_msg = next(m for m in messages if m["role"] == "system")
+        assert sys_msg["content"][0]["cache_control"] == {"type": "ephemeral"}
+        assert messages[-1]["content"][-1]["cache_control"] == {"type": "ephemeral"}
+
+    @patch("skell_e_router.utils._perform_completion")
+    def test_enable_caching_noop_for_non_anthropic(self, mock_completion):
+        mock_completion.return_value = (make_litellm_response(content="ok"), 0.5)
+
+        from skell_e_router.utils import ask_ai
+        from skell_e_router.model_config import MODEL_CONFIG
+
+        with patch.dict("skell_e_router.model_config.MODEL_CONFIG", {
+            "test-gpt": make_model(
+                provider="openai",
+                name="openai/gpt-4.1",
+                supported_params={"temperature", "stream", "max_tokens"},
+            )
+        }):
+            ask_ai(
+                "test-gpt", "hi", "You are helpful.",
+                config={"openai_api_key": FAKE_OPENAI_KEY},
+                enable_caching=True,
+            )
+        messages = mock_completion.call_args.kwargs["messages"]
+        for m in messages:
+            assert isinstance(m["content"], str)
