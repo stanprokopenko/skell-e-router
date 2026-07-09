@@ -44,6 +44,30 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    # gpt-5.6 family (Sol=flagship, Terra=mid, Luna=cheap/fast), preview launched July 2026.
+    # 1M context, 128K max output. Same effort vocabulary as 5.5 (none/low/medium/high/xhigh).
+    # temperature is rejected (only default 1 supported), same as 5.5.
+    "gpt-5.6-sol": AIModel(
+        name="openai/gpt-5.6-sol",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
+    ),
+    "gpt-5.6-terra": AIModel(
+        name="openai/gpt-5.6-terra",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
+    ),
+    "gpt-5.6-luna": AIModel(
+        name="openai/gpt-5.6-luna",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
+    ),
     # gpt-5.5 uses a different effort vocabulary than 5.4/5.3/5: no "minimal", new "xhigh".
     "gpt-5.5": AIModel(
         name="openai/gpt-5.5",

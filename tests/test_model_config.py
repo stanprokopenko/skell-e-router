@@ -90,6 +90,7 @@ class TestModelConfig:
         assert len(MODEL_CONFIG) > 0
 
     @pytest.mark.parametrize("alias", [
+        "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
@@ -272,6 +273,19 @@ class TestModelConfig:
         assert model.supports_thinking is False
         assert "stop" in model.supported_params
         assert "reasoning_effort" not in model.supported_params
+
+    @pytest.mark.parametrize("alias", ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"])
+    def test_gpt_5_6_family_config(self, alias):
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "openai"
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert "stream" in model.supported_params
+        assert "tools" in model.supported_params
+        # temperature rejected by the API (only default 1), so not in supported params
+        assert "temperature" not in model.supported_params
+        # same effort vocabulary as gpt-5.5
+        assert model.accepted_reasoning_efforts == {"none", "low", "medium", "high", "xhigh"}
 
     def test_gpt_5_5_config(self):
         model = MODEL_CONFIG["gpt-5.5"]
