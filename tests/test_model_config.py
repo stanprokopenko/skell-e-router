@@ -92,7 +92,7 @@ class TestModelConfig:
     @pytest.mark.parametrize("alias", [
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
-        "gemini-2.5-pro", "gemini-2.5-flash",
+        "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
         "claude-fable-5", "claude-opus-4-8",
@@ -234,6 +234,15 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
         assert model.name == "gemini/gemini-3-pro-image-preview"
+
+    def test_gemini_3_5_flash_config(self):
+        """gemini-3.5-flash: GA flash model, direct SDK, thinking_level minimal/low/medium/high."""
+        model = MODEL_CONFIG["gemini-3.5-flash"]
+        assert model.provider == "gemini"
+        assert model.supports_thinking is True
+        assert model.use_direct_sdk is True
+        assert "reasoning_effort" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
 
     def test_grok_4_5_config(self):
         """grok-4.5 has reasoning always on with configurable effort (low/medium/high, default high)."""

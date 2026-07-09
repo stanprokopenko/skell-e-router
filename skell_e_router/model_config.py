@@ -151,6 +151,16 @@ MODEL_CONFIG = {
     # Note: web_search_options enables Google Search Grounding for real-time web search
     # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
+    # gemini-3.5-flash: GA May 2026. 1M context, 65K max output. thinking_level default is
+    # "medium" (was "high" on Gemini 3). Google recommends leaving temperature/top_p/top_k at defaults.
+    "gemini-3.5-flash": AIModel(
+        name="gemini/gemini-3.5-flash",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
+        use_direct_sdk=True,
+    ),
     "gemini-3-flash-preview": AIModel(
         name="gemini/gemini-3-flash-preview",
         provider="gemini",

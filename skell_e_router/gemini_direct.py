@@ -47,6 +47,7 @@ def _get_gemini_client(api_key: str):
 # Known pricing per 1M tokens (USD) for direct-SDK models
 # Per 1M tokens (USD), text/image/video input — source: https://ai.google.dev/gemini-api/docs/pricing
 _PRICING = {
+    "gemini-3.5-flash": {"input": 1.50, "output": 9.00},
     "gemini-3-flash-preview": {"input": 0.50, "output": 3.00},
     "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
     "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
