@@ -45,22 +45,84 @@ _PRICING = {
 }
 
 
+def _tool_call_input(fn: dict) -> dict:
+    """Parse an OpenAI function-call `arguments` value (JSON string or dict)
+    into the dict Anthropic expects as tool_use `input`."""
+    args = fn.get("arguments")
+    if isinstance(args, dict):
+        return args
+    if isinstance(args, str) and args:
+        try:
+            parsed = json.loads(args)
+            return parsed if isinstance(parsed, dict) else {}
+        except ValueError:
+            return {}
+    return {}
+
+
+def _merge_consecutive_roles(messages: list[dict]) -> list[dict]:
+    """Merge consecutive same-role messages into one block-content message
+    (tool_result conversion and retry prompts can produce user/user runs)."""
+    merged: list[dict] = []
+    for msg in messages:
+        if merged and merged[-1]["role"] == msg["role"]:
+            prev = merged[-1]
+            for m in (prev, msg):
+                if isinstance(m["content"], str):
+                    m["content"] = [{"type": "text", "text": m["content"]}]
+            prev["content"] = prev["content"] + msg["content"]
+        else:
+            merged.append(msg)
+    return merged
+
+
 def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, list[dict]]:
     """Convert OpenAI-format messages to Anthropic format.
 
-    Returns (system_prompt, messages) where system_prompt is extracted
-    from system messages and messages is the list of conversation turns.
+    Handles tool-calling turns: assistant `tool_calls` become tool_use
+    content blocks, and role "tool" results become tool_result blocks in a
+    user message. Returns (system_prompt, messages) where system_prompt is
+    extracted from system messages and messages is the list of conversation
+    turns.
     """
     system_prompt = None
     converted = []
 
     for msg in messages:
         role = msg["role"]
-        content = msg["content"]
+        content = msg.get("content")
 
         if role == "system":
             if isinstance(content, str):
                 system_prompt = content
+            continue
+
+        # OpenAI tool result -> tool_result block in a user message
+        if role == "tool":
+            converted.append({
+                "role": "user",
+                "content": [{
+                    "type": "tool_result",
+                    "tool_use_id": msg.get("tool_call_id"),
+                    "content": content if isinstance(content, str) else str(content),
+                }],
+            })
+            continue
+
+        # Assistant tool calls -> tool_use content blocks (text first, if any)
+        if role == "assistant" and msg.get("tool_calls"):
+            parts = []
+            if isinstance(content, str) and content:
+                parts.append({"type": "text", "text": content})
+            for tc in msg["tool_calls"]:
+                fn = tc.get("function") or {}
+                parts.append({
+                    "type": "tool_use",
+                    "id": tc.get("id"),
+                    "name": fn.get("name"),
+                    "input": _tool_call_input(fn),
+                })
+            converted.append({"role": "assistant", "content": parts})
             continue
 
         # Roles: "user" and "assistant" pass through directly
@@ -107,7 +169,9 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
             if parts:
                 converted.append({"role": role, "content": parts})
 
-    return system_prompt, converted
+    # Parallel tool results (and retry prompts after them) arrive as separate
+    # messages — Anthropic wants them as blocks of a single user turn.
+    return system_prompt, _merge_consecutive_roles(converted)
 
 
 def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tuple[str | list[dict] | None, list[dict]]:

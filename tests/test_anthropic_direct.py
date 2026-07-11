@@ -99,6 +99,98 @@ class TestConvertMessagesForAnthropic:
         assert exc_info.value.code == "UNSUPPORTED_MODALITY"
         assert "audio" in exc_info.value.message.lower()
 
+    def test_assistant_tool_calls_become_tool_use_blocks(self):
+        msgs = [
+            {"role": "assistant", "content": "Searching now.", "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "search", "arguments": '{"query": "gesture"}'}},
+            ]},
+        ]
+        _, converted = self._call(msgs)
+        assert len(converted) == 1
+        blocks = converted[0]["content"]
+        assert blocks[0] == {"type": "text", "text": "Searching now."}
+        assert blocks[1]["type"] == "tool_use"
+        assert blocks[1]["id"] == "call_1"
+        assert blocks[1]["name"] == "search"
+        assert blocks[1]["input"] == {"query": "gesture"}
+
+    def test_assistant_tool_calls_without_text(self):
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "search", "arguments": ""}},
+            ]},
+        ]
+        _, converted = self._call(msgs)
+        blocks = converted[0]["content"]
+        assert len(blocks) == 1
+        assert blocks[0]["type"] == "tool_use"
+        assert blocks[0]["input"] == {}
+
+    def test_tool_role_becomes_tool_result_user_message(self):
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "search", "arguments": "{}"}},
+            ]},
+            {"role": "tool", "tool_call_id": "call_1", "content": "3 results found"},
+        ]
+        _, converted = self._call(msgs)
+        assert len(converted) == 2
+        result_msg = converted[1]
+        assert result_msg["role"] == "user"
+        assert result_msg["content"][0] == {
+            "type": "tool_result", "tool_use_id": "call_1", "content": "3 results found",
+        }
+
+    def test_parallel_tool_results_merge_into_one_user_message(self):
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "search", "arguments": "{}"}},
+                {"id": "call_2", "type": "function",
+                 "function": {"name": "lookup", "arguments": "{}"}},
+            ]},
+            {"role": "tool", "tool_call_id": "call_1", "content": "result A"},
+            {"role": "tool", "tool_call_id": "call_2", "content": "result B"},
+        ]
+        _, converted = self._call(msgs)
+        assert len(converted) == 2
+        blocks = converted[1]["content"]
+        assert [b["tool_use_id"] for b in blocks] == ["call_1", "call_2"]
+
+    def test_user_text_after_tool_result_merges_after_result_blocks(self):
+        msgs = [
+            {"role": "tool", "tool_call_id": "call_1", "content": "result A"},
+            {"role": "user", "content": "Keep going."},
+        ]
+        _, converted = self._call(msgs)
+        assert len(converted) == 1
+        blocks = converted[0]["content"]
+        assert blocks[0]["type"] == "tool_result"
+        assert blocks[1] == {"type": "text", "text": "Keep going."}
+
+    def test_tool_call_dict_arguments_pass_through(self):
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "c", "type": "function",
+                 "function": {"name": "f", "arguments": {"k": 1}}},
+            ]},
+        ]
+        _, converted = self._call(msgs)
+        assert converted[0]["content"][0]["input"] == {"k": 1}
+
+    def test_tool_call_malformed_arguments_fall_back_to_empty(self):
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": "c", "type": "function",
+                 "function": {"name": "f", "arguments": "not json"}},
+            ]},
+        ]
+        _, converted = self._call(msgs)
+        assert converted[0]["content"][0]["input"] == {}
+
 
 # ===================================================================
 # TestBuildCreateParams
