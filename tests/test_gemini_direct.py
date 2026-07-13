@@ -315,6 +315,88 @@ class TestBuildGenerateConfig:
         assert len(fn_tool) == 1
         assert fn_tool[0]["function_declarations"][0]["name"] == "get_weather"
 
+    def test_tools_schema_sanitized(self):
+        """$defs/$ref are inlined and Gemini-unsupported keys dropped before
+        the schema reaches FunctionDeclaration (the API rejects them)."""
+        openai_tools = [
+            {"type": "function", "function": {
+                "name": "todo_write",
+                "description": "Plan",
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "$defs": {"TodoItem": {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "properties": {
+                            "text": {"type": "string"},
+                            # property named like a schema keyword must survive
+                            "required": {"type": "boolean"},
+                        },
+                    }},
+                    "properties": {
+                        "items": {"type": "array",
+                                  "items": {"$ref": "#/$defs/TodoItem",
+                                            "description": "one todo"}},
+                        "query": {"anyOf": [{"type": "string"},
+                                            {"type": "null",
+                                             "additionalProperties": False}]},
+                    },
+                    "required": ["items"],
+                },
+            }}
+        ]
+        _, tools = self._call(self._gemini_model(), {"tools": openai_tools})
+        fn_tool = [t for t in tools if "function_declarations" in t]
+        params = fn_tool[0]["function_declarations"][0]["parameters"]
+        assert "$defs" not in params
+        assert "additionalProperties" not in params
+        item_schema = params["properties"]["items"]["items"]
+        assert "$ref" not in item_schema
+        assert item_schema["type"] == "object"
+        assert item_schema["description"] == "one todo"
+        assert "additionalProperties" not in item_schema
+        assert set(item_schema["properties"]) == {"text", "required"}
+        assert "additionalProperties" not in params["properties"]["query"]["anyOf"][1]
+        assert params["required"] == ["items"]
+
+    def test_tools_schema_bare_arrays_get_items(self):
+        """Gemini 400s on array schemas without `items` (a bare `list` type
+        hint produces one) — the sanitizer injects a default."""
+        from skell_e_router.gemini_direct import _sanitize_schema_for_gemini
+        schema = {
+            "type": "object",
+            "properties": {
+                "task_ids": {"anyOf": [{"type": "array"}, {"type": "null"}]},
+                "tags": {"type": "array"},
+                "typed": {"type": "array", "items": {"type": "integer"}},
+            },
+        }
+        out = _sanitize_schema_for_gemini(schema)
+        assert out["properties"]["task_ids"]["anyOf"][0]["items"] == {"type": "string"}
+        assert out["properties"]["tags"]["items"] == {"type": "string"}
+        assert out["properties"]["typed"]["items"] == {"type": "integer"}
+
+    def test_sanitize_openai_tools_helper(self):
+        """The litellm-path helper sanitizes every declaration and leaves
+        non-function entries untouched."""
+        from skell_e_router.gemini_direct import _sanitize_openai_tools_for_gemini
+        tools = [
+            {"type": "function", "function": {
+                "name": "t1",
+                "parameters": {"type": "object", "additionalProperties": False,
+                               "properties": {"ids": {"type": "array"}}},
+            }},
+            {"type": "web_search"},
+        ]
+        out = _sanitize_openai_tools_for_gemini(tools)
+        params = out[0]["function"]["parameters"]
+        assert "additionalProperties" not in params
+        assert params["properties"]["ids"]["items"] == {"type": "string"}
+        assert out[1] == {"type": "web_search"}
+        # original input is not mutated
+        assert "additionalProperties" in tools[0]["function"]["parameters"]
+
     def test_tool_choice_auto(self):
         config, _ = self._call(self._gemini_model(), {"tool_choice": "auto"})
         tc = config._kw.get("tool_config")

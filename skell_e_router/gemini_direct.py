@@ -139,6 +139,78 @@ def _thinking_config_for_effort(effort: str):
     return types.ThinkingConfig(thinking_budget=0)
 
 
+# JSON-schema keys the Gemini API accepts in function-declaration parameters
+# (google.genai types.Schema fields, camelCase as they appear in JSON schema).
+# Anything else — additionalProperties, $schema, exclusiveMinimum, const, ... —
+# is rejected by the SDK (extra_forbidden) or the API (unknown field), so
+# unknown keys are dropped rather than forwarded.
+_GEMINI_SCHEMA_KEYS = frozenset({
+    "type", "format", "title", "description", "nullable", "default", "enum",
+    "example", "items", "properties", "required", "propertyOrdering", "anyOf",
+    "minimum", "maximum", "minLength", "maxLength", "pattern",
+    "minItems", "maxItems", "minProperties", "maxProperties",
+})
+
+
+def _sanitize_schema_for_gemini(schema):
+    """Make an OpenAI-format tool parameter schema safe for the Gemini API.
+
+    Local ``$defs``/``$ref`` pairs (emitted by schema generators for nested
+    types) are inlined, then every key the Gemini API does not understand is
+    dropped recursively. Cycles are depth-capped rather than expanded forever.
+    """
+    if not isinstance(schema, dict):
+        return schema
+    defs = schema.get("$defs") or {}
+
+    def resolve(node, depth: int = 0):
+        if isinstance(node, list):
+            return [resolve(v, depth + 1) for v in node]
+        if not isinstance(node, dict):
+            return node
+        ref = node.get("$ref")
+        if isinstance(ref, str) and ref.startswith("#/$defs/") and depth <= 12:
+            target = defs.get(ref[len("#/$defs/"):])
+            if isinstance(target, dict):
+                siblings = {k: v for k, v in node.items() if k != "$ref"}
+                return resolve({**target, **siblings}, depth + 1)
+        out = {}
+        for key, value in node.items():
+            if key not in _GEMINI_SCHEMA_KEYS:
+                continue
+            if key == "properties" and isinstance(value, dict):
+                # keys here are the parameter NAMES — never filter them
+                out[key] = {name: resolve(sub, depth + 1)
+                            for name, sub in value.items()}
+            elif isinstance(value, (dict, list)):
+                out[key] = resolve(value, depth + 1)
+            else:
+                out[key] = value
+        # Gemini requires `items` on every array schema (e.g. a bare `list`
+        # type hint produces an items-less array and a 400).
+        if str(out.get("type", "")).lower() == "array" and "items" not in out:
+            out["items"] = {"type": "string"}
+        return out
+
+    return resolve(schema)
+
+
+def _sanitize_openai_tools_for_gemini(tools):
+    """Apply _sanitize_schema_for_gemini across a list of OpenAI-format tool
+    declarations. Used by both the direct SDK path and the LiteLLM path —
+    LiteLLM forwards parameter schemas to the Gemini API mostly untouched, so
+    unsupported keys / items-less arrays 400 there identically."""
+    sanitized = []
+    for tool_def in tools or []:
+        if isinstance(tool_def, dict) and tool_def.get("type") == "function":
+            fn = dict(tool_def.get("function") or {})
+            if isinstance(fn.get("parameters"), dict):
+                fn["parameters"] = _sanitize_schema_for_gemini(fn["parameters"])
+            tool_def = {**tool_def, "function": fn}
+        sanitized.append(tool_def)
+    return sanitized
+
+
 def _build_generate_config(ai_model, kwargs: dict) -> tuple:
     """Convert router kwargs to Google SDK GenerateContentConfig and tools list.
 
@@ -270,7 +342,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 if "description" in fn:
                     fd_kwargs["description"] = fn["description"]
                 if "parameters" in fn:
-                    fd_kwargs["parameters"] = fn["parameters"]
+                    fd_kwargs["parameters"] = _sanitize_schema_for_gemini(fn["parameters"])
                 func_declarations.append(types.FunctionDeclaration(**fd_kwargs))
         if func_declarations:
             fn_tool = types.Tool(function_declarations=func_declarations)
