@@ -275,6 +275,17 @@ MODEL_CONFIG = {
         accepted_reasoning_efforts={"low", "medium", "high", "max"},
         use_direct_sdk=True,
     ),
+    # Sonnet 5: same API surface as Opus 4.8 — adaptive thinking only (budget_tokens
+    # removed; thinking "disabled" is still accepted), no temperature/top_p/top_k.
+    # 1M context, 128k max output. Effort defaults to high.
+    "claude-sonnet-5": AIModel(
+        name="anthropic/claude-sonnet-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        use_direct_sdk=True,
+    ),
     "claude-sonnet-4-6": AIModel(
         name="anthropic/claude-sonnet-4-6",
         provider="anthropic",

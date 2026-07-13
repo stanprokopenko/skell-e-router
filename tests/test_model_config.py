@@ -96,7 +96,7 @@ class TestModelConfig:
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
-        "claude-fable-5", "claude-opus-4-8",
+        "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
@@ -165,9 +165,9 @@ class TestModelConfig:
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
 
-    @pytest.mark.parametrize("alias", ["claude-fable-5", "claude-opus-4-8"])
+    @pytest.mark.parametrize("alias", ["claude-fable-5", "claude-opus-4-8", "claude-sonnet-5"])
     def test_fable_5_and_opus_4_8_config(self, alias):
-        """Fable 5 and Opus 4.8: adaptive thinking only, no sampling params, effort up to max."""
+        """Fable 5, Opus 4.8, Sonnet 5: adaptive thinking only, no sampling params, effort up to max."""
         model = MODEL_CONFIG[alias]
         assert model.provider == "anthropic"
         assert model.use_direct_sdk is True
