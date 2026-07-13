@@ -2,13 +2,14 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
         self.supported_params = supported_params # Parameters supported by litellm.completion for this model, after our internal transformations
         self.accepted_reasoning_efforts = accepted_reasoning_efforts # Optional per-model allowed values for 'reasoning_effort'
         self.use_direct_sdk = use_direct_sdk # True to bypass LiteLLM and call provider SDK directly
+        self.api_base = api_base # Custom endpoint URL for OpenAI-compatible providers LiteLLM doesn't know natively (routed via the generic "openai/" prefix)
 
     @property
     def is_gemini(self) -> bool:
@@ -25,6 +26,10 @@ class AIModel:
     @property
     def is_openai_o_series(self) -> bool: # Specific check for "o" series like o1 and o3
         return self.is_openai and self.name.startswith("openai/o")
+
+    @property
+    def is_meta(self) -> bool:
+        return self.provider == "meta"
 
     @property
     def is_xai(self) -> bool:
@@ -343,6 +348,22 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
         use_direct_sdk=True,
+    ),
+
+    # META (MODEL API)
+
+    # Muse Spark 1.1: multimodal reasoning model, released 2026-07-09. 1,048,576-token
+    # context, 131,072 max output. Served only via Meta Model API (api.meta.ai), which is
+    # OpenAI-compatible — routed through LiteLLM's generic "openai/" provider with an
+    # api_base override; API key comes from META_API_KEY. stop is rejected, and
+    # reasoning_effort "none" is rejected (model always thinks). Tuned for temperature 1.0.
+    "muse-spark-1.1": AIModel(
+        name="openai/muse-spark-1.1",
+        provider="meta",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
+        api_base="https://api.meta.ai/v1",
     ),
 
     # XAI

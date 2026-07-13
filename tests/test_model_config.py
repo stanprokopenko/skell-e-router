@@ -98,6 +98,7 @@ class TestModelConfig:
         "nano-banana-3", "gemini-3-pro-image",
         "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
+        "muse-spark-1.1",
         "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
@@ -244,6 +245,24 @@ class TestModelConfig:
         assert model.use_direct_sdk is True
         assert "reasoning_effort" in model.supported_params
         assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
+
+    def test_muse_spark_1_1_config(self):
+        """Muse Spark 1.1 routes through LiteLLM's generic openai/ provider with a
+        custom api_base pointing at Meta Model API. Reasoning always on ("none" rejected),
+        stop rejected."""
+        model = MODEL_CONFIG["muse-spark-1.1"]
+        assert model.provider == "meta"
+        assert model.is_meta is True
+        assert model.is_openai is False  # routed via openai/ prefix but not an OpenAI model
+        assert model.name == "openai/muse-spark-1.1"
+        assert model.api_base == "https://api.meta.ai/v1"
+        assert model.supports_thinking is True
+        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high", "xhigh"}
+        assert "stop" not in model.supported_params
+        assert "temperature" in model.supported_params
+        assert "tools" in model.supported_params
+        # api_base defaults to None for models LiteLLM knows natively
+        assert MODEL_CONFIG["gpt-5"].api_base is None
 
     def test_grok_4_5_config(self):
         """grok-4.5 has reasoning always on with configurable effort (low/medium/high, default high)."""

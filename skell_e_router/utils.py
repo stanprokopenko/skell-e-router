@@ -16,6 +16,7 @@ from .gemini_direct import (
     _call_gemini_direct_stream,
     _build_response as _build_gemini_response,
     _print_response as _print_gemini_response,
+    _sanitize_openai_tools_for_gemini,
 )
 from .anthropic_direct import (
     _convert_messages_for_anthropic,
@@ -62,6 +63,7 @@ PROVIDER_ENV_KEY = {
     "groq": "GROQ_API_KEY",
     "xai": "XAI_API_KEY",
     "deepinfra": "DEEPINFRA_API_KEY",
+    "meta": "META_API_KEY",
 }
 
 
@@ -270,11 +272,17 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
 
 def _resolve_api_key(ai_model: "AIModel", config: dict | None) -> str | None:
     """Get the API key for a model's provider from a config dict, if available."""
-    if not config:
-        return None
     env_key = PROVIDER_ENV_KEY.get(ai_model.provider)
-    if env_key:
-        return config.get(env_key.lower())
+    if config and env_key:
+        key = config.get(env_key.lower())
+        if key:
+            return key
+    # Models with a custom api_base route through LiteLLM's generic "openai/"
+    # provider, so LiteLLM's env fallback would wrongly pick up OPENAI_API_KEY.
+    # Resolve the correct provider key from the environment explicitly.
+    # (getattr: EmbeddingModel instances also pass through here and lack api_base)
+    if getattr(ai_model, "api_base", None) and env_key:
+        return os.environ.get(env_key)
     return None
 
 
@@ -658,6 +666,13 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 "tools": {"enabled_tools": GROQ_COMPOUND_DEFAULT_TOOLS}
             }
 
+    # Gemini (LiteLLM path): sanitize tool parameter schemas. The Gemini API
+    # rejects $defs/$ref/additionalProperties and requires `items` on arrays;
+    # the direct SDK path sanitizes in _build_generate_config, this covers
+    # models routed through litellm.completion.
+    if ai_model.is_gemini and kwargs.get("tools"):
+        kwargs["tools"] = _sanitize_openai_tools_for_gemini(kwargs["tools"])
+
     # Add safety settings
     if "safety_settings" in ai_model.supported_params:
         kwargs['safety_settings'] = [
@@ -996,6 +1011,12 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)
+
+    # Custom OpenAI-compatible endpoints (e.g., Meta Model API) need their base URL
+    # forwarded to litellm.completion. Added after param filtering since api_base is
+    # routing config, not a model sampling param.
+    if ai_model.api_base:
+        kwargs["api_base"] = ai_model.api_base
 
     _print_request_details(messages, kwargs, ai_model.name, verbosity)
 
