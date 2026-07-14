@@ -453,9 +453,53 @@ def _print_request_details(messages: list[dict], kwargs: dict, model_name: str, 
         print(f"\nASKING AI ({model_name})...\n\n")
 
 
+def _compute_response_cost(response, ai_model=None) -> float | None:
+    """Compute USD cost for a LiteLLM completion response.
+
+    Primary path: litellm.completion_cost(), which knows most hosted models
+    (including cached-input discounts via usage.prompt_tokens_details).
+    Fallback: models LiteLLM can't price (e.g., Meta Model API models routed
+    through the generic "openai/" prefix with a custom api_base) raise inside
+    completion_cost; when the router's AIModel carries a `pricing` dict
+    (per-1M USD rates: "input", "output", optional "cached_input"), compute
+    the cost from usage tokens instead of reporting None. Cached input tokens
+    (usage.prompt_tokens_details.cached_tokens, a subset of prompt_tokens)
+    are billed at the "cached_input" rate when configured.
+    """
+    computed_cost = None
+    try:
+        computed_cost = litellm.completion_cost(completion_response=response)
+    except Exception:
+        computed_cost = None
+
+    if computed_cost is not None:
+        return computed_cost
+
+    pricing = getattr(ai_model, 'pricing', None) if ai_model is not None else None
+    if not pricing:
+        return None
+
+    usage = getattr(response, 'usage', None)
+    prompt_tokens = getattr(usage, 'prompt_tokens', None)
+    completion_tokens = getattr(usage, 'completion_tokens', None)
+    if not isinstance(prompt_tokens, int) or not isinstance(completion_tokens, int):
+        return None
+
+    prompt_details = getattr(usage, 'prompt_tokens_details', None)
+    cached_tokens = getattr(prompt_details, 'cached_tokens', None) if prompt_details is not None else None
+    if not isinstance(cached_tokens, int) or cached_tokens < 0:
+        cached_tokens = 0
+    cached_tokens = min(cached_tokens, prompt_tokens)
+
+    cached_rate = pricing.get("cached_input", pricing["input"])
+    return ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
+            cached_tokens * cached_rate / 1_000_000 +
+            completion_tokens * pricing["output"] / 1_000_000)
+
+
 # Gathers statistics from a LiteLLM response and prints them based on level
 # 'none', 'response', 'info', 'debug'
-def _print_response_details(response, verbosity: str = 'none', request_duration_s: float | None = None):
+def _print_response_details(response, verbosity: str = 'none', request_duration_s: float | None = None, ai_model=None):
     if verbosity == 'none':
         return
     
@@ -490,10 +534,7 @@ def _print_response_details(response, verbosity: str = 'none', request_duration_
         message = getattr(first_choice, 'message', None) if first_choice else None
 
         # Compute cost safely – some models might not be mapped in LiteLLM's cost table
-        try:
-            computed_cost = litellm.completion_cost(completion_response=response)
-        except Exception:
-            computed_cost = None
+        computed_cost = _compute_response_cost(response, ai_model)
 
         # Initialize stats dictionary
         stats = {
@@ -738,22 +779,20 @@ def _build_ai_response(
     response,
     request_duration_s: float | None = None,
     total_duration_s: float | None = None,
+    ai_model=None,
 ) -> AIResponse:
     """Build AIResponse from LiteLLM completion response."""
-    
+
     content = response.choices[0].message.content if response.choices else ""
     model_name = getattr(response, 'model', 'unknown')
-    
+
     usage = getattr(response, 'usage', None)
     completion_details = getattr(usage, 'completion_tokens_details', None) if usage else None
     first_choice = response.choices[0] if response.choices else None
     message = getattr(first_choice, 'message', None) if first_choice else None
-    
-    # Compute cost safely
-    try:
-        computed_cost = litellm.completion_cost(completion_response=response)
-    except Exception:
-        computed_cost = None
+
+    # Compute cost safely (LiteLLM cost map, else router-level pricing fallback)
+    computed_cost = _compute_response_cost(response, ai_model)
     
     # Extract grounding metadata for Gemini
     grounding_metadata = None
@@ -1031,10 +1070,10 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         total_duration_s = time.perf_counter() - start_time
 
         content = response.choices[0].message.content
-        _print_response_details(response, verbosity, total_duration_s)
+        _print_response_details(response, verbosity, total_duration_s, ai_model=ai_model)
 
         if rich_response:
-            return _build_ai_response(response, request_duration_s, total_duration_s)
+            return _build_ai_response(response, request_duration_s, total_duration_s, ai_model=ai_model)
         return content
 
     except Exception as e:

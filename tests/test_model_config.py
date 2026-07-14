@@ -261,6 +261,9 @@ class TestModelConfig:
         assert "stop" not in model.supported_params
         assert "temperature" in model.supported_params
         assert "tools" in model.supported_params
+        # LiteLLM can't price custom-api_base models — router-level fallback pricing,
+        # per 1M tokens, from https://dev.meta.ai/docs/getting-started/pricing-rate-limits
+        assert model.pricing == {"input": 1.25, "cached_input": 0.15, "output": 4.25}
         # api_base defaults to None for models LiteLLM knows natively
         assert MODEL_CONFIG["gpt-5"].api_base is None
 

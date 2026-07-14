@@ -17,7 +17,7 @@ def test_grounding():
     # Try using litellm's native web_search_options parameter
     # This should enable Google Search grounding for Gemini models
     response = litellm.completion(
-        model="gemini/gemini-3-pro-preview",
+        model="gemini/gemini-3.1-pro-preview",
         messages=[
             {"role": "user", "content": "What is the latest news on Trump?"}
         ],

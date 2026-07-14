@@ -20,6 +20,7 @@ from skell_e_router.utils import (
     _retry_after_wait,
     _handle_model_specific_params,
     _build_ai_response,
+    _compute_response_cost,
     resolve_model_alias,
     check_environment_variables,
     _check_provider_key,
@@ -1056,6 +1057,21 @@ class TestBuildAIResponse:
 
         assert result.cost is None
 
+    def test_fallback_pricing_used_when_litellm_cannot_price(self):
+        # Meta Model API models are unmapped in LiteLLM's cost table; the
+        # router-level AIModel.pricing must kick in instead of cost=None.
+        mock_resp = make_litellm_response(
+            model="muse-spark-1.1", prompt_tokens=1_000_000,
+            completion_tokens=1_000_000, total_tokens=2_000_000,
+        )
+        ai_model = MODEL_CONFIG["muse-spark-1.1"]
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("This model isn't mapped yet")
+            result = _build_ai_response(mock_resp, ai_model=ai_model)
+
+        # 1M * 1.25/1M input + 1M * 4.25/1M output
+        assert result.cost == pytest.approx(5.50)
+
     def test_extracts_grounding_metadata(self):
         mock_resp = make_litellm_response(grounding_metadata={"web": True})
         with patch("skell_e_router.utils.litellm") as mock_litellm:
@@ -1101,6 +1117,69 @@ class TestBuildAIResponse:
             result = _build_ai_response(mock_resp)
 
         assert result.content == ""
+
+
+# ---------------------------------------------------------------------------
+# _compute_response_cost
+# ---------------------------------------------------------------------------
+
+class TestComputeResponseCost:
+    """LiteLLM cost first; router-level AIModel.pricing as the fallback."""
+
+    def _pricing_model(self):
+        model = make_model(provider="meta", name="openai/fake-meta-model")
+        model.pricing = {"input": 1.25, "cached_input": 0.15, "output": 4.25}
+        return model
+
+    def test_litellm_cost_wins_when_available(self):
+        mock_resp = make_litellm_response()
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.return_value = 0.42
+            cost = _compute_response_cost(mock_resp, self._pricing_model())
+        assert cost == 0.42
+
+    def test_fallback_computes_from_router_pricing(self):
+        mock_resp = make_litellm_response(
+            prompt_tokens=1_000_000, completion_tokens=1_000_000, total_tokens=2_000_000,
+        )
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("not mapped")
+            cost = _compute_response_cost(mock_resp, self._pricing_model())
+        assert cost == pytest.approx(1.25 + 4.25)
+
+    def test_fallback_applies_cached_input_discount(self):
+        mock_resp = make_litellm_response(
+            prompt_tokens=1_000_000, completion_tokens=1_000_000, total_tokens=2_000_000,
+        )
+        # OpenAI-compatible usage reports cached tokens as a subset of prompt_tokens
+        mock_resp.usage.prompt_tokens_details.cached_tokens = 600_000
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("not mapped")
+            cost = _compute_response_cost(mock_resp, self._pricing_model())
+        expected = (400_000 * 1.25 + 600_000 * 0.15 + 1_000_000 * 4.25) / 1_000_000
+        assert cost == pytest.approx(expected)
+
+    def test_none_when_no_router_pricing(self):
+        mock_resp = make_litellm_response()
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("not mapped")
+            cost = _compute_response_cost(mock_resp, make_model())
+        assert cost is None
+
+    def test_none_when_no_model(self):
+        mock_resp = make_litellm_response()
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("not mapped")
+            cost = _compute_response_cost(mock_resp, None)
+        assert cost is None
+
+    def test_none_when_usage_missing(self):
+        mock_resp = make_litellm_response()
+        mock_resp.usage = None
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.side_effect = Exception("not mapped")
+            cost = _compute_response_cost(mock_resp, self._pricing_model())
+        assert cost is None
 
 
 # ---------------------------------------------------------------------------

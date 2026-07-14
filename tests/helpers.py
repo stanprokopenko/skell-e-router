@@ -105,6 +105,7 @@ def make_gemini_response(
     completion_tokens: int = 20,
     total_tokens: int = 30,
     reasoning_tokens: int | None = None,
+    cached_tokens: int | None = None,
     finish_reason: str = "STOP",
     grounding_metadata=None,
     safety_ratings=None,
@@ -145,6 +146,8 @@ def make_gemini_response(
     usage.candidates_token_count = completion_tokens
     usage.total_token_count = total_tokens
     usage.thoughts_token_count = reasoning_tokens
+    # Implicit-cache hits: subset of prompt_token_count; None = no cache hit
+    usage.cached_content_token_count = cached_tokens
 
     response = MagicMock()
     response.candidates = [candidate] if not blocked else []

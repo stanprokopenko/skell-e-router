@@ -46,12 +46,18 @@ def _get_gemini_client(api_key: str):
 
 # Known pricing per 1M tokens (USD) for direct-SDK models
 # Per 1M tokens (USD), text/image/video input — source: https://ai.google.dev/gemini-api/docs/pricing
+# USD per 1M tokens (text/image/video rates) from
+# https://ai.google.dev/gemini-api/docs/pricing. "cached_input" is the
+# per-model context-caching read price, which Google also passes on
+# automatically for implicit-cache hits (enabled by default on Gemini 2.5+,
+# see https://ai.google.dev/gemini-api/docs/caching). Cache hits are reported
+# in usage_metadata.cached_content_token_count, a SUBSET of prompt_token_count.
 _PRICING = {
-    "gemini-3.5-flash": {"input": 1.50, "output": 9.00},
-    "gemini-3-flash-preview": {"input": 0.50, "output": 3.00},
-    "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
-    "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
-    "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40},
+    "gemini-3.5-flash": {"input": 1.50, "output": 9.00, "cached_input": 0.15},
+    "gemini-3-flash-preview": {"input": 0.50, "output": 3.00, "cached_input": 0.05},
+    "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50, "cached_input": 0.025},
+    "gemini-2.5-flash": {"input": 0.30, "output": 2.50, "cached_input": 0.03},
+    "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40, "cached_input": 0.01},
 }
 
 
@@ -566,11 +572,21 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
                         }
                     })
 
-    # Compute cost from known pricing
+    # Compute cost from known pricing. Gemini 2.5+ caches implicitly and bills
+    # cache hits at the discounted cached-input rate; cached tokens are
+    # reported in usage_metadata.cached_content_token_count and are a subset
+    # of prompt_token_count, so subtract them out before applying full rate.
+    cached_tokens = getattr(usage, 'cached_content_token_count', None)
+    if not isinstance(cached_tokens, int) or cached_tokens < 0:
+        cached_tokens = 0  # None/absent (no cache hit or older model) -> flat pricing
+
     cost = None
     pricing = _PRICING.get(display_model)
     if pricing and prompt_tokens is not None and completion_tokens is not None:
-        cost = (prompt_tokens * pricing["input"] / 1_000_000 +
+        cached_tokens = min(cached_tokens, prompt_tokens)
+        cached_rate = pricing.get("cached_input", pricing["input"])
+        cost = ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
+                cached_tokens * cached_rate / 1_000_000 +
                 completion_tokens * pricing["output"] / 1_000_000)
 
     return AIResponse(

@@ -2,7 +2,7 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
@@ -10,6 +10,13 @@ class AIModel:
         self.accepted_reasoning_efforts = accepted_reasoning_efforts # Optional per-model allowed values for 'reasoning_effort'
         self.use_direct_sdk = use_direct_sdk # True to bypass LiteLLM and call provider SDK directly
         self.api_base = api_base # Custom endpoint URL for OpenAI-compatible providers LiteLLM doesn't know natively (routed via the generic "openai/" prefix)
+        # Router-level USD pricing per 1M tokens, used ONLY as a fallback when
+        # litellm.completion_cost() can't price the model (e.g., custom api_base
+        # models routed via the generic "openai/" prefix). Keys: "input", "output",
+        # optional "cached_input" (rate for tokens reported in
+        # usage.prompt_tokens_details.cached_tokens). Set this on every future
+        # model that LiteLLM's cost map doesn't cover.
+        self.pricing = pricing
 
     @property
     def is_gemini(self) -> bool:
@@ -364,6 +371,10 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
         api_base="https://api.meta.ai/v1",
+        # LiteLLM can't price custom-api_base models, so cost falls back to this.
+        # Official Meta Model API pricing (per 1M tokens), reasoning billed as output:
+        # https://dev.meta.ai/docs/getting-started/pricing-rate-limits
+        pricing={"input": 1.25, "cached_input": 0.15, "output": 4.25},
     ),
 
     # XAI

@@ -550,6 +550,40 @@ class TestBuildResponse:
         # 1M * 0.30/1M + 1M * 2.50/1M = 0.30 + 2.50 = 2.80
         assert ai_resp.cost == pytest.approx(2.80)
 
+    def test_cost_with_implicit_cache_discount(self):
+        # Gemini 2.5+ implicit caching: cached_content_token_count is a SUBSET
+        # of prompt_token_count and is billed at the cached-input rate.
+        resp = make_gemini_response(
+            prompt_tokens=1_000_000, completion_tokens=1_000_000, cached_tokens=600_000,
+        )
+        from skell_e_router.gemini_direct import _build_response
+        ai_resp = _build_response(resp, "gemini/gemini-2.5-flash", 1.0)
+        # 400k uncached * 0.30/1M + 600k cached * 0.03/1M + 1M * 2.50/1M
+        expected = (400_000 * 0.30 + 600_000 * 0.03 + 1_000_000 * 2.50) / 1_000_000
+        assert ai_resp.cost == pytest.approx(expected)
+        # prompt_tokens still reports the full prompt size
+        assert ai_resp.prompt_tokens == 1_000_000
+
+    def test_cost_flat_when_cached_count_absent(self):
+        # No cached_content_token_count field at all (older models) — flat pricing.
+        resp = make_gemini_response(prompt_tokens=1_000_000, completion_tokens=1_000_000)
+        del resp.usage_metadata.cached_content_token_count
+        from skell_e_router.gemini_direct import _build_response
+        ai_resp = _build_response(resp, "gemini/gemini-2.5-flash", 1.0)
+        assert ai_resp.cost == pytest.approx(2.80)
+
+    def test_cached_tokens_clamped_to_prompt_tokens(self):
+        # Defensive: a bogus cached count larger than the prompt must not
+        # produce negative uncached tokens.
+        resp = make_gemini_response(
+            prompt_tokens=1_000_000, completion_tokens=1_000_000, cached_tokens=2_000_000,
+        )
+        from skell_e_router.gemini_direct import _build_response
+        ai_resp = _build_response(resp, "gemini/gemini-2.5-flash", 1.0)
+        # All prompt tokens billed at the cached rate
+        expected = (1_000_000 * 0.03 + 1_000_000 * 2.50) / 1_000_000
+        assert ai_resp.cost == pytest.approx(expected)
+
     def test_no_cost_for_unknown_model(self):
         resp = make_gemini_response(prompt_tokens=100, completion_tokens=100)
         from skell_e_router.gemini_direct import _build_response
