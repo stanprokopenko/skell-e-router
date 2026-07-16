@@ -144,6 +144,40 @@ class TestConvertMessagesForAnthropic:
             "type": "tool_result", "tool_use_id": "call_1", "content": "3 results found",
         }
 
+    def test_gemini_thought_signature_tool_ids_sanitized(self):
+        # LiteLLM's Gemini path appends "__thought__<base64>" to tool call ids;
+        # the base64 payload carries '/', '+', '=' which Anthropic rejects
+        # (ids must match ^[a-zA-Z0-9_-]+$). The tool_use block and its
+        # matching tool_result must sanitize to the SAME valid id.
+        dirty = "ad0mkyc7__thought__EsgK/CsUK+ARFNMg=="
+        msgs = [
+            {"role": "assistant", "content": None, "tool_calls": [
+                {"id": dirty, "type": "function",
+                 "function": {"name": "run_command", "arguments": "{}"}},
+            ]},
+            {"role": "tool", "tool_call_id": dirty, "content": "ok"},
+        ]
+        _, converted = self._call(msgs)
+        tool_use = converted[0]["content"][0]
+        tool_result = converted[1]["content"][0]
+        import re as _re
+        assert _re.fullmatch(r"[a-zA-Z0-9_-]+", tool_use["id"])
+        assert tool_use["id"] == tool_result["tool_use_id"]
+        assert tool_use["id"].startswith("ad0mkyc7__thought__")
+
+    def test_distinct_dirty_tool_ids_stay_distinct(self):
+        # Two ids differing only in stripped characters must not collide.
+        from skell_e_router.anthropic_direct import _sanitize_tool_id
+        a = _sanitize_tool_id("x__thought__AAA+BBB/CCC=")
+        b = _sanitize_tool_id("x__thought__AAA/BBB+CCC=")
+        assert a != b
+
+    def test_valid_tool_ids_pass_through_unchanged(self):
+        from skell_e_router.anthropic_direct import _sanitize_tool_id
+        assert _sanitize_tool_id("call_abc-123_XYZ") == "call_abc-123_XYZ"
+        assert _sanitize_tool_id(None) is None
+        assert _sanitize_tool_id("") == ""
+
     def test_parallel_tool_results_merge_into_one_user_message(self):
         msgs = [
             {"role": "assistant", "content": None, "tool_calls": [

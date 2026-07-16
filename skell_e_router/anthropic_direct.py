@@ -6,6 +6,8 @@
 import time
 import json
 import base64
+import hashlib
+import re
 
 try:
     import anthropic
@@ -61,6 +63,28 @@ def _tool_call_input(fn: dict) -> dict:
     return {}
 
 
+# Anthropic rejects tool ids outside this pattern with a 400. Other providers
+# are looser — most notably LiteLLM's Gemini path round-trips Gemini thought
+# signatures by appending "__thought__<base64>" to the tool call id, so a
+# conversation that ran a Gemini turn carries ids full of '/', '+' and '='
+# that break any later Claude turn.
+_VALID_TOOL_ID = re.compile(r"^[a-zA-Z0-9_-]+$")
+
+
+def _sanitize_tool_id(tool_id):
+    """Map a foreign tool call id to one Anthropic accepts.
+
+    Deterministic (same input -> same output), so a tool_use block and its
+    matching tool_result sanitize to the same id. Valid ids pass through
+    untouched; invalid ones keep a readable prefix and gain a short hash of
+    the original to preserve uniqueness."""
+    if not isinstance(tool_id, str) or not tool_id or _VALID_TOOL_ID.match(tool_id):
+        return tool_id
+    cleaned = re.sub(r"[^a-zA-Z0-9_-]", "", tool_id)[:40]
+    digest = hashlib.sha1(tool_id.encode("utf-8")).hexdigest()[:8]
+    return f"{cleaned}_{digest}" if cleaned else f"tool_{digest}"
+
+
 def _merge_consecutive_roles(messages: list[dict]) -> list[dict]:
     """Merge consecutive same-role messages into one block-content message
     (tool_result conversion and retry prompts can produce user/user runs)."""
@@ -104,7 +128,7 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
                 "role": "user",
                 "content": [{
                     "type": "tool_result",
-                    "tool_use_id": msg.get("tool_call_id"),
+                    "tool_use_id": _sanitize_tool_id(msg.get("tool_call_id")),
                     "content": content if isinstance(content, str) else str(content),
                 }],
             })
@@ -119,7 +143,7 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
                 fn = tc.get("function") or {}
                 parts.append({
                     "type": "tool_use",
-                    "id": tc.get("id"),
+                    "id": _sanitize_tool_id(tc.get("id")),
                     "name": fn.get("name"),
                     "input": _tool_call_input(fn),
                 })
