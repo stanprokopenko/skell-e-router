@@ -377,6 +377,24 @@ class TestBuildGenerateConfig:
         assert out["properties"]["tags"]["items"] == {"type": "string"}
         assert out["properties"]["typed"]["items"] == {"type": "integer"}
 
+    def test_tools_schema_empty_items_get_replaced(self):
+        """pydantic v2 renders a bare `list` hint as {"items": {}, "type":
+        "array"} — google.genai serializes the empty items schema to nothing,
+        so Gemini 400s "items: missing field" exactly like a missing one.
+        The sanitizer must treat empty items as missing."""
+        from skell_e_router.gemini_direct import _sanitize_schema_for_gemini
+        schema = {
+            "type": "object",
+            "properties": {
+                "entry_ids": {"anyOf": [{"items": {}, "type": "array"},
+                                        {"type": "null"}]},
+                "tags": {"items": {}, "type": "array"},
+            },
+        }
+        out = _sanitize_schema_for_gemini(schema)
+        assert out["properties"]["entry_ids"]["anyOf"][0]["items"] == {"type": "string"}
+        assert out["properties"]["tags"]["items"] == {"type": "string"}
+
     def test_sanitize_openai_tools_helper(self):
         """The litellm-path helper sanitizes every declaration and leaves
         non-function entries untouched."""

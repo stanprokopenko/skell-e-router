@@ -192,9 +192,12 @@ def _sanitize_schema_for_gemini(schema):
                 out[key] = resolve(value, depth + 1)
             else:
                 out[key] = value
-        # Gemini requires `items` on every array schema (e.g. a bare `list`
-        # type hint produces an items-less array and a 400).
-        if str(out.get("type", "")).lower() == "array" and "items" not in out:
+        # Gemini requires a non-empty `items` on every array schema. A bare
+        # `list` type hint yields items-less OR empty-items arrays depending
+        # on the generator (pydantic v2 emits {"items": {}, "type": "array"};
+        # google.genai serializes an empty items schema to nothing, so the
+        # API 400s "items: missing field" either way).
+        if str(out.get("type", "")).lower() == "array" and not out.get("items"):
             out["items"] = {"type": "string"}
         return out
 
