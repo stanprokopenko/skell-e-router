@@ -739,6 +739,18 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     if "modalities" in ai_model.supported_params and "modalities" not in kwargs:
         kwargs["modalities"] = ["text", "image"]
 
+    # LiteLLM's own param registry lags new model releases, and with
+    # litellm.drop_params=True it SILENTLY strips params it doesn't know a
+    # model supports (observed: tool_choice dropped for gpt-5.6-*, so
+    # tool_choice="required" never reached OpenAI and forced tool calls were
+    # ignored). Our MODEL_CONFIG is the source of truth: when it declares
+    # tool_choice supported and the caller sent one, tell LiteLLM explicitly
+    # to forward it.
+    if "tool_choice" in kwargs and "tool_choice" in ai_model.supported_params:
+        existing = kwargs.get("allowed_openai_params", [])
+        if "tool_choice" not in existing:
+            kwargs["allowed_openai_params"] = list(existing) + ["tool_choice"]
+
     # Filter to include only parameters listed in model's supported_params.
     # Also allow LiteLLM meta-params that control param forwarding behavior.
     PASSTHROUGH_KEYS = {"allowed_openai_params"}
