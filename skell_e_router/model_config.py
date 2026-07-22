@@ -187,6 +187,26 @@ MODEL_CONFIG = {
     # Note: web_search_options enables Google Search Grounding for real-time web search
     # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
+    # gemini-3.6-flash: GA July 21, 2026. 1M context, 65,536 max output. Same thinking surface
+    # as 3.5-flash (thinking_level, default medium); cheaper output than 3.5-flash ($7.50 vs $9).
+    "gemini-3.6-flash": AIModel(
+        name="gemini/gemini-3.6-flash",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
+        use_direct_sdk=True,
+    ),
+    # gemini-3.5-flash-lite: GA July 21, 2026. 1M context, 65,536 max output. Fastest/cheapest
+    # of the 3.5 family ($0.30/$2.50 per 1M).
+    "gemini-3.5-flash-lite": AIModel(
+        name="gemini/gemini-3.5-flash-lite",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high"},
+        use_direct_sdk=True,
+    ),
     # gemini-3.5-flash: GA May 2026. 1M context, 65K max output. thinking_level default is
     # "medium" (was "high" on Gemini 3). Google recommends leaving temperature/top_p/top_k at defaults.
     "gemini-3.5-flash": AIModel(
@@ -474,8 +494,71 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice"},
     ),
 
+    # DEEPINFRA (OPEN-WEIGHT MODELS)
+    # DeepInfra serves open-weight models via an OpenAI-compatible API (DEEPINFRA_API_KEY).
+    # pricing is set per-model because LiteLLM's cost map lags new DeepInfra additions.
+    # These models reason server-side by default; DeepInfra exposes no effort knob for them.
+
+    # DeepSeek-V4-Pro: DeepSeek's flagship MoE (1.6T total / 49B active), Apr 2026. 1M context.
+    "deepseek-v4-pro": AIModel(
+        name="deepinfra/deepseek-ai/DeepSeek-V4-Pro",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 1.30, "cached_input": 0.10, "output": 2.60},
+    ),
+    # DeepSeek-V4-Flash: cheap/fast tier of V4, Apr 2026. 1M context.
+    "deepseek-v4-flash": AIModel(
+        name="deepinfra/deepseek-ai/DeepSeek-V4-Flash",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.09, "cached_input": 0.018, "output": 0.18},
+    ),
+    # Kimi K2.6: Moonshot's newest open-weight flagship on DeepInfra. 256K context here.
+    # (Kimi K3 is API-only until weights land ~Jul 27, 2026 — swap in K3 when hosted.)
+    "kimi-k2.6": AIModel(
+        name="deepinfra/moonshotai/Kimi-K2.6",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.75, "cached_input": 0.15, "output": 3.50},
+    ),
+    # GLM-5.2: Zhipu/Z.ai coding-first 744B MoE, MIT open weights, Jun 2026. 1M context.
+    "glm-5.2": AIModel(
+        name="deepinfra/zai-org/GLM-5.2",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.93, "cached_input": 0.18, "output": 3.00},
+    ),
+    # MiniMax-M3: open-weight multimodal MoE (~428B/A23B), Jun 2026. 512K context on DeepInfra.
+    "minimax-m3": AIModel(
+        name="deepinfra/MiniMaxAI/MiniMax-M3",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.30, "cached_input": 0.06, "output": 1.20},
+    ),
+    # Qwen3.5-397B-A17B: Alibaba's open-weight flagship, Feb 2026. 256K context on DeepInfra.
+    "qwen3.5-397b": AIModel(
+        name="deepinfra/Qwen/Qwen3.5-397B-A17B",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.45, "cached_input": 0.22, "output": 3.00},
+    ),
+
     # DEEPINFRA (NVIDIA NEMOTRON)
 
+    # Nemotron 3 Ultra: NVIDIA's open frontier MoE (550B/A55B), Jun 2026. 256K ctx on DeepInfra.
+    "nemotron-3-ultra": AIModel(
+        name="deepinfra/nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.50, "cached_input": 0.10, "output": 2.20},
+    ),
     "nemotron-3-super": AIModel(
         name="deepinfra/nvidia/NVIDIA-Nemotron-3-Super-120B-A12B",
         provider="deepinfra",

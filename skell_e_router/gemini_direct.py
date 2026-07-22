@@ -53,6 +53,8 @@ def _get_gemini_client(api_key: str):
 # see https://ai.google.dev/gemini-api/docs/caching). Cache hits are reported
 # in usage_metadata.cached_content_token_count, a SUBSET of prompt_token_count.
 _PRICING = {
+    "gemini-3.6-flash": {"input": 1.50, "output": 7.50, "cached_input": 0.15},
+    "gemini-3.5-flash-lite": {"input": 0.30, "output": 2.50, "cached_input": 0.03},
     "gemini-3.5-flash": {"input": 1.50, "output": 9.00, "cached_input": 0.15},
     "gemini-3-flash-preview": {"input": 0.50, "output": 3.00, "cached_input": 0.05},
     "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50, "cached_input": 0.025},

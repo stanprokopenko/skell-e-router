@@ -93,6 +93,7 @@ class TestModelConfig:
         "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
+        "gemini-3.6-flash", "gemini-3.5-flash-lite",
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
@@ -103,6 +104,9 @@ class TestModelConfig:
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
+        "deepseek-v4-pro", "deepseek-v4-flash", "kimi-k2.6",
+        "glm-5.2", "minimax-m3", "qwen3.5-397b",
+        "nemotron-3-ultra",
         "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
         "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
     ])
@@ -342,6 +346,27 @@ class TestModelConfig:
         assert "tools" in model.supported_params
         assert "temperature" in model.supported_params
         assert model.name.startswith("deepinfra/nvidia/")
+
+    @pytest.mark.parametrize("alias,name_prefix", [
+        ("deepseek-v4-pro", "deepinfra/deepseek-ai/"),
+        ("deepseek-v4-flash", "deepinfra/deepseek-ai/"),
+        ("kimi-k2.6", "deepinfra/moonshotai/"),
+        ("glm-5.2", "deepinfra/zai-org/"),
+        ("minimax-m3", "deepinfra/MiniMaxAI/"),
+        ("qwen3.5-397b", "deepinfra/Qwen/"),
+        ("nemotron-3-ultra", "deepinfra/nvidia/"),
+    ])
+    def test_deepinfra_open_weight_models(self, alias, name_prefix):
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "deepinfra"
+        assert model.is_deepinfra is True
+        assert model.supports_thinking is True  # these reason server-side by default
+        assert model.name.startswith(name_prefix)
+        assert "stream" in model.supported_params
+        assert "tools" in model.supported_params
+        assert "temperature" in model.supported_params
+        # LiteLLM's cost map lags new DeepInfra models, so each carries fallback pricing.
+        assert model.pricing and "input" in model.pricing and "output" in model.pricing
 
     def test_nemotron_3_super_is_120b_moe(self):
         model = MODEL_CONFIG["nemotron-3-super"]
