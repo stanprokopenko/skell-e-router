@@ -100,11 +100,12 @@ class TestModelConfig:
         "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.1",
+        "kimi-k3",
         "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
-        "deepseek-v4-pro", "deepseek-v4-flash", "kimi-k2.6",
+        "deepseek-v4-pro", "deepseek-v4-flash",
         "glm-5.2", "minimax-m3", "qwen3.5-397b",
         "nemotron-3-ultra",
         "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
@@ -271,6 +272,27 @@ class TestModelConfig:
         # api_base defaults to None for models LiteLLM knows natively
         assert MODEL_CONFIG["gpt-5"].api_base is None
 
+    def test_kimi_k3_config(self):
+        """Kimi K3 routes through LiteLLM's generic openai/ provider with a custom
+        api_base pointing at Moonshot's first-party API (replaces the kimi-k2.6
+        DeepInfra stand-in). Reasoning always on (low/high/max); temperature is
+        fixed at 1.0 server-side so it must not be a supported param."""
+        model = MODEL_CONFIG["kimi-k3"]
+        assert model.provider == "moonshot"
+        assert model.is_moonshot is True
+        assert model.is_openai is False  # routed via openai/ prefix but not an OpenAI model
+        assert model.name == "openai/kimi-k3"
+        assert model.api_base == "https://api.moonshot.ai/v1"
+        assert model.supports_thinking is True
+        assert model.accepted_reasoning_efforts == {"low", "high", "max"}
+        assert "temperature" not in model.supported_params
+        assert "tools" in model.supported_params
+        # Router-level fallback pricing, per 1M tokens, from
+        # https://platform.kimi.ai/docs/pricing/chat-k3
+        assert model.pricing == {"input": 3.00, "cached_input": 0.30, "output": 15.00}
+        # The DeepInfra stand-in is gone
+        assert "kimi-k2.6" not in MODEL_CONFIG
+
     def test_grok_4_5_config(self):
         """grok-4.5 has reasoning always on with configurable effort (low/medium/high, default high)."""
         model = MODEL_CONFIG["grok-4.5"]
@@ -350,7 +372,6 @@ class TestModelConfig:
     @pytest.mark.parametrize("alias,name_prefix", [
         ("deepseek-v4-pro", "deepinfra/deepseek-ai/"),
         ("deepseek-v4-flash", "deepinfra/deepseek-ai/"),
-        ("kimi-k2.6", "deepinfra/moonshotai/"),
         ("glm-5.2", "deepinfra/zai-org/"),
         ("minimax-m3", "deepinfra/MiniMaxAI/"),
         ("qwen3.5-397b", "deepinfra/Qwen/"),

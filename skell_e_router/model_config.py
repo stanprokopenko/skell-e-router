@@ -39,6 +39,10 @@ class AIModel:
         return self.provider == "meta"
 
     @property
+    def is_moonshot(self) -> bool:
+        return self.provider == "moonshot"
+
+    @property
     def is_xai(self) -> bool:
         return self.provider == "xai"
     
@@ -397,6 +401,26 @@ MODEL_CONFIG = {
         pricing={"input": 1.25, "cached_input": 0.15, "output": 4.25},
     ),
 
+    # MOONSHOT (FIRST-PARTY API)
+
+    # Kimi K3: Moonshot's flagship (2.8T MoE, 16-of-896 experts), API launched Jul 16, 2026.
+    # API-only until open weights land (~Jul 27, 2026) — served at api.moonshot.ai
+    # (OpenAI-compatible), routed via LiteLLM's generic "openai/" provider with an
+    # api_base override; API key comes from MOONSHOT_API_KEY. 1M context, 131,072
+    # default max output. Reasoning is always on (effort low/high/max, default max);
+    # temperature is fixed at 1.0 server-side, so it's not a supported param.
+    "kimi-k3": AIModel(
+        name="openai/kimi-k3",
+        provider="moonshot",
+        supports_thinking=True,
+        supported_params={"max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "high", "max"},
+        api_base="https://api.moonshot.ai/v1",
+        # LiteLLM can't price custom-api_base models, so cost falls back to this.
+        # Official Moonshot pricing: https://platform.kimi.ai/docs/pricing/chat-k3
+        pricing={"input": 3.00, "cached_input": 0.30, "output": 15.00},
+    ),
+
     # XAI
 
     # grok-4.5: reasoning always on with configurable reasoning_effort (low/medium/high, default high).
@@ -514,15 +538,6 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
         pricing={"input": 0.09, "cached_input": 0.018, "output": 0.18},
-    ),
-    # Kimi K2.6: Moonshot's newest open-weight flagship on DeepInfra. 256K context here.
-    # (Kimi K3 is API-only until weights land ~Jul 27, 2026 — swap in K3 when hosted.)
-    "kimi-k2.6": AIModel(
-        name="deepinfra/moonshotai/Kimi-K2.6",
-        provider="deepinfra",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-        pricing={"input": 0.75, "cached_input": 0.15, "output": 3.50},
     ),
     # GLM-5.2: Zhipu/Z.ai coding-first 744B MoE, MIT open weights, Jun 2026. 1M context.
     "glm-5.2": AIModel(

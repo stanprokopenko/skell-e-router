@@ -64,6 +64,7 @@ PROVIDER_ENV_KEY = {
     "xai": "XAI_API_KEY",
     "deepinfra": "DEEPINFRA_API_KEY",
     "meta": "META_API_KEY",
+    "moonshot": "MOONSHOT_API_KEY",
 }
 
 
