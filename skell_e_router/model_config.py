@@ -274,6 +274,17 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    # Opus 5: released 2026-07-24. Thinking on by default (adaptive); "disabled" is
+    # accepted only at effort high or below (400 at xhigh/max). No temperature/top_p/top_k.
+    # 1M context, 128k max output. $5/$25 per 1M, same as Opus 4.8.
+    "claude-opus-5": AIModel(
+        name="anthropic/claude-opus-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        use_direct_sdk=True,
+    ),
     # Fable 5: adaptive thinking is always on (thinking "disabled" is rejected).
     # No temperature/top_p/top_k. 1M context, 128k max output. Safety classifiers
     # may decline requests (stop_reason "refusal" on a 200 response).
