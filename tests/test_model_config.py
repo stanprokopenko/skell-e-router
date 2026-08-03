@@ -106,7 +106,7 @@ class TestModelConfig:
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
         "deepseek-v4-pro", "deepseek-v4-flash",
-        "glm-5.2", "minimax-m3", "qwen3.5-397b",
+        "glm-5.2", "minimax-m3", "qwen3.8-max", "qwen3.5-397b",
         "nemotron-3-ultra",
         "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
         "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
@@ -388,6 +388,16 @@ class TestModelConfig:
         assert "temperature" in model.supported_params
         # LiteLLM's cost map lags new DeepInfra models, so each carries fallback pricing.
         assert model.pricing and "input" in model.pricing and "output" in model.pricing
+
+    def test_qwen38_max_partner_model(self):
+        """Qwen3.8-Max is a closed-weight partner model on DeepInfra, served non-reasoning."""
+        model = MODEL_CONFIG["qwen3.8-max"]
+        assert model.provider == "deepinfra"
+        assert model.is_deepinfra is True
+        assert model.supports_thinking is False  # DeepInfra deployment is tagged non-reasoning
+        assert model.name == "deepinfra/Qwen/Qwen3.8-Max"
+        assert "tools" in model.supported_params
+        assert model.pricing == {"input": 1.65, "cached_input": 0.206, "output": 4.95}
 
     def test_nemotron_3_super_is_120b_moe(self):
         model = MODEL_CONFIG["nemotron-3-super"]

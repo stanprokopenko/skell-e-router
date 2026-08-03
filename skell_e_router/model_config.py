@@ -529,8 +529,8 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice"},
     ),
 
-    # DEEPINFRA (OPEN-WEIGHT MODELS)
-    # DeepInfra serves open-weight models via an OpenAI-compatible API (DEEPINFRA_API_KEY).
+    # DEEPINFRA (OPEN-WEIGHT & PARTNER MODELS)
+    # DeepInfra serves open-weight and partner models via an OpenAI-compatible API (DEEPINFRA_API_KEY).
     # pricing is set per-model because LiteLLM's cost map lags new DeepInfra additions.
     # These models reason server-side by default; DeepInfra exposes no effort knob for them.
 
@@ -565,6 +565,16 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
         pricing={"input": 0.30, "cached_input": 0.06, "output": 1.20},
+    ),
+    # Qwen3.8-Max: Alibaba's closed-weight flagship (2.4T MoE), Aug 2026. Served on
+    # DeepInfra as a partner model — non-reasoning deployment ("non-reasoning" tag),
+    # 256K context, 65,536 max output.
+    "qwen3.8-max": AIModel(
+        name="deepinfra/Qwen/Qwen3.8-Max",
+        provider="deepinfra",
+        supports_thinking=False,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 1.65, "cached_input": 0.206, "output": 4.95},
     ),
     # Qwen3.5-397B-A17B: Alibaba's open-weight flagship, Feb 2026. 256K context on DeepInfra.
     "qwen3.5-397b": AIModel(
