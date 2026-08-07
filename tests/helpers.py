@@ -35,6 +35,7 @@ def make_model(
     supports_thinking: bool = False,
     supported_params: set[str] | None = None,
     accepted_reasoning_efforts: set[str] | None = None,
+    accepted_tool_choices: set[str] | None = None,
 ) -> AIModel:
     """Create a minimal AIModel for testing."""
     return AIModel(
@@ -43,6 +44,7 @@ def make_model(
         supports_thinking=supports_thinking,
         supported_params=supported_params or {"stream"},
         accepted_reasoning_efforts=accepted_reasoning_efforts,
+        accepted_tool_choices=accepted_tool_choices,
     )
 
 

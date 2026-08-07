@@ -2,12 +2,13 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
         self.supported_params = supported_params # Parameters supported by litellm.completion for this model, after our internal transformations
         self.accepted_reasoning_efforts = accepted_reasoning_efforts # Optional per-model allowed values for 'reasoning_effort'
+        self.accepted_tool_choices = accepted_tool_choices # Optional per-model allowed tool_choice values ("named" covers dict/function choices); unsupported values are coerced to "auto". None = all values pass through.
         self.use_direct_sdk = use_direct_sdk # True to bypass LiteLLM and call provider SDK directly
         self.api_base = api_base # Custom endpoint URL for OpenAI-compatible providers LiteLLM doesn't know natively (routed via the generic "openai/" prefix)
         # Router-level USD pricing per 1M tokens, used ONLY as a fallback when
@@ -398,13 +399,15 @@ MODEL_CONFIG = {
     # specs as 1.1 (1,048,576-token context, 131,072 max output, multimodal in / text out,
     # reasoning always on) served via Meta Model API (api.meta.ai, OpenAI-compatible) —
     # routed through LiteLLM's generic "openai/" provider with an api_base override;
-    # API key comes from META_API_KEY. stop is rejected; reasoning_effort "none" is rejected.
+    # API key comes from META_API_KEY. stop is rejected; reasoning_effort "none" is rejected;
+    # tool_choice accepts ONLY "auto" ("none"/"required"/named 400 — verified 2026-08-07).
     "muse-spark-1.2": AIModel(
         name="openai/muse-spark-1.2",
         provider="meta",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
+        accepted_tool_choices={"auto"},
         api_base="https://api.meta.ai/v1",
         # Standard tier: prompts/completions NOT used for training.
         # Official pricing (per 1M tokens): https://dev.meta.ai/docs/pricing-rate-limits
@@ -421,6 +424,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
+        accepted_tool_choices={"auto"},
         api_base="https://api.meta.ai/v1",
         # Official pricing (per 1M tokens): https://dev.meta.ai/docs/pricing-rate-limits
         pricing={"input": 0.10, "cached_input": 0.002, "output": 0.20},

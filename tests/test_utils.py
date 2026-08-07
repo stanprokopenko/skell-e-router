@@ -880,6 +880,51 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert "modalities" not in result
 
+    # --- accepted_tool_choices coercion (Meta Model API: "auto" only) ---
+
+    def test_tool_choice_required_coerced_to_auto(self):
+        model = make_model(
+            provider="meta",
+            supported_params={"tools", "tool_choice", "stream"},
+            accepted_tool_choices={"auto"},
+        )
+        kwargs = {"tools": [{"type": "function"}], "tool_choice": "required"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["tool_choice"] == "auto"
+
+    def test_tool_choice_named_dict_coerced_to_auto(self):
+        model = make_model(
+            provider="meta",
+            supported_params={"tools", "tool_choice", "stream"},
+            accepted_tool_choices={"auto"},
+        )
+        kwargs = {
+            "tools": [{"type": "function"}],
+            "tool_choice": {"type": "function", "function": {"name": "search"}},
+        }
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["tool_choice"] == "auto"
+
+    def test_tool_choice_auto_untouched(self):
+        model = make_model(
+            provider="meta",
+            supported_params={"tools", "tool_choice", "stream"},
+            accepted_tool_choices={"auto"},
+        )
+        kwargs = {"tools": [{"type": "function"}], "tool_choice": "auto"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["tool_choice"] == "auto"
+
+    def test_tool_choice_passthrough_without_accepted_set(self):
+        """No accepted_tool_choices declared -> all values pass through unchanged."""
+        model = make_model(
+            provider="openai",
+            supported_params={"tools", "tool_choice", "stream"},
+        )
+        kwargs = {"tools": [{"type": "function"}], "tool_choice": "required"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["tool_choice"] == "required"
+
     # --- Opus 4.6 adaptive thinking (reasoning_effort passthrough) ---
 
     def test_opus46_reasoning_effort_passes_through(self):

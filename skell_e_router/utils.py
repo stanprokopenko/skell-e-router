@@ -740,6 +740,17 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     if "modalities" in ai_model.supported_params and "modalities" not in kwargs:
         kwargs["modalities"] = ["text", "image"]
 
+    # Some endpoints accept tools but only a subset of tool_choice values
+    # (Meta Model API: only "auto" — "none"/"required"/named choices 400).
+    # Coerce unsupported values to "auto" so the request succeeds; callers
+    # that force tools fall back to their own behavioral guards. A dict/named
+    # function choice matches the sentinel value "named" in the accepted set.
+    tc = kwargs.get("tool_choice")
+    if tc is not None and ai_model.accepted_tool_choices is not None:
+        tc_value = tc if isinstance(tc, str) else "named"
+        if tc_value not in ai_model.accepted_tool_choices and tc != "auto":
+            kwargs["tool_choice"] = "auto"
+
     # LiteLLM's own param registry lags new model releases, and with
     # litellm.drop_params=True it SILENTLY strips params it doesn't know a
     # model supports (observed: tool_choice dropped for gpt-5.6-*, so
