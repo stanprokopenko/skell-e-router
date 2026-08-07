@@ -99,7 +99,7 @@ class TestModelConfig:
         "nano-banana-3", "gemini-3-pro-image",
         "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
-        "muse-spark-1.1",
+        "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
         "kimi-k3",
         "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
@@ -250,6 +250,26 @@ class TestModelConfig:
         assert model.use_direct_sdk is True
         assert "reasoning_effort" in model.supported_params
         assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
+
+    @pytest.mark.parametrize("alias,expected_pricing", [
+        ("muse-spark-1.2", {"input": 1.25, "cached_input": 0.15, "output": 4.25}),
+        ("muse-spark-1.2-contributor", {"input": 0.10, "cached_input": 0.002, "output": 0.20}),
+    ])
+    def test_muse_spark_1_2_config(self, alias, expected_pricing):
+        """Muse Spark 1.2 ships as two IDs on Meta Model API: the standard tier and the
+        discounted contributor tier (data may be used for training). Same checkpoint,
+        same params as 1.1 — only pricing differs between the two."""
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "meta"
+        assert model.is_meta is True
+        assert model.name == f"openai/{alias}"
+        assert model.api_base == "https://api.meta.ai/v1"
+        assert model.supports_thinking is True
+        assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high", "xhigh"}
+        assert "stop" not in model.supported_params
+        assert "temperature" in model.supported_params
+        assert "tools" in model.supported_params
+        assert model.pricing == expected_pricing
 
     def test_muse_spark_1_1_config(self):
         """Muse Spark 1.1 routes through LiteLLM's generic openai/ provider with a

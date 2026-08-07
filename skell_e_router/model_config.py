@@ -394,6 +394,38 @@ MODEL_CONFIG = {
 
     # META (MODEL API)
 
+    # Muse Spark 1.2: updated Muse Spark checkpoint, released 2026-08-05. Same family
+    # specs as 1.1 (1,048,576-token context, 131,072 max output, multimodal in / text out,
+    # reasoning always on) served via Meta Model API (api.meta.ai, OpenAI-compatible) —
+    # routed through LiteLLM's generic "openai/" provider with an api_base override;
+    # API key comes from META_API_KEY. stop is rejected; reasoning_effort "none" is rejected.
+    "muse-spark-1.2": AIModel(
+        name="openai/muse-spark-1.2",
+        provider="meta",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
+        api_base="https://api.meta.ai/v1",
+        # Standard tier: prompts/completions NOT used for training.
+        # Official pricing (per 1M tokens): https://dev.meta.ai/docs/pricing-rate-limits
+        pricing={"input": 1.25, "cached_input": 0.15, "output": 4.25},
+    ),
+
+    # Same 1.2 checkpoint on Meta's discounted Contributor tier: ~12-21x cheaper, but
+    # prompts AND completions may be used to train future Meta models — never route
+    # sensitive or proprietary content here. Rate-limited to 60 RPM / 2.1M TPM (vs
+    # 3,000 RPM / 4M TPM standard).
+    "muse-spark-1.2-contributor": AIModel(
+        name="openai/muse-spark-1.2-contributor",
+        provider="meta",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"},
+        api_base="https://api.meta.ai/v1",
+        # Official pricing (per 1M tokens): https://dev.meta.ai/docs/pricing-rate-limits
+        pricing={"input": 0.10, "cached_input": 0.002, "output": 0.20},
+    ),
+
     # Muse Spark 1.1: multimodal reasoning model, released 2026-07-09. 1,048,576-token
     # context, 131,072 max output. Served only via Meta Model API (api.meta.ai), which is
     # OpenAI-compatible — routed through LiteLLM's generic "openai/" provider with an
