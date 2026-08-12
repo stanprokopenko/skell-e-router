@@ -470,6 +470,16 @@ MODEL_CONFIG = {
 
     # XAI
 
+    # grok-4.6: reasoning always on with configurable reasoning_effort (low/medium/high/xhigh, default high).
+    # 500K context window. Vision input supported. stop/presencePenalty/frequencyPenalty are rejected
+    # by xAI reasoning models. Pricing $2/M in, $6/M out (<200k tokens; doubles above).
+    "grok-4.6": AIModel(
+        name="xai/grok-4.6",
+        provider="xai",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+    ),
     # grok-4.5: reasoning always on with configurable reasoning_effort (low/medium/high, default high).
     # 500K context window. Vision input supported. stop is rejected by xAI reasoning models.
     "grok-4.5": AIModel(

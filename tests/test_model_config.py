@@ -101,7 +101,7 @@ class TestModelConfig:
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
         "kimi-k3",
-        "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
+        "grok-4.6", "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
@@ -312,6 +312,17 @@ class TestModelConfig:
         assert model.pricing == {"input": 3.00, "cached_input": 0.30, "output": 15.00}
         # The DeepInfra stand-in is gone
         assert "kimi-k2.6" not in MODEL_CONFIG
+
+    def test_grok_4_6_config(self):
+        """grok-4.6 has reasoning always on with configurable effort (low/medium/high/xhigh, default high)."""
+        model = MODEL_CONFIG["grok-4.6"]
+        assert model.provider == "xai"
+        assert model.is_xai is True
+        assert model.supports_thinking is True
+        assert "reasoning_effort" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh"}
+        assert "stop" not in model.supported_params  # rejected by reasoning models per xAI docs
+        assert "tools" in model.supported_params
 
     def test_grok_4_5_config(self):
         """grok-4.5 has reasoning always on with configurable effort (low/medium/high, default high)."""
