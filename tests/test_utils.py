@@ -1054,6 +1054,19 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert "reasoning_effort" in result["allowed_openai_params"]
 
+    def test_xai_allowed_openai_params_injected(self):
+        """xAI: allowed_openai_params is injected so LiteLLM forwards reasoning_effort
+        even for Grok models missing from LiteLLM's registry (e.g. grok-4.6)."""
+        model = make_model(
+            provider="xai",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+        )
+        kwargs = {"reasoning_effort": "low"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "low"
+        assert "reasoning_effort" in result["allowed_openai_params"]
+
     # --- Parameter filtering ---
 
     def test_unsupported_params_filtered(self):

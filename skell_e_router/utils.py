@@ -674,6 +674,16 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = existing + ["reasoning_effort"]
 
+    # xAI: LiteLLM's param registry lags new Grok releases, and with
+    # litellm.drop_params=True it SILENTLY strips reasoning_effort for models
+    # it doesn't know yet (observed: dropped for grok-4.6, so low/high effort
+    # both ran at the API default). Our MODEL_CONFIG is the source of truth:
+    # force the param through.
+    if ai_model.is_xai and "reasoning_effort" in kwargs:
+        existing = kwargs.get("allowed_openai_params", [])
+        if "reasoning_effort" not in existing:
+            kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]
+
     # Groq Compound: ensure correct model-version header is sent to enable tools
     if ai_model.is_groq and (ai_model.name.endswith("/compound") or ai_model.name.endswith("/compound-mini")):
         groq_header_key = "Groq-Model-Version"
