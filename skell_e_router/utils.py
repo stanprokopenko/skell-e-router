@@ -997,32 +997,41 @@ def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
     anthropic_direct._apply_cache_control: one breakpoint on the system
     message, one on the last content block of the last message.
     """
-    def _mark(msg: dict):
+    def _mark(msg: dict, cc: dict):
         content = msg.get("content")
         if isinstance(content, str):
             msg["content"] = [{
                 "type": "text",
                 "text": content,
-                "cache_control": {"type": "ephemeral"},
+                "cache_control": cc,
             }]
         elif isinstance(content, list) and content and isinstance(content[-1], dict):
-            content[-1]["cache_control"] = {"type": "ephemeral"}
-
-    for msg in messages:
-        if msg.get("role") == "system":
-            _mark(msg)
-            break
+            content[-1]["cache_control"] = cc
 
     # Caller already placed breakpoints: respect their placement (LiteLLM
     # forwards cache_control), don't add the last-message one on top.
-    caller_marked = any(
-        isinstance(block, dict) and "cache_control" in block
+    caller_controls = [
+        block["cache_control"]
         for msg in messages if msg.get("role") != "system"
         for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
-    )
+        if isinstance(block, dict) and "cache_control" in block
+    ]
+    caller_marked = bool(caller_controls)
+
+    # Anthropic requires TTLs in non-increasing order across breakpoints
+    # (system before messages): a 5m system breakpoint ahead of a caller 1h
+    # marker is a 400. Match the system breakpoint up to 1h.
+    system_cc: dict = {"type": "ephemeral"}
+    if any(isinstance(cc, dict) and cc.get("ttl") == "1h" for cc in caller_controls):
+        system_cc["ttl"] = "1h"
+
+    for msg in messages:
+        if msg.get("role") == "system":
+            _mark(msg, system_cc)
+            break
 
     if messages and messages[-1].get("role") != "system" and not caller_marked:
-        _mark(messages[-1])
+        _mark(messages[-1], {"type": "ephemeral"})
 
     return messages
 

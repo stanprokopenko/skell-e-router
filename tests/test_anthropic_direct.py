@@ -869,6 +869,35 @@ class TestCallerCacheControlPassThrough:
         assert sys_out[0]["cache_control"] == {"type": "ephemeral"}
         assert out[-1]["content"] == "latest"
 
+    def test_apply_upgrades_system_breakpoint_to_1h_for_1h_caller_marker(self):
+        # Anthropic requires TTLs in non-increasing order (system before
+        # messages): a 5m system breakpoint ahead of a caller 1h marker is a
+        # 400 (invalid_request_error), so the system breakpoint must match.
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "big prefix",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+            {"role": "user", "content": "latest"},
+        ]
+        sys_out, out = _apply_cache_control("sys", msgs)
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[-1]["content"] == "latest"  # suppression unchanged
+
+    def test_apply_litellm_upgrades_system_breakpoint_to_1h_for_1h_caller_marker(self):
+        from skell_e_router.utils import _apply_cache_control_litellm
+        msgs = [
+            {"role": "system", "content": "sys"},
+            {"role": "user", "content": [
+                {"type": "text", "text": "big prefix",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+            {"role": "user", "content": "latest"},
+        ]
+        out = _apply_cache_control_litellm(msgs)
+        assert out[0]["content"][0]["cache_control"] == \
+            {"type": "ephemeral", "ttl": "1h"}
+        assert out[-1]["content"] == "latest"
+
     def test_apply_litellm_skips_last_message_when_caller_marked(self):
         from skell_e_router.utils import _apply_cache_control_litellm
         msgs = [

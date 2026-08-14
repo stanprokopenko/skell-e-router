@@ -816,6 +816,10 @@ response = ask_ai("claude-haiku-4-5", prompt, system_message, enable_caching=Tru
   router skips its own last-message breakpoint; the system-prompt breakpoint is
   still added. Anthropic allows at most 4 breakpoints per request — with the
   system one that leaves 3 for caller placement.
+- **TTL matching (v3.22.1).** Anthropic requires breakpoint TTLs in
+  non-increasing order (`tools` → `system` → `messages`), so when any caller
+  marker carries `{"ttl": "1h"}` the router's system-prompt breakpoint is also
+  written as 1h (a 5m system breakpoint ahead of a 1h caller marker is a 400).
 - **Off by default** because the first (cache-write) request is billed at 1.25x
   the input price; cache reads are billed at 0.1x. It pays off from the second
   request on the same prefix — use it for multi-turn agent loops and repeated

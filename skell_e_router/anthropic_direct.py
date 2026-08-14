@@ -213,25 +213,37 @@ def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tup
     Places one breakpoint on the system prompt and one on the last content
     block of the last message, so the system prompt and the conversation
     prefix are cached across requests within Anthropic's cache TTL (5 min).
+    Caller-placed breakpoints suppress the last-message one, and if any caller
+    marker uses ttl "1h" the system breakpoint is written as 1h too (Anthropic
+    rejects a 5m breakpoint ahead of a 1h one).
 
     Anthropic bills the first (cache-write) request at 1.25x input price and
     cache reads at 0.1x, so this is opt-in per call — worth it for multi-turn
     loops and repeated large system prompts, not for one-shot calls.
     """
+    # Caller already placed breakpoints (e.g. via skell-e-agent CachePoints):
+    # respect their placement, don't add the last-message one on top.
+    caller_controls = [
+        block["cache_control"]
+        for msg in messages
+        for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
+        if isinstance(block, dict) and "cache_control" in block
+    ]
+    caller_marked = bool(caller_controls)
+
+    # Anthropic requires TTLs in non-increasing order across breakpoints
+    # (processed tools -> system -> messages): a 5m system breakpoint ahead of
+    # a caller 1h marker is a 400. Match the system breakpoint up to 1h.
+    system_cc: dict = {"type": "ephemeral"}
+    if any(isinstance(cc, dict) and cc.get("ttl") == "1h" for cc in caller_controls):
+        system_cc["ttl"] = "1h"
+
     if isinstance(system_prompt, str) and system_prompt:
         system_prompt = [{
             "type": "text",
             "text": system_prompt,
-            "cache_control": {"type": "ephemeral"},
+            "cache_control": system_cc,
         }]
-
-    # Caller already placed breakpoints (e.g. via skell-e-agent CachePoints):
-    # respect their placement, don't add the last-message one on top.
-    caller_marked = any(
-        isinstance(block, dict) and "cache_control" in block
-        for msg in messages
-        for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
-    )
 
     if messages and not caller_marked:
         last = messages[-1]
