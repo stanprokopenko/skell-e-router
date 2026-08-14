@@ -1013,7 +1013,15 @@ def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
             _mark(msg)
             break
 
-    if messages and messages[-1].get("role") != "system":
+    # Caller already placed breakpoints: respect their placement (LiteLLM
+    # forwards cache_control), don't add the last-message one on top.
+    caller_marked = any(
+        isinstance(block, dict) and "cache_control" in block
+        for msg in messages if msg.get("role") != "system"
+        for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
+    )
+
+    if messages and messages[-1].get("role") != "system" and not caller_marked:
         _mark(messages[-1])
 
     return messages

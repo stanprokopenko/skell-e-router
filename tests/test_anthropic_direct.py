@@ -831,6 +831,78 @@ class TestApplyCacheControl:
         assert sys_out[0]["cache_control"] == {"type": "ephemeral"}
 
 
+class TestCallerCacheControlPassThrough:
+    """Caller-supplied cache_control (e.g. skell-e-agent CachePoints) must survive
+    conversion and suppress the router's own last-message breakpoint."""
+
+    def test_conversion_preserves_text_block_cache_control(self):
+        from skell_e_router.anthropic_direct import _convert_messages_for_anthropic
+        _, out = _convert_messages_for_anthropic([
+            {"role": "user", "content": [
+                {"type": "text", "text": "stable", "cache_control": {"type": "ephemeral", "ttl": "1h"}},
+                {"type": "text", "text": "volatile"},
+            ]},
+        ])
+        blocks = out[0]["content"]
+        assert blocks[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert "cache_control" not in blocks[1]
+
+    def test_conversion_preserves_image_block_cache_control(self):
+        from skell_e_router.anthropic_direct import _convert_messages_for_anthropic
+        _, out = _convert_messages_for_anthropic([
+            {"role": "user", "content": [
+                {"type": "image_url", "image_url": {"url": "https://x/y.png"},
+                 "cache_control": {"type": "ephemeral"}},
+            ]},
+        ])
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_apply_skips_last_message_when_caller_marked(self):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "prefix", "cache_control": {"type": "ephemeral"}}]},
+            {"role": "user", "content": "latest"},
+        ]
+        sys_out, out = _apply_cache_control("sys", msgs)
+        # System breakpoint still added; caller placement otherwise respected
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral"}
+        assert out[-1]["content"] == "latest"
+
+    def test_apply_litellm_skips_last_message_when_caller_marked(self):
+        from skell_e_router.utils import _apply_cache_control_litellm
+        msgs = [
+            {"role": "system", "content": "sys"},
+            {"role": "user", "content": [
+                {"type": "text", "text": "prefix", "cache_control": {"type": "ephemeral"}}]},
+            {"role": "user", "content": "latest"},
+        ]
+        out = _apply_cache_control_litellm(msgs)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral"}
+        assert out[-1]["content"] == "latest"
+
+    @patch("skell_e_router.utils._call_anthropic_direct")
+    def test_direct_path_wire_keeps_caller_marker(self, mock_call):
+        mock_call.return_value = (make_anthropic_response(), 0.5)
+        from skell_e_router.utils import _ask_ai_direct_anthropic
+        model = make_model(
+            provider="anthropic",
+            name="anthropic/claude-sonnet-4-6",
+            supported_params={"temperature", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        )
+        _ask_ai_direct_anthropic(
+            model,
+            [{"role": "user", "content": [
+                {"type": "text", "text": "stable", "cache_control": {"type": "ephemeral", "ttl": "1h"}},
+                {"type": "text", "text": "volatile"}]}],
+            FAKE_ANTHROPIC_KEY, "none", False, None, {},
+            enable_caching=True,
+        )
+        blocks = mock_call.call_args.kwargs["messages"][0]["content"]
+        assert blocks[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert "cache_control" not in blocks[1]
+
+
 class TestBuildResponseCacheTokens:
     """_build_response must account for cache-write and cache-read tokens."""
 

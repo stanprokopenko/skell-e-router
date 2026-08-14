@@ -159,31 +159,38 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
             parts = []
             for part in content:
                 if isinstance(part, dict):
+                    block = None
                     if part.get("type") == "text":
-                        parts.append({"type": "text", "text": part["text"]})
+                        block = {"type": "text", "text": part["text"]}
                     elif part.get("type") == "image_url":
                         url = part["image_url"]["url"]
                         if url.startswith("data:"):
                             # Parse data URI: data:mime;base64,DATA
                             header, b64_data = url.split(",", 1)
                             mime = header.split(":")[1].split(";")[0]
-                            parts.append({
+                            block = {
                                 "type": "image",
                                 "source": {
                                     "type": "base64",
                                     "media_type": mime,
                                     "data": b64_data,
                                 }
-                            })
+                            }
                         else:
-                            parts.append({
+                            block = {
                                 "type": "image",
                                 "source": {
                                     "type": "url",
                                     "url": url,
                                 }
-                            })
-                    elif part.get("type") == "input_audio":
+                            }
+                    if block is not None:
+                        # Preserve caller-placed cache breakpoints (e.g. skell-e-agent CachePoints)
+                        if "cache_control" in part:
+                            block["cache_control"] = part["cache_control"]
+                        parts.append(block)
+                        continue
+                    if part.get("type") == "input_audio":
                         from .utils import RouterError
                         raise RouterError(
                             code="UNSUPPORTED_MODALITY",
@@ -218,7 +225,15 @@ def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tup
             "cache_control": {"type": "ephemeral"},
         }]
 
-    if messages:
+    # Caller already placed breakpoints (e.g. via skell-e-agent CachePoints):
+    # respect their placement, don't add the last-message one on top.
+    caller_marked = any(
+        isinstance(block, dict) and "cache_control" in block
+        for msg in messages
+        for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
+    )
+
+    if messages and not caller_marked:
         last = messages[-1]
         content = last.get("content")
         if isinstance(content, str):

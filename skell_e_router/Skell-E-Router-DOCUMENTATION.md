@@ -810,6 +810,12 @@ response = ask_ai("claude-haiku-4-5", prompt, system_message, enable_caching=Tru
 - Places two cache breakpoints: one on the system prompt, one on the last content
   block of the last message — so the system prompt and conversation prefix are
   served from cache on subsequent calls within Anthropic's 5-minute cache TTL.
+- **Caller-placed breakpoints win (v3.22.0).** If your message content blocks
+  already carry `cache_control` (e.g. skell-e-agent's CachePoint mapping, including
+  `{"ttl": "1h"}`), both provider paths forward them to Anthropic as-is and the
+  router skips its own last-message breakpoint; the system-prompt breakpoint is
+  still added. Anthropic allows at most 4 breakpoints per request — with the
+  system one that leaves 3 for caller placement.
 - **Off by default** because the first (cache-write) request is billed at 1.25x
   the input price; cache reads are billed at 0.1x. It pays off from the second
   request on the same prefix — use it for multi-turn agent loops and repeated
