@@ -192,6 +192,16 @@ MODEL_CONFIG = {
     # Note: web_search_options enables Google Search Grounding for real-time web search
     # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
+    # gemini-3.7-flash: GA (stable) August 13, 2026. 1M context, 65,536 max output. thinking_level
+    # low/medium/high only — "minimal" returns a 400, unlike 3.5/3.6-flash.
+    "gemini-3.7-flash": AIModel(
+        name="gemini/gemini-3.7-flash",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"low", "medium", "high"},
+        use_direct_sdk=True,
+    ),
     # gemini-3.6-flash: GA July 21, 2026. 1M context, 65,536 max output. Same thinking surface
     # as 3.5-flash (thinking_level, default medium); cheaper output than 3.5-flash ($7.50 vs $9).
     "gemini-3.6-flash": AIModel(
