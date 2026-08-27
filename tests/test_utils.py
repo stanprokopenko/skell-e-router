@@ -1067,6 +1067,33 @@ class TestHandleModelSpecificParams:
         assert result["reasoning_effort"] == "low"
         assert "reasoning_effort" in result["allowed_openai_params"]
 
+    def test_model_extra_body_merged_into_request(self):
+        """Model-level extra_body defaults (e.g. OpenRouter provider pinning) are
+        merged into the request and survive final param filtering."""
+        model = make_model(
+            provider="openrouter",
+            supported_params={"temperature", "stream"},
+            extra_body={"provider": {"order": ["z-ai"], "allow_fallbacks": True}},
+        )
+        result = _handle_model_specific_params(model, {"temperature": 0.5})
+        assert result["extra_body"] == {"provider": {"order": ["z-ai"], "allow_fallbacks": True}}
+        assert result["temperature"] == 0.5
+
+    def test_caller_extra_body_wins_over_model_default(self):
+        model = make_model(
+            provider="openrouter",
+            supported_params={"stream"},
+            extra_body={"provider": {"order": ["z-ai"]}, "other": 1},
+        )
+        result = _handle_model_specific_params(model, {"extra_body": {"provider": {"order": ["novita"]}}})
+        assert result["extra_body"]["provider"] == {"order": ["novita"]}
+        assert result["extra_body"]["other"] == 1
+
+    def test_no_extra_body_when_model_has_none(self):
+        model = make_model(provider="openrouter", supported_params={"stream"})
+        result = _handle_model_specific_params(model, {})
+        assert "extra_body" not in result
+
     def test_openrouter_allowed_openai_params_injected(self):
         """OpenRouter: allowed_openai_params is injected so LiteLLM forwards
         reasoning_effort for aggregator model ids missing from its registry."""

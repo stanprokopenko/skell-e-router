@@ -786,9 +786,15 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         if "tool_choice" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["tool_choice"]
 
+    # Merge model-level extra_body defaults (e.g. OpenRouter provider pinning)
+    # into the request; caller-provided extra_body keys win on conflict.
+    if getattr(ai_model, "extra_body", None):
+        caller_extra = kwargs.get("extra_body") or {}
+        kwargs["extra_body"] = {**ai_model.extra_body, **caller_extra}
+
     # Filter to include only parameters listed in model's supported_params.
     # Also allow LiteLLM meta-params that control param forwarding behavior.
-    PASSTHROUGH_KEYS = {"allowed_openai_params"}
+    PASSTHROUGH_KEYS = {"allowed_openai_params", "extra_body"}
     final_kwargs = {
         key: value
         for key, value in kwargs.items()

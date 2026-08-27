@@ -346,6 +346,10 @@ class TestModelConfig:
         # Router-level fallback pricing, per 1M tokens (50% launch discount as of
         # 2026-08-27), from https://openrouter.ai/z-ai/glm-5.3-flash
         assert model.pricing == {"input": 0.075, "cached_input": 0.015, "output": 0.25}
+        # Pinned to the first-party Z.AI endpoint (reference fp8), fallback allowed
+        assert model.extra_body == {"provider": {"order": ["z-ai"], "allow_fallbacks": True}}
+        # extra_body defaults to None for models without request-body defaults
+        assert MODEL_CONFIG["gpt-5"].extra_body is None
 
     def test_grok_4_6_config(self):
         """grok-4.6 has reasoning always on with configurable effort (low/medium/high/xhigh, default high)."""

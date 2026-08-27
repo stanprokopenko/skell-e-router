@@ -2,7 +2,7 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None, extra_body: dict | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
@@ -18,6 +18,9 @@ class AIModel:
         # usage.prompt_tokens_details.cached_tokens). Set this on every future
         # model that LiteLLM's cost map doesn't cover.
         self.pricing = pricing
+        # Default request-body extras merged into every call (caller's extra_body
+        # keys win). Used for OpenRouter provider pinning.
+        self.extra_body = extra_body
 
     @property
     def is_gemini(self) -> bool:
@@ -490,12 +493,16 @@ MODEL_CONFIG = {
     # API key comes from OPENROUTER_API_KEY. 1,048,576-token context, 131,072 max output.
     # Reasoning is mandatory and can't be disabled; effort low/high/max (default max,
     # "medium" rejected). stop is rejected by the first-party Z.AI endpoint.
+    # Pinned to Z.ai's first-party endpoint (reference fp8 precision — the official
+    # weights ship in FP8; several resellers serve unknown quantizations) with
+    # fallback to other providers allowed if Z.AI is down.
     "glm-5.3-flash": AIModel(
         name="openrouter/z-ai/glm-5.3-flash",
         provider="openrouter",
         supports_thinking=True,
         supported_params={"temperature", "top_p", "top_k", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"low", "high", "max"},
+        extra_body={"provider": {"order": ["z-ai"], "allow_fallbacks": True}},
         # LiteLLM's cost map doesn't know this model, so cost falls back to this.
         # OpenRouter pricing (per 1M tokens) with the 50% launch discount active as of
         # 2026-08-27; undiscounted list is input 0.15 / cached 0.03 / output 0.50:
