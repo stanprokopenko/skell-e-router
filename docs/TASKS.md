@@ -8,6 +8,11 @@
 - [ ] **Add Gemini 3.5 Pro when it goes GA** — still in limited Vertex preview as of Jul 21, 2026; Google shipped 3.6 Flash instead and teased Gemini 4.
 - [ ] **Consider DeepSeek first-party API** — DeepInfra's DeepSeek-V4-Pro is ~3× pricier than api.deepseek.com ($1.30/$2.60 vs ~$0.44/$0.87 per 1M). Needs a DEEPSEEK_API_KEY if we want first-party pricing.
 
+## OpenRouter / GLM 5.3 Flash follow-ups (from 2026-08-27 work)
+
+- [ ] **Update glm-5.3-flash pricing when the 50% launch discount ends** — router `pricing` dict (model_config.py) and benchmark config.yaml both carry the discounted $0.075/$0.25 per 1M; undiscounted list is $0.15/$0.50 ($0.03 cached). Check https://openrouter.ai/z-ai/glm-5.3-flash.
+- [ ] **Re-check the Z.AI endpoint if GLM answers ever look wrong** — one transient cross-prompt contamination incident during launch-day load, details in benchmark's docs/glm-5.3-flash-benchmark-results.md. Model is pinned to z-ai with fallbacks allowed (extra_body on the model entry).
+
 ## Benchmark notes
 
 - MiniMax-M3 (4×) and Kimi-K2.6 (1×) time out on the largest ~30k-token clipping prompts via DeepInfra (see benchmark run 20260722_030307_4e84ca). Re-run those pairs if DeepInfra latency improves.
