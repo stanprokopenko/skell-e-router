@@ -41,6 +41,11 @@ class TestAIModelProviderProperties:
         m = AIModel("deepinfra/nvidia/test", "deepinfra", False, set())
         assert m.is_deepinfra is True
 
+    def test_is_openrouter(self):
+        m = AIModel("openrouter/z-ai/test", "openrouter", False, set())
+        assert m.is_openrouter is True
+        assert m.is_openai is False
+
     def test_is_openai_o_series_true(self):
         m = AIModel("openai/o3", "openai", True, set())
         assert m.is_openai_o_series is True
@@ -101,6 +106,7 @@ class TestModelConfig:
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
         "kimi-k3",
+        "glm-5.3-flash",
         "grok-4.6", "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
@@ -321,6 +327,25 @@ class TestModelConfig:
         assert model.pricing == {"input": 3.00, "cached_input": 0.30, "output": 15.00}
         # The DeepInfra stand-in is gone
         assert "kimi-k2.6" not in MODEL_CONFIG
+
+    def test_glm_5_3_flash_config(self):
+        """GLM 5.3 Flash is the first OpenRouter-routed model, using LiteLLM's native
+        "openrouter/" prefix (no custom api_base needed). Reasoning is mandatory with
+        effort low/high/max — "medium" is rejected by the model."""
+        model = MODEL_CONFIG["glm-5.3-flash"]
+        assert model.provider == "openrouter"
+        assert model.is_openrouter is True
+        assert model.is_openai is False
+        assert model.name == "openrouter/z-ai/glm-5.3-flash"
+        assert model.api_base is None  # native LiteLLM provider, not the generic openai/ path
+        assert model.supports_thinking is True
+        assert model.accepted_reasoning_efforts == {"low", "high", "max"}
+        assert "stop" not in model.supported_params  # rejected by the first-party Z.AI endpoint
+        assert "temperature" in model.supported_params
+        assert "tools" in model.supported_params
+        # Router-level fallback pricing, per 1M tokens (50% launch discount as of
+        # 2026-08-27), from https://openrouter.ai/z-ai/glm-5.3-flash
+        assert model.pricing == {"input": 0.075, "cached_input": 0.015, "output": 0.25}
 
     def test_grok_4_6_config(self):
         """grok-4.6 has reasoning always on with configurable effort (low/medium/high/xhigh, default high)."""

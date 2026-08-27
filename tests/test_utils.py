@@ -1067,6 +1067,19 @@ class TestHandleModelSpecificParams:
         assert result["reasoning_effort"] == "low"
         assert "reasoning_effort" in result["allowed_openai_params"]
 
+    def test_openrouter_allowed_openai_params_injected(self):
+        """OpenRouter: allowed_openai_params is injected so LiteLLM forwards
+        reasoning_effort for aggregator model ids missing from its registry."""
+        model = make_model(
+            provider="openrouter",
+            supported_params={"reasoning_effort", "temperature", "stream"},
+            accepted_reasoning_efforts={"low", "high", "max"},
+        )
+        kwargs = {"reasoning_effort": "low"}
+        result = _handle_model_specific_params(model, kwargs)
+        assert result["reasoning_effort"] == "low"
+        assert "reasoning_effort" in result["allowed_openai_params"]
+
     # --- Parameter filtering ---
 
     def test_unsupported_params_filtered(self):

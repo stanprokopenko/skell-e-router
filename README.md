@@ -139,9 +139,12 @@ GEMINI_API_KEY
 ANTHROPIC_API_KEY
 GROQ_API_KEY
 XAI_API_KEY
+OPENROUTER_API_KEY
 ```
 
-Only the one you need is required — you don't need all five.
+Only the one you need is required — you don't need them all.
+
+> **OpenRouter models** (`glm-5.3-flash`) use the `OPENROUTER_API_KEY`.
 
 > **Groq models** (`groq-compound`, `qwen3-32b`, `kimi-k2-0905`, etc.) use the `GROQ_API_KEY`.
 

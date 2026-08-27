@@ -65,6 +65,7 @@ PROVIDER_ENV_KEY = {
     "deepinfra": "DEEPINFRA_API_KEY",
     "meta": "META_API_KEY",
     "moonshot": "MOONSHOT_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
 }
 
 
@@ -680,6 +681,14 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     # both ran at the API default). Our MODEL_CONFIG is the source of truth:
     # force the param through.
     if ai_model.is_xai and "reasoning_effort" in kwargs:
+        existing = kwargs.get("allowed_openai_params", [])
+        if "reasoning_effort" not in existing:
+            kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]
+
+    # OpenRouter: aggregator model ids (e.g. openrouter/z-ai/glm-5.3-flash) are
+    # usually missing from LiteLLM's registry, so drop_params would silently
+    # strip reasoning_effort. MODEL_CONFIG is the source of truth: force it through.
+    if ai_model.is_openrouter and "reasoning_effort" in kwargs:
         existing = kwargs.get("allowed_openai_params", [])
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]

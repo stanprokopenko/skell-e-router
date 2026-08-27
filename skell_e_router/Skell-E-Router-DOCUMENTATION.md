@@ -12,9 +12,10 @@ GEMINI_API_KEY
 ANTHROPIC_API_KEY
 GROQ_API_KEY
 XAI_API_KEY
+OPENROUTER_API_KEY
 ```
 
-Only the key for the provider you're actually calling is required — you don't need all five set.
+Only the key for the provider you're actually calling is required — you don't need them all set.
 
 ### Passing Keys via `config`
 
@@ -50,6 +51,7 @@ When `config` is provided, those keys are used directly instead of reading from 
 | `anthropic_api_key` | `ANTHROPIC_API_KEY` |
 | `groq_api_key` | `GROQ_API_KEY` |
 | `xai_api_key` | `XAI_API_KEY` |
+| `openrouter_api_key` | `OPENROUTER_API_KEY` |
 
 Keys passed via `config` are never logged or included in error messages.
 
