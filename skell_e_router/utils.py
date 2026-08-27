@@ -37,6 +37,10 @@ from .anthropic_direct import (
 # Drop unsupported parameters automatically
 litellm.drop_params = True
 
+# Silence LiteLLM's "Provider List: ..." stdout prints, emitted whenever a model
+# is missing from its registry (e.g. new OpenRouter model ids) during cost lookups
+litellm.suppress_debug_info = True
+
 # ERRORS
 #--------
 
