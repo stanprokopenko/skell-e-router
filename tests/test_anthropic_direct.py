@@ -249,6 +249,25 @@ class TestBuildCreateParams:
         defaults.update(overrides)
         return make_model(**defaults)
 
+    def test_tool_choice_coerced_on_restricted_model(self):
+        """Direct-SDK path must honor accepted_tool_choices (Fable 5.1 400s on
+        forced tool use). Regression: coercion used to run only on the LiteLLM
+        path, so forced choices reached the Anthropic API and failed."""
+        model = self._claude_model(accepted_tool_choices={"auto", "none"})
+        params, _ = self._call(model, {"tool_choice": "required"})
+        assert params["tool_choice"] == {"type": "auto"}
+        params, _ = self._call(model, {"tool_choice": {"type": "function", "function": {"name": "f"}}})
+        assert params["tool_choice"] == {"type": "auto"}
+        params, _ = self._call(model, {"tool_choice": "none"})
+        assert params["tool_choice"] == {"type": "none"}
+
+    def test_tool_choice_unrestricted_model_passes_through(self):
+        model = self._claude_model()  # accepted_tool_choices=None
+        params, _ = self._call(model, {"tool_choice": "required"})
+        assert params["tool_choice"] == {"type": "any"}
+        params, _ = self._call(model, {"tool_choice": {"type": "function", "function": {"name": "f"}}})
+        assert params["tool_choice"] == {"type": "tool", "name": "f"}
+
     def test_max_tokens_default(self):
         params, _ = self._call(self._claude_model(), {})
         assert params["max_tokens"] == 4096

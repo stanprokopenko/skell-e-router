@@ -356,9 +356,18 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
         if anthropic_tools:
             params["tools"] = anthropic_tools
 
-    # tool_choice conversion
+    # tool_choice conversion. Models that restrict tool_choice (Fable 5.1
+    # returns 400 on forced tool use) get unsupported values coerced to "auto"
+    # here, mirroring the accepted_tool_choices coercion on the LiteLLM path —
+    # that one runs in _handle_model_specific_params, which direct-SDK calls
+    # never reach. A dict/named function choice matches the sentinel "named".
     if "tool_choice" in kwargs and kwargs["tool_choice"] is not None:
         tc = kwargs["tool_choice"]
+        accepted = getattr(ai_model, "accepted_tool_choices", None)
+        if accepted is not None:
+            tc_value = tc if isinstance(tc, str) else "named"
+            if tc_value not in accepted and tc != "auto":
+                tc = "auto"
         if isinstance(tc, str):
             tc_map = {"auto": {"type": "auto"}, "required": {"type": "any"}, "none": {"type": "none"}}
             mapped = tc_map.get(tc)
