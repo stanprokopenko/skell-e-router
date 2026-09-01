@@ -30,14 +30,16 @@ def _get_anthropic_client(api_key: str):
     return _client_cache[api_key]
 
 
-# Known pricing per 1M tokens (USD) for direct-SDK models
+# Known pricing per 1M tokens (USD) for direct-SDK models.
+# Optional "cache_read" key overrides the standard 0.1x-of-input cache-read rate.
 _PRICING = {
+    "claude-fable-5-1": {"input": 10.00, "output": 50.00, "cache_read": 0.25},  # cache reads 0.025x, not the standard 0.1x
     "claude-opus-5": {"input": 5.00, "output": 25.00},
     "claude-fable-5": {"input": 10.00, "output": 50.00},
     "claude-opus-4-8": {"input": 5.00, "output": 25.00},
     "claude-opus-4-7": {"input": 5.00, "output": 25.00},
     "claude-opus-4-6": {"input": 5.00, "output": 25.00},
-    "claude-sonnet-5": {"input": 3.00, "output": 15.00},  # intro pricing $2/$10 applies through Aug 31, 2026
+    "claude-sonnet-5": {"input": 2.00, "output": 10.00},  # launch intro price made permanent 2026-09-01 (increase to $3/$15 cancelled)
     "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
     "claude-opus-4-5": {"input": 5.00, "output": 25.00},
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
@@ -521,14 +523,16 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     # Finish reason
     finish_reason = getattr(response, 'stop_reason', None)
 
-    # Compute cost from known pricing (cache writes 1.25x, cache reads 0.1x)
+    # Compute cost from known pricing (cache writes 1.25x; cache reads 0.1x
+    # unless the model's pricing entry sets an explicit "cache_read" rate)
     cost = None
     pricing = _PRICING.get(display_model)
     if pricing and prompt_tokens is not None and completion_tokens is not None:
         uncached_tokens = prompt_tokens - cache_creation_tokens - cache_read_tokens
+        cache_read_rate = pricing.get("cache_read", pricing["input"] * 0.10)
         cost = (uncached_tokens * pricing["input"] / 1_000_000 +
                 cache_creation_tokens * pricing["input"] * 1.25 / 1_000_000 +
-                cache_read_tokens * pricing["input"] * 0.10 / 1_000_000 +
+                cache_read_tokens * cache_read_rate / 1_000_000 +
                 completion_tokens * pricing["output"] / 1_000_000)
 
     return AIResponse(

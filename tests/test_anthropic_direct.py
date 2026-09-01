@@ -517,6 +517,26 @@ class TestBuildResponse:
         # 1M * 3.00/1M + 1M * 15.00/1M = 3.00 + 15.00 = 18.00
         assert ai_resp.cost == pytest.approx(18.00)
 
+    def test_cost_calculation_fable_5_1_cache_read_override(self):
+        """Fable 5.1 cache reads are $0.25/MTok (0.025x), not the standard 0.1x."""
+        resp = make_anthropic_response(prompt_tokens=1_000_000, completion_tokens=100_000)
+        resp.usage.cache_read_input_tokens = 2_000_000
+        resp.usage.cache_creation_input_tokens = 0
+        from skell_e_router.anthropic_direct import _build_response
+        ai_resp = _build_response(resp, "anthropic/claude-fable-5-1", 1.0)
+        # 1M uncached * $10 + 2M cache reads * $0.25 + 100k out * $50 = 10 + 0.50 + 5
+        assert ai_resp.cost == pytest.approx(15.50)
+
+    def test_cost_calculation_standard_cache_read_rate(self):
+        """Models without a cache_read override still price cache reads at 0.1x input."""
+        resp = make_anthropic_response(prompt_tokens=1_000_000, completion_tokens=0)
+        resp.usage.cache_read_input_tokens = 1_000_000
+        resp.usage.cache_creation_input_tokens = 0
+        from skell_e_router.anthropic_direct import _build_response
+        ai_resp = _build_response(resp, "anthropic/claude-opus-5", 1.0)
+        # 1M uncached * $5 + 1M cache reads * $0.50 = 5.50
+        assert ai_resp.cost == pytest.approx(5.50)
+
     def test_no_cost_for_unknown_model(self):
         resp = make_anthropic_response(prompt_tokens=100, completion_tokens=100)
         from skell_e_router.anthropic_direct import _build_response
