@@ -589,6 +589,12 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     if not isinstance(cached_tokens, int) or cached_tokens < 0:
         cached_tokens = 0  # None/absent (no cache hit or older model) -> flat pricing
 
+    # Thinking tokens (usage_metadata.thoughts_token_count) are reported
+    # separately from candidates_token_count but billed at the output rate.
+    billed_output = completion_tokens
+    if isinstance(reasoning_tokens, int) and reasoning_tokens > 0 and completion_tokens is not None:
+        billed_output = completion_tokens + reasoning_tokens
+
     cost = None
     pricing = _PRICING.get(display_model)
     if pricing and prompt_tokens is not None and completion_tokens is not None:
@@ -596,7 +602,7 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
         cached_rate = pricing.get("cached_input", pricing["input"])
         cost = ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
                 cached_tokens * cached_rate / 1_000_000 +
-                completion_tokens * pricing["output"] / 1_000_000)
+                billed_output * pricing["output"] / 1_000_000)
 
     return AIResponse(
         content=content,

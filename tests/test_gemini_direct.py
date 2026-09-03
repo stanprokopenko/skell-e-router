@@ -568,6 +568,15 @@ class TestBuildResponse:
         # 1M * 0.30/1M + 1M * 2.50/1M = 0.30 + 2.50 = 2.80
         assert ai_resp.cost == pytest.approx(2.80)
 
+    def test_cost_includes_thinking_tokens(self):
+        """Gemini reports thoughts_token_count separately from candidates_token_count; both bill as output."""
+        resp = make_gemini_response(prompt_tokens=8, completion_tokens=1, total_tokens=70, reasoning_tokens=61)
+        from skell_e_router.gemini_direct import _build_response
+        ai_resp = _build_response(resp, "gemini/gemini-3.8-flash", 1.0)
+        expected = 8 * 0.75 / 1_000_000 + (1 + 61) * 3.75 / 1_000_000
+        assert ai_resp.reasoning_tokens == 61
+        assert ai_resp.cost == pytest.approx(expected)
+
     def test_cost_with_implicit_cache_discount(self):
         # Gemini 2.5+ implicit caching: cached_content_token_count is a SUBSET
         # of prompt_token_count and is billed at the cached-input rate.
