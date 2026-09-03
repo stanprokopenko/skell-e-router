@@ -98,7 +98,7 @@ class TestModelConfig:
         "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
-        "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite",
+        "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite",
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
@@ -255,6 +255,17 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
         assert model.name == "gemini/gemini-3-pro-image-preview"
+
+    def test_gemini_3_8_flash_config(self):
+        """gemini-3.8-flash: GA flash model, direct SDK, thinking_level low/medium/high only ("minimal" returns 400)."""
+        model = MODEL_CONFIG["gemini-3.8-flash"]
+        assert model.name == "gemini/gemini-3.8-flash"
+        assert model.provider == "gemini"
+        assert model.supports_thinking is True
+        assert model.use_direct_sdk is True
+        assert "reasoning_effort" in model.supported_params
+        assert "temperature" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high"}
 
     def test_gemini_3_7_flash_config(self):
         """gemini-3.7-flash: GA flash model, direct SDK, thinking_level low/medium/high only ("minimal" returns 400)."""
