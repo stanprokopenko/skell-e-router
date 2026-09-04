@@ -2,7 +2,7 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None, extra_body: dict | None = None):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None, extra_body: dict | None = None, use_responses_api: bool = False, authoritative_pricing: bool = False):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
@@ -21,6 +21,12 @@ class AIModel:
         # Default request-body extras merged into every call (caller's extra_body
         # keys win). Used for OpenRouter provider pinning.
         self.extra_body = extra_body
+        # Route LiteLLM chat-shaped calls through its Responses API bridge while
+        # preserving ask_ai's existing request and response contract.
+        self.use_responses_api = use_responses_api
+        # Prefer registry pricing over LiteLLM's cost map when launch-day or
+        # provider-specific prices are known to be newer than LiteLLM's data.
+        self.authoritative_pricing = authoritative_pricing
 
     @property
     def is_gemini(self) -> bool:
@@ -70,6 +76,8 @@ MODEL_CONFIG = {
 
     # GPT-6 Astra launched September 3, 2026. 1,050,000 context, 128,000 max output.
     # Sampling params are rejected; reasoning effort supports low/medium/high/xhigh/max.
+    # OpenAI requires the Responses API for Astra tool calling.
+    # https://developers.openai.com/api/docs/guides/latest-model
     "gpt-6-astra": AIModel(
         name="openai/gpt-6-astra",
         provider="openai",
@@ -77,6 +85,8 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         pricing={"input": 10.00, "cached_input": 1.00, "output": 50.00},
+        use_responses_api=True,
+        authoritative_pricing=True,
     ),
     # gpt-5.6 family (Sol=flagship, Terra=mid, Luna=cheap/fast), preview launched July 2026.
     # 1M context, 128K max output. Same effort vocabulary as 5.5 (none/low/medium/high/xhigh).

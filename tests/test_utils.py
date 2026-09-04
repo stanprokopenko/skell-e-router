@@ -1247,6 +1247,17 @@ class TestComputeResponseCost:
             cost = _compute_response_cost(mock_resp, self._pricing_model())
         assert cost == 0.42
 
+    def test_authoritative_router_pricing_wins_over_stale_litellm_cost(self):
+        mock_resp = make_litellm_response(
+            prompt_tokens=1_000_000, completion_tokens=1_000_000, total_tokens=2_000_000,
+        )
+        model = MODEL_CONFIG["gpt-6-astra"]
+        with patch("skell_e_router.utils.litellm") as mock_litellm:
+            mock_litellm.completion_cost.return_value = 30.0
+            cost = _compute_response_cost(mock_resp, model)
+        assert cost == pytest.approx(60.0)
+        mock_litellm.completion_cost.assert_not_called()
+
     def test_fallback_computes_from_router_pricing(self):
         mock_resp = make_litellm_response(
             prompt_tokens=1_000_000, completion_tokens=1_000_000, total_tokens=2_000_000,
@@ -1296,6 +1307,34 @@ class TestComputeResponseCost:
 # ---------------------------------------------------------------------------
 
 class TestAskAi:
+
+    @patch("skell_e_router.utils.litellm")
+    def test_gpt_6_astra_uses_responses_api_bridge(self, mock_litellm):
+        mock_litellm.completion.return_value = make_litellm_response("tool result")
+        mock_litellm.drop_params = True
+        tools = [{
+            "type": "function",
+            "function": {
+                "name": "lookup",
+                "description": "Look up a value",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        }]
+
+        with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
+            ask_ai(
+                "gpt-6-astra",
+                "Use the lookup tool",
+                reasoning_effort="low",
+                tools=tools,
+                tool_choice="required",
+            )
+
+        call_kwargs = mock_litellm.completion.call_args.kwargs
+        assert call_kwargs["model"] == "openai/responses/gpt-6-astra"
+        assert call_kwargs["reasoning_effort"] == "low"
+        assert call_kwargs["tools"] == tools
+        assert call_kwargs["tool_choice"] == "required"
 
     @patch("skell_e_router.utils.litellm")
     def test_returns_string_by_default(self, mock_litellm):

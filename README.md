@@ -220,6 +220,8 @@ response = ask_ai("claude-sonnet-4-6", "Solve this math problem", budget_tokens=
 response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enabled", "budget_tokens": 2048})
 ```
 
+`gpt-6-astra` automatically uses LiteLLM's Responses API bridge. OpenAI requires the Responses API when Astra combines reasoning with function tools; callers keep using the same `ask_ai` messages, tools, and rich-response interface. The router also uses its official $10/$50 token rates instead of LiteLLM's stale launch-day cost entry.
+
 ### Anthropic Betas
 
 Pass beta feature flags to Claude models:

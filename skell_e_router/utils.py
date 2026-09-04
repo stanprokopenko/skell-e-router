@@ -462,16 +462,39 @@ def _print_request_details(messages: list[dict], kwargs: dict, model_name: str, 
 def _compute_response_cost(response, ai_model=None) -> float | None:
     """Compute USD cost for a LiteLLM completion response.
 
-    Primary path: litellm.completion_cost(), which knows most hosted models
-    (including cached-input discounts via usage.prompt_tokens_details).
-    Fallback: models LiteLLM can't price (e.g., Meta Model API models routed
-    through the generic "openai/" prefix with a custom api_base) raise inside
-    completion_cost; when the router's AIModel carries a `pricing` dict
-    (per-1M USD rates: "input", "output", optional "cached_input"), compute
-    the cost from usage tokens instead of reporting None. Cached input tokens
-    (usage.prompt_tokens_details.cached_tokens, a subset of prompt_tokens)
-    are billed at the "cached_input" rate when configured.
+    Models marked with authoritative router pricing use their configured rates
+    first so a stale LiteLLM cost map cannot under-report spend. Other models
+    use litellm.completion_cost(), with configured pricing as the fallback when
+    LiteLLM cannot price the response. Cached input tokens are billed at the
+    configured cached-input rate when one exists.
     """
+    pricing = getattr(ai_model, 'pricing', None) if ai_model is not None else None
+
+    def configured_cost() -> float | None:
+        if not pricing:
+            return None
+        usage = getattr(response, 'usage', None)
+        prompt_tokens = getattr(usage, 'prompt_tokens', None)
+        completion_tokens = getattr(usage, 'completion_tokens', None)
+        if not isinstance(prompt_tokens, int) or not isinstance(completion_tokens, int):
+            return None
+
+        prompt_details = getattr(usage, 'prompt_tokens_details', None)
+        cached_tokens = getattr(prompt_details, 'cached_tokens', None) if prompt_details is not None else None
+        if not isinstance(cached_tokens, int) or cached_tokens < 0:
+            cached_tokens = 0
+        cached_tokens = min(cached_tokens, prompt_tokens)
+
+        cached_rate = pricing.get("cached_input", pricing["input"])
+        return ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
+                cached_tokens * cached_rate / 1_000_000 +
+                completion_tokens * pricing["output"] / 1_000_000)
+
+    if getattr(ai_model, 'authoritative_pricing', False):
+        cost = configured_cost()
+        if cost is not None:
+            return cost
+
     computed_cost = None
     try:
         computed_cost = litellm.completion_cost(completion_response=response)
@@ -481,26 +504,7 @@ def _compute_response_cost(response, ai_model=None) -> float | None:
     if computed_cost is not None:
         return computed_cost
 
-    pricing = getattr(ai_model, 'pricing', None) if ai_model is not None else None
-    if not pricing:
-        return None
-
-    usage = getattr(response, 'usage', None)
-    prompt_tokens = getattr(usage, 'prompt_tokens', None)
-    completion_tokens = getattr(usage, 'completion_tokens', None)
-    if not isinstance(prompt_tokens, int) or not isinstance(completion_tokens, int):
-        return None
-
-    prompt_details = getattr(usage, 'prompt_tokens_details', None)
-    cached_tokens = getattr(prompt_details, 'cached_tokens', None) if prompt_details is not None else None
-    if not isinstance(cached_tokens, int) or cached_tokens < 0:
-        cached_tokens = 0
-    cached_tokens = min(cached_tokens, prompt_tokens)
-
-    cached_rate = pricing.get("cached_input", pricing["input"])
-    return ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
-            cached_tokens * cached_rate / 1_000_000 +
-            completion_tokens * pricing["output"] / 1_000_000)
+    return configured_cost()
 
 
 # Gathers statistics from a LiteLLM response and prints them based on level
@@ -812,6 +816,16 @@ def _perform_completion(model_name: str, messages: list[dict], api_key: str | No
     return response, request_duration
 
 
+def _completion_model_name(ai_model) -> str:
+    """Return the LiteLLM route name without changing the canonical model id."""
+    if not getattr(ai_model, "use_responses_api", False):
+        return ai_model.name
+    provider, separator, model = ai_model.name.partition("/")
+    if not separator or not model:
+        raise ValueError(f"Responses API model name must include a provider: {ai_model.name!r}")
+    return f"{provider}/responses/{model}"
+
+
 def _build_ai_response(
     response,
     request_duration_s: float | None = None,
@@ -1111,12 +1125,13 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     if ai_model.api_base:
         kwargs["api_base"] = ai_model.api_base
 
-    _print_request_details(messages, kwargs, ai_model.name, verbosity)
+    completion_model_name = _completion_model_name(ai_model)
+    _print_request_details(messages, kwargs, completion_model_name, verbosity)
 
     try:
         start_time = time.perf_counter()
         response, request_duration_s = _perform_completion(
-            model_name=ai_model.name,
+            model_name=completion_model_name,
             messages=messages,
             api_key=api_key,
             **kwargs

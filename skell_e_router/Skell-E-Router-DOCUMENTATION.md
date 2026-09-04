@@ -161,6 +161,10 @@ All errors are `RouterError` with one of these codes:
 
 ## Rich Response Object
 
+### GPT-6 Astra endpoint routing
+
+`gpt-6-astra` automatically uses LiteLLM's Responses API bridge. OpenAI requires the Responses API for Astra tool calling. The bridge converts the router's existing chat-shaped messages and function tools to Responses input items, then converts the result back to the normal `AIResponse` contract. Callers do not need endpoint-specific code. Router-level pricing is authoritative for Astra because LiteLLM's launch-day cost entry is stale; `AIResponse.cost` uses the official $10 input and $50 output rates per million tokens.
+
 By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
 
 ### Basic Usage (Backwards Compatible)

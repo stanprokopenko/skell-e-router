@@ -434,6 +434,8 @@ class TestModelConfig:
         assert "top_p" not in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh", "max"}
         assert model.pricing == {"input": 10.00, "cached_input": 1.00, "output": 50.00}
+        assert model.use_responses_api is True
+        assert model.authoritative_pricing is True
 
     def test_gpt_5_5_config(self):
         model = MODEL_CONFIG["gpt-5.5"]
