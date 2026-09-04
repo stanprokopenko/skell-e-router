@@ -672,27 +672,11 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         GROQ_EFFORT_REMAP = {"low": "none", "medium": "default", "high": "default"}
         kwargs["reasoning_effort"] = GROQ_EFFORT_REMAP.get(kwargs["reasoning_effort"], kwargs["reasoning_effort"])
 
-    # Groq: LiteLLM doesn't natively support reasoning_effort for Groq,
-    # so we force it through via allowed_openai_params.
-    if ai_model.is_groq and "reasoning_effort" in kwargs:
-        existing = kwargs.get("allowed_openai_params", [])
-        if "reasoning_effort" not in existing:
-            kwargs["allowed_openai_params"] = existing + ["reasoning_effort"]
-
-    # xAI: LiteLLM's param registry lags new Grok releases, and with
-    # litellm.drop_params=True it SILENTLY strips reasoning_effort for models
-    # it doesn't know yet (observed: dropped for grok-4.6, so low/high effort
-    # both ran at the API default). Our MODEL_CONFIG is the source of truth:
-    # force the param through.
-    if ai_model.is_xai and "reasoning_effort" in kwargs:
-        existing = kwargs.get("allowed_openai_params", [])
-        if "reasoning_effort" not in existing:
-            kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]
-
-    # OpenRouter: aggregator model ids (e.g. openrouter/z-ai/glm-5.3-flash) are
-    # usually missing from LiteLLM's registry, so drop_params would silently
-    # strip reasoning_effort. MODEL_CONFIG is the source of truth: force it through.
-    if ai_model.is_openrouter and "reasoning_effort" in kwargs:
+    # LiteLLM's parameter registry can lag new releases and aggregator models.
+    # MODEL_CONFIG is the source of truth, so force declared reasoning effort through.
+    uses_openai_api = ai_model.is_groq or ai_model.is_xai or ai_model.is_openrouter
+    uses_openai_api = uses_openai_api or (ai_model.is_openai and ai_model.name.startswith("openai/"))
+    if uses_openai_api and "reasoning_effort" in kwargs:
         existing = kwargs.get("allowed_openai_params", [])
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]

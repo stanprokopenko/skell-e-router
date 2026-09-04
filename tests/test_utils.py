@@ -1067,6 +1067,17 @@ class TestHandleModelSpecificParams:
         assert result["reasoning_effort"] == "low"
         assert "reasoning_effort" in result["allowed_openai_params"]
 
+    def test_gpt_6_astra_reasoning_effort_is_forwarded(self):
+        model = MODEL_CONFIG["gpt-6-astra"]
+        result = _handle_model_specific_params(
+            model,
+            {"reasoning_effort": "max", "temperature": 0.0, "top_p": 0.9},
+        )
+        assert result["reasoning_effort"] == "max"
+        assert "reasoning_effort" in result["allowed_openai_params"]
+        assert "temperature" not in result
+        assert "top_p" not in result
+
     def test_model_extra_body_merged_into_request(self):
         """Model-level extra_body defaults (e.g. OpenRouter provider pinning) are
         merged into the request and survive final param filtering."""

@@ -68,6 +68,16 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    # GPT-6 Astra launched September 3, 2026. 1,050,000 context, 128,000 max output.
+    # Sampling params are rejected; reasoning effort supports low/medium/high/xhigh/max.
+    "gpt-6-astra": AIModel(
+        name="openai/gpt-6-astra",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        pricing={"input": 10.00, "cached_input": 1.00, "output": 50.00},
+    ),
     # gpt-5.6 family (Sol=flagship, Terra=mid, Luna=cheap/fast), preview launched July 2026.
     # 1M context, 128K max output. Same effort vocabulary as 5.5 (none/low/medium/high/xhigh).
     # temperature is rejected (only default 1 supported), same as 5.5.
