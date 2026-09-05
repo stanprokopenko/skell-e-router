@@ -596,6 +596,36 @@ def _print_response_details(response, verbosity: str = 'none', request_duration_
         print("-" * 32 + "\n")
 
 
+# Normalize OpenAI reasoning output limits before either parameter filter runs.
+def _normalize_openai_output_limit(ai_model: AIModel, kwargs: dict):
+    if not (ai_model.is_openai and ai_model.name.startswith("openai/")
+            and "max_completion_tokens" in ai_model.supported_params):
+        return
+
+    limits = []
+    for key in ("max_tokens", "max_completion_tokens"):
+        value = kwargs.pop(key, None)
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            raise RouterError(code="INVALID_PARAM", message=f"'{key}' must be a positive integer")
+        limits.append(value)
+
+    if not limits:
+        return
+    if len(set(limits)) > 1:
+        raise RouterError(code="INVALID_PARAM", message="Output token limits must agree when both aliases are supplied")
+    # SDK extra_body fields override normal parameters during serialization.
+    if {"max_tokens", "max_completion_tokens", "max_output_tokens"}.intersection(kwargs.get("extra_body") or {}):
+        raise RouterError(code="INVALID_PARAM", message="Use top-level output token limits without token limits in extra_body")
+
+    kwargs["max_completion_tokens"] = limits[0]
+    allowed = list(kwargs.get("allowed_openai_params") or [])
+    if "max_completion_tokens" not in allowed:
+        allowed.append("max_completion_tokens")
+    kwargs["allowed_openai_params"] = allowed
+
+
 # Removes known unsupported parameters from kwargs based on the target model.
 def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 
@@ -779,6 +809,8 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     if getattr(ai_model, "extra_body", None):
         caller_extra = kwargs.get("extra_body") or {}
         kwargs["extra_body"] = {**ai_model.extra_body, **caller_extra}
+
+    _normalize_openai_output_limit(ai_model, kwargs)
 
     # Filter to include only parameters listed in model's supported_params.
     # Also allow LiteLLM meta-params that control param forwarding behavior.

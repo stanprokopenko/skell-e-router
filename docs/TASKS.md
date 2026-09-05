@@ -1,5 +1,9 @@
 # Active Tasks & Deferred Follow-ups
 
+## Houston TLDR output limit
+
+- [ ] Release and install v3.26.2 to forward the helper's `max_tokens=600` through the provider request. Verify mocked HTTP transport, regression tests and the helper's installed import. The Houston lead owns helper response validation and app shipping.
+
 ## Model registry follow-ups (from 2026-07-21 model-gap work)
 
 - [x] **Swap `kimi-k2.6` → Kimi K3** — done 2026-07-22 (v3.16.0): Moonshot's K3 API launched early (Jul 16), so `kimi-k3` now routes first-party via `api.moonshot.ai` (MOONSHOT_API_KEY, $3/$15 per 1M) and the `kimi-k2.6` DeepInfra stand-in was removed.

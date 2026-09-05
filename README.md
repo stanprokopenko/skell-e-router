@@ -22,6 +22,10 @@ response = ask_ai(
 )
 ```
 
+### Output token limits
+
+Pass `max_tokens=600` to cap generated tokens on OpenAI reasoning models, including `gpt-5.6-luna`. The router forwards the provider's output-limit field. The cap includes reasoning tokens, so the visible answer may be shorter or empty. See the [parameter contract](skell_e_router/Skell-E-Router-DOCUMENTATION.md#output-token-limits) for aliases and validation rules.
+
 ### Image Input (Vision)
 
 Send an image alongside your prompt. You can pass a local file path, a URL, or a base64 data URI — the router handles encoding for you.

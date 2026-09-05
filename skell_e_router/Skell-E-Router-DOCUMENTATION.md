@@ -159,6 +159,27 @@ All errors are `RouterError` with one of these codes:
 
 ---
 
+## Output token limits
+
+For the registered first-party OpenAI reasoning models, pass `max_tokens=N` or `max_completion_tokens=N` to `ask_ai()`. This includes GPT-5, GPT-6 Astra, o1 and o3. The router accepts either name and forwards one `max_completion_tokens` value through LiteLLM. Astra's Responses API bridge serializes that value as `max_output_tokens`.
+
+```python
+response = ask_ai(
+    "gpt-5.6-luna",
+    "Summarize this conversation.",
+    max_tokens=600,
+    rich_response=True,
+)
+```
+
+- A supplied limit must be a positive integer. Booleans, floats, strings, zero and negative values raise `RouterError` with code `INVALID_PARAM` before a provider request.
+- `None` means no limit was supplied. If both aliases have a value, their values must match. Different values raise `INVALID_PARAM`.
+- Set limits through these top-level keywords. Combining a top-level cap with `max_tokens`, `max_completion_tokens` or `max_output_tokens` in `extra_body` raises `INVALID_PARAM`, because those body fields can override the cap during serialization.
+- Use the same two keywords for Astra. `max_output_tokens` is the generated Responses request field, not an `ask_ai()` keyword supported by this contract.
+- This limit covers generated answer and reasoning tokens together. A response can use its budget on reasoning and return empty text, or stop before completing its answer. Inspect `AIResponse.finish_reason` and content before accepting it. The limit does not cap input tokens, total dollars or separate retry attempts. See the [OpenAI parameter reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
+The router adds `max_completion_tokens` to LiteLLM's `allowed_openai_params` so a stale LiteLLM model registry cannot silently remove it. Other providers keep their existing output-limit parameter handling.
+
 ## Rich Response Object
 
 ### GPT-6 Astra endpoint routing

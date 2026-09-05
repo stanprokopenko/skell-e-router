@@ -82,7 +82,7 @@ MODEL_CONFIG = {
         name="openai/gpt-6-astra",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         pricing={"input": 10.00, "cached_input": 1.00, "output": 50.00},
         use_responses_api=True,
@@ -95,21 +95,21 @@ MODEL_CONFIG = {
         name="openai/gpt-5.6-sol",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
     ),
     "gpt-5.6-terra": AIModel(
         name="openai/gpt-5.6-terra",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
     ),
     "gpt-5.6-luna": AIModel(
         name="openai/gpt-5.6-luna",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
     ),
     # gpt-5.5 uses a different effort vocabulary than 5.4/5.3/5: no "minimal", new "xhigh".
@@ -117,49 +117,49 @@ MODEL_CONFIG = {
         name="openai/gpt-5.5",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh"}
     ),
     "gpt-5.4-mini": AIModel(
         name="openai/gpt-5.4-mini",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5.4-nano": AIModel(
         name="openai/gpt-5.4-nano",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5.3-codex": AIModel(
         name="openai/gpt-5.3-codex",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"}
     ),
     "gpt-5.3-chat": AIModel(
         name="openai/gpt-5.3-chat-latest",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "max_tokens", "stream"},
+        supported_params={"reasoning_effort", "max_tokens", "stream", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5.2": AIModel(
         name="openai/gpt-5.2",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5": AIModel(
         name="openai/gpt-5",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     # TODO: add other params for gpt-5 such as verbosity, etc. (implement responses api)
@@ -167,27 +167,27 @@ MODEL_CONFIG = {
         name="openai/gpt-5-mini",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "gpt-5-nano": AIModel(
         name="openai/gpt-5-nano",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "stream", "tools", "tool_choice"},
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
     "o3": AIModel(
         name="openai/o3",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice"}
+        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice", "max_completion_tokens"}
     ),
     "o1": AIModel(
         name="openai/o1",
         provider="openai",
         supports_thinking=True,
-        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice"}
+        supported_params={"reasoning_effort", "max_tokens", "stream", "tools", "tool_choice", "max_completion_tokens"}
     ),
     "gpt-4.1": AIModel(
         name="openai/gpt-4.1",
