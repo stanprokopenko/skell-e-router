@@ -46,7 +46,7 @@ The actual Houston TLDR helper also passes against an isolated extracted wheel w
 
 ## Release and independent review
 
-The source fix is commit `3e0f8dd35925cb18cd369420a7eca85f854b627c`, followed by stream and retry compatibility corrections in `63b5fd22bacef9100b09cdee355bd8839439be78`. The latter is the exact reviewed and tested source revision for package 3.26.3. Subsequent release-record changes contain documentation and captured verification data only.
+The source fix is commit `3e0f8dd35925cb18cd369420a7eca85f854b627c`, followed by stream and retry compatibility corrections in `63b5fd22bacef9100b09cdee355bd8839439be78`. The latter is the exact reviewed and tested source revision for package 3.26.3. Both reached `origin/main`, with release-record commit `3b1553eb881b5163f5c49d2c1547dda4687deeac`; the remote hash was verified after push. Subsequent release-record changes contain documentation and captured verification data only.
 
 The built wheel is `dist/skell_e_router-3.26.3-py3-none-any.whl` in the isolated security worktree. Its SHA-256 is `f7f21d1e30dcad7a4d46bc57ff87eeed7cb1255617fce876546fee7f23e01707`. The offline build used cached Hatchling 1.27.0, pathspec 0.12.1 and trove-classifiers 2026.6.1.19. No package-registry publication or shared-package installation occurred.
 
@@ -63,7 +63,9 @@ The review covers changed error boundaries and related stream/retry behavior. It
 
 The shared consumer interpreter is `C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe`. Its `Lib/site-packages/skell_e_router` remains on affected 3.26.2 at the installed revision above. The router checkout and isolated security environment do not mitigate that installed package.
 
-Known consumers are session search and Houston's TLDR helper. The orchestrator must inventory other active consumers and coordinate installation and restarts. The parked Gemini work remains separate and untouched.
+The parallel consumer inventory reports four shared-Python routes still on this installed version: session search, Houston's TLDR helper, the relay's automatic digest vector rebuild and Solar Sailer's input-qualification work. The qualification instructions name the shared interpreter explicitly; helper and queue launchers default to PATH Python. Existing parent-process resolution still needs confirmation before rollout. Benchmark and other manual routes have unresolved interpreter choices. The parked Gemini work remains separate and untouched.
+
+The inventory also reports independent Solar, benchmark, agent-library and Scripter installations at older versions. This repair did not reproduce against those revisions or assess their compatibility. Updating shared Python will not update them. The orchestrator owns the inventory and coordinated validation, including attribution of persistent Python processes.
 
 1. Record each consumer's interpreter, package path, metadata version and source revision without reading credentials. Identify long-running processes that have already imported the old package.
 2. Run the synthetic regression suite against the built release in an isolated environment. Run the existing `scripts/verify_houston_output_limit.py` check with the orchestrator path to verify the helper's output limit and model pin remain unchanged.
@@ -71,6 +73,6 @@ Known consumers are session search and Houston's TLDR helper. The orchestrator m
 4. Repeat the synthetic disclosure probes against the installed package using Python isolated mode and an explicit package-path assertion. Repeat the Houston output-limit check and the search owner's offline boundary tests. Use synthetic inputs and stubbed transports only.
 5. Restart only identified persistent consumers that loaded the old version. Record actual installed revision and per-consumer validation before claiming installed mitigation.
 
-The committed runner supports `--package PATH` before `--probe` or pytest arguments. It asserts that the imported router resides under the selected wheel or installation path. This prevents the checkout from making a still-affected consumer appear fixed. Use the exact source revision above for installation rather than a moving branch tip.
+The committed runner supports `--package PATH` before `--probe` or pytest arguments. It asserts that the imported router resides under the selected wheel or installation path. This prevents the checkout from making a still-affected consumer appear fixed. Use the exact source revision above for installation rather than a moving branch tip. `--probe` prints evidence; require every disclosure and chain flag to be false. Use `--package PATH tests/test_credential_errors.py tests/test_output_limits.py -q` as the automated pass/fail gate, together with the Houston helper's metadata/version check.
 
 Source completion and installed mitigation are separate milestones in `docs/TASKS.md`. No shared environment changes are authorized by the source release itself.
