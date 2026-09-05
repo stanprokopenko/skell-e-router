@@ -1,10 +1,10 @@
-This packet is for developers executing and coordinating the installed router security update.
+This document preserves developer preparation for a rollout permanently halted by Stan.
 
 # Installed credential-error repair
 
-## Release identity and current hold
+## Closed disposition and preserved preparation
 
-Execution owner is router lead `lead-1032891d-b8b5-4bbc-a05e-37284eaef9e3`. The orchestrator coordinates and releases the shared update. Installation remains held. Passing a clock deadline alone does not release it.
+Stan permanently halted the router batch and shared-Python rollout on 2026-09-05 after confirming the router repository itself was fixed. This assignment will open no window and perform no phase A, installation, recovery release or activation. No further wakes are scheduled. The source fix remains committed and pushed. The prepared commands and gates below are historical records and must not be executed under this closed assignment.
 
 Use package 3.26.3 from reviewed source `63b5fd22bacef9100b09cdee355bd8839439be78`. The accepted wheel is `C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/skell_e_router-3.26.3-py3-none-any.whl`, SHA-256 `f7f21d1e30dcad7a4d46bc57ff87eeed7cb1255617fce876546fee7f23e01707`. Reuse the [source, wheel and independent-review evidence](credential-error-security.md). Both source and wheel passed 781 tests; the second fresh Astra review was clean. The actual Houston helper already passed against the isolated wheel. No new source repair or review round is part of rollout.
 

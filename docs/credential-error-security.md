@@ -2,6 +2,8 @@ This document is for developers maintaining the router and coordinating its inst
 
 # Credential-safe provider errors
 
+Stan permanently halted the router batch and shared-Python rollout on 2026-09-05. The repository source fix is complete and pushed. Preparation remains preserved in the [closed rollout record](credential-error-rollout.md); this lead performed no shared installation or activation.
+
 ## Reproduction and ownership
 
 On 2026-09-05, both reported disclosure paths reproduced against router source `7ffefbd55d361d765ff73baa9a58cbc51c810639`, package version 3.26.2. The installed shared Python 3.11 package separately reports version 3.26.2 and source revision `d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe` in package metadata. The source and installed revisions are different; the source reproduction is independent evidence.
