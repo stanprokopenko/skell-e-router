@@ -53,13 +53,17 @@ def _files(root):
     return found
 
 
-def _metadata(root):
+def _metadata(root, *, allow_missing_version=False):
     source = root / "METADATA"
     _plain(source)
     data = Parser().parsestr(source.read_text(encoding="utf-8"))
     version = data.get("Version")
     if data.get("Name", "").lower().replace("_", "-") != "skell-e-router":
         raise ValueError("Unexpected distribution name")
+    # Only restoration of explicitly named old/new roots may tolerate this
+    # interrupted-write state. Backup creation/verification remain strict.
+    if allow_missing_version and not version:
+        return None
     if not isinstance(version, str) or root.name != f"{PACKAGE}-{version}.dist-info":
         raise ValueError("Distribution directory and version disagree")
     return version
@@ -179,7 +183,7 @@ def restore_backup(site: Path, backup_dir: Path, expected_backup_sha256: str, *,
         for root in current_roots:
             _files(root)
             if root.name != PACKAGE and (root / "METADATA").exists():
-                _metadata(root)
+                _metadata(root, allow_missing_version=True)
     target_roots = [site / name for name in manifest["roots"]]
     # Reject all unsafe roots before the first filesystem mutation.
     for root in set(current_roots + target_roots):

@@ -328,6 +328,29 @@ class RouterPackageRecoveryTests(unittest.TestCase):
         recovery.restore_backup(self.site, self.backup, digest, replace_version="3.26.3")
         self.assertEqual(snapshot(self.site), self.original)
 
+    def test_recovers_named_upgrade_with_metadata_missing_version(self):
+        digest = self.make_backup()
+        upgraded = self.site / "skell_e_router-3.26.3.dist-info"
+        self.metadata.rename(upgraded)
+        (self.site / "skell_e_router/__init__.py").write_text("__version__ = '3.26.3'\n")
+        (upgraded / "METADATA").write_bytes(b"Name: skell-e-router\n")
+        recovery.restore_backup(self.site, self.backup, digest, replace_version="3.26.3")
+        self.assertEqual(snapshot(self.site), self.original)
+
+    def test_missing_version_does_not_allow_an_unrelated_distribution(self):
+        digest = self.make_backup()
+        self.upgrade()
+        (self.site / "skell_e_router-3.26.3.dist-info/METADATA").write_bytes(b"Name: unrelated\n")
+        before = snapshot(self.site)
+        with self.assertRaises(ValueError):
+            recovery.restore_backup(self.site, self.backup, digest, replace_version="3.26.3")
+        self.assertEqual(snapshot(self.site), before)
+
+    def test_missing_version_is_not_accepted_in_a_backup_source(self):
+        (self.metadata / "METADATA").write_bytes(b"Name: skell-e-router\n")
+        with self.assertRaises(ValueError):
+            recovery.create_backup(self.site, self.backup)
+
     def test_partial_recovery_rejects_an_unexpected_third_version(self):
         digest = self.make_backup()
         write_distribution(self.site, "9.9.9")
