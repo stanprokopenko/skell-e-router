@@ -54,6 +54,17 @@ try:
 except metadata.PackageNotFoundError:
     result["distribution_version"] = None
 
+result["sdk_distributions"] = {}
+for name in ("anthropic", "requests", "openai", "litellm", "google-genai", "tenacity"):
+    try:
+        sdk = metadata.distribution(name)
+        result["sdk_distributions"][name] = {
+            "version": sdk.version,
+            "distribution_root": str(sdk.locate_file("")),
+        }
+    except metadata.PackageNotFoundError:
+        result["sdk_distributions"][name] = {"version": None}
+
 checks = {
     "package_found": spec is not None,
     "code_matches_metadata": result.get("source_version") == result["distribution_version"],

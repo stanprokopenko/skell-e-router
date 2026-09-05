@@ -2,7 +2,8 @@
 
 Use an isolated dependency environment and Python -I. Pass pytest arguments after
 this script, or --probe to reproduce the original embedding disclosure. Prefix
-with --package PATH to verify a wheel or installed package instead of the source.
+with --package PATH to select a wheel, or --require-installed PATH to verify an
+installed package without changing the interpreter's SDK search order.
 """
 import os
 from pathlib import Path
@@ -64,13 +65,21 @@ socket.getaddrinfo = deny_network
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
-if sys.argv[1:2] == ["--package"]:
+if sys.argv[1:2] in (["--package"], ["--require-installed"]):
+    require_installed = sys.argv[1] == "--require-installed"
     package_root = Path(sys.argv[2]).resolve()
     sys.argv[1:3] = []
-    sys.path.insert(0, str(package_root))
+    if require_installed:
+        # Remove our test checkout before importing, preserving normal user-site
+        # versus system-site SDK precedence. A source import must fail the gate.
+        sys.path[:] = [entry for entry in sys.path if Path(entry or ".").resolve() != ROOT]
+    else:
+        sys.path.insert(0, str(package_root))
     import skell_e_router
     assert Path(skell_e_router.__file__).is_relative_to(package_root), (
         "Verification must import the explicitly selected package")
+    if require_installed:
+        sys.path.insert(0, str(ROOT))  # Tests only; router is already imported.
 
 if sys.argv[1:] == ["--probe"]:
     import contextlib
