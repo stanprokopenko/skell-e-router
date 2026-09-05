@@ -2,7 +2,7 @@
 
 ## Provider error credential disclosure
 
-- [ ] Release source fix v3.26.3 for the reproduced v3.26.2 provider error and traceback disclosure. Security owner scope covers router boundaries and directly related diagnostics. [Reproduction, validation and release record](credential-error-security.md). Independent Astra review and source push are in progress.
+- [x] Fixed v3.26.2 provider error and traceback disclosure in v3.26.3 source `63b5fd22bacef9100b09cdee355bd8839439be78`. All 781 tests pass on source and wheel, the actual Houston helper passes offline, and fresh independent Astra review is clean in round 2 of the three-round cap. [Reproduction, validation and release record](credential-error-security.md).
 - [ ] Coordinate installed consumer rollout through the orchestrator. Shared Python 3.11 remains on affected v3.26.2 at `d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe`. Session search and Houston's TLDR helper use that interpreter. Search's own protection and integration belong to its separate owner and do not wait for this release. Other consumers need inventory before installation.
 
 ## Houston TLDR output limit

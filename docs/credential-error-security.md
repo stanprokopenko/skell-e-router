@@ -35,11 +35,29 @@ Dependencies were copied into an isolated virtual environment from installed dis
 ```powershell
 .\.security-venv\Scripts\python.exe -I scripts/run_security_tests_offline.py --probe
 .\.security-venv\Scripts\python.exe -I scripts/run_security_tests_offline.py tests -q
+.\.security-venv\Scripts\python.exe -I scripts/run_security_tests_offline.py --package dist/skell_e_router-3.26.3-py3-none-any.whl tests -q
 ```
 
 The new regression suite covers synthetic config and environment keys; raw, repr, JSON and URL escaping; nested exception chains and notes; error fields; traceback and logging output; h11 header validation; hostile provider exceptions using the router's own exception types; safe HTTP status metadata; deferred stream failures; deep-research error events and reconnection; and unchanged missing-key validation. One integration case runs real LiteLLM and OpenAI request construction into a mocked httpx transport that invokes h11 locally.
 
-Full-suite result, built-artifact verification, exact release commit and independent review result will be recorded before source completion.
+All 781 tests pass against both the source and the built wheel, without warnings. This includes 54 new security and compatibility cases. The wheel's 20 packaged files match source byte for byte. Both original disclosure probes pass against the wheel with all disclosure and original-chain flags false.
+
+The actual Houston TLDR helper also passes against an isolated extracted wheel with stubbed HTTP. It still sends `max_completion_tokens=600`, uses the unchanged `gpt-5.6-luna` model pin, and returns the fixture response. [Captured integration evidence](credential-error-houston-wheel.json) records helper and model-file hashes, package path and wheel hash. This is isolated compatibility evidence, not an update of Houston's shared installation.
+
+## Release and independent review
+
+The source fix is commit `3e0f8dd35925cb18cd369420a7eca85f854b627c`, followed by stream and retry compatibility corrections in `63b5fd22bacef9100b09cdee355bd8839439be78`. The latter is the exact reviewed and tested source revision for package 3.26.3. Subsequent release-record changes contain documentation and captured verification data only.
+
+The built wheel is `dist/skell_e_router-3.26.3-py3-none-any.whl` in the isolated security worktree. Its SHA-256 is `f7f21d1e30dcad7a4d46bc57ff87eeed7cb1255617fce876546fee7f23e01707`. The offline build used cached Hatchling 1.27.0, pathspec 0.12.1 and trove-classifiers 2026.6.1.19. No package-registry publication or shared-package installation occurred.
+
+Two fresh independent `gpt-6-astra` reviewers reviewed bounded implementation packets without earlier findings. The loop stopped at the clean second round, within the three-round cap.
+
+| Round | Candidate | Result and action |
+| --- | --- | --- |
+| 1 | `3e0f8dd35925cb18cd369420a7eca85f854b627c` | No HIGH. Three MEDIUM compatibility issues covered direct `next(stream)`, resumed partial text iteration and diagnostic categories after retry exhaustion. Fixed in the second source commit with nine new regression cases. |
+| 2 | `63b5fd22bacef9100b09cdee355bd8839439be78` | CLEAN, no actionable HIGH, MEDIUM or LOW. The reviewer independently ran all 781 offline tests. Review stopped. |
+
+The review covers changed error boundaries and related stream/retry behavior. It does not certify live provider behavior, caller-enabled SDK diagnostics, debugger frame-local capture or arbitrary external consumers. The lead, not the independent reviewers, performed wheel parity and Houston helper verification.
 
 ## Installed rollout
 
@@ -52,5 +70,7 @@ Known consumers are session search and Houston's TLDR helper. The orchestrator m
 3. Have the orchestrator schedule the shared-package update to the exact reviewed source commit, or to its matching wheel. Use dependency-preserving installation so this security release does not upgrade provider SDKs.
 4. Repeat the synthetic disclosure probes against the installed package using Python isolated mode and an explicit package-path assertion. Repeat the Houston output-limit check and the search owner's offline boundary tests. Use synthetic inputs and stubbed transports only.
 5. Restart only identified persistent consumers that loaded the old version. Record actual installed revision and per-consumer validation before claiming installed mitigation.
+
+The committed runner supports `--package PATH` before `--probe` or pytest arguments. It asserts that the imported router resides under the selected wheel or installation path. This prevents the checkout from making a still-affected consumer appear fixed. Use the exact source revision above for installation rather than a moving branch tip.
 
 Source completion and installed mitigation are separate milestones in `docs/TASKS.md`. No shared environment changes are authorized by the source release itself.
