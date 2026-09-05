@@ -1,7 +1,8 @@
 """Run tests with synthetic credentials and blocked sockets before SDK imports.
 
 Use an isolated dependency environment and Python -I. Pass pytest arguments after
-this script, or --probe to reproduce the original embedding disclosure.
+this script, or --probe to reproduce the original embedding disclosure. Prefix
+with --package PATH to verify a wheel or installed package instead of the source.
 """
 import os
 from pathlib import Path
@@ -22,6 +23,7 @@ os.environ.update({
     "TMP": str(ROOT / ".security-home"),
     "LITELLM_LOCAL_MODEL_COST_MAP": "True",
     "LITELLM_TELEMETRY": "False",
+    "PYTHON_DOTENV_DISABLED": "1",
     "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
 })
 Path(os.environ["HOME"]).mkdir(exist_ok=True)
@@ -61,6 +63,14 @@ socket.create_connection = deny_network
 socket.getaddrinfo = deny_network
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
+
+if sys.argv[1:2] == ["--package"]:
+    package_root = Path(sys.argv[2]).resolve()
+    sys.argv[1:3] = []
+    sys.path.insert(0, str(package_root))
+    import skell_e_router
+    assert Path(skell_e_router.__file__).is_relative_to(package_root), (
+        "Verification must import the explicitly selected package")
 
 if sys.argv[1:] == ["--probe"]:
     import contextlib

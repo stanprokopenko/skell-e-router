@@ -70,26 +70,37 @@ def call_provider(call, error_type, *, code="PROVIDER_ERROR", details=None):
     raise error from None
 
 
+class _SafeIterator:
+    """Forward iteration and explicit close without closing on temporary access."""
+
+    def __init__(self, iterator, error_type, code, details):
+        self._error_type, self._code, self._details = error_type, code, details
+        self._iterator = self._call(lambda: iter(iterator))
+
+    def _call(self, call):
+        return call_provider(call, self._error_type, code=self._code, details=self._details)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return next(self._iterator)
+        except StopIteration:
+            raise
+        except Exception as exc:
+            error = provider_error(exc, self._error_type, code=self._code, details=self._details)
+        raise error from None
+
+    def close(self):
+        close = self._call(lambda: getattr(self._iterator, "close", None))
+        if close is not None:
+            return self._call(close)
+
+
 def safe_iterator(iterator, error_type, *, code="PROVIDER_ERROR", details=None):
     """Protect failures occurring after a streaming API has returned to its caller."""
-    iterator = call_provider(lambda: iter(iterator), error_type, code=code, details=details)
-    try:
-        while True:
-            try:
-                item = next(iterator)
-            except StopIteration as done:
-                return done.value
-            except Exception as exc:
-                error = provider_error(exc, error_type, code=code, details=details)
-            else:
-                yield item
-                continue
-            raise error from None
-    finally:
-        close = call_provider(lambda: getattr(iterator, "close", None), error_type,
-                              code=code, details=details)
-        if close is not None:
-            call_provider(close, error_type, code=code, details=details)
+    return _SafeIterator(iterator, error_type, code, details)
 
 
 class SafeStream:
@@ -99,6 +110,8 @@ class SafeStream:
         self._stream = stream
         self._error_type = error_type
         self._details = details
+        self._events = None
+        self._text = None
 
     def _call(self, call):
         return call_provider(call, self._error_type, details=self._details)
@@ -111,12 +124,20 @@ class SafeStream:
         return self._call(lambda: self._stream.__exit__(exc_type, exc, tb))
 
     def __iter__(self):
-        return safe_iterator(self._stream, self._error_type, details=self._details)
+        if self._events is None:
+            self._events = safe_iterator(self._stream, self._error_type, details=self._details)
+        return self._events
+
+    def __next__(self):
+        return next(iter(self))
 
     def __getattr__(self, name):
-        value = self._call(lambda: getattr(self._stream, name))
         if name == "text_stream":
-            return safe_iterator(value, self._error_type, details=self._details)
+            if self._text is None:
+                value = self._call(lambda: getattr(self._stream, name))
+                self._text = safe_iterator(value, self._error_type, details=self._details)
+            return self._text
+        value = self._call(lambda: getattr(self._stream, name))
         if callable(value):
             return lambda *args, **kwargs: self._call(lambda: value(*args, **kwargs))
         return value

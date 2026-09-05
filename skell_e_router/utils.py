@@ -818,7 +818,8 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 @retry(
     retry=retry_if_exception(_is_retryable_exception),
     wait=_retry_after_wait,
-    stop=stop_after_attempt(3)
+    stop=stop_after_attempt(3),
+    reraise=True,
 )
 def _perform_completion(model_name: str, messages: list[dict], api_key: str | None = None, **kwargs):
     completion_kwargs = dict(model=model_name, messages=messages, **kwargs)

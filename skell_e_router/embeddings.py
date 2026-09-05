@@ -197,6 +197,7 @@ def _normalize_input(
     retry=retry_if_exception(_is_retryable_exception),
     wait=_retry_after_wait,
     stop=stop_after_attempt(3),
+    reraise=True,
 )
 def _perform_embedding(
     model_name: str,

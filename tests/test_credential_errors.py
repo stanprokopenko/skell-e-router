@@ -316,3 +316,76 @@ def test_input_validation_still_reports_local_error(monkeypatch):
         router.ask_ai("test", "hello", direct_sdk=False)
     assert caught.value.code == "MISSING_ENV"
     provider.assert_not_called()
+
+
+@pytest.mark.parametrize("operation", ["chat", "embedding"])
+@pytest.mark.parametrize("failure", ["503", "429", "timeout"])
+def test_exhausted_retries_keep_safe_category(monkeypatch, credentials, capsys, caplog, operation, failure):
+    error = provider_failure(TimeoutError if failure == "timeout" else ValueError)
+    error.status_code = None if failure == "timeout" else int(failure)
+    error.headers = {}
+    expected = {"503": "unavailable", "429": "rate_limit", "timeout": "timeout"}[failure]
+    transport = MagicMock(side_effect=error)
+    perform = utils._perform_completion if operation == "chat" else embeddings._perform_embedding
+    monkeypatch.setattr(perform.retry, "wait", lambda _: 0)
+    monkeypatch.setattr(utils.litellm, "completion" if operation == "chat" else "embedding", transport)
+    monkeypatch.setattr(utils, "resolve_model_alias", lambda _: make_model())
+    call = (lambda: router.ask_ai("test", "hello", direct_sdk=False)) if operation == "chat" else (
+        lambda: router.get_embedding("openai-embedding-3-small", "hello"))
+    safe = capture_safe_failure(call, capsys, caplog, status=error.status_code)
+    assert safe.details["category"] == expected
+    assert transport.call_count == 3
+
+
+@pytest.mark.parametrize("view", ["events", "text"])
+def test_anthropic_partial_iteration_can_resume(monkeypatch, credentials, view):
+    monkeypatch.setattr(utils, "resolve_model_alias", lambda _: make_model("anthropic"))
+
+    class Stream:
+        def __init__(self):
+            self.text_stream = (text for text in ["first", "second", "third"])
+            self.events = iter(["first", "second", "third"])
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            return next(self.events)
+
+    stream = Stream()
+    manager = MagicMock()
+    manager.__enter__.return_value = stream
+    manager.__exit__.return_value = False
+    monkeypatch.setattr(utils, "_call_anthropic_direct_stream", lambda **_: manager)
+    with router.ask_ai("test", "hello", direct_sdk=True, stream=True) as wrapped:
+        assert next(wrapped if view == "events" else wrapped.text_stream) == "first"
+        for part in (wrapped if view == "events" else wrapped.text_stream):
+            assert part == "second"
+            break
+        assert list(wrapped if view == "events" else wrapped.text_stream) == ["third"]
+        with pytest.raises(StopIteration):
+            next(wrapped if view == "events" else wrapped.text_stream)
+    manager.__exit__.assert_called_once_with(None, None, None)
+
+
+def test_stream_close_and_caller_exception_behavior(monkeypatch, credentials, capsys, caplog):
+    monkeypatch.setattr(utils, "resolve_model_alias", lambda _: make_model("gemini"))
+    source = MagicMock()
+    source.__iter__.return_value = source
+    source.close.side_effect = provider_failure()
+    # __iter__ must return the iterator whose close is under test.
+    source.__iter__.side_effect = lambda: source
+    monkeypatch.setattr(utils, "_call_gemini_direct_stream", lambda **_: source)
+    capture_safe_failure(lambda: router.ask_ai("test", "hello", direct_sdk=True, stream=True).close(),
+                         capsys, caplog)
+
+    monkeypatch.setattr(utils, "resolve_model_alias", lambda _: make_model("anthropic"))
+    manager = MagicMock()
+    manager.__exit__.return_value = False
+    monkeypatch.setattr(utils, "_call_anthropic_direct_stream", lambda **_: manager)
+    caller_error = LookupError("local caller failure")
+    with pytest.raises(LookupError) as caught:
+        with router.ask_ai("test", "hello", direct_sdk=True, stream=True):
+            raise caller_error
+    assert caught.value is caller_error
+    assert manager.__exit__.call_args.args[1] is caller_error
