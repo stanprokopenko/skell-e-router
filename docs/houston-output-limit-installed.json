@@ -1,5 +1,5 @@
 {
-  "verified_at_utc": "2026-09-05T03:09:42.882762+00:00",
+  "verified_at_utc": "2026-09-05T03:12:15.081969+00:00",
   "python": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
   "router_version": "3.26.2",
   "router_import": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\skell_e_router\\__init__.py",
@@ -14,7 +14,7 @@
   "litellm_version": "1.83.14",
   "openai_version": "2.24.0",
   "helper": "C:\\Users\\Stan\\Documents\\GitHub\\claude-orchestrator\\scripts\\houston-lead-tldr.py",
-  "helper_sha256": "1183823d028c392482ae2cb775bd7ad24a55484b7c421516a744d2bee5010938",
+  "helper_sha256": "075dbd3e51b934348164e68dfded226fbf7cf5c8ec16a20da92d741ac95202e0",
   "models_sha256": "9fc1bc22c76f5facc39954eca03614df2b31163b340ddfcefeef79eaddebcc13",
   "configured_model": "gpt-5.6-luna",
   "captured_requests": [
