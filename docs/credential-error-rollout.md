@@ -16,12 +16,12 @@ The target is `C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe`
 | --- | --- | --- |
 | Accepted artifact | Reviewed source, wheel hash and completed tests above | Recheck wheel hash immediately before installation. |
 | Solar qualification window | Original owner stopped shared-Python work. Successor quiet boundaries are not yet confirmed to this owner. | Orchestrator confirms boundaries from security successor `lead-bb9530aa-596b-4ec7-a561-1a8e17537979` and P2 successor `lead-49468b5c-68fb-46d4-9b92-8435d90f8700`. |
-| Actual Houston and relay parent resolution | Houston PID 1004 and relay Node PID 10140 had no Python child at approximately 11:56 PDT. Source launchers inherit PATH and use `python`. No supported runtime metadata hook was found. | Each owner supplies a metadata child from its actual parent through the normal spawn configuration, or the orchestrator explicitly holds/excludes that consumer during update and requires capture on its coordinated activation. Shell resolution is insufficient. |
+| Actual Houston and relay parent resolution | Old Houston PID 1004 remains unproven. The controlled fresh-Node preflight below passes for both helper entry directories. Relay startup can override inherited settings. | Use the deterministic Houston relaunch boundary below. Relay requires a metadata child after its startup configuration loads, or explicit exclusion with digest launches held until that capture. Do not block on reconstructing old Houston's environment. |
 | Persistent old imports | The 12:00 PDT process snapshot contains only Python PID 23572. Orchestrator identifies it as the connectivity sampler, not a router consumer. No persistent qualification Python worker was observed. | Recheck Python processes at the released boundary. Attribute any new consumer and have its owner finish or hold it. Never terminate by process name. |
 | Digest triggers and interactive launches | Daily 05:00 rebuild plus lead-close/rotation triggers exist. No queue hold or drain was performed by this owner. | Relay and Houston owners confirm no new Python consumer launches during the brief package replacement and installed checks. |
-| Houston activation | Consolidated activation belongs to TLDR release owner `lead-7c24d887-559d-4e3c-b257-a86800ebc1f3`, after P1 integration. | No Houston rebuild/restart before 12:05 PDT and the sampler's `summary.json` exists. Activation owner confirms the summary's exact path and completion. Router installation does not imply Houston activation permission. |
+| Houston activation | Network/time gate cleared by orchestrator at 12:06 PDT. This owner subsequently confirmed `claude-orchestrator/docs/stanstudio-connectivity-2026-09-05/summary.json` exists. Consolidated activation belongs to TLDR release owner `lead-7c24d887-559d-4e3c-b257-a86800ebc1f3`. | Router/qualification coordination remains. TLDR owner activates its integrated release after installed router checks, using the deterministic relaunch boundary below. |
 
-PID 23572 must remain untouched. Its sampler was expected to finish about 12:03 PDT, but this packet does not certify completion. The [inventory](shared-python-router-consumers-2026-09-05.md) remains the wider consumer record. Its earlier unknown-PID description is superseded by the orchestrator's positive sampler attribution.
+PID 23572 was left untouched. The 12:12 PDT process snapshot showed no `python.exe` or `pythonw.exe` process; the orchestrator has cleared the sampler/network gate. The [inventory](shared-python-router-consumers-2026-09-05.md) remains the wider consumer record. Its earlier unknown-PID description is superseded by the orchestrator's positive sampler attribution.
 
 The [older-copy reconciliation](isolated-router-credential-exposure.md) separately verifies 11 isolated installations and their nine stale version-label conflicts. It reports unsafe static error handling and unresolved upgrade ownership. Those copies remain outside this shared installation.
 
@@ -38,6 +38,34 @@ python -B C:/Users/Stan/Documents/GitHub/skell-e-router/scripts/probe_router_run
 Use `scripts/session-digest` as the entry directory for search and vector rebuilds. Use the actual relay parent PID for relay capture, and the new Houston parent PID if capture happens after consolidated activation. Change expected version to 3.26.3 after the package update. Record the returned JSON and recheck PID creation times so a reused PID cannot pass as the earlier parent. A new parent's result supersedes the old parent's unresolved state; it does not prove the old environment.
 
 A shell smoke check of this probe passed against 3.26.2. Its parent was the test shell, so it is not accepted as Houston or relay attribution. No process environment block, process memory, secret-bearing command line or application transcript was read. No supported Python diagnostic IPC was present in the inspected Houston routes; relay run-host controls report agent liveness, not this runtime identity. Do not add an improvised process-injection mechanism to bypass that gap.
+
+## Deterministic Houston relaunch boundary
+
+The selected alternative is a verified new launch context. Old PID 1004's Start Menu/tray ancestry and current registry PATH remain inference, not an inside-process capture. Its owner must gracefully close that instance during the coordinated activation. Do not let Electron forward the new launch to the old single instance.
+
+After installed checks pass, the TLDR activation owner uses its existing approved launch shell, prefixes only that shell's PATH with shared Python, and runs the following Node preflight. Preserve all other inherited settings without printing them. Use the expected version 3.26.3 for activation. The [preflight capture](credential-error-controlled-launch-preflight.json) already proves this mechanism selects shared Python and its current 3.26.2 files in a fresh test launcher; no application was started during that smoke check.
+
+```powershell
+$env:Path = 'C:/Users/Stan/AppData/Local/Programs/Python/Python311;C:/Users/Stan/AppData/Local/Programs/Python/Python311/Scripts;' + $env:Path
+@'
+const { spawnSync } = require('node:child_process');
+const root = 'C:/Users/Stan/Documents/GitHub/claude-orchestrator';
+for (const entry of ['scripts', 'scripts/session-digest']) {
+  const result = spawnSync('python', ['-B', 'C:/Users/Stan/Documents/GitHub/skell-e-router/scripts/probe_router_runtime.py', '--entry-directory', root + '/' + entry, '--expected-site', 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages', '--expected-version', '3.26.3'], { cwd: root, windowsHide: true, encoding: 'utf8' });
+  if (result.status !== 0) throw new Error('Router launch preflight failed');
+  process.stdout.write(result.stdout);
+}
+'@ | & 'C:/nvm4w/nodejs/node.exe' -
+if ($LASTEXITCODE -ne 0) { throw 'Do not launch Houston from this context' }
+```
+
+The owner then launches the newly installed Houston executable directly from that same shell and environment, with `Start-Process -WindowStyle Hidden -WorkingDirectory 'C:/Users/Stan/Documents/GitHub/claude-orchestrator' -FilePath 'C:/Users/Stan/AppData/Local/Programs/houston/Houston.exe' -PassThru`. Record the new main PID, start time and installed artifact identity. Do not use Start Menu, an installer auto-launch or another launcher between the preflight and this start, because those may use a different parent environment. Confirm old PID 1004 has exited and the replacement PID is new.
+
+Acceptance also requires the activation owner to confirm the shipped main-process code still spawns bare `python`, passes the orchestrator working directory, supplies no Python override, and does not change PATH before these helpers run. The inspected source satisfies those conditions: `index.ts` supplies no Python override, and `tldrService.ts`/`vectorSearch.ts` launch the documented command. No `process.env.PATH` or `process.env.Path` assignment was found under `app/src/main`. No `python.exe` exists in the inspected orchestrator, Houston installation or Node executable directories to shadow the chosen PATH entry. The owner repeats the relevant identity checks if packaging changes those assumptions.
+
+This boundary establishes controlled inheritance for the replacement parent. It does not claim a diagnostic was executed inside PID 1004 or the replacement Houston process. If the owner changes the launch path or startup code, require an actual-parent capture instead.
+
+Relay is a separate boundary. `relay/src/config.js:65` loads its configuration with `override: true`; this owner did not inspect credential configuration to infer whether it changes PATH. A verified shell plus Task Scheduler start is therefore insufficient. The relay owner must run the metadata-only child through the normal Python spawn configuration after that startup configuration is loaded, or explicitly keep digest launches excluded until a coordinated restart can provide that capture. The existing wrapper is `scripts/relay-loop.ps1` with an absolute `-NodeExe`; do not bypass its restart supervision or start a duplicate relay to obtain evidence. No relay restart is required merely because the router distribution changes. An explicit digest hold can isolate this unresolved runtime while the shared package and Houston are validated.
 
 ## Completed consumer checks
 
