@@ -77,11 +77,21 @@ The package command is not a lock on consumer launches. A written exclusion alon
 
 Relay runtime/activation owner is `lead-9d13b0f7-68cc-4eb5-8bdf-825ff0a98395`. It is preparing the enforced pause and post-configuration metadata capture with `scripts/probe_router_runtime.py`. The qualification and network gates are clear; the remaining install-release conditions are that enforced pause/drain and Houston's controlled shutdown boundary. The 12:38 PDT static check confirms the saved 407 system and 89 user-site distribution versions are unchanged, and no persistent Python process appeared in that snapshot.
 
-The orchestrator records the active hold acknowledgements and their start time, confirms qualification workers have exited and stay paused, then sends the execution owner one explicit install release. Immediately before pip, the execution owner rechecks Python processes and the two-location dependency baseline. Any new unattributed worker or package drift stops the sequence before replacement. These checks detect a broken barrier; they do not substitute for producer holds.
+Before the relay restart, the orchestrator records conditional authorization for the whole local sequence, its operation ID, named surviving router/relay operators, deadline and failure route. This owner must read that authorization before beginning. Once the relay is held, no new Slack reply is required: the execution owner proceeds only after matching local hold/drain acknowledgements and process checks satisfy the preauthorized conditions. It remains active through installation and local evidence handoff rather than parking on a Slack wake. Immediately before pip, it rechecks Python processes and both dependency locations. Any new unattributed worker or package drift stops the sequence before replacement.
 
 Run the exact pip command synchronously and keep all producer holds active until the installed security/output-limit/helper/search gates finish. Do not terminate an unexpected consumer or interrupt pip mid-replacement. If a hold is breached during installation, keep the remaining holds, report the breach, and let the relevant owner quiesce its consumer before validation and release. Do not resume work based only on pip's exit status.
 
 On passing gates, notify the orchestrator for its one real Codex deep-query acceptance. That authorized live acceptance belongs to the orchestrator; this owner performs only offline checks. Houston's release owner then completes the agreed controlled activation and Agents-page acceptance. The relay activation owner completes its post-configuration runtime capture before releasing digest production. Qualification owners resume only after the orchestrator ends their hold. No blanket process termination or restart occurs.
+
+### Local evidence contract while Slack is offline
+
+This owner accepts the preauthorized local sequencing in `claude-orchestrator/docs/relay-router-activation-2026-09-05.md`; it is prepared, not yet authorized. The relay operator owns `claude-orchestrator/state/router-window-ack.json`. Before restart, both operators must agree that exact path and the following fields in the authorization record: `operation_id`, `relay_pid`, `boot_id`, `operator_lead`, `houston_closed`, `old_digest_work_drained`, `python_launchers_held`, and `qualification_quiet`. The four confirmation fields must be true and supported by fresh process/owner evidence. The acknowledgement must match the current operation, PID and boot UUID in `state/router-maintenance-status.json` at phase `held`. This owner also checks those processes independently. A stale file or a marker written before the old relay restarts is not a hold.
+
+The accepted verification dependencies are frozen in [the verification lock](credential-error-verification-lock.json). The probe SHA-256 is `24aa4560871b205bac657745f4cc6e6abb0d431e8c950fc939e2ced18ba687d9`. No probe, runner, search verifier, helper or baseline edit is planned before activation. Recheck the hashes and accepted wheel before the outage.
+
+After all installed checks pass, this owner writes `docs/credential-error-installed-after.json` with `status="passed"`, the matching operation/PID/boot identity, test exit codes and totals, SDK preservation, package identity and evidence paths. The relay operator checks these fields and the helper/search results, then requests its own bound metadata verification and release under the already-recorded authorization. Receipt existence alone is insufficient. The real Codex query follows relay release; it cannot be a prerequisite for restoring the offline relay. Houston remains under its owner's controlled activation sequence.
+
+The held relay does not accept a cached 3.26.2 wheel's archive identity for release. An abort before any package mutation can use the original 3.26.2 VCS identity only if the orchestrator authorized that branch beforehand. After mutation, the default failure path is to retain holds and restore/verify the accepted 3.26.3 artifact. The cached old wheel is a recovery artifact, not an automatic relay-release route. Any different recovery or identity change needs an attended authorized operator; do not begin without that route being named.
 
 ## Completed consumer checks
 
@@ -124,9 +134,16 @@ Use the confirmed shared interpreter with normal startup so user-site SDK priori
 @'
 from pathlib import Path
 from importlib import metadata
-import hashlib, json, runpy, sys, zipfile
+from datetime import datetime, timezone
+import hashlib, json, os, runpy, subprocess, sys, zipfile
 repo = Path(r'C:/Users/Stan/Documents/GitHub/skell-e-router')
 site = Path(r'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages')
+state = Path(r'C:/Users/Stan/Documents/GitHub/claude-orchestrator/state')
+ack = json.loads((state / 'router-window-ack.json').read_text(encoding='utf-8-sig'))
+held = json.loads((state / 'router-maintenance-status.json').read_text(encoding='utf-8-sig'))
+assert held['phase'] == 'held'
+assert all(ack[key] == held[key] for key in ('operation_id', 'relay_pid', 'boot_id'))
+assert all(ack[key] is True for key in ('houston_closed', 'old_digest_work_drained', 'python_launchers_held', 'qualification_quiet'))
 wheel = Path(r'C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/skell_e_router-3.26.3-py3-none-any.whl')
 assert hashlib.sha256(wheel.read_bytes()).hexdigest() == 'f7f21d1e30dcad7a4d46bc57ff87eeed7cb1255617fce876546fee7f23e01707'
 baseline = json.loads((repo / 'docs/credential-error-sdk-baseline.json').read_text(encoding='utf-8'))
@@ -154,12 +171,24 @@ assert Path(skell_e_router.__file__).resolve() == site / 'skell_e_router/__init_
 assert skell_e_router.__version__ == current['skell-e-router']
 sys.argv = ['verify_houston_output_limit.py', r'C:/Users/Stan/Documents/GitHub/claude-orchestrator', '--output', str(repo / 'docs/credential-error-houston-installed.json')]
 runpy.run_path(str(repo / 'scripts/verify_houston_output_limit.py'), run_name='__main__')
-(repo / 'docs/credential-error-installed-after.json').write_text(json.dumps({'packages': current, 'router_origin': skell_e_router.__file__, 'wheel_sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(), 'reviewed_source': '63b5fd22bacef9100b09cdee355bd8839439be78'}, indent=2) + '\n', encoding='utf-8')
+system_command = [sys.executable, '-I', '-B', str(repo / 'scripts/run_security_tests_offline.py'), '--require-installed', str(site), 'tests/test_credential_errors.py', 'tests/test_output_limits.py', '-q']
+system = subprocess.run(system_command, cwd=repo, capture_output=True, timeout=90, creationflags=subprocess.CREATE_NO_WINDOW)
+(repo / 'docs/credential-error-system-tests.log').write_bytes(system.stdout + system.stderr)
+assert system.returncode == 0 and b'115 passed' in system.stdout, 'System-only tests failed'
+search_env = dict(os.environ)  # Already cleared by the offline runner.
+search_env['PYTHONUSERBASE'] = str(Path(baseline['sites']['user']['path']).parents[1])
+search = subprocess.run([sys.executable, '-B', str(repo / 'scripts/verify_installed_search.py'), '--output', str(repo / 'docs/credential-error-search-after.json')], cwd=repo, env=search_env, capture_output=True, timeout=190, creationflags=subprocess.CREATE_NO_WINDOW)
+assert search.returncode == 0, 'Installed search checks failed'
+search_evidence = json.loads((repo / 'docs/credential-error-search-after.json').read_text(encoding='utf-8'))
+assert search_evidence['passed'] and search_evidence['expected_version'] == '3.26.3'
+assert all(case['passed'] for case in search_evidence['cases'])
+receipt = {'status': 'passed', 'verified_at_utc': datetime.now(timezone.utc).isoformat(), **{key: ack[key] for key in ('operation_id', 'relay_pid', 'boot_id')}, 'normal_security_output_tests': {'exit_code': 0, 'passed': 115}, 'system_security_output_tests': {'exit_code': system.returncode, 'passed': 115}, 'search_exit_code': search.returncode, 'sdk_versions_unchanged': True, 'packages': current, 'router_origin': skell_e_router.__file__, 'wheel_sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(), 'reviewed_source': '63b5fd22bacef9100b09cdee355bd8839439be78', 'helper_evidence': 'docs/credential-error-houston-installed.json', 'search_evidence': 'docs/credential-error-search-after.json'}
+(repo / 'docs/credential-error-installed-after.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
 '@ | & 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -B -
 if ($LASTEXITCODE -ne 0) { throw 'Installed router verification failed' }
 ```
 
-The selected installed router must resolve outside both source checkouts. The runner asserts it before testing, and the helper checks code/metadata version agreement. Do not prepend the entire system site-packages directory during normal-startup validation, because that would hide the user-site SDKs. Repeat the 115 selected tests with `python -I -B scripts/run_security_tests_offline.py --require-installed C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages tests/test_credential_errors.py tests/test_output_limits.py -q` for the system-only SDK path. Do not claim installed mitigation from the source-only command or `--probe` process status alone.
+The selected installed router must resolve outside both source checkouts. The runner asserts it before testing, and the helper checks code/metadata version agreement. Do not prepend the entire system site-packages directory during normal-startup validation, because that would hide the user-site SDKs. The block also executes the 115 system-only cases and the actual installed-search negative pair before producing its bound passing receipt. Do not repeat them merely because the individual commands are documented below. Do not claim installed mitigation from the source-only command or `--probe` process status alone.
 
 The [installed search verifier](../scripts/verify_installed_search.py) adds the real-router negative checks that the 10 stub-router tests cannot establish. Run `C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe -B scripts/verify_installed_search.py --output docs/credential-error-search-after.json` after installation. Default expected version is 3.26.3. It executes the actual search.py CLI function with `query -n 3 --json -- anything`, the real installed router and real SDKs, a fresh child-only synthetic credential profile, disabled networking and a 90-second limit per child. Only VECTORS/CHUNKS point to a miniature synthetic index, so it never loads the real index. The source file remains unchanged.
 
