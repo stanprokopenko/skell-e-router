@@ -1,0 +1,32 @@
+{
+  "verified_at_utc": "2026-09-05T03:09:42.882762+00:00",
+  "python": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "router_version": "3.26.2",
+  "router_import": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\skell_e_router\\__init__.py",
+  "router_source": {
+    "url": "https://github.com/stanprokopenko/skell-e-router",
+    "vcs_info": {
+      "commit_id": "d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe",
+      "requested_revision": "main",
+      "vcs": "git"
+    }
+  },
+  "litellm_version": "1.83.14",
+  "openai_version": "2.24.0",
+  "helper": "C:\\Users\\Stan\\Documents\\GitHub\\claude-orchestrator\\scripts\\houston-lead-tldr.py",
+  "helper_sha256": "1183823d028c392482ae2cb775bd7ad24a55484b7c421516a744d2bee5010938",
+  "models_sha256": "9fc1bc22c76f5facc39954eca03614df2b31163b340ddfcefeef79eaddebcc13",
+  "configured_model": "gpt-5.6-luna",
+  "captured_requests": [
+    {
+      "url": "https://api.openai.com/v1/chat/completions",
+      "model": "gpt-5.6-luna",
+      "limits": {
+        "max_completion_tokens": 600
+      }
+    }
+  ],
+  "helper_ok": true,
+  "external_network_blocked": true,
+  "live_api_spend_usd": 0
+}

@@ -2,7 +2,7 @@
 
 ## Houston TLDR output limit
 
-- [ ] Release and install v3.26.2 to forward the helper's `max_tokens=600` through the provider request. Verify mocked HTTP transport, regression tests and the helper's installed import. The Houston lead owns helper response validation and app shipping.
+- [x] Released and installed v3.26.2 on 2026-09-04. The actual helper sends `max_completion_tokens=600` to OpenAI through the installed router. All 727 tests pass and the blind review was clean. [Contract and integration evidence](houston-output-limit.md). The Houston lead owns helper response validation and app shipping.
 
 ## Model registry follow-ups (from 2026-07-21 model-gap work)
 
