@@ -14,7 +14,7 @@ from .utils import (
     RouterError,
     _check_provider_key,
     _resolve_api_key,
-    _redact_keys,
+    provider_error,
     _encode_to_data_uri,
     _is_retryable_exception,
     _retry_after_wait,
@@ -391,17 +391,15 @@ def get_embedding(
             **extra_kwargs,
         )
         total_duration_s = time.perf_counter() - start_time
-    except RouterError:
-        raise
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
+        error = provider_error(e, RouterError, details={
+            "provider": embedding_model.provider, "model": embedding_model.name})
+    else:
+        error = None
+    if error is not None:
         if verbosity != "none":
-            print(f"ERROR calling {embedding_model.name}: {safe_msg}")
-        raise RouterError(
-            code="PROVIDER_ERROR",
-            message=safe_msg,
-            details={"provider": embedding_model.provider, "model": embedding_model.name},
-        ) from e
+            print(f"ERROR calling {embedding_model.name}: {error.message}")
+        raise error from None
 
     embedding_response = _build_embedding_response(
         response=response,

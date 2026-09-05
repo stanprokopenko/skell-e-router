@@ -790,7 +790,7 @@ class TestAskAiDirectGeminiIntegration:
             model, [{"role": "user", "content": "hi"}],
             FAKE_GEMINI_KEY, "none", False, None, {"stream": True}
         )
-        assert result is sentinel
+        assert list(result) == ["chunk1", "chunk2"]
         mock_stream.assert_called_once()
 
     @patch("skell_e_router.utils._call_gemini_direct")

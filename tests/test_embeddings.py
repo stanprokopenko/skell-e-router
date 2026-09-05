@@ -510,7 +510,7 @@ class TestGetEmbedding:
         assert exc.value.code == "PROVIDER_ERROR"
         # API key must be redacted from error message.
         assert "sk-test" not in exc.value.message
-        assert "[REDACTED]" in exc.value.message
+        assert exc.value.message == "Provider request failed."
 
     def test_gemini_multimodal_aggregation(self, monkeypatch, tmp_path):
         monkeypatch.setenv("GEMINI_API_KEY", "AIzaSy-test")

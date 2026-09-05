@@ -724,7 +724,10 @@ class TestAskAiDirectAnthropicIntegration:
             model, [{"role": "user", "content": "hi"}],
             FAKE_ANTHROPIC_KEY, "none", False, None, {"stream": True}
         )
-        assert result is sentinel
+        sentinel.__enter__.return_value.text_stream = iter(["hello", " world"])
+        with result as stream:
+            assert list(stream.text_stream) == ["hello", " world"]
+        sentinel.__exit__.assert_called_once()
         mock_stream.assert_called_once()
 
     @patch("skell_e_router.utils._call_anthropic_direct")

@@ -406,7 +406,7 @@ class TestBuildResult:
         )
         result = _build_result(interaction)
         assert result.status == "failed"
-        assert result.error == "Something went wrong"
+        assert result.error == "The provider reported a research error."
 
 
 # ---------------------------------------------------------------------------

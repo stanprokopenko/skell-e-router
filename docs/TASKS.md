@@ -1,5 +1,10 @@
 # Active Tasks & Deferred Follow-ups
 
+## Provider error credential disclosure
+
+- [ ] Release source fix v3.26.3 for the reproduced v3.26.2 provider error and traceback disclosure. Security owner scope covers router boundaries and directly related diagnostics. [Reproduction, validation and release record](credential-error-security.md). Independent Astra review and source push are in progress.
+- [ ] Coordinate installed consumer rollout through the orchestrator. Shared Python 3.11 remains on affected v3.26.2 at `d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe`. Session search and Houston's TLDR helper use that interpreter. Search's own protection and integration belong to its separate owner and do not wait for this release. Other consumers need inventory before installation.
+
 ## Houston TLDR output limit
 
 - [x] Released and installed v3.26.2 on 2026-09-04. The actual helper sends `max_completion_tokens=600` to OpenAI through the installed router. All 727 tests pass and the blind review was clean. [Contract and integration evidence](houston-output-limit.md). The Houston lead owns helper response validation and app shipping.

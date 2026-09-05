@@ -11,6 +11,8 @@ from typing import Callable, Generator, Any
 
 import requests
 
+from .errors import _redact_keys, call_provider, provider_error, safe_iterator
+
 try:
     from google import genai
     GENAI_AVAILABLE = True
@@ -163,18 +165,8 @@ def _get_client(config: dict | None = None) -> "genai.Client":
     _check_genai_available()
     _check_api_key(config)
     if config and "gemini_api_key" in config:
-        return genai.Client(api_key=config["gemini_api_key"])
-    return genai.Client()
-
-
-def _redact_keys(message: str, config: dict | None) -> str:
-    """Remove any config values from a string to prevent accidental key leakage."""
-    if not config:
-        return message
-    for value in config.values():
-        if isinstance(value, str) and value:
-            message = message.replace(value, "[REDACTED]")
-    return message
+        return call_provider(lambda: genai.Client(api_key=config["gemini_api_key"]), DeepResearchError)
+    return call_provider(lambda: genai.Client(), DeepResearchError)
 
 
 def _extract_usage(interaction) -> DeepResearchUsage | None:
@@ -244,7 +236,7 @@ def _build_result(interaction, duration_seconds: float | None = None) -> DeepRes
         id=interaction.id,
         status=interaction.status,
         text=_extract_text(interaction),
-        error=str(interaction.error) if hasattr(interaction, 'error') and interaction.error else None,
+        error="The provider reported a research error." if getattr(interaction, 'error', None) else None,
         outputs=list(getattr(interaction, 'outputs', [])),
         citations=_extract_citations(interaction),
         usage=_extract_usage(interaction),
@@ -276,8 +268,8 @@ def _print_response_details(result: DeepResearchResult, verbosity: str):
         print(f"\n{'=' * 40}")
         print(f"RAW INTERACTION ID: {result.id}")
         print(f"STATUS: {result.status}")
-        if result.raw_interaction:
-            print(f"RAW: {result.raw_interaction}")
+        # Raw interactions can contain provider error payloads even when the
+        # result has a safe summary. Keep those payloads out of debug output.
         print(f"{'=' * 40}\n")
     
     if verbosity in ('response', 'info', 'debug'):
@@ -515,7 +507,7 @@ def _poll_for_completion(
                 details={"interaction_id": interaction_id, "elapsed": elapsed}
             )
         
-        interaction = client.interactions.get(interaction_id)
+        interaction = call_provider(lambda: client.interactions.get(interaction_id), DeepResearchError)
         
         if verbosity in ("info", "debug"):
             print(f"  Status: {interaction.status} (elapsed: {elapsed:.0f}s)")
@@ -525,11 +517,10 @@ def _poll_for_completion(
             return _build_result(interaction, duration)
         
         elif interaction.status == "failed":
-            error_msg = str(interaction.error) if hasattr(interaction, 'error') else "Unknown error"
             raise DeepResearchError(
                 code="RESEARCH_FAILED",
-                message=error_msg,
-                details={"interaction_id": interaction_id}
+                message="The provider reported that the research task failed.",
+                details={"interaction_id": interaction_id, "category": "provider_error"}
             )
         
         time.sleep(poll_interval)
@@ -610,18 +601,18 @@ def _stream_research(
             # Handle errors - check if retryable
             if chunk.event_type == "error":
                 error_msg = str(chunk.error) if hasattr(chunk, 'error') else "Stream error"
-                last_error = error_msg
+                last_error = "The provider reported a stream error."
                 
                 # If retryable and we have interaction_id, signal for reconnection
                 if interaction_id and _is_retryable_error(error_msg):
                     if verbosity != "none":
-                        print(f"\n  Transient error (will reconnect): {error_msg}")
+                        print("\n  Transient stream error. Will reconnect.")
                     return False  # Signal to reconnect
                 
                 # Non-retryable error - raise immediately
                 raise DeepResearchError(
                     code="STREAM_ERROR",
-                    message=error_msg,
+                    message="The provider reported a stream error.",
                     details={"interaction_id": interaction_id}
                 )
         
@@ -630,6 +621,7 @@ def _stream_research(
     # Initial stream attempt (with retries if stream is None)
     max_initial_retries = 3
     for initial_attempt in range(max_initial_retries):
+        terminal_error = None
         try:
             if verbosity != "none":
                 if initial_attempt == 0:
@@ -671,12 +663,16 @@ def _stream_research(
         except DeepResearchError as e:
             # Check if it's a retryable error - if so, fall through to reconnection
             if interaction_id and _is_retryable_error(e.message):
-                last_error = e.message
+                last_error = "The provider reported a retryable stream error."
                 if verbosity != "none":
-                    print(f"\n  Retryable error (will reconnect): {e.message}")
+                    print("\n  Retryable stream error. Will reconnect.")
                 break  # We have interaction_id, go to reconnection loop
             else:
-                raise
+                terminal_error = provider_error(
+                    e, DeepResearchError,
+                    code="STREAM_ERROR" if e.code == "STREAM_ERROR" else "PROVIDER_ERROR",
+                    details={"interaction_id": interaction_id},
+                )
         except TypeError as e:
             # Handle "'NoneType' object is not iterable" - stream was None
             if "NoneType" in str(e) and "not iterable" in str(e):
@@ -685,18 +681,20 @@ def _stream_research(
                     print(f"  Stream returned None, will retry...")
                 time.sleep(RECONNECT_DELAY)
                 continue
-            # Other TypeError - re-raise
-            raise
+            # Other TypeError failures leave the retry loop as safe errors.
+            terminal_error = provider_error(e, DeepResearchError)
         except Exception as e:
-            last_error = str(e)
+            last_error = "The provider connection was interrupted."
             if verbosity != "none":
-                print(f"\n  Stream interrupted: {e}")
+                print("\n  Stream interrupted by a provider error.")
             # If we have interaction_id, break to reconnection loop
             if interaction_id:
                 break
             # Otherwise retry initial connection
             time.sleep(RECONNECT_DELAY)
             continue
+        if terminal_error is not None:
+            raise terminal_error
     
     # Reconnection loop - keep trying until timeout
     reconnect_count = 0
@@ -717,6 +715,7 @@ def _stream_research(
         
         time.sleep(STREAM_POLL_INTERVAL)
         
+        terminal_error = None
         try:
             stream = client.interactions.get(
                 id=interaction_id,
@@ -741,11 +740,15 @@ def _stream_research(
         except DeepResearchError as e:
             # Check if it's a retryable error that slipped through
             if _is_retryable_error(e.message):
-                last_error = e.message
+                last_error = "The provider reported a retryable stream error."
                 if verbosity != "none":
-                    print(f"  Retryable error during reconnection: {e.message}")
+                    print("  Retryable provider error during reconnection.")
             else:
-                raise
+                terminal_error = provider_error(
+                    e, DeepResearchError,
+                    code="STREAM_ERROR" if e.code == "STREAM_ERROR" else "PROVIDER_ERROR",
+                    details={"interaction_id": interaction_id},
+                )
         except TypeError as e:
             # Handle "'NoneType' object is not iterable" - stream was None
             if "NoneType" in str(e) and "not iterable" in str(e):
@@ -753,22 +756,24 @@ def _stream_research(
                 if verbosity != "none":
                     print(f"  Stream returned None")
                 continue
-            raise
+            terminal_error = provider_error(e, DeepResearchError)
         except Exception as e:
-            last_error = str(e)
+            last_error = "The provider reconnection failed."
             if verbosity != "none":
-                print(f"  Reconnection failed: {e}")
+                print("  Reconnection failed because of a provider error.")
+        if terminal_error is not None:
+            raise terminal_error
     
     # If we get here without completion, fetch final state
     if interaction_id:
-        final = client.interactions.get(interaction_id)
+        final = call_provider(lambda: client.interactions.get(interaction_id), DeepResearchError)
         duration = time.time() - start_time
         return _build_result(final, duration)
     
     raise DeepResearchError(
         code="STREAM_FAILED",
         message=f"Failed to complete research stream after {reconnect_count} reconnection attempts",
-        details={"reconnect_attempts": reconnect_count, "last_error": last_error}
+        details={"reconnect_attempts": reconnect_count, "last_error": last_error, "category": "provider_error"}
     )
 
 
@@ -852,12 +857,12 @@ def ask_deep_research(
             result = _stream_research(client, query, dr_config, on_progress, verbosity, start_time, timeout)
         else:
             # Start the research task
-            interaction = client.interactions.create(
+            interaction = call_provider(lambda: client.interactions.create(
                 input=query,
                 agent=dr_config.agent,
                 background=True,
                 tools=dr_config.tools
-            )
+            ), DeepResearchError, details={"agent": dr_config.agent})
             
             if verbosity in ("info", "debug"):
                 print(f"  Research started: {interaction.id}")
@@ -882,14 +887,10 @@ def ask_deep_research(
     except DeepResearchError:
         raise
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
+        error = provider_error(e, DeepResearchError, details={"agent": dr_config.agent})
         if verbosity != 'none':
-            print(f"ERROR in Deep Research: {safe_msg}")
-        raise DeepResearchError(
-            code="PROVIDER_ERROR",
-            message=safe_msg,
-            details={"agent": dr_config.agent}
-        ) from e
+            print(f"ERROR in Deep Research: {error.message}")
+    raise error
 
 
 def deep_research_follow_up(
@@ -951,14 +952,13 @@ def deep_research_follow_up(
         return text or ""
 
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
+        error = provider_error(
+            e, DeepResearchError, code="FOLLOW_UP_ERROR",
+            details={"previous_interaction_id": previous_interaction_id},
+        )
         if verbosity != 'none':
-            print(f"ERROR in follow-up: {safe_msg}")
-        raise DeepResearchError(
-            code="FOLLOW_UP_ERROR",
-            message=safe_msg,
-            details={"previous_interaction_id": previous_interaction_id}
-        ) from e
+            print(f"ERROR in follow-up: {error.message}")
+    raise error
 
 
 def get_research_status(interaction_id: str, *, config: dict | None = None) -> DeepResearchResult:
@@ -988,8 +988,8 @@ def get_research_status(interaction_id: str, *, config: dict | None = None) -> D
         >>> print(status.status)  # "in_progress", "completed", or "failed"
     """
     client = _get_client(config)
-    interaction = client.interactions.get(interaction_id)
-    return _build_result(interaction)
+    interaction = call_provider(lambda: client.interactions.get(interaction_id), DeepResearchError)
+    return call_provider(lambda: _build_result(interaction), DeepResearchError)
 
 
 # GENERATOR FOR STREAMING (Alternative API)
@@ -1043,7 +1043,7 @@ def stream_deep_research(
     def process_stream(stream):
         nonlocal interaction_id, last_event_id, final_interaction
         
-        for chunk in stream:
+        for chunk in safe_iterator(stream, DeepResearchError):
             if chunk.event_type == "interaction.start":
                 interaction_id = chunk.interaction.id
                 yield ("start", interaction_id)
@@ -1071,7 +1071,7 @@ def stream_deep_research(
     
     # Initial stream
     try:
-        stream = client.interactions.create(
+        stream = call_provider(lambda: client.interactions.create(
             input=query,
             agent=dr_config.agent,
             background=True,
@@ -1081,7 +1081,7 @@ def stream_deep_research(
                 "thinking_summaries": dr_config.thinking_summaries
             },
             tools=dr_config.tools
-        )
+        ), DeepResearchError)
 
         yield from process_stream(stream)
 
@@ -1094,11 +1094,11 @@ def stream_deep_research(
         time.sleep(RECONNECT_DELAY)
         
         try:
-            stream = client.interactions.get(
+            stream = call_provider(lambda: client.interactions.get(
                 id=interaction_id,
                 stream=True,
                 last_event_id=last_event_id
-            )
+            ), DeepResearchError)
             yield from process_stream(stream)
         except Exception:
             continue
@@ -1106,12 +1106,13 @@ def stream_deep_research(
     # Build and return final result
     duration = time.time() - start_time
     if final_interaction:
-        return _build_result(final_interaction, duration)
+        return call_provider(lambda: _build_result(final_interaction, duration), DeepResearchError)
     elif interaction_id:
-        final = client.interactions.get(interaction_id)
-        return _build_result(final, duration)
+        final = call_provider(lambda: client.interactions.get(interaction_id), DeepResearchError)
+        return call_provider(lambda: _build_result(final, duration), DeepResearchError)
     else:
         raise DeepResearchError(
             code="STREAM_FAILED",
-            message="Failed to complete research stream"
+            message="Failed to complete research stream",
+            details={"category": "provider_error"},
         )

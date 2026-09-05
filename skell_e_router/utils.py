@@ -9,6 +9,7 @@ from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG
 from .response import AIResponse, GeminiFileRef
+from .errors import provider_error, safe_iterator, SafeStream, _redact_keys
 from .gemini_direct import (
     _convert_messages_to_contents,
     _build_generate_config,
@@ -209,14 +210,12 @@ def upload_file(
             api_key=api_key,
         )
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
-        raise RouterError(
-            code="UPLOAD_ERROR",
-            message=safe_msg,
-            details={"mime_type": mime_type},
-        ) from e
+        error = provider_error(e, RouterError, code="UPLOAD_ERROR",
+                               details={"mime_type": mime_type})
+    else:
+        return GeminiFileRef(uri=result.id, mime_type=mime_type, display_name=display_name)
+    raise error from None
 
-    return GeminiFileRef(uri=result.id, mime_type=mime_type, display_name=display_name)
 
 
 # Constructs the messages list for the AI call.
@@ -290,16 +289,6 @@ def _resolve_api_key(ai_model: "AIModel", config: dict | None) -> str | None:
     if getattr(ai_model, "api_base", None) and env_key:
         return os.environ.get(env_key)
     return None
-
-
-def _redact_keys(message: str, config: dict | None) -> str:
-    """Remove any config values from a string to prevent accidental key leakage."""
-    if not config:
-        return message
-    for value in config.values():
-        if isinstance(value, str) and value:
-            message = message.replace(value, "[REDACTED]")
-    return message
 
 
 # Classify retryable errors and honor Retry-After when available
@@ -936,7 +925,7 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
 
     try:
         if stream:
-            return _call_gemini_direct_stream(
+            stream_result = _call_gemini_direct_stream(
                 model_name=ai_model.name,
                 contents=contents,
                 system_instruction=system_instruction,
@@ -944,6 +933,8 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
                 tools=tools,
                 api_key=api_key,
             )
+            return safe_iterator(stream_result, RouterError, details={
+                "provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True})
 
         start_time = time.perf_counter()
         response, request_duration_s = _call_gemini_direct(
@@ -963,17 +954,11 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             return ai_response
         return ai_response.content
 
-    except RouterError:
-        raise
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
-        if verbosity != 'none':
-            print(f"ERROR calling {ai_model.name} (direct): {safe_msg}")
-        raise RouterError(
-            code="PROVIDER_ERROR",
-            message=safe_msg,
-            details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True}
-        ) from e
+        error = provider_error(e, RouterError, details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True})
+    if verbosity != "none":
+        print(f"ERROR calling {ai_model.name} (direct): {error.message}")
+    raise error from None
 
 
 def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: str | None,
@@ -999,7 +984,7 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
 
     try:
         if stream:
-            return _call_anthropic_direct_stream(
+            stream_result = _call_anthropic_direct_stream(
                 model_name=ai_model.name,
                 messages=converted_messages,
                 system_prompt=system_prompt,
@@ -1007,6 +992,8 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
                 extra_headers=extra_headers,
                 api_key=api_key,
             )
+            return SafeStream(stream_result, RouterError, details={
+                "provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True})
 
         start_time = time.perf_counter()
         response, request_duration_s = _call_anthropic_direct(
@@ -1026,17 +1013,11 @@ def _ask_ai_direct_anthropic(ai_model: AIModel, messages: list[dict], api_key: s
             return ai_response
         return ai_response.content
 
-    except RouterError:
-        raise
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
-        if verbosity != 'none':
-            print(f"ERROR calling {ai_model.name} (direct): {safe_msg}")
-        raise RouterError(
-            code="PROVIDER_ERROR",
-            message=safe_msg,
-            details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True}
-        ) from e
+        error = provider_error(e, RouterError, details={"provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True})
+    if verbosity != "none":
+        print(f"ERROR calling {ai_model.name} (direct): {error.message}")
+    raise error from None
 
 
 def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
@@ -1178,11 +1159,7 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         return content
 
     except Exception as e:
-        safe_msg = _redact_keys(str(e), config)
-        if verbosity != 'none':
-            print(f"ERROR calling {ai_model.name}: {safe_msg}")
-        raise RouterError(
-            code="PROVIDER_ERROR",
-            message=safe_msg,
-            details={"provider": ai_model.provider, "model": ai_model.name}
-        ) from e
+        error = provider_error(e, RouterError, details={"provider": ai_model.provider, "model": ai_model.name})
+    if verbosity != "none":
+        print(f"ERROR calling {ai_model.name}: {error.message}")
+    raise error from None

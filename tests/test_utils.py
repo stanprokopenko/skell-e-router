@@ -1414,7 +1414,7 @@ class TestAskAi:
             with pytest.raises(RouterError) as exc_info:
                 ask_ai("gpt-5", "Hi")
             assert exc_info.value.code == "PROVIDER_ERROR"
-            assert "API failed" in exc_info.value.message
+            assert exc_info.value.details["category"] == "provider_error"
 
     @patch("skell_e_router.utils.litellm")
     def test_error_redacts_api_key(self, mock_litellm):
@@ -1425,7 +1425,7 @@ class TestAskAi:
             with pytest.raises(RouterError) as exc_info:
                 ask_ai("gpt-5", "Hi", config={"openai_api_key": FAKE_OPENAI_KEY})
             assert FAKE_OPENAI_KEY not in exc_info.value.message
-            assert "[REDACTED]" in exc_info.value.message
+            assert exc_info.value.message == "Provider request failed."
 
     @patch("skell_e_router.utils.litellm")
     def test_list_input_works(self, mock_litellm):
@@ -1618,7 +1618,7 @@ class TestUploadFile:
         with pytest.raises(RouterError) as exc_info:
             upload_file(b"data", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
         assert exc_info.value.code == "UPLOAD_ERROR"
-        assert "upload failed" in exc_info.value.message
+        assert exc_info.value.details["category"] == "provider_error"
 
     @patch("skell_e_router.utils.litellm")
     def test_redacts_keys_in_errors(self, mock_litellm):
@@ -1627,7 +1627,7 @@ class TestUploadFile:
         with pytest.raises(RouterError) as exc_info:
             upload_file(b"data", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
         assert FAKE_GEMINI_KEY not in exc_info.value.message
-        assert "[REDACTED]" in exc_info.value.message
+        assert exc_info.value.message == "Provider request failed."
 
     @patch("skell_e_router.utils.litellm")
     def test_display_name_none(self, mock_litellm):

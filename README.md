@@ -164,6 +164,8 @@ response = ask_ai(
 
 ## Documentation
 
+Version 3.26.3 protects provider failure diagnostics from credential disclosure, including escaped header values and Python exception chains. Errors keep safe categories and HTTP status numbers. See the [error contract](skell_e_router/Skell-E-Router-DOCUMENTATION.md#provider-error-diagnostics) and [security release record](docs/credential-error-security.md).
+
 ### Direct SDK Path
 
 Gemini and Claude models bypass LiteLLM by default, calling the provider SDK directly for lower latency (eliminates 0.3-1.7s overhead). This is controlled per-model via `use_direct_sdk` and can be overridden per-call:

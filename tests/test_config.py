@@ -305,7 +305,7 @@ class TestAskAiWithConfig:
                 )
         # The key must NOT appear in the error message
         assert FAKE_OPENAI_KEY not in exc_info.value.message
-        assert "[REDACTED]" in exc_info.value.message
+        assert exc_info.value.message == "Provider request failed."
 
     def test_missing_provider_key_raises(self):
         """Config with the wrong provider's key still raises for the missing one."""
@@ -436,4 +436,4 @@ class TestAskDeepResearchConfig:
                     config={"gemini_api_key": FAKE_GEMINI_KEY},
                 )
         assert FAKE_GEMINI_KEY not in exc_info.value.message
-        assert "[REDACTED]" in exc_info.value.message
+        assert exc_info.value.message == "Provider request failed."

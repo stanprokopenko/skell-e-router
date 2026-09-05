@@ -53,7 +53,7 @@ When `config` is provided, those keys are used directly instead of reading from 
 | `xai_api_key` | `XAI_API_KEY` |
 | `openrouter_api_key` | `OPENROUTER_API_KEY` |
 
-Keys passed via `config` are never logged or included in error messages.
+Provider failure messages use fixed, safe descriptions. This protects credentials supplied through `config` or environment variables, including escaped values in rejected headers. Provider exceptions and their original cause/context chains do not accompany the public error. See [provider error diagnostics](#provider-error-diagnostics) for the contract and limits.
 
 ---
 
@@ -155,7 +155,17 @@ All errors are `RouterError` with one of these codes:
 | `MISSING_ENV` | required API key not in env or `config` |
 | `INVALID_INPUT` | wrong input type, modality unsupported by model, aggregation on non-aggregating model, or mixing aggregation with batch / multiple aggregations in one call |
 | `INVALID_PARAM` | `dimensions` out of range or wrong type |
-| `PROVIDER_ERROR` | LiteLLM/provider-side failure (after retry budget exhausted); message has any `config` keys redacted |
+| `PROVIDER_ERROR` | LiteLLM/provider failure after retries; fixed safe message and category, with no original provider exception attached |
+
+### Provider error diagnostics
+
+Version 3.26.3 replaces provider error text with controlled messages across embeddings, chat, file uploads and deep research. Existing `RouterError` and `DeepResearchError` codes remain. Local validation still reports errors such as `MISSING_ENV` and `INVALID_PARAM` before a provider request.
+
+For caught SDK failures, `error.details["category"]` is one of `authentication`, `permission`, `rate_limit`, `timeout`, `connection`, `invalid_request`, `unavailable`, `dependency`, or `provider_error`. When available, `error.details["status_code"]` contains an integer HTTP status. Existing provider, model and operation details remain. Terminal research failures retain their research-specific codes; retries still examine the original failure internally.
+
+Public provider errors omit original messages, bodies, headers, exception notes, cause and context. Standard Python traceback formatting and `logging.exception` therefore use the controlled error. Router failure logs use the same safe descriptions. Direct Gemini stream iteration and Anthropic stream entry, iteration, methods and exit also use this boundary. Returned stream objects are wrappers, so callers should use their documented iterator or context-manager behavior rather than depend on SDK object identity.
+
+This protects provider failure diagnostics. It does not redact prompts or successful model output, raw response objects explicitly requested by the caller, traceback frame locals captured by a debugger, or third-party SDK diagnostics that a caller independently enables. Keep credentials in credential settings rather than prompt content or request overrides. Provider error text is intentionally unavailable even when it appears harmless, because encoded and partial credentials cannot be reliably recognized by string replacement.
 
 ---
 
