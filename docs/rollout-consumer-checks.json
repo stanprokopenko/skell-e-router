@@ -1,0 +1,105 @@
+{
+    "schema_version":  1,
+    "started_utc":  "2026-09-05T18:59:12.1363934Z",
+    "finished_utc":  "2026-09-05T18:59:28.0139259Z",
+    "consumer_repo":  "C:\\Users\\Stan\\Documents\\GitHub\\claude-orchestrator",
+    "consumer_branch":  "master",
+    "consumer_head":  "6c28b48b1a8aa2cec2ce18a361cd48fea1e8587e",
+    "search_fix_revision":  "540dbb4a65e70ac63c02c4990e8f120f1b40d4ae",
+    "search_integration_revision":  "7a4f73dee33b5387d8930dfb6df910c10afee3d1",
+    "search_fix_is_ancestor":  true,
+    "search_merge_is_ancestor":  true,
+    "source_files_unchanged_during_checks":  true,
+    "sources_and_tests":  [
+                              {
+                                  "path":  "scripts/session-digest/search.py",
+                                  "sha256":  "f6d9d86dc567e67a91d0fc463b2d8bc7c83e70310c5fc3b9e015841ca7b78d61"
+                              },
+                              {
+                                  "path":  "scripts/session-digest/test/search-credential.test.mjs",
+                                  "sha256":  "c3768a4c58e31124fb7dd7ab2b2433be1b0600e4a739503eba92480cfb0f5c44"
+                              },
+                              {
+                                  "path":  "scripts/session-digest/test/fixtures/search-security.py",
+                                  "sha256":  "b1c4f6a6db9d2d84ee579a1326fa6c8ff4e405f5f0f5bdc0d5f6980f7c9d56a9"
+                              },
+                              {
+                                  "path":  "relay/src/digest-queue.js",
+                                  "sha256":  "895bcae4aa8de69d2050eb31683efec2a1312dfc49ad14ecf52e23269c815978"
+                              },
+                              {
+                                  "path":  "relay/test/digest-queue.test.js",
+                                  "sha256":  "6d8507222c548870caf84143e72d09ed0cb80dcc4899ccd3ed4e18ed32b5bcb5"
+                              },
+                              {
+                                  "path":  "relay/src/claude.js",
+                                  "sha256":  "38e536e8a3b58a96e7f773a14de5910c0c7a202519242f2473c2f3ad21c43c24"
+                              },
+                              {
+                                  "path":  "relay/src/run.js",
+                                  "sha256":  "69957895493796e532fd6018003531d804b152a3c42c20b71c4fbe8e5a991250"
+                              },
+                              {
+                                  "path":  "relay/src/stream.js",
+                                  "sha256":  "050efdb8a4e500adcc73809c655b03bb08a44fb0260e84c07589a57c2f851c54"
+                              },
+                              {
+                                  "path":  "relay/src/models.js",
+                                  "sha256":  "9fc1bc22c76f5facc39954eca03614df2b31163b340ddfcefeef79eaddebcc13"
+                              },
+                              {
+                                  "path":  "relay/src/engines/claude-engine.js",
+                                  "sha256":  "5eb5ff4098ca5b71b425f558b08de279cfa828a05b1c34a369ef8f08f203e57e"
+                              }
+                          ],
+    "executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "arguments":  "--test scripts/session-digest/test/search-credential.test.mjs relay/test/digest-queue.test.js",
+    "exit_code":  0,
+    "stdout":  "TAP version 13\n# [digest-queue] refused un-safe session id: foo; rm -rf /\n# [digest-queue] refused un-safe session id: ../../../etc/passwd\n# [digest-queue] refused un-safe session id: 42\n# [digest-queue] job failed (transfer failure): quarantine transfer failed (EACCES); publication stopped\n# [digest-queue] job failed (transfer failure): quarantine transfer failed (EACCES); publication stopped\n# [digest-queue] job failed (lead closed): summarizer finished but 1/1 digest(s) were not written: aaaabbbb-cccc-dddd-eeee-000000000009\n# Subtest: chunkItems splits at the batch size\nok 1 - chunkItems splits at the batch size\n  ---\n  duration_ms: 1.6353\n  ...\n# Subtest: summarizerPrompt points at the format doc and the batch file, and forbids git\nok 2 - summarizerPrompt points at the format doc and the batch file, and forbids git\n  ---\n  duration_ms: 0.4315\n  ...\n# Subtest: model is the hard Opus pin, never inherited — and the session carries the tool denial list\nok 3 - model is the hard Opus pin, never inherited — and the session carries the tool denial list\n  ---\n  duration_ms: 12.1824\n  ...\n# Subtest: buildArgs threads the denial list to the CLI, and omits it when absent\nok 4 - buildArgs threads the denial list to the CLI, and omits it when absent\n  ---\n  duration_ms: 0.318\n  ...\n# Subtest: leftover digest from a crashed earlier run is scanned before the commit sweeps it in\nok 5 - leftover digest from a crashed earlier run is scanned before the commit sweeps it in\n  ---\n  duration_ms: 13.107\n  ...\n# Subtest: a close-burst collapses into one job with all ids; a clean run commits by pathspec and never notifies\nok 6 - a close-burst collapses into one job with all ids; a clean run commits by pathspec and never notifies\n  ---\n  duration_ms: 9.4489\n  ...\n# Subtest: a pathspec commit no-op with unrelated untracked files still completes successfully\nok 7 - a pathspec commit no-op with unrelated untracked files still completes successfully\n  ---\n  duration_ms: 9.2408\n  ...\n# Subtest: unsafe session ids are refused before reaching a command line\nok 8 - unsafe session ids are refused before reaching a command line\n  ---\n  duration_ms: 1.9624\n  ...\n# Subtest: nothing pending → no summarizer session, no commit\nok 9 - nothing pending → no summarizer session, no commit\n  ---\n  duration_ms: 1.911\n  ...\n# Subtest: repeated quarantine preserves the original and every retry under the original basename\nok 10 - repeated quarantine preserves the original and every retry under the original basename\n  ---\n  duration_ms: 16.5135\n  ...\n# Subtest: quarantine copyFileSync failure retains evidence and blocks publication of clean siblings\nok 11 - quarantine copyFileSync failure retains evidence and blocks publication of clean siblings\n  ---\n  duration_ms: 9.602\n  ...\n# Subtest: quarantine unlinkSync failure retains evidence and blocks publication of clean siblings\nok 12 - quarantine unlinkSync failure retains evidence and blocks publication of clean siblings\n  ---\n  duration_ms: 10.5112\n  ...\n# Subtest: secrets-gate finding: flagged file quarantined, clean file still committed, orchestrator notified\nok 13 - secrets-gate finding: flagged file quarantined, clean file still committed, orchestrator notified\n  ---\n  duration_ms: 9.5694\n  ...\n# Subtest: summarizer that fails to write digests → job fails loudly, nothing committed\nok 14 - summarizer that fails to write digests → job fails loudly, nothing committed\n  ---\n  duration_ms: 2.6142\n  ...\n# Subtest: jobs are strictly serialized — a second enqueue during a running job waits its turn\nok 15 - jobs are strictly serialized — a second enqueue during a running job waits its turn\n  ---\n  duration_ms: 67.4971\n  ...\n# Subtest: environment takes precedence and config handoff does not mutate the environment\nok 16 - environment takes precedence and config handoff does not mutate the environment\n  ---\n  duration_ms: 378.9647\n  ...\n# Subtest: file fallback accepts BOM, comments, outer ASCII spaces and LF or CRLF\nok 17 - file fallback accepts BOM, comments, outer ASCII spaces and LF or CRLF\n  ---\n  duration_ms: 998.9098\n  ...\n# Subtest: missing APPDATA uses only the isolated home .config credential\nok 18 - missing APPDATA uses only the isolated home .config credential\n  ---\n  duration_ms: 346.697\n  ...\n# Subtest: ASCII token boundaries accept one character and exactly 512 characters\nok 19 - ASCII token boundaries accept one character and exactly 512 characters\n  ---\n  duration_ms: 689.147\n  ...\n# Subtest: invalid files fail before either command touches digests, index, or router import\nok 20 - invalid files fail before either command touches digests, index, or router import\n  ---\n  duration_ms: 6245.4505\n  ...\n# Subtest: invalid nonempty environment refuses fallback before data or router import\nok 21 - invalid nonempty environment refuses fallback before data or router import\n  ---\n  duration_ms: 2317.5205\n  ...\n# Subtest: actual CLI rejects missing credentials before missing-index or missing-digest checks\nok 22 - actual CLI rejects missing credentials before missing-index or missing-digest checks\n  ---\n  duration_ms: 409.1718\n  ...\n# Subtest: provider failure boundary suppresses chains, byte/header repr and noisy output in direct calls and CLI\nok 23 - provider failure boundary suppresses chains, byte/header repr and noisy output in direct calls and CLI\n  ---\n  duration_ms: 1540.8589\n  ...\n# Subtest: unexpected main errors and argparse failures cannot echo arbitrary input\nok 24 - unexpected main errors and argparse failures cannot echo arbitrary input\n  ---\n  duration_ms: 691.2201\n  ...\n# Subtest: successful build and noisy-provider query preserve JSON ranking, aliases and filters\nok 25 - successful build and noisy-provider query preserve JSON ranking, aliases and filters\n  ---\n  duration_ms: 1964.5938\n  ...\n1..25\n# tests 25\n# suites 0\n# pass 25\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 15666.3264\n",
+    "stderr":  "",
+    "environment":  {
+                        "cleared_before_launch":  true,
+                        "variable_names":  [
+                                               "PATH",
+                                               "PATHEXT",
+                                               "SYSTEMROOT",
+                                               "WINDIR",
+                                               "COMSPEC",
+                                               "TEMP",
+                                               "TMP",
+                                               "HOME",
+                                               "USERPROFILE",
+                                               "APPDATA",
+                                               "LOCALAPPDATA"
+                                           ],
+                        "path":  "C:\\nvm4w\\nodejs;C:\\Users\\Stan\\AppData\\Local\\Programs\\Python\\Python311;C:\\Windows\\System32;C:\\Windows",
+                        "synthetic_profile_and_temp":  "C:\\Users\\Stan\\AppData\\Local\\Temp\\router-offline-430b6951a60e45ceae4fbed82f0982a9",
+                        "inherited_provider_variables":  false
+                    },
+    "isolation":  [
+                      "SEARCH copies search.py into a synthetic temporary repo with a local stub router, synthetic credential files, synthetic digests and a synthetic index.",
+                      "SEARCH provider stub blocks socket.socket.connect and socket.create_connection and returns synthetic vectors or synthetic exceptions.",
+                      "SEARCH build/query invocations run only the copied fixture script. The production CLI is never invoked.",
+                      "DIGEST injects fake exec, runOneShot, notify and log implementations; commands are mocked and digest writes stay in temporary repos.",
+                      "No installs, live provider calls, real credentials, real transcripts, real index access, app startup, scheduler activation or restarts."
+                  ],
+    "limitations":  [
+                        "SEARCH uses a stub router and DIGEST mocks subprocess calls; neither test suite exercises the candidate wheel or proves shared-install compatibility.",
+                        "No live provider behavior, installed app activation, production index rebuild or scheduler integration is established.",
+                        "SEARCH network blocking is supplied by the reviewed provider stub, not an operating-system firewall.",
+                        "Outer synthetic temporary directories are preserved; SEARCH performs its existing internal fixture cleanup."
+                    ],
+    "prior_attempt":  "Identical sanitized suites returned exit 0; repeated only because Windows did not forward child stdout without explicit redirection.",
+    "result":  {
+                   "passed":  25,
+                   "failed":  0,
+                   "skipped":  0,
+                   "search_passed":  10,
+                   "digest_passed":  15,
+                   "duration_ms":  15666.3264
+               },
+    "interpreter_file_versions":  {
+                                      "node":  "20.19.0",
+                                      "python":  "3.11.2"
+                                  }
+}
