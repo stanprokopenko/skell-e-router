@@ -93,6 +93,8 @@ Regenerate this operator's identity immediately before activation with `powershe
 
 After all installed checks pass, this owner writes `docs/credential-error-installed-after.json` with `status="passed"`, the matching operation/PID/boot identity, test exit codes and totals, SDK preservation, package identity and evidence paths. The relay operator checks these fields and the helper/search results, then requests its own bound metadata verification and release under the already-recorded authorization. Receipt existence alone is insufficient. The real Codex query follows relay release; it cannot be a prerequisite for restoring the offline relay. Houston remains under its owner's controlled activation sequence.
 
+This owner acknowledges `C:/Users/Stan/Documents/GitHub/skell-e-router/docs/credential-error-recovered-after.json` as the fixed future exact-recovery result. The root must name it in the conditional authorization. It is separate from the existing hold acknowledgement and successful-install receipt, whose paths remain unchanged. No recovery execution receipt is created during preparation. Its required contract is `status="passed"`, `outcome="recovered-affected-3.26.2"`, `installed_mitigation=false`, matching `operation_id`/`relay_pid`/`boot_id`, this operator's lead ID, a fresh timestamp, all 41 individual restored-file hashes, exact restored file-set confirmation, original code/metadata version and VCS identity, separate system/user SDK-preservation results, and the evidence pointers listed below. The relay operator requires every result before its bound 3.26.2 verification/release, not merely the file's existence.
+
 The tested exact-file recovery below preserves the original 3.26.2 VCS identity and can use the relay's existing 3.26.2 abort/release branch without changing its hook. The cached 3.26.2 wheel still cannot do that because pip replaces its origin metadata. Before the outage, the orchestrator must explicitly authorize whether failure recovery may restore the exact backup and release known affected 3.26.2. Without that authorization, retain holds and restore/verify the accepted 3.26.3 artifact. A timeout never chooses recovery or release automatically.
 
 ## Completed consumer checks
@@ -215,13 +217,71 @@ A separate temporary-state test exercised the actual relay maintenance controlle
 Only if the orchestrator preauthorizes exact recovery and all consumer holds remain active, run:
 
 ```powershell
-& 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -I -S -B scripts/router_package_recovery.py restore --site 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages' --backup-dir 'C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/router-3.26.2-exact-backup-20260905' --expected-sha256 85410ee9080a10c3c858ef6c48294e678f9b1bd452a1a709954c4ef972cbe703 --replace-version 3.26.3
+$routerRecoveryOutput = & 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -I -S -B scripts/router_package_recovery.py restore --site 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages' --backup-dir 'C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/router-3.26.2-exact-backup-20260905' --expected-sha256 85410ee9080a10c3c858ef6c48294e678f9b1bd452a1a709954c4ef972cbe703 --replace-version 3.26.3
 if ($LASTEXITCODE -ne 0) { throw 'Exact router recovery failed; retain consumer holds' }
+$routerRecoveryOutput | Set-Content -LiteralPath 'docs/credential-error-recovery-command.json' -Encoding UTF8
 ```
 
 The helper verifies every backup file and all destination roots before mutation, rejects links and unexpected distributions, removes only the router package and the explicitly named old/new metadata directories, and restores original bytes and modification times. It never removes the site-packages directory or changes another distribution. `--replace-version 3.26.3` permits absent metadata, both known metadata directories, and a matching router Name with a missing Version field. A present unrelated or missing Name, a conflicting Version, any third router version or an unsafe path still stops before mutation. Keep holds if validation fails; never bypass those guards.
 
-After recovery, verify all 41 hashes, original metadata/code version and VCS identity, and both untouched SDK baselines. Record the operation-bound recovery result, then have the relay operator send `hold`, `verify` for 3.26.2, and a matching bound `release` only under the preauthorized abort branch. The 3.26.3 security tests are expected to reject a recovered 3.26.2 package. The cached old wheel in the earlier snapshot is retained for provenance; it is not this releasable recovery path.
+After an authorized recovery, the following metadata-only verification writes the agreed result only when every assertion passes. The current relay must still be held, including a verified or failed-probe state that has not released startup. Its operation/PID/boot must match the original hold acknowledgement. The snippet is a future execution command, not preparation evidence.
+
+```powershell
+@'
+from pathlib import Path
+from importlib import metadata
+from datetime import datetime, timezone
+import ast, hashlib, json
+repo = Path(r'C:/Users/Stan/Documents/GitHub/skell-e-router')
+site = Path(r'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages')
+state = Path(r'C:/Users/Stan/Documents/GitHub/claude-orchestrator/state')
+ack = json.loads((state / 'router-window-ack.json').read_text(encoding='utf-8-sig'))
+gate = json.loads((state / 'router-maintenance-status.json').read_text(encoding='utf-8-sig'))
+assert gate['phase'] in ('held', 'verified', 'probe-failed', 'release-refused')
+assert all(ack[key] == gate[key] for key in ('operation_id', 'relay_pid', 'boot_id'))
+assert all(ack[key] is True for key in ('houston_closed', 'old_digest_work_drained', 'python_launchers_held', 'qualification_quiet'))
+lock = json.loads((repo / 'docs/credential-error-verification-lock.json').read_text(encoding='utf-8'))
+backup = Path(lock['exact_recovery']['backup_directory'])
+manifest_hash = hashlib.sha256((backup / 'manifest.json').read_bytes()).hexdigest()
+assert manifest_hash == '85410ee9080a10c3c858ef6c48294e678f9b1bd452a1a709954c4ef972cbe703'
+manifest = json.loads((backup / 'manifest.json').read_text(encoding='utf-8'))
+assert len(manifest['files']) == 41
+files = []
+for item in manifest['files']:
+    data = (site / item['path']).read_bytes()
+    digest = hashlib.sha256(data).hexdigest()
+    assert digest == item['sha256'] and len(data) == item['size'], item['path']
+    files.append({'path': item['path'], 'sha256': digest, 'bytes': len(data), 'passed': True})
+actual_files = {p.relative_to(site).as_posix() for root in manifest['roots'] for p in (site / root).rglob('*') if p.is_file()}
+assert actual_files == {item['path'] for item in manifest['files']}
+dists = [d for d in metadata.distributions(path=[site]) if d.metadata['Name'].lower().replace('_', '-') == 'skell-e-router']
+assert len(dists) == 1 and dists[0].version == '3.26.2'
+dist = dists[0]
+assert Path(dist.locate_file('')).resolve() == site
+identity = json.loads(dist.read_text('direct_url.json'))
+assert identity['vcs_info']['commit_id'] == 'd8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe'
+tree = ast.parse((site / 'skell_e_router/__init__.py').read_text(encoding='utf-8-sig'))
+code_version = next(ast.literal_eval(node.value) for node in tree.body if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == '__version__' for target in node.targets))
+assert code_version == dist.version
+baseline = json.loads((repo / 'docs/credential-error-sdk-baseline.json').read_text(encoding='utf-8'))
+sdk = {}
+for label, record in baseline['sites'].items():
+    current = {d.metadata['Name']: d.version for d in metadata.distributions(path=[record['path']])}
+    assert current == record['packages'], label + ' baseline changed'
+    sdk[label] = {'path': record['path'], 'unchanged': True, 'distributions_checked': len(current)}
+command = json.loads((repo / 'docs/credential-error-recovery-command.json').read_text(encoding='utf-8-sig'))
+assert command['status'] == 'restored' and command['verified_files'] == 41 and command['manifest_sha256'] == manifest_hash
+result = {'schema_version': 1, 'status': 'passed', 'outcome': 'recovered-affected-3.26.2', 'installed_mitigation': False, **{key: ack[key] for key in ('operation_id', 'relay_pid', 'boot_id')}, 'operator_lead': 'lead-1032891d-b8b5-4bbc-a05e-37284eaef9e3', 'verified_at_utc': datetime.now(timezone.utc).isoformat(), 'manifest_sha256': manifest_hash, 'restored_file_checks': files, 'restored_file_set_matches': True, 'router': {'code_version': code_version, 'distribution_version': dist.version, 'vcs_commit': identity['vcs_info']['commit_id'], 'origin': str(site / 'skell_e_router/__init__.py'), 'distribution_root': str(site)}, 'sdk_preservation': sdk, 'evidence': {'backup_directory': str(backup), 'verification_lock': 'docs/credential-error-verification-lock.json', 'recovery_command': 'docs/credential-error-recovery-command.json', 'sdk_baseline': 'docs/credential-error-sdk-baseline.json', 'isolated_rehearsal': 'docs/credential-error-exact-recovery.json'}}
+destination = repo / 'docs/credential-error-recovered-after.json'
+temporary = destination.with_suffix('.tmp')
+assert temporary.parent == destination.parent == repo / 'docs'
+temporary.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+temporary.replace(destination)
+'@ | & 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -I -S -B -
+if ($LASTEXITCODE -ne 0) { throw 'Recovery verification failed; retain consumer holds' }
+```
+
+The relay operator then sends `hold`, `verify` for 3.26.2, and a matching bound `release` only under the preauthorized abort branch. The 3.26.3 security tests are expected to reject a recovered 3.26.2 package. The cached old wheel in the earlier snapshot is retained for provenance; it is not this releasable recovery path.
 
 The requested PID 21896 was absent in the fresh [process check](credential-error-process-recheck.json) at 13:05 PDT. It is not retained as a blocker. Re-enumerate processes at the actual installation boundary instead of relying on that expired PID.
 
