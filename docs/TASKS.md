@@ -4,6 +4,7 @@
 
 - [x] Fixed v3.26.2 provider error and traceback disclosure in v3.26.3 source `63b5fd22bacef9100b09cdee355bd8839439be78`. All 781 tests pass on source and wheel, the actual Houston helper passes offline, and fresh independent Astra review is clean in round 2 of the three-round cap. [Reproduction, validation and release record](credential-error-security.md).
 - [ ] Execute installed rollout after orchestrator release of the [concrete gates and packet](credential-error-rollout.md). Shared Python 3.11 remains on affected v3.26.2 at `d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe`. Actual parent resolution or explicit consumer holds, qualification successors' quiet windows and digest/interactive launch coordination remain pending. PID 23572 is the connectivity sampler and must stay untouched. Search's local protection has passed 10 tests independently; digest queue checks pass 15. Other virtual environments require separate work.
+- [ ] Orchestrator to assign separate consumer owners for 11 older isolated installations after confirming active use. [Read-only reconciliation](isolated-router-credential-exposure.md) confirms nine stale version-label conflicts already present in pinned source and unsafe provider error handling in all 11 copies. No older runtime was executed or updated, and shared rollout will not repair them.
 
 ## Houston TLDR output limit
 

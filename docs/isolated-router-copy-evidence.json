@@ -1,0 +1,1254 @@
+{
+  "scope": "Static installed metadata, AST and file hashes only; no package imports, runtime security tests, provider calls or environment changes.",
+  "copies": [
+    {
+      "name": "Solar development",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages",
+      "metadata_version": "3.23.1",
+      "code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "vcs_sha": "3b6244ab6020b919a05b6e8bc1e2a461783f47a5",
+      "pinned_code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "pinned_project_version": "3.23.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+          "pinned_sha256": "2c887025a6e75aab5b8473fe8fd303bfcb2f3416cd6a095e75ff9e4eedebb5a7",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "64257d3344087537f6ea8e792139a3d0f3aa8fbb153d6d60a6d4a34921f73ddd",
+          "pinned_sha256": "e6efeb92e3d4deb6aa2983a369c47c27412ba17aef8a2cbbf9737b0edb6fc01e",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 211,
+              "end_line": 217,
+              "source": "211:     except Exception as e:\n212:         safe_msg = _redact_keys(str(e), config)\n213:         raise RouterError(\n214:             code=\"UPLOAD_ERROR\",\n215:             message=safe_msg,\n216:             details={\"mime_type\": mime_type},\n217:         ) from e"
+            },
+            {
+              "line": 333,
+              "end_line": 334,
+              "source": "333:     except Exception:\n334:         return None"
+            },
+            {
+              "line": 478,
+              "end_line": 479,
+              "source": "478:     except Exception:\n479:         computed_cost = None"
+            },
+            {
+              "line": 936,
+              "end_line": 937,
+              "source": "936:     except RouterError:\n937:         raise"
+            },
+            {
+              "line": 938,
+              "end_line": 946,
+              "source": "938:     except Exception as e:\n939:         safe_msg = _redact_keys(str(e), config)\n940:         if verbosity != 'none':\n941:             print(f\"ERROR calling {ai_model.name} (direct): {safe_msg}\")\n942:         raise RouterError(\n943:             code=\"PROVIDER_ERROR\",\n944:             message=safe_msg,\n945:             details={\"provider\": ai_model.provider, \"model\": ai_model.name, \"direct_sdk\": True}\n946:         ) from e"
+            },
+            {
+              "line": 999,
+              "end_line": 1000,
+              "source": "999:     except RouterError:\n1000:         raise"
+            },
+            {
+              "line": 1001,
+              "end_line": 1009,
+              "source": "1001:     except Exception as e:\n1002:         safe_msg = _redact_keys(str(e), config)\n1003:         if verbosity != 'none':\n1004:             print(f\"ERROR calling {ai_model.name} (direct): {safe_msg}\")\n1005:         raise RouterError(\n1006:             code=\"PROVIDER_ERROR\",\n1007:             message=safe_msg,\n1008:             details={\"provider\": ai_model.provider, \"model\": ai_model.name, \"direct_sdk\": True}\n1009:         ) from e"
+            },
+            {
+              "line": 1149,
+              "end_line": 1157,
+              "source": "1149:     except Exception as e:\n1150:         safe_msg = _redact_keys(str(e), config)\n1151:         if verbosity != 'none':\n1152:             print(f\"ERROR calling {ai_model.name}: {safe_msg}\")\n1153:         raise RouterError(\n1154:             code=\"PROVIDER_ERROR\",\n1155:             message=safe_msg,\n1156:             details={\"provider\": ai_model.provider, \"model\": ai_model.name}\n1157:         ) from e"
+            },
+            {
+              "line": 147,
+              "end_line": 151,
+              "source": "147:         except ValueError as e:\n148:             raise RouterError(\n149:                 code=\"INVALID_INPUT\",\n150:                 message=f\"Malformed audio data URI: {source[:60]}...\",\n151:             ) from e"
+            },
+            {
+              "line": 517,
+              "end_line": 522,
+              "source": "517:         except AttributeError:\n518:             # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)\n519:             try:\n520:                 pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()\n521:             except TypeError: # vars() might fail on some objects\n522:                 pretty_response = str(response) # Safest fallback"
+            },
+            {
+              "line": 521,
+              "end_line": 522,
+              "source": "521:             except TypeError: # vars() might fail on some objects\n522:                 pretty_response = str(response) # Safest fallback"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 47,
+              "end_line": 52,
+              "source": "47: class RouterError(Exception):\n48:     def __init__(self, code: str, message: str, details: dict | None = None):\n49:         self.code = code\n50:         self.message = message\n51:         self.details = details or {}\n52:         super().__init__(f\"{code}: {message}\")"
+            },
+            {
+              "line": 295,
+              "end_line": 302,
+              "source": "295: def _redact_keys(message: str, config: dict | None) -> str:\n296:     \"\"\"Remove any config values from a string to prevent accidental key leakage.\"\"\"\n297:     if not config:\n298:         return message\n299:     for value in config.values():\n300:         if isinstance(value, str) and value:\n301:             message = message.replace(value, \"[REDACTED]\")\n302:     return message"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": true,
+          "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+          "pinned_sha256": "d549c277275e7d097bf02c51ec11ae9ff7fda1c35012bcb966f542517e07cf1b",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 238,
+              "end_line": 239,
+              "source": "238:     except Exception:\n239:         cost = None"
+            },
+            {
+              "line": 394,
+              "end_line": 395,
+              "source": "394:     except RouterError:\n395:         raise"
+            },
+            {
+              "line": 396,
+              "end_line": 404,
+              "source": "396:     except Exception as e:\n397:         safe_msg = _redact_keys(str(e), config)\n398:         if verbosity != \"none\":\n399:             print(f\"ERROR calling {embedding_model.name}: {safe_msg}\")\n400:         raise RouterError(\n401:             code=\"PROVIDER_ERROR\",\n402:             message=safe_msg,\n403:             details={\"provider\": embedding_model.provider, \"model\": embedding_model.name},\n404:         ) from e"
+            }
+          ],
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 17,
+              "end_line": 19,
+              "source": "17: except ImportError:\n18:     GENAI_AVAILABLE = False\n19:     genai = None"
+            },
+            {
+              "line": 349,
+              "end_line": 350,
+              "source": "349:     except requests.RequestException:\n350:         return None, None"
+            },
+            {
+              "line": 882,
+              "end_line": 883,
+              "source": "882:     except DeepResearchError:\n883:         raise"
+            },
+            {
+              "line": 884,
+              "end_line": 892,
+              "source": "884:     except Exception as e:\n885:         safe_msg = _redact_keys(str(e), config)\n886:         if verbosity != 'none':\n887:             print(f\"ERROR in Deep Research: {safe_msg}\")\n888:         raise DeepResearchError(\n889:             code=\"PROVIDER_ERROR\",\n890:             message=safe_msg,\n891:             details={\"agent\": dr_config.agent}\n892:         ) from e"
+            },
+            {
+              "line": 953,
+              "end_line": 961,
+              "source": "953:     except Exception as e:\n954:         safe_msg = _redact_keys(str(e), config)\n955:         if verbosity != 'none':\n956:             print(f\"ERROR in follow-up: {safe_msg}\")\n957:         raise DeepResearchError(\n958:             code=\"FOLLOW_UP_ERROR\",\n959:             message=safe_msg,\n960:             details={\"previous_interaction_id\": previous_interaction_id}\n961:         ) from e"
+            },
+            {
+              "line": 1088,
+              "end_line": 1089,
+              "source": "1088:     except Exception:\n1089:         pass  # Will attempt reconnection"
+            },
+            {
+              "line": 671,
+              "end_line": 679,
+              "source": "671:         except DeepResearchError as e:\n672:             # Check if it's a retryable error - if so, fall through to reconnection\n673:             if interaction_id and _is_retryable_error(e.message):\n674:                 last_error = e.message\n675:                 if verbosity != \"none\":\n676:                     print(f\"\\n  Retryable error (will reconnect): {e.message}\")\n677:                 break  # We have interaction_id, go to reconnection loop\n678:             else:\n679:                 raise"
+            },
+            {
+              "line": 680,
+              "end_line": 689,
+              "source": "680:         except TypeError as e:\n681:             # Handle \"'NoneType' object is not iterable\" - stream was None\n682:             if \"NoneType\" in str(e) and \"not iterable\" in str(e):\n683:                 last_error = \"Stream returned None\"\n684:                 if verbosity != \"none\":\n685:                     print(f\"  Stream returned None, will retry...\")\n686:                 time.sleep(RECONNECT_DELAY)\n687:                 continue\n688:             # Other TypeError - re-raise\n689:             raise"
+            },
+            {
+              "line": 690,
+              "end_line": 699,
+              "source": "690:         except Exception as e:\n691:             last_error = str(e)\n692:             if verbosity != \"none\":\n693:                 print(f\"\\n  Stream interrupted: {e}\")\n694:             # If we have interaction_id, break to reconnection loop\n695:             if interaction_id:\n696:                 break\n697:             # Otherwise retry initial connection\n698:             time.sleep(RECONNECT_DELAY)\n699:             continue"
+            },
+            {
+              "line": 741,
+              "end_line": 748,
+              "source": "741:         except DeepResearchError as e:\n742:             # Check if it's a retryable error that slipped through\n743:             if _is_retryable_error(e.message):\n744:                 last_error = e.message\n745:                 if verbosity != \"none\":\n746:                     print(f\"  Retryable error during reconnection: {e.message}\")\n747:             else:\n748:                 raise"
+            },
+            {
+              "line": 749,
+              "end_line": 756,
+              "source": "749:         except TypeError as e:\n750:             # Handle \"'NoneType' object is not iterable\" - stream was None\n751:             if \"NoneType\" in str(e) and \"not iterable\" in str(e):\n752:                 last_error = \"Stream returned None\"\n753:                 if verbosity != \"none\":\n754:                     print(f\"  Stream returned None\")\n755:                 continue\n756:             raise"
+            },
+            {
+              "line": 757,
+              "end_line": 760,
+              "source": "757:         except Exception as e:\n758:             last_error = str(e)\n759:             if verbosity != \"none\":\n760:                 print(f\"  Reconnection failed: {e}\")"
+            },
+            {
+              "line": 1103,
+              "end_line": 1104,
+              "source": "1103:         except Exception:\n1104:             continue"
+            },
+            {
+              "line": 343,
+              "end_line": 344,
+              "source": "343:             except Exception:\n344:                 pass"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 25,
+              "end_line": 31,
+              "source": "25: class DeepResearchError(Exception):\n26:     \"\"\"Base error for Deep Research operations.\"\"\"\n27:     def __init__(self, code: str, message: str, details: dict | None = None):\n28:         self.code = code\n29:         self.message = message\n30:         self.details = details or {}\n31:         super().__init__(f\"{code}: {message}\")"
+            },
+            {
+              "line": 170,
+              "end_line": 177,
+              "source": "170: def _redact_keys(message: str, config: dict | None) -> str:\n171:     \"\"\"Remove any config values from a string to prevent accidental key leakage.\"\"\"\n172:     if not config:\n173:         return message\n174:     for value in config.values():\n175:         if isinstance(value, str) and value:\n176:             message = message.replace(value, \"[REDACTED]\")\n177:     return message"
+            }
+          ],
+          "additional_error_hits": [
+            {
+              "line": 771,
+              "source": "details={\"reconnect_attempts\": reconnect_count, \"last_error\": last_error}"
+            }
+          ]
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router-3.23.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router-3.23.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Solar installed",
+      "site": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages",
+      "metadata_version": "3.23.1",
+      "code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "vcs_sha": "3b6244ab6020b919a05b6e8bc1e2a461783f47a5",
+      "pinned_code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "pinned_project_version": "3.23.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+          "pinned_sha256": "2c887025a6e75aab5b8473fe8fd303bfcb2f3416cd6a095e75ff9e4eedebb5a7",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "64257d3344087537f6ea8e792139a3d0f3aa8fbb153d6d60a6d4a34921f73ddd",
+          "pinned_sha256": "e6efeb92e3d4deb6aa2983a369c47c27412ba17aef8a2cbbf9737b0edb6fc01e",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": true,
+          "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+          "pinned_sha256": "d549c277275e7d097bf02c51ec11ae9ff7fda1c35012bcb966f542517e07cf1b",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router-3.23.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\AppData\\Local\\Programs\\Solar Sailer\\resources\\python\\Lib\\site-packages\\skell_e_router-3.23.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Solar staging",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages",
+      "metadata_version": "3.24.1",
+      "code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "vcs_sha": "2e3a72f3d37d326fb454f9a22644f25195767972",
+      "pinned_code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "pinned_project_version": "3.24.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+          "pinned_sha256": "2c887025a6e75aab5b8473fe8fd303bfcb2f3416cd6a095e75ff9e4eedebb5a7",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "64257d3344087537f6ea8e792139a3d0f3aa8fbb153d6d60a6d4a34921f73ddd",
+          "pinned_sha256": "e6efeb92e3d4deb6aa2983a369c47c27412ba17aef8a2cbbf9737b0edb6fc01e",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": true,
+          "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+          "pinned_sha256": "d549c277275e7d097bf02c51ec11ae9ff7fda1c35012bcb966f542517e07cf1b",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router-3.24.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\.staging\\python\\Lib\\site-packages\\skell_e_router-3.24.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Solar unpacked",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages",
+      "metadata_version": "3.24.1",
+      "code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "vcs_sha": "2e3a72f3d37d326fb454f9a22644f25195767972",
+      "pinned_code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "pinned_project_version": "3.24.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+          "pinned_sha256": "2c887025a6e75aab5b8473fe8fd303bfcb2f3416cd6a095e75ff9e4eedebb5a7",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "64257d3344087537f6ea8e792139a3d0f3aa8fbb153d6d60a6d4a34921f73ddd",
+          "pinned_sha256": "e6efeb92e3d4deb6aa2983a369c47c27412ba17aef8a2cbbf9737b0edb6fc01e",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": true,
+          "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+          "pinned_sha256": "d549c277275e7d097bf02c51ec11ae9ff7fda1c35012bcb966f542517e07cf1b",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router-3.24.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\dist-installer\\win-unpacked\\resources\\python\\Lib\\site-packages\\skell_e_router-3.24.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Benchmark",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages",
+      "metadata_version": "2.4.0",
+      "code_version": {
+        "value": "2.4.0",
+        "line": 40
+      },
+      "vcs_sha": "2691886542d305b6f40bfd9bde4cff21c2cfdc4c",
+      "pinned_code_version": {
+        "value": "2.4.0",
+        "line": 40
+      },
+      "pinned_project_version": "2.4.0",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "a3a7bc897a5b7b810cd9d76c39345b26057f3a847d3d4356e35c89484f99ae50",
+          "pinned_sha256": "2f30bdd24066975244fa9bf327d68da2551fba811fbbf09a19403a5852812324",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "ea75ed1bd2427399da17cfab65ab271f0a577599129d098771ddfce36a552729",
+          "pinned_sha256": "a89d15bac3fa421428b4c56432a15854cbf40efe07315b23966b48ce040868bf",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 159,
+              "end_line": 160,
+              "source": "159:     except Exception:\n160:         return None"
+            },
+            {
+              "line": 550,
+              "end_line": 551,
+              "source": "550:     except Exception:\n551:         computed_cost = None"
+            },
+            {
+              "line": 652,
+              "end_line": 660,
+              "source": "652:     except Exception as e:\n653:         safe_msg = _redact_keys(str(e), config)\n654:         if verbosity != 'none':\n655:             print(f\"ERROR calling {ai_model.name}: {safe_msg}\")\n656:         raise RouterError(\n657:             code=\"PROVIDER_ERROR\",\n658:             message=safe_msg,\n659:             details={\"provider\": ai_model.provider, \"model\": ai_model.name}\n660:         ) from e"
+            },
+            {
+              "line": 299,
+              "end_line": 304,
+              "source": "299:         except AttributeError:\n300:             # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)\n301:             try:\n302:                 pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()\n303:             except TypeError: # vars() might fail on some objects\n304:                 pretty_response = str(response) # Safest fallback"
+            },
+            {
+              "line": 327,
+              "end_line": 328,
+              "source": "327:         except Exception:\n328:             computed_cost = None"
+            },
+            {
+              "line": 303,
+              "end_line": 304,
+              "source": "303:             except TypeError: # vars() might fail on some objects\n304:                 pretty_response = str(response) # Safest fallback"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 24,
+              "end_line": 29,
+              "source": "24: class RouterError(Exception):\n25:     def __init__(self, code: str, message: str, details: dict | None = None):\n26:         self.code = code\n27:         self.message = message\n28:         self.details = details or {}\n29:         super().__init__(f\"{code}: {message}\")"
+            },
+            {
+              "line": 121,
+              "end_line": 128,
+              "source": "121: def _redact_keys(message: str, config: dict | None) -> str:\n122:     \"\"\"Remove any config values from a string to prevent accidental key leakage.\"\"\"\n123:     if not config:\n124:         return message\n125:     for value in config.values():\n126:         if isinstance(value, str) and value:\n127:             message = message.replace(value, \"[REDACTED]\")\n128:     return message"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router-2.4.0.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router-2.4.0.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Agent library",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages",
+      "metadata_version": "3.22.1",
+      "code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "vcs_sha": "7860ef71f54eb75eebf42d9ca7c410bbb87e6ac5",
+      "pinned_code_version": {
+        "value": "3.22.1",
+        "line": 49
+      },
+      "pinned_project_version": "3.22.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+          "pinned_sha256": "2c887025a6e75aab5b8473fe8fd303bfcb2f3416cd6a095e75ff9e4eedebb5a7",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "868bd00a7681ee52df0e0a8dd4c5b93a8dce3e4241ed3847d4be67564f0d556b",
+          "pinned_sha256": "059bda4ad64e700fdee0a0e35f2b31f62a21826c32f6b51051680c102ce7b699",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 206,
+              "end_line": 212,
+              "source": "206:     except Exception as e:\n207:         safe_msg = _redact_keys(str(e), config)\n208:         raise RouterError(\n209:             code=\"UPLOAD_ERROR\",\n210:             message=safe_msg,\n211:             details={\"mime_type\": mime_type},\n212:         ) from e"
+            },
+            {
+              "line": 328,
+              "end_line": 329,
+              "source": "328:     except Exception:\n329:         return None"
+            },
+            {
+              "line": 473,
+              "end_line": 474,
+              "source": "473:     except Exception:\n474:         computed_cost = None"
+            },
+            {
+              "line": 917,
+              "end_line": 918,
+              "source": "917:     except RouterError:\n918:         raise"
+            },
+            {
+              "line": 919,
+              "end_line": 927,
+              "source": "919:     except Exception as e:\n920:         safe_msg = _redact_keys(str(e), config)\n921:         if verbosity != 'none':\n922:             print(f\"ERROR calling {ai_model.name} (direct): {safe_msg}\")\n923:         raise RouterError(\n924:             code=\"PROVIDER_ERROR\",\n925:             message=safe_msg,\n926:             details={\"provider\": ai_model.provider, \"model\": ai_model.name, \"direct_sdk\": True}\n927:         ) from e"
+            },
+            {
+              "line": 980,
+              "end_line": 981,
+              "source": "980:     except RouterError:\n981:         raise"
+            },
+            {
+              "line": 982,
+              "end_line": 990,
+              "source": "982:     except Exception as e:\n983:         safe_msg = _redact_keys(str(e), config)\n984:         if verbosity != 'none':\n985:             print(f\"ERROR calling {ai_model.name} (direct): {safe_msg}\")\n986:         raise RouterError(\n987:             code=\"PROVIDER_ERROR\",\n988:             message=safe_msg,\n989:             details={\"provider\": ai_model.provider, \"model\": ai_model.name, \"direct_sdk\": True}\n990:         ) from e"
+            },
+            {
+              "line": 1130,
+              "end_line": 1138,
+              "source": "1130:     except Exception as e:\n1131:         safe_msg = _redact_keys(str(e), config)\n1132:         if verbosity != 'none':\n1133:             print(f\"ERROR calling {ai_model.name}: {safe_msg}\")\n1134:         raise RouterError(\n1135:             code=\"PROVIDER_ERROR\",\n1136:             message=safe_msg,\n1137:             details={\"provider\": ai_model.provider, \"model\": ai_model.name}\n1138:         ) from e"
+            },
+            {
+              "line": 142,
+              "end_line": 146,
+              "source": "142:         except ValueError as e:\n143:             raise RouterError(\n144:                 code=\"INVALID_INPUT\",\n145:                 message=f\"Malformed audio data URI: {source[:60]}...\",\n146:             ) from e"
+            },
+            {
+              "line": 512,
+              "end_line": 517,
+              "source": "512:         except AttributeError:\n513:             # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)\n514:             try:\n515:                 pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()\n516:             except TypeError: # vars() might fail on some objects\n517:                 pretty_response = str(response) # Safest fallback"
+            },
+            {
+              "line": 516,
+              "end_line": 517,
+              "source": "516:             except TypeError: # vars() might fail on some objects\n517:                 pretty_response = str(response) # Safest fallback"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 43,
+              "end_line": 48,
+              "source": "43: class RouterError(Exception):\n44:     def __init__(self, code: str, message: str, details: dict | None = None):\n45:         self.code = code\n46:         self.message = message\n47:         self.details = details or {}\n48:         super().__init__(f\"{code}: {message}\")"
+            },
+            {
+              "line": 290,
+              "end_line": 297,
+              "source": "290: def _redact_keys(message: str, config: dict | None) -> str:\n291:     \"\"\"Remove any config values from a string to prevent accidental key leakage.\"\"\"\n292:     if not config:\n293:         return message\n294:     for value in config.values():\n295:         if isinstance(value, str) and value:\n296:             message = message.replace(value, \"[REDACTED]\")\n297:     return message"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": true,
+          "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+          "pinned_sha256": "d549c277275e7d097bf02c51ec11ae9ff7fda1c35012bcb966f542517e07cf1b",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+          "pinned_sha256": "74b2081fcd827fffc275fdffd52365e0194f6a829017d4588035955d4901a262",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router-3.22.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router-3.22.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Scripter backend",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages",
+      "metadata_version": "2.1.4",
+      "code_version": {
+        "value": "0.2.0",
+        "line": 40
+      },
+      "vcs_sha": "3be82c9c2ccb1a0295a92c72df03f251c8cd6b55",
+      "pinned_code_version": {
+        "value": "0.2.0",
+        "line": 40
+      },
+      "pinned_project_version": "2.1.4",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "f85b2bf1b3acd0952f16b695f885beac1e22b7064a4eb250a4b806d3d19d017e",
+          "pinned_sha256": "0a23bfbba16fbe49ac5713ee92f2b27d33007b708fb18385c99a48d36125d168",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "fe2b0259098a663e13d90b30266174d6b149b10b03ae2a2ac3cfa68f89d97130",
+          "pinned_sha256": "cfeed6973873b548f65297f21f70cc5da2464745809304ca04fa7c5e3e377748",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 93,
+              "end_line": 94,
+              "source": "93:     except Exception:\n94:         return None"
+            },
+            {
+              "line": 453,
+              "end_line": 454,
+              "source": "453:     except Exception:\n454:         computed_cost = None"
+            },
+            {
+              "line": 539,
+              "end_line": 546,
+              "source": "539:     except Exception as e:\n540:         if verbosity != 'none':\n541:             print(f\"ERROR calling {ai_model.name}: {e}\")\n542:         raise RouterError(\n543:             code=\"PROVIDER_ERROR\",\n544:             message=str(e),\n545:             details={\"provider\": ai_model.provider, \"model\": ai_model.name}\n546:         ) from e"
+            },
+            {
+              "line": 205,
+              "end_line": 210,
+              "source": "205:         except AttributeError:\n206:             # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)\n207:             try:\n208:                 pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()\n209:             except TypeError: # vars() might fail on some objects\n210:                 pretty_response = str(response) # Safest fallback"
+            },
+            {
+              "line": 233,
+              "end_line": 234,
+              "source": "233:         except Exception:\n234:             computed_cost = None"
+            },
+            {
+              "line": 209,
+              "end_line": 210,
+              "source": "209:             except TypeError: # vars() might fail on some objects\n210:                 pretty_response = str(response) # Safest fallback"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 22,
+              "end_line": 27,
+              "source": "22: class RouterError(Exception):\n23:     def __init__(self, code: str, message: str, details: dict | None = None):\n24:         self.code = code\n25:         self.message = message\n26:         self.details = details or {}\n27:         super().__init__(f\"{code}: {message}\")"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "aa05ca4c6681b12be674208a93935d643d45cfda82176ffcea2f2bea28a8fa41",
+          "pinned_sha256": "f5169f6b637b6d5971b2bf842a71cfd10b7719fc2df9f04f97ec15407d6e7a49",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 17,
+              "end_line": 19,
+              "source": "17: except ImportError:\n18:     GENAI_AVAILABLE = False\n19:     genai = None"
+            },
+            {
+              "line": 335,
+              "end_line": 336,
+              "source": "335:     except requests.RequestException:\n336:         return None, None"
+            },
+            {
+              "line": 868,
+              "end_line": 869,
+              "source": "868:     except DeepResearchError:\n869:         raise"
+            },
+            {
+              "line": 870,
+              "end_line": 877,
+              "source": "870:     except Exception as e:\n871:         if verbosity != 'none':\n872:             print(f\"ERROR in Deep Research: {e}\")\n873:         raise DeepResearchError(\n874:             code=\"PROVIDER_ERROR\",\n875:             message=str(e),\n876:             details={\"agent\": config.agent}\n877:         ) from e"
+            },
+            {
+              "line": 937,
+              "end_line": 944,
+              "source": "937:     except Exception as e:\n938:         if verbosity != 'none':\n939:             print(f\"ERROR in follow-up: {e}\")\n940:         raise DeepResearchError(\n941:             code=\"FOLLOW_UP_ERROR\",\n942:             message=str(e),\n943:             details={\"previous_interaction_id\": previous_interaction_id}\n944:         ) from e"
+            },
+            {
+              "line": 1068,
+              "end_line": 1069,
+              "source": "1068:     except Exception:\n1069:         pass  # Will attempt reconnection"
+            },
+            {
+              "line": 657,
+              "end_line": 665,
+              "source": "657:         except DeepResearchError as e:\n658:             # Check if it's a retryable error - if so, fall through to reconnection\n659:             if interaction_id and _is_retryable_error(e.message):\n660:                 last_error = e.message\n661:                 if verbosity != \"none\":\n662:                     print(f\"\\n  Retryable error (will reconnect): {e.message}\")\n663:                 break  # We have interaction_id, go to reconnection loop\n664:             else:\n665:                 raise"
+            },
+            {
+              "line": 666,
+              "end_line": 675,
+              "source": "666:         except TypeError as e:\n667:             # Handle \"'NoneType' object is not iterable\" - stream was None\n668:             if \"NoneType\" in str(e) and \"not iterable\" in str(e):\n669:                 last_error = \"Stream returned None\"\n670:                 if verbosity != \"none\":\n671:                     print(f\"  Stream returned None, will retry...\")\n672:                 time.sleep(RECONNECT_DELAY)\n673:                 continue\n674:             # Other TypeError - re-raise\n675:             raise"
+            },
+            {
+              "line": 676,
+              "end_line": 685,
+              "source": "676:         except Exception as e:\n677:             last_error = str(e)\n678:             if verbosity != \"none\":\n679:                 print(f\"\\n  Stream interrupted: {e}\")\n680:             # If we have interaction_id, break to reconnection loop\n681:             if interaction_id:\n682:                 break\n683:             # Otherwise retry initial connection\n684:             time.sleep(RECONNECT_DELAY)\n685:             continue"
+            },
+            {
+              "line": 727,
+              "end_line": 734,
+              "source": "727:         except DeepResearchError as e:\n728:             # Check if it's a retryable error that slipped through\n729:             if _is_retryable_error(e.message):\n730:                 last_error = e.message\n731:                 if verbosity != \"none\":\n732:                     print(f\"  Retryable error during reconnection: {e.message}\")\n733:             else:\n734:                 raise"
+            },
+            {
+              "line": 735,
+              "end_line": 742,
+              "source": "735:         except TypeError as e:\n736:             # Handle \"'NoneType' object is not iterable\" - stream was None\n737:             if \"NoneType\" in str(e) and \"not iterable\" in str(e):\n738:                 last_error = \"Stream returned None\"\n739:                 if verbosity != \"none\":\n740:                     print(f\"  Stream returned None\")\n741:                 continue\n742:             raise"
+            },
+            {
+              "line": 743,
+              "end_line": 746,
+              "source": "743:         except Exception as e:\n744:             last_error = str(e)\n745:             if verbosity != \"none\":\n746:                 print(f\"  Reconnection failed: {e}\")"
+            },
+            {
+              "line": 1083,
+              "end_line": 1084,
+              "source": "1083:         except Exception:\n1084:             continue"
+            },
+            {
+              "line": 329,
+              "end_line": 330,
+              "source": "329:             except Exception:\n330:                 pass"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 25,
+              "end_line": 31,
+              "source": "25: class DeepResearchError(Exception):\n26:     \"\"\"Base error for Deep Research operations.\"\"\"\n27:     def __init__(self, code: str, message: str, details: dict | None = None):\n28:         self.code = code\n29:         self.message = message\n30:         self.details = details or {}\n31:         super().__init__(f\"{code}: {message}\")"
+            }
+          ],
+          "additional_error_hits": [
+            {
+              "line": 757,
+              "source": "details={\"reconnect_attempts\": reconnect_count, \"last_error\": last_error}"
+            }
+          ]
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router-2.1.4.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router-2.1.4.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Scripter Opus",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages",
+      "metadata_version": "1.2.1",
+      "code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "vcs_sha": "ba96b8129cbe98f52377823a2cee9fa7eda721db",
+      "pinned_code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "pinned_project_version": "1.2.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "d57fb84f6a5c89c9507640b0cd88ceb7f064089dd8bb5a0178c176e8283f811e",
+          "pinned_sha256": "71368d94d028714bcf91342cba958b2a311863889377390f180326bdc39094ca",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "4a5601457791546e54c92b8c09f9fd876834d7b71374727d8027692dfb3db555",
+          "pinned_sha256": "227babbe73722d8209b5f22501158089526f7b0b0ad7a0888816a357fa672785",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 91,
+              "end_line": 92,
+              "source": "91:     except Exception:\n92:         return None"
+            },
+            {
+              "line": 465,
+              "end_line": 472,
+              "source": "465:     except Exception as e:\n466:         if verbosity != 'none':\n467:             print(f\"ERROR calling {ai_model.name}: {e}\")\n468:         raise RouterError(\n469:             code=\"PROVIDER_ERROR\",\n470:             message=str(e),\n471:             details={\"provider\": ai_model.provider, \"model\": ai_model.name}\n472:         ) from e"
+            },
+            {
+              "line": 203,
+              "end_line": 208,
+              "source": "203:         except AttributeError:\n204:             # Fallback for objects that don't have model_dump_json (e.g., older LiteLLM versions or other types)\n205:             try:\n206:                 pretty_response = json.dumps(vars(response), indent=4, default=str) # Fallback to vars()\n207:             except TypeError: # vars() might fail on some objects\n208:                 pretty_response = str(response) # Safest fallback"
+            },
+            {
+              "line": 231,
+              "end_line": 232,
+              "source": "231:         except Exception:\n232:             computed_cost = None"
+            },
+            {
+              "line": 207,
+              "end_line": 208,
+              "source": "207:             except TypeError: # vars() might fail on some objects\n208:                 pretty_response = str(response) # Safest fallback"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 20,
+              "end_line": 25,
+              "source": "20: class RouterError(Exception):\n21:     def __init__(self, code: str, message: str, details: dict | None = None):\n22:         self.code = code\n23:         self.message = message\n24:         self.details = details or {}\n25:         super().__init__(f\"{code}: {message}\")"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Scripter Gemini",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages",
+      "metadata_version": "1.2.1",
+      "code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "vcs_sha": "ba96b8129cbe98f52377823a2cee9fa7eda721db",
+      "pinned_code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "pinned_project_version": "1.2.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "d57fb84f6a5c89c9507640b0cd88ceb7f064089dd8bb5a0178c176e8283f811e",
+          "pinned_sha256": "71368d94d028714bcf91342cba958b2a311863889377390f180326bdc39094ca",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "4a5601457791546e54c92b8c09f9fd876834d7b71374727d8027692dfb3db555",
+          "pinned_sha256": "227babbe73722d8209b5f22501158089526f7b0b0ad7a0888816a357fa672785",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\gemini-3-pro\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Scripter Cursor",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages",
+      "metadata_version": "1.2.1",
+      "code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "vcs_sha": "ba96b8129cbe98f52377823a2cee9fa7eda721db",
+      "pinned_code_version": {
+        "value": "0.1.0",
+        "line": 10
+      },
+      "pinned_project_version": "1.2.1",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "d57fb84f6a5c89c9507640b0cd88ceb7f064089dd8bb5a0178c176e8283f811e",
+          "pinned_sha256": "71368d94d028714bcf91342cba958b2a311863889377390f180326bdc39094ca",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "4a5601457791546e54c92b8c09f9fd876834d7b71374727d8027692dfb3db555",
+          "pinned_sha256": "227babbe73722d8209b5f22501158089526f7b0b0ad7a0888816a357fa672785",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-cursor-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router-1.2.1.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    },
+    {
+      "name": "Scripter Kilo",
+      "site": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages",
+      "metadata_version": "2.0.2",
+      "code_version": {
+        "value": "0.2.0",
+        "line": 32
+      },
+      "vcs_sha": "9dfecee4e4e08012df46534352168a85fe49ebd8",
+      "pinned_code_version": {
+        "value": "0.2.0",
+        "line": 32
+      },
+      "pinned_project_version": "2.0.2",
+      "files": [
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py",
+          "exists": true,
+          "sha256": "c0ac98da29fd8d7f53a68b71cf65682e30e7539d89190c652b2913171096e784",
+          "pinned_sha256": "d137409e1116825371f0937ca25459b11c73cf8699900c65b8851744c4ac736d",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "redaction_and_error_classes": [],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py",
+          "exists": true,
+          "sha256": "fe2b0259098a663e13d90b30266174d6b149b10b03ae2a2ac3cfa68f89d97130",
+          "pinned_sha256": "cfeed6973873b548f65297f21f70cc5da2464745809304ca04fa7c5e3e377748",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\embeddings.py",
+          "exists": false
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py",
+          "exists": true,
+          "sha256": "7ba22c746f876b5eb287999e25fe6faf16d80547622245ef953195a9d0ed31ca",
+          "pinned_sha256": "32d7d72ecdc4f5feab75591294ea084f504e8ebe80952c9226caf27fb4f33cab",
+          "matches_pinned": false,
+          "matches_pinned_after_crlf_to_lf": true,
+          "exception_handlers": [
+            {
+              "line": 14,
+              "end_line": 16,
+              "source": "14: except ImportError:\n15:     GENAI_AVAILABLE = False\n16:     genai = None"
+            },
+            {
+              "line": 379,
+              "end_line": 380,
+              "source": "379:     except DeepResearchError:\n380:         raise"
+            },
+            {
+              "line": 381,
+              "end_line": 383,
+              "source": "381:     except Exception as e:\n382:         if verbosity != \"none\":\n383:             print(f\"\\n  Stream interrupted: {e}\")"
+            },
+            {
+              "line": 522,
+              "end_line": 523,
+              "source": "522:     except DeepResearchError:\n523:         raise"
+            },
+            {
+              "line": 524,
+              "end_line": 531,
+              "source": "524:     except Exception as e:\n525:         if verbosity != 'none':\n526:             print(f\"ERROR in Deep Research: {e}\")\n527:         raise DeepResearchError(\n528:             code=\"PROVIDER_ERROR\",\n529:             message=str(e),\n530:             details={\"agent\": config.agent}\n531:         ) from e"
+            },
+            {
+              "line": 591,
+              "end_line": 598,
+              "source": "591:     except Exception as e:\n592:         if verbosity != 'none':\n593:             print(f\"ERROR in follow-up: {e}\")\n594:         raise DeepResearchError(\n595:             code=\"FOLLOW_UP_ERROR\",\n596:             message=str(e),\n597:             details={\"previous_interaction_id\": previous_interaction_id}\n598:         ) from e"
+            },
+            {
+              "line": 722,
+              "end_line": 723,
+              "source": "722:     except Exception:\n723:         pass  # Will attempt reconnection"
+            },
+            {
+              "line": 411,
+              "end_line": 412,
+              "source": "411:         except DeepResearchError:\n412:             raise"
+            },
+            {
+              "line": 413,
+              "end_line": 415,
+              "source": "413:         except Exception as e:\n414:             if verbosity != \"none\":\n415:                 print(f\"  Reconnection failed: {e}\")"
+            },
+            {
+              "line": 737,
+              "end_line": 738,
+              "source": "737:         except Exception:\n738:             continue"
+            }
+          ],
+          "redaction_and_error_classes": [
+            {
+              "line": 22,
+              "end_line": 28,
+              "source": "22: class DeepResearchError(Exception):\n23:     \"\"\"Base error for Deep Research operations.\"\"\"\n24:     def __init__(self, code: str, message: str, details: dict | None = None):\n25:         self.code = code\n26:         self.message = message\n27:         self.details = details or {}\n28:         super().__init__(f\"{code}: {message}\")"
+            }
+          ],
+          "additional_error_hits": []
+        },
+        {
+          "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\errors.py",
+          "exists": false
+        }
+      ],
+      "metadata_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router-2.0.2.dist-info\\METADATA",
+      "direct_url_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router-2.0.2.dist-info\\direct_url.json",
+      "pinned_project_version_line": 7
+    }
+  ],
+  "conclusions": {
+    "copy_count": 11,
+    "metadata_code_mismatch_count": 9,
+    "all_metadata_versions_match_pinned_project_version": true,
+    "all_code_versions_match_pinned_code_version": true,
+    "all_existing_inspected_files_match_pinned_after_crlf_to_lf": true,
+    "version_explanation": "All nine metadata/code label mismatches already exist in pinned Git source. Inspected installed files match their pinned source after CRLF-to-LF normalization. This is not a whole-wheel integrity audit.",
+    "security_evidence_limit": "Static unsafe exception mechanisms exist in all eleven copies. No runtime security reproduction was performed, and no conclusion about active consumer routes or historical credential leakage follows."
+  },
+  "inspected_file_groups": [
+    {
+      "filename": "__init__.py",
+      "sha256": "8531c3aa3fd5ec0e0efee1f120a715cd1f20d1078121c3613a7383fc2313e4dc",
+      "copies": [
+        "Solar development",
+        "Solar installed",
+        "Solar staging",
+        "Solar unpacked",
+        "Agent library"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\__init__.py"
+    },
+    {
+      "filename": "utils.py",
+      "sha256": "64257d3344087537f6ea8e792139a3d0f3aa8fbb153d6d60a6d4a34921f73ddd",
+      "copies": [
+        "Solar development",
+        "Solar installed",
+        "Solar staging",
+        "Solar unpacked"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\utils.py"
+    },
+    {
+      "filename": "embeddings.py",
+      "sha256": "fdc1ace2e297097fff6f9a4dff11689c443a612f4ed13d5a1f1ebf93b5a5e751",
+      "copies": [
+        "Solar development",
+        "Solar installed",
+        "Solar staging",
+        "Solar unpacked",
+        "Agent library"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\embeddings.py"
+    },
+    {
+      "filename": "gemini_deep_research.py",
+      "sha256": "66a0b0f5e401bf56012965f9e3261bb1006b458637eff495301db97b8e47e3e0",
+      "copies": [
+        "Solar development",
+        "Solar installed",
+        "Solar staging",
+        "Solar unpacked",
+        "Benchmark",
+        "Agent library"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\solar-sailer\\editor\\server\\.venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py"
+    },
+    {
+      "filename": "__init__.py",
+      "sha256": "a3a7bc897a5b7b810cd9d76c39345b26057f3a847d3d4356e35c89484f99ae50",
+      "copies": [
+        "Benchmark"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\__init__.py"
+    },
+    {
+      "filename": "utils.py",
+      "sha256": "ea75ed1bd2427399da17cfab65ab271f0a577599129d098771ddfce36a552729",
+      "copies": [
+        "Benchmark"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\benchmark\\env\\Lib\\site-packages\\skell_e_router\\utils.py"
+    },
+    {
+      "filename": "utils.py",
+      "sha256": "868bd00a7681ee52df0e0a8dd4c5b93a8dce3e4241ed3847d4be67564f0d556b",
+      "copies": [
+        "Agent library"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-agent\\.venv\\Lib\\site-packages\\skell_e_router\\utils.py"
+    },
+    {
+      "filename": "__init__.py",
+      "sha256": "f85b2bf1b3acd0952f16b695f885beac1e22b7064a4eb250a4b806d3d19d017e",
+      "copies": [
+        "Scripter backend"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py"
+    },
+    {
+      "filename": "utils.py",
+      "sha256": "fe2b0259098a663e13d90b30266174d6b149b10b03ae2a2ac3cfa68f89d97130",
+      "copies": [
+        "Scripter backend",
+        "Scripter Kilo"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py"
+    },
+    {
+      "filename": "gemini_deep_research.py",
+      "sha256": "aa05ca4c6681b12be674208a93935d643d45cfda82176ffcea2f2bea28a8fa41",
+      "copies": [
+        "Scripter backend"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py"
+    },
+    {
+      "filename": "__init__.py",
+      "sha256": "d57fb84f6a5c89c9507640b0cd88ceb7f064089dd8bb5a0178c176e8283f811e",
+      "copies": [
+        "Scripter Opus",
+        "Scripter Gemini",
+        "Scripter Cursor"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py"
+    },
+    {
+      "filename": "utils.py",
+      "sha256": "4a5601457791546e54c92b8c09f9fd876834d7b71374727d8027692dfb3db555",
+      "copies": [
+        "Scripter Opus",
+        "Scripter Gemini",
+        "Scripter Cursor"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\claude-opus-4.5\\backend\\venv\\Lib\\site-packages\\skell_e_router\\utils.py"
+    },
+    {
+      "filename": "__init__.py",
+      "sha256": "c0ac98da29fd8d7f53a68b71cf65682e30e7539d89190c652b2913171096e784",
+      "copies": [
+        "Scripter Kilo"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\__init__.py"
+    },
+    {
+      "filename": "gemini_deep_research.py",
+      "sha256": "7ba22c746f876b5eb287999e25fe6faf16d80547622245ef953195a9d0ed31ca",
+      "copies": [
+        "Scripter Kilo"
+      ],
+      "representative_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-scripter-drafts\\skell-e-scripter-kilo-claude\\backend\\venv\\Lib\\site-packages\\skell_e_router\\gemini_deep_research.py"
+    }
+  ],
+  "method": "System Python 3.11 with -I -S -B; importlib.metadata.distributions(path=[explicit_site]); standard library AST/text/hash reads and git show of recorded commits. No older package code imported or executed. Raw SHA-256 hashes preserve on-disk CRLF; matches_pinned_after_crlf_to_lf is the normalized-content comparison."
+}

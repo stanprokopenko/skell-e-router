@@ -23,6 +23,8 @@ The target is `C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe`
 
 PID 23572 must remain untouched. Its sampler was expected to finish about 12:03 PDT, but this packet does not certify completion. The [inventory](shared-python-router-consumers-2026-09-05.md) remains the wider consumer record. Its earlier unknown-PID description is superseded by the orchestrator's positive sampler attribution.
 
+The [older-copy reconciliation](isolated-router-credential-exposure.md) separately verifies 11 isolated installations and their nine stale version-label conflicts. It reports unsafe static error handling and unresolved upgrade ownership. Those copies remain outside this shared installation.
+
 ## Capture from an actual parent
 
 The [runtime probe](../scripts/probe_router_runtime.py) prints only process IDs, interpreter identity, selected package path and version/source metadata. It parses the router's version without importing router or application code. It clears inherited environment variables before its metadata work. Normal Python startup retains the parent's actual import-path selection; no credential values are printed.
