@@ -91,7 +91,7 @@ The accepted verification dependencies are frozen in [the verification lock](cre
 
 After all installed checks pass, this owner writes `docs/credential-error-installed-after.json` with `status="passed"`, the matching operation/PID/boot identity, test exit codes and totals, SDK preservation, package identity and evidence paths. The relay operator checks these fields and the helper/search results, then requests its own bound metadata verification and release under the already-recorded authorization. Receipt existence alone is insufficient. The real Codex query follows relay release; it cannot be a prerequisite for restoring the offline relay. Houston remains under its owner's controlled activation sequence.
 
-The held relay does not accept a cached 3.26.2 wheel's archive identity for release. An abort before any package mutation can use the original 3.26.2 VCS identity only if the orchestrator authorized that branch beforehand. After mutation, the default failure path is to retain holds and restore/verify the accepted 3.26.3 artifact. The cached old wheel is a recovery artifact, not an automatic relay-release route. Any different recovery or identity change needs an attended authorized operator; do not begin without that route being named.
+The tested exact-file recovery below preserves the original 3.26.2 VCS identity and can use the relay's existing 3.26.2 abort/release branch without changing its hook. The cached 3.26.2 wheel still cannot do that because pip replaces its origin metadata. Before the outage, the orchestrator must explicitly authorize whether failure recovery may restore the exact backup and release known affected 3.26.2. Without that authorization, retain holds and restore/verify the accepted 3.26.3 artifact. A timeout never chooses recovery or release automatically.
 
 ## Completed consumer checks
 
@@ -198,17 +198,25 @@ Repeat the parent metadata captures for released consumers and record the packag
 
 ## Failure and completion
 
-If installation or validation fails, keep affected launches held and report the exact failing gate. Do not resume them merely because the package version changed. The cached 3.26.2 recovery wheel and its SHA-256 are in the before snapshot. Its 19 package files match the current installation after normalizing line endings; six files differ in CRLF versus LF bytes, with no content differences. Recovery to that wheel restores a known affected version and requires recording that fact. Do not roll back or restart anything silently.
+If installation or validation fails, keep affected launches held and report the exact failing gate. Do not resume them merely because the package version changed. Recovery to 3.26.2 restores a known affected router and is an aborted mitigation, not security completion.
 
-If the orchestrator directs recovery while holds remain active, use the exact cached artifact with the same dependency-preserving options:
+The exact backup is `C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/router-3.26.2-exact-backup-20260905`. Its `manifest.json` SHA-256 is `85410ee9080a10c3c858ef6c48294e678f9b1bd452a1a709954c4ef972cbe703`. It contains 35 package files, including existing bytecode, and six original distribution-metadata files. The original `direct_url.json` hash is `0cc1b95c939eed92d1ff83b394d6bb11fa7e11d87fee4247e3286a68660d4a0e`, retaining VCS commit `d8ae9876fd2f095d5e6e03e11710c6d7a8ddcefe`. The restore helper and backup identity are included in the verification lock.
+
+[Recovery evidence](credential-error-exact-recovery.json) records a real offline pip upgrade to the accepted 3.26.3 wheel inside an isolated venv, followed by exact restoration of all 41 files. All 887 nonrouter files retained their before hash, `f1a23e1ba9dc7845cbad04bc4e570ac9af4a4f46e50c0cb42e9b0f9398f2b931`. The shared package's files still matched the backup afterward. Twenty-four synthetic regression tests and 17 subtests passed, including interrupted-install states, tampering, unsafe paths, unexpected metadata, symlinks and Windows junctions; none skipped. No shared installation changed.
+
+A separate temporary-state test exercised the actual relay maintenance controller with its real metadata-only probe and the original shared VCS identity, which matches the isolated restored metadata byte for byte. It reached `released` for 3.26.2 without altering any metadata fields or live relay state. This proves acceptance of that identity; it is not a live-parent capture or shared restore.
+
+Only if the orchestrator preauthorizes exact recovery and all consumer holds remain active, run:
 
 ```powershell
-$routerRecovery = Get-Content -LiteralPath 'docs/credential-error-installed-before.json' -Raw | ConvertFrom-Json
-if ((Get-FileHash -LiteralPath $routerRecovery.rollback_wheel -Algorithm SHA256).Hash.ToLowerInvariant() -ne $routerRecovery.rollback_wheel_sha256) { throw 'Recovery wheel hash mismatch' }
-& 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -I -m pip --isolated --disable-pip-version-check install --no-index --no-deps --force-reinstall $routerRecovery.rollback_wheel
-if ($LASTEXITCODE -ne 0) { throw 'Router recovery failed; retain consumer holds' }
+& 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe' -I -S -B scripts/router_package_recovery.py restore --site 'C:/Users/Stan/AppData/Local/Programs/Python/Python311/Lib/site-packages' --backup-dir 'C:/Users/Stan/Documents/GitHub/skell-e-router-security/dist/router-3.26.2-exact-backup-20260905' --expected-sha256 85410ee9080a10c3c858ef6c48294e678f9b1bd452a1a709954c4ef972cbe703 --replace-version 3.26.3
+if ($LASTEXITCODE -ne 0) { throw 'Exact router recovery failed; retain consumer holds' }
 ```
 
-Verify both SDK-location baselines remain unchanged and router files/version match the recovery artifact. Record recovery as 3.26.2 with the known router disclosure risk. The 3.26.3 security acceptance tests are expected to reject that recovered package. Only the orchestrator can release consumers based on their separately verified local containment; recovery is not installed security completion.
+The helper verifies every backup file and all destination roots before mutation, rejects links and unexpected distributions, removes only the router package and the explicitly named old/new metadata directories, and restores original bytes and modification times. It never removes the site-packages directory or changes another distribution. `--replace-version 3.26.3` also permits interrupted-install states with missing metadata or both known metadata directories present. Any third router version or unsafe path still stops before mutation. Keep holds if validation fails; never bypass those guards.
+
+After recovery, verify all 41 hashes, original metadata/code version and VCS identity, and both untouched SDK baselines. Record the operation-bound recovery result, then have the relay operator send `hold`, `verify` for 3.26.2, and a matching bound `release` only under the preauthorized abort branch. The 3.26.3 security tests are expected to reject a recovered 3.26.2 package. The cached old wheel in the earlier snapshot is retained for provenance; it is not this releasable recovery path.
+
+The requested PID 21896 was absent in the fresh [process check](credential-error-process-recheck.json) at 13:05 PDT. It is not retained as a blocker. Re-enumerate processes at the actual installation boundary instead of relying on that expired PID.
 
 Installed completion requires matching wheel/code/metadata identity, unchanged SDK versions, passing installed security/output-limit/helper checks, agreed consumer checks and owner-confirmed runtime/quiet-window gates. Record actual installed results in the existing security release document and mark only the installed milestone in `docs/TASKS.md` complete. Independent virtual environments and embedded copies remain separate work. External API spend to date is $0.
