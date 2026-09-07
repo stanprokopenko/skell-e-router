@@ -2,7 +2,7 @@
 #--------------------
 
 class AIModel:
-    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None, extra_body: dict | None = None, use_responses_api: bool = False, authoritative_pricing: bool = False):
+    def __init__(self, name: str, provider: str, supports_thinking: bool, supported_params: set[str], accepted_reasoning_efforts: set[str] | None = None, accepted_tool_choices: set[str] | None = None, use_direct_sdk: bool = False, api_base: str | None = None, pricing: dict | None = None, extra_body: dict | None = None, use_responses_api: bool = False, authoritative_pricing: bool = False, max_output_tokens: int | None = None):
         self.name = name  # Full model name used by LiteLLM
         self.provider = provider # e.g., "gemini", "openai", "anthropic"
         self.supports_thinking = supports_thinking # True if model supports 'thinking' or 'reasoning_effort'
@@ -27,6 +27,11 @@ class AIModel:
         # Prefer registry pricing over LiteLLM's cost map when launch-day or
         # provider-specific prices are known to be newer than LiteLLM's data.
         self.authoritative_pricing = authoritative_pricing
+        # Provider-published output cap (Anthropic Models API `max_tokens`).
+        # The direct Anthropic path uses it as the default `max_tokens` when the
+        # caller passes none, so a model is never capped below what it can
+        # actually write. None keeps the old 4096 fallback (retired models).
+        self.max_output_tokens = max_output_tokens
 
     @property
     def is_gemini(self) -> bool:
@@ -337,6 +342,7 @@ MODEL_CONFIG = {
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         accepted_tool_choices={"auto", "none"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     # Opus 5: released 2026-07-24. Thinking on by default (adaptive); "disabled" is
     # accepted only at effort high or below (400 at xhigh/max). No temperature/top_p/top_k.
@@ -348,6 +354,7 @@ MODEL_CONFIG = {
         supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     # Fable 5: adaptive thinking is always on (thinking "disabled" is rejected).
     # No temperature/top_p/top_k. 1M context, 128k max output. Safety classifiers
@@ -359,6 +366,7 @@ MODEL_CONFIG = {
         supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     # Opus 4.8: same API surface as Opus 4.7 (adaptive thinking only, no temperature).
     "claude-opus-4-8": AIModel(
@@ -368,6 +376,7 @@ MODEL_CONFIG = {
         supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     # Opus 4.7 removes temperature/top_p/top_k and budget_tokens; only adaptive thinking is supported.
     "claude-opus-4-7": AIModel(
@@ -377,6 +386,7 @@ MODEL_CONFIG = {
         supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     "claude-opus-4-6": AIModel(
         name="anthropic/claude-opus-4-6",
@@ -385,6 +395,7 @@ MODEL_CONFIG = {
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "max"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     # Sonnet 5: same API surface as Opus 4.8 — adaptive thinking only (budget_tokens
     # removed; thinking "disabled" is still accepted), no temperature/top_p/top_k.
@@ -396,6 +407,7 @@ MODEL_CONFIG = {
         supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     "claude-sonnet-4-6": AIModel(
         name="anthropic/claude-sonnet-4-6",
@@ -404,6 +416,7 @@ MODEL_CONFIG = {
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
         accepted_reasoning_efforts={"low", "medium", "high"},
         use_direct_sdk=True,
+        max_output_tokens=128000,
     ),
     "claude-opus-4-5": AIModel(
         name="anthropic/claude-opus-4-5",
@@ -411,6 +424,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
         use_direct_sdk=True,
+        max_output_tokens=64000,
     ),
     "claude-haiku-4-5": AIModel(
         name="anthropic/claude-haiku-4-5",
@@ -418,6 +432,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
         use_direct_sdk=True,
+        max_output_tokens=64000,
     ),
     "claude-sonnet-4-5-20250929": AIModel(
         name="anthropic/claude-sonnet-4-5-20250929",
@@ -425,6 +440,7 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
         use_direct_sdk=True,
+        max_output_tokens=64000,
     ),
     "claude-opus-4-1-20250805": AIModel(
         name="anthropic/claude-opus-4-1-20250805",

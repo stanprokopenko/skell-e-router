@@ -268,7 +268,18 @@ class TestBuildCreateParams:
         params, _ = self._call(model, {"tool_choice": {"type": "function", "function": {"name": "f"}}})
         assert params["tool_choice"] == {"type": "tool", "name": "f"}
 
-    def test_max_tokens_default(self):
+    def test_max_tokens_default_is_the_published_cap(self):
+        from skell_e_router.model_config import AIModel, MODEL_CONFIG
+        model = AIModel(name="anthropic/x", provider="anthropic", supports_thinking=False,
+                        supported_params={"max_tokens"}, use_direct_sdk=True,
+                        max_output_tokens=128000)
+        params, _ = self._call(model, {})
+        assert params["max_tokens"] == 128000
+        # every live Claude entry in the registry carries its cap
+        assert MODEL_CONFIG["claude-opus-5"].max_output_tokens == 128000
+        assert MODEL_CONFIG["claude-haiku-4-5"].max_output_tokens == 64000
+
+    def test_max_tokens_default_without_known_cap(self):
         params, _ = self._call(self._claude_model(), {})
         assert params["max_tokens"] == 4096
 

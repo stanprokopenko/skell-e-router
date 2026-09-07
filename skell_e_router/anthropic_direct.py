@@ -281,8 +281,11 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
     params = {}
     extra_headers = None
 
-    # max_tokens (required by Anthropic, default 4096)
-    params["max_tokens"] = kwargs.get("max_tokens", 4096)
+    # max_tokens is required by Anthropic. Default to the model's published
+    # output cap (Models API) so nothing is capped below what the model can
+    # write; 4096 only for entries without a known cap (retired models).
+    params["max_tokens"] = kwargs.get(
+        "max_tokens", getattr(ai_model, "max_output_tokens", None) or 4096)
 
     # Direct pass-through params — skip any that the model doesn't accept
     # (Opus 4.7 rejects temperature/top_p/top_k with a 400 error).

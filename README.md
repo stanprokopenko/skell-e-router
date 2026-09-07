@@ -164,6 +164,8 @@ response = ask_ai(
 
 ## Documentation
 
+Version 3.26.5 defaults direct-SDK Anthropic calls to each model's published output cap (128k for the current Claude family, 64k for haiku 4.5 / opus 4.5 / sonnet 4.5, from the Models API) instead of 4096 when the caller sets no `max_tokens`. Pass `max_tokens` to cap lower.
+
 Version 3.26.4 lets direct-SDK Anthropic calls ask for `max_tokens` above the SDK's ~21k non-streaming guard: the router streams under the hood and returns the assembled response, so long tool-call arguments (30k-token files) no longer need a streaming caller.
 
 Version 3.26.3 protects provider failure diagnostics from credential disclosure, including escaped header values and Python exception chains. Errors keep safe categories and HTTP status numbers. See the [error contract](skell_e_router/Skell-E-Router-DOCUMENTATION.md#provider-error-diagnostics) and [security release record](docs/credential-error-security.md).
