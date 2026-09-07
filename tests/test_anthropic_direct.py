@@ -453,6 +453,40 @@ class TestCallAnthropicDirect:
         assert response is mock_response
         assert isinstance(request_duration, float)
 
+    def test_streams_under_the_hood_above_the_nonstreaming_cap(self):
+        """max_tokens past the SDK's ten-minute guard must not raise: stream and assemble."""
+        mock_anthropic = MagicMock()
+        mock_response = MagicMock()
+        mock_client = MagicMock()
+        mock_client.messages.stream.return_value.__enter__.return_value.get_final_message.return_value = mock_response
+        mock_anthropic.Anthropic.return_value = mock_client
+
+        with patch("skell_e_router.anthropic_direct.ANTHROPIC_AVAILABLE", True),              patch("skell_e_router.anthropic_direct.anthropic", mock_anthropic):
+            from skell_e_router.anthropic_direct import _call_anthropic_direct, NONSTREAM_MAX_TOKENS
+            response, _ = _call_anthropic_direct(
+                "claude-opus-5", [{"role": "user", "content": "hi"}],
+                None, {"max_tokens": NONSTREAM_MAX_TOKENS + 1}, None, FAKE_ANTHROPIC_KEY
+            )
+
+        assert response is mock_response
+        mock_client.messages.create.assert_not_called()
+        assert mock_client.messages.stream.call_args.kwargs["max_tokens"] == NONSTREAM_MAX_TOKENS + 1
+
+    def test_stays_non_streaming_at_or_below_the_cap(self):
+        mock_anthropic = MagicMock()
+        mock_client = MagicMock()
+        mock_anthropic.Anthropic.return_value = mock_client
+
+        with patch("skell_e_router.anthropic_direct.ANTHROPIC_AVAILABLE", True),              patch("skell_e_router.anthropic_direct.anthropic", mock_anthropic):
+            from skell_e_router.anthropic_direct import _call_anthropic_direct, NONSTREAM_MAX_TOKENS
+            _call_anthropic_direct(
+                "claude-opus-5", [{"role": "user", "content": "hi"}],
+                None, {"max_tokens": NONSTREAM_MAX_TOKENS}, None, FAKE_ANTHROPIC_KEY
+            )
+
+        mock_client.messages.create.assert_called_once()
+        mock_client.messages.stream.assert_not_called()
+
     @patch("skell_e_router.anthropic_direct.time.sleep")
     def test_retries_transient_errors(self, mock_sleep):
         mock_anthropic = MagicMock()

@@ -30,6 +30,13 @@ def _get_anthropic_client(api_key: str):
     return _client_cache[api_key]
 
 
+# The Anthropic SDK refuses a non-streaming request whose max_tokens implies
+# more than ten minutes of generation (about 21,333 tokens on a 128k-output
+# model). Above that line the direct path streams under the hood and returns
+# the assembled Message, so callers keep the plain-response contract while
+# asking for a large output cap.
+NONSTREAM_MAX_TOKENS = 21_333
+
 # Known pricing per 1M tokens (USD) for direct-SDK models.
 # Optional "cache_read" key overrides the standard 0.1x-of-input cache-read rate.
 _PRICING = {
@@ -416,7 +423,11 @@ def _call_anthropic_direct(model_name: str, messages: list[dict], system_prompt:
     for attempt in range(1, max_attempts + 1):
         try:
             request_start = time.perf_counter()
-            response = client.messages.create(**call_kwargs)
+            if (call_kwargs.get("max_tokens") or 0) > NONSTREAM_MAX_TOKENS:
+                with client.messages.stream(**call_kwargs) as stream:
+                    response = stream.get_final_message()
+            else:
+                response = client.messages.create(**call_kwargs)
             request_duration = time.perf_counter() - request_start
             return response, request_duration
         except Exception as e:
