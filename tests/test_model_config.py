@@ -111,7 +111,7 @@ class TestModelConfig:
         "grok-4-0220", "grok-code-fast-1",
         "groq-compound", "groq-compound-mini",
         "qwen3-32b", "kimi-k2-0905",
-        "deepseek-v4-pro", "deepseek-v4-flash",
+        "deepseek-v4.1-flash", "deepseek-v4-pro", "deepseek-v4-flash",
         "glm-5.2", "minimax-m3", "qwen3.8-max", "qwen3.5-397b",
         "nemotron-3-ultra",
         "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
@@ -472,6 +472,7 @@ class TestModelConfig:
         assert model.name.startswith("deepinfra/nvidia/")
 
     @pytest.mark.parametrize("alias,name_prefix", [
+        ("deepseek-v4.1-flash", "deepinfra/deepseek-ai/"),
         ("deepseek-v4-pro", "deepinfra/deepseek-ai/"),
         ("deepseek-v4-flash", "deepinfra/deepseek-ai/"),
         ("glm-5.2", "deepinfra/zai-org/"),

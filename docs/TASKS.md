@@ -15,7 +15,8 @@
 - [ ] **Re-evaluate kimi-k3 hosting** once the K3 open weights land on DeepInfra (promised ~Jul 27, 2026) — DeepInfra may undercut Moonshot's $3/$15 first-party pricing, but check latency first (DeepInfra ran Kimi-K2.6 at ~3.5 min/answer).
 - [ ] **Remove or replace the dead Groq entries** `qwen3-32b` and `kimi-k2-0905` — Groq deprecated both (Jun 17 / Mar 23, 2026); calls fail on free/developer tiers. Removal needs Stan's sign-off. `qwen3.5-397b` (DeepInfra) and `kimi-k3` (Moonshot first-party) are the successors.
 - [ ] **Add Gemini 3.5 Pro when it goes GA** — still in limited Vertex preview as of Jul 21, 2026; Google shipped 3.6 Flash instead and teased Gemini 4.
-- [ ] **Consider DeepSeek first-party API** — DeepInfra's DeepSeek-V4-Pro is ~3× pricier than api.deepseek.com ($1.30/$2.60 vs ~$0.44/$0.87 per 1M). Needs a DEEPSEEK_API_KEY if we want first-party pricing.
+- [x] **Consider DeepSeek first-party API** — closed 2026-09-12 (v3.27.0). DeepSeek retired V4-Flash and repriced; for the new `deepseek-v4.1-flash`, DeepInfra ($0.20/$0.60 per 1M) is cheaper than first-party peak ($0.30/$1.20). No DEEPSEEK_API_KEY needed. Revisit only if DeepInfra lags a future DeepSeek release.
+- [ ] **Decide the fate of `deepseek-v4-flash`** — DeepSeek first-party retired the model on 2026-09-10 (requests now route to V4.1-Flash). DeepInfra still serves the original weights, so the alias keeps working; removal needs Stan's sign-off.
 
 ## OpenRouter / GLM 5.3 Flash follow-ups (from 2026-08-27 work)
 

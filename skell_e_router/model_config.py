@@ -684,6 +684,17 @@ MODEL_CONFIG = {
     # pricing is set per-model because LiteLLM's cost map lags new DeepInfra additions.
     # These models reason server-side by default; DeepInfra exposes no effort knob for them.
 
+    # DeepSeek-V4.1-Flash: new causal encoder-decoder MoE (552B total / 8B-16B active), Sep 10 2026.
+    # 1M context, native vision input. DeepSeek reports it beating V4-Pro on code/agent tasks.
+    # DeepSeek first-party retired V4-Flash and routes V4-Pro here from Sep 14 2026; DeepInfra
+    # ($0.20/$0.60) undercuts first-party peak pricing ($0.30/$1.20), so we stay on DeepInfra.
+    "deepseek-v4.1-flash": AIModel(
+        name="deepinfra/deepseek-ai/DeepSeek-V4.1-Flash",
+        provider="deepinfra",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        pricing={"input": 0.20, "cached_input": 0.006, "output": 0.60},
+    ),
     # DeepSeek-V4-Pro: DeepSeek's flagship MoE (1.6T total / 49B active), Apr 2026. 1M context.
     "deepseek-v4-pro": AIModel(
         name="deepinfra/deepseek-ai/DeepSeek-V4-Pro",
