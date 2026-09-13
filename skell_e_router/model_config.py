@@ -682,7 +682,12 @@ MODEL_CONFIG = {
     # DEEPINFRA (OPEN-WEIGHT & PARTNER MODELS)
     # DeepInfra serves open-weight and partner models via an OpenAI-compatible API (DEEPINFRA_API_KEY).
     # pricing is set per-model because LiteLLM's cost map lags new DeepInfra additions.
-    # These models reason server-side by default; DeepInfra exposes no effort knob for them.
+    # DeepInfra's gateway accepts reasoning_effort (none/minimal/low/medium/high/xhigh/max) for
+    # every model, but only some honor it. Probed 2026-09-12 (benchmark repo,
+    # docs/deepinfra-reasoning-defaults.md): the DeepSeek V4 family does NO reasoning unless an
+    # effort is pinned, so those entries declare reasoning_effort and the router whitelists it
+    # past LiteLLM's drop_params. GLM/MiniMax/Qwen/Nemotron reason by default and show no clear
+    # response to the knob, so they keep no effort support.
 
     # DeepSeek-V4.1-Flash: new causal encoder-decoder MoE (552B total / 8B-16B active), Sep 10 2026.
     # 1M context, native vision input. DeepSeek reports it beating V4-Pro on code/agent tasks.
@@ -700,19 +705,23 @@ MODEL_CONFIG = {
         pricing={"input": 0.20, "cached_input": 0.006, "output": 0.60},
     ),
     # DeepSeek-V4-Pro: DeepSeek's flagship MoE (1.6T total / 49B active), Apr 2026. 1M context.
+    # No reasoning unless reasoning_effort is pinned (verified 2026-09-12: unpinned = 0 reasoning tokens).
     "deepseek-v4-pro": AIModel(
         name="deepinfra/deepseek-ai/DeepSeek-V4-Pro",
         provider="deepinfra",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice", "reasoning_effort"},
+        accepted_reasoning_efforts={"none", "minimal", "low", "medium", "high", "xhigh", "max"},
         pricing={"input": 1.30, "cached_input": 0.10, "output": 2.60},
     ),
-    # DeepSeek-V4-Flash: cheap/fast tier of V4, Apr 2026. 1M context.
+    # DeepSeek-V4-Flash: cheap/fast tier of V4, Apr 2026. 1M context. Retired by DeepSeek first-party
+    # on 2026-09-10; DeepInfra still serves the original weights. No reasoning unless an effort is pinned.
     "deepseek-v4-flash": AIModel(
         name="deepinfra/deepseek-ai/DeepSeek-V4-Flash",
         provider="deepinfra",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice", "reasoning_effort"},
+        accepted_reasoning_efforts={"none", "minimal", "low", "medium", "high", "xhigh", "max"},
         pricing={"input": 0.09, "cached_input": 0.018, "output": 0.18},
     ),
     # GLM-5.2: Zhipu/Z.ai coding-first 744B MoE, MIT open weights, Jun 2026. 1M context.
@@ -732,12 +741,12 @@ MODEL_CONFIG = {
         pricing={"input": 0.30, "cached_input": 0.06, "output": 1.20},
     ),
     # Qwen3.8-Max: Alibaba's closed-weight flagship (2.4T MoE), Aug 2026. Served on
-    # DeepInfra as a partner model — non-reasoning deployment ("non-reasoning" tag),
-    # 256K context, 65,536 max output.
+    # DeepInfra as a partner model, 256K context, 65,536 max output. DeepInfra's page once
+    # tagged it non-reasoning, but the deployment now returns reasoning content unpinned.
     "qwen3.8-max": AIModel(
         name="deepinfra/Qwen/Qwen3.8-Max",
         provider="deepinfra",
-        supports_thinking=False,
+        supports_thinking=True,  # reasons by default on DeepInfra (probe 2026-09-12: ~100 reasoning tokens unpinned)
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
         pricing={"input": 1.65, "cached_input": 0.206, "output": 4.95},
     ),

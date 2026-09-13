@@ -492,19 +492,20 @@ class TestModelConfig:
         # LiteLLM's cost map lags new DeepInfra models, so each carries fallback pricing.
         assert model.pricing and "input" in model.pricing and "output" in model.pricing
 
-    def test_deepseek_v41_flash_reasoning_effort(self):
-        """DeepInfra validates reasoning_effort for V4.1-Flash; omitting it disables thinking entirely."""
-        model = MODEL_CONFIG["deepseek-v4.1-flash"]
+    @pytest.mark.parametrize("alias", ["deepseek-v4.1-flash", "deepseek-v4-pro", "deepseek-v4-flash"])
+    def test_deepseek_v4_family_reasoning_effort(self, alias):
+        """DeepInfra validates reasoning_effort for the DeepSeek V4 family; omitting it disables thinking entirely."""
+        model = MODEL_CONFIG[alias]
         assert "reasoning_effort" in model.supported_params
         assert model.accepted_reasoning_efforts == {"none", "minimal", "low", "medium", "high", "xhigh", "max"}
-        assert model.name == "deepinfra/deepseek-ai/DeepSeek-V4.1-Flash"
+        assert model.name.startswith("deepinfra/deepseek-ai/DeepSeek-V4")
 
     def test_qwen38_max_partner_model(self):
         """Qwen3.8-Max is a closed-weight partner model on DeepInfra, served non-reasoning."""
         model = MODEL_CONFIG["qwen3.8-max"]
         assert model.provider == "deepinfra"
         assert model.is_deepinfra is True
-        assert model.supports_thinking is False  # DeepInfra deployment is tagged non-reasoning
+        assert model.supports_thinking is True  # DeepInfra deployment reasons by default (probe 2026-09-12)
         assert model.name == "deepinfra/Qwen/Qwen3.8-Max"
         assert "tools" in model.supported_params
         assert model.pricing == {"input": 1.65, "cached_input": 0.206, "output": 4.95}
