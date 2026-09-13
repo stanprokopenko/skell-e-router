@@ -699,7 +699,10 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     # MODEL_CONFIG is the source of truth, so force declared reasoning effort through.
     uses_openai_api = ai_model.is_groq or ai_model.is_xai or ai_model.is_openrouter
     uses_openai_api = uses_openai_api or (ai_model.is_openai and ai_model.name.startswith("openai/"))
-    if uses_openai_api and "reasoning_effort" in kwargs:
+    # DeepInfra: LiteLLM's adapter does not list reasoning_effort as supported, so
+    # drop_params silently strips it even though the API honors it (DeepSeek-V4.1-Flash
+    # validates the value and disables thinking when it is absent). Whitelist it.
+    if (uses_openai_api or ai_model.is_deepinfra) and "reasoning_effort" in kwargs:
         existing = kwargs.get("allowed_openai_params", [])
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]

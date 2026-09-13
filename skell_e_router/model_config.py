@@ -688,11 +688,15 @@ MODEL_CONFIG = {
     # 1M context, native vision input. DeepSeek reports it beating V4-Pro on code/agent tasks.
     # DeepSeek first-party retired V4-Flash and routes V4-Pro here from Sep 14 2026; DeepInfra
     # ($0.20/$0.60) undercuts first-party peak pricing ($0.30/$1.20), so we stay on DeepInfra.
+    # Unlike the older DeepInfra entries below, this one honors reasoning_effort (verified 2026-09-12
+    # against the API: bogus values are rejected with the accepted list; omitting it or "none" yields
+    # 0 reasoning tokens, so the provider default is NO reasoning). Pin an effort to get thinking.
     "deepseek-v4.1-flash": AIModel(
         name="deepinfra/deepseek-ai/DeepSeek-V4.1-Flash",
         provider="deepinfra",
         supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
+        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice", "reasoning_effort"},
+        accepted_reasoning_efforts={"none", "minimal", "low", "medium", "high", "xhigh", "max"},
         pricing={"input": 0.20, "cached_input": 0.006, "output": 0.60},
     ),
     # DeepSeek-V4-Pro: DeepSeek's flagship MoE (1.6T total / 49B active), Apr 2026. 1M context.

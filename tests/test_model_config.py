@@ -492,6 +492,13 @@ class TestModelConfig:
         # LiteLLM's cost map lags new DeepInfra models, so each carries fallback pricing.
         assert model.pricing and "input" in model.pricing and "output" in model.pricing
 
+    def test_deepseek_v41_flash_reasoning_effort(self):
+        """DeepInfra validates reasoning_effort for V4.1-Flash; omitting it disables thinking entirely."""
+        model = MODEL_CONFIG["deepseek-v4.1-flash"]
+        assert "reasoning_effort" in model.supported_params
+        assert model.accepted_reasoning_efforts == {"none", "minimal", "low", "medium", "high", "xhigh", "max"}
+        assert model.name == "deepinfra/deepseek-ai/DeepSeek-V4.1-Flash"
+
     def test_qwen38_max_partner_model(self):
         """Qwen3.8-Max is a closed-weight partner model on DeepInfra, served non-reasoning."""
         model = MODEL_CONFIG["qwen3.8-max"]
