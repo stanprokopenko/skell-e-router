@@ -481,11 +481,13 @@ Each item in `response.images` is a dict with this structure:
 
 ---
 
-## Image Generation (OpenAI GPT-Image)
+## Image Generation (`generate_image`)
 
-`generate_image()` calls OpenAI's GPT-Image models through the `openai` SDK directly. LiteLLM's image helper silently drops the newer parameters (`background`, `output_format`, `output_compression`), so this path bypasses it, for the same reason the direct Anthropic and Gemini paths exist. Key resolution, retry/backoff, and error wrapping are shared with the rest of the router.
+`generate_image()` is one call over three providers: OpenAI's GPT-Image models, ByteDance Seedream on DeepInfra, and Gemini's image models. It always hands back an `ImageResponse` with decoded bytes, usage, cost, and a `save()` helper.
 
-Use this when you want a standalone image file. For image output inside a chat turn (text and images in one response), use `nano-banana-3` with `ask_ai()`. See [Image Output (Generation)](#image-output-generation).
+OpenAI and DeepInfra both speak the OpenAI images API, so both go through the `openai` SDK (DeepInfra with `base_url` pointed at its OpenAI-compatible gateway). LiteLLM's image helper silently drops the newer GPT-Image parameters (`background`, `output_format`, `output_compression`), so this path bypasses it, for the same reason the direct Anthropic and Gemini paths exist. Gemini has no images endpoint at all — image output arrives inside a chat turn — so that provider delegates to `ask_ai(rich_response=True)` and unpacks the returned data URLs. Key resolution, retry/backoff, and error wrapping are shared with the rest of the router.
+
+If you want text and images together in one response, call `nano-banana-3` through `ask_ai()` instead. See [Image Output (Generation)](#image-output-generation).
 
 ### Usage
 
@@ -496,6 +498,17 @@ resp = generate_image("gpt-image", "a simple red circle on white")
 resp.save("circle.png")
 
 print(resp.model, resp.input_tokens, resp.output_tokens, resp.cost)
+```
+
+Same call, different provider:
+
+```python
+resp = generate_image("seedream-4.5", "a simple red circle on white", size="2048x2048")
+resp.save("circle.jpg")   # Seedream returns JPEG; resp.format says so
+print(resp.cost)          # 0.04 — flat per image, no usage tokens reported
+
+resp = generate_image("nano-banana-3", "a simple red circle on white")
+print(resp.format, resp.cost, resp.output_tokens)   # jpeg 0.135 1208
 ```
 
 Several images at once, written into a folder:
@@ -511,7 +524,7 @@ resp = generate_image(
 paths = resp.save("out/", stem="hand")  # ['out/hand_0.png', 'out/hand_1.png', 'out/hand_2.png']
 ```
 
-Editing reference images (routes to `/v1/images/edits`):
+Editing reference images (GPT-Image routes to `/v1/images/edits`; Gemini sends them as chat input):
 
 ```python
 resp = generate_image(
@@ -529,28 +542,52 @@ resp.save("composite.png")
 |---|---|---|---|
 | `model_alias` | str | required | Alias from the models table below |
 | `prompt` | str | required | What to draw, or how to change `images` |
-| `size` | str | `"auto"` | `"auto"`, a named size, or a custom `"WIDTHxHEIGHT"` (see below) |
-| `quality` | str | `"auto"` | Validated against the model's tiers |
-| `n` | int | `1` | 1–10 images per call |
-| `background` | str \| None | `None` | `"auto"`, `"transparent"`, `"opaque"`. Transparent needs PNG or WebP output |
-| `output_format` | str | `"png"` | `"png"`, `"jpeg"`, `"webp"` |
-| `output_compression` | int \| None | `None` | 0–100, JPEG and WebP only |
-| `images` | list \| None | `None` | Reference images. Any value routes the call to the edits endpoint. Each entry may be a local path, an http(s) URL, a `data:` URI, or raw `bytes` |
+| `size` | str | `"auto"` | A named size for the model, or a custom `"WIDTHxHEIGHT"` (see below) |
+| `quality` | str | `"auto"` | GPT-Image only |
+| `n` | int | `1` | 1–10 images per call. GPT-Image and Seedream only |
+| `background` | str \| None | `None` | GPT-Image only. `"auto"`, `"transparent"`, `"opaque"`. Transparent needs PNG or WebP output |
+| `output_format` | str | `"png"` | GPT-Image only. `"png"`, `"jpeg"`, `"webp"` |
+| `output_compression` | int \| None | `None` | GPT-Image only. 0–100, JPEG and WebP |
+| `images` | list \| None | `None` | Reference images. GPT-Image routes to the edits endpoint; Gemini passes them as chat input; Seedream rejects them. Each entry may be a local path, an http(s) URL, a `data:` URI, or raw `bytes` (`bytes` is GPT-Image only) |
 | `verbosity` | str | `"none"` | `"none" \| "response" \| "info" \| "debug"` |
-| `config` | dict \| None | `None` | e.g. `{"openai_api_key": "sk-..."}`, overrides the env var |
-| `**kwargs` | any | none | Forwarded verbatim to the OpenAI images endpoint |
+| `config` | dict \| None | `None` | e.g. `{"openai_api_key": "sk-..."}`, `{"deepinfra_api_key": "..."}`, `{"gemini_api_key": "..."}`. Overrides the env var |
+| `**kwargs` | any | none | Forwarded verbatim to the provider call |
 
-**Sizes.** Every GPT-Image model takes `"auto"` plus the recommended `1024x1024`, `1536x1024`, and `1024x1536`. Custom `"WIDTHxHEIGHT"` values are also accepted when both edges are divisible by 16, the longest edge is ≤ 3840, total pixels land between 655,360 and 8,294,400, and the aspect ratio stays between 1:3 and 3:1. The router checks all of this before spending a request.
+### Provider parameter rules
+
+A provider that can't honor a parameter raises `RouterError("INVALID_PARAM")` rather than dropping it, so you never get back an image that quietly ignored what you asked for. Defaults always pass, which is what makes `generate_image(any_alias, prompt)` work everywhere.
+
+| Parameter | OpenAI GPT-Image | DeepInfra Seedream | Gemini |
+|---|---|---|---|
+| `size` | named or custom `WxH` | custom `WxH` only | `"auto"` or `"1024x1024"`, never sent |
+| `quality` | full tier list | must stay `"auto"` | must stay `"auto"` |
+| `n` | 1–10 | 1–10 | must stay `1` |
+| `background` | supported | must stay `None` | must stay `None` |
+| `output_format` | supported | must stay `"png"` | must stay `"png"` |
+| `output_compression` | supported | must stay `None` | must stay `None` |
+| `images` | edits endpoint | rejected | chat input |
+
+Because Seedream and Gemini pick the container themselves, the requested `output_format` is not what you get. `ImageResponse.format` is read from the returned bytes' magic numbers (falling back to the data URL's mime type on Gemini), so `resp.format` and `resp.extension` always describe the real file. Seedream returns JPEG.
+
+**Sizes.** GPT-Image takes `"auto"` plus `1024x1024`, `1536x1024`, and `1024x1536`. Custom `"WIDTHxHEIGHT"` values are accepted when both edges are divisible by 16, the longest edge is ≤ 3840, total pixels land between 655,360 and 8,294,400, and the aspect ratio stays between 1:3 and 3:1. Seedream takes any `"WIDTHxHEIGHT"`; the shorthand `"2K"` / `"4K"` its model card mentions is rejected by DeepInfra's gateway, so the router rejects it up front too. `seedream-4.5` additionally refuses anything under 3,686,400 pixels, which the router checks locally — otherwise DeepInfra answers with a 500 that looks like an outage and burns all three retries. Gemini chooses its own resolution, so only `"auto"` and `"1024x1024"` are accepted and neither is sent. The router validates all of this before spending a request.
 
 ### Models
 
-| Alias | Model | Quality tiers | Edits | Transparent bg | Text in / Image in / Image out per 1M tokens |
+| Alias | Model | Provider | Key | Quality tiers | Price |
 |---|---|---|---|---|---|
-| `gpt-image`, `gpt-image-2.5` | `gpt-image-2.5-flare` | auto, low, medium, high, xhigh, max | yes | yes | $5.00 / $8.00 / $30.00 |
-| `gpt-image-2.5-sunburst` | `gpt-image-2.5-sunburst` | auto, low, medium, high, xhigh, max | yes | yes | $5.00 / $8.00 / $30.00 |
-| `gpt-image-2` | `gpt-image-2` | auto, low, medium, high | yes | yes | $5.00 / $8.00 / $30.00 |
+| `gpt-image`, `gpt-image-2.5` | `gpt-image-2.5-flare` | OpenAI | `OPENAI_API_KEY` | auto, low, medium, high, xhigh, max | $5.00 / $8.00 / $30.00 per 1M text-in / image-in / image-out tokens |
+| `gpt-image-2.5-sunburst` | `gpt-image-2.5-sunburst` | OpenAI | `OPENAI_API_KEY` | auto, low, medium, high, xhigh, max | same as above |
+| `gpt-image-2` | `gpt-image-2` | OpenAI | `OPENAI_API_KEY` | auto, low, medium, high | same as above |
+| `seedream-4.5` | `ByteDance/Seedream-4.5` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.04 / image |
+| `seedream-4` | `ByteDance/Seedream-4` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.04 / image |
+| `seedream-5-pro` | `ByteDance/Seedream-5.0-Pro` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.0495 / image up to 2,359,296 px, $0.099 above |
+| `nano-banana-3`, `gemini-3-pro-image`, `nano-banana-pro` | `gemini-3-pro-image-preview` | Gemini | `GEMINI_API_KEY` | — | per-token, priced by the chat path |
 
-`gpt-image-2.5-flare` is the fast variant and the target of the bare `gpt-image` alias. `gpt-image-2.5-sunburst` takes longer and follows detailed prompts more precisely. Text output tokens are not billed on these models, so cost is text input plus image input plus image output.
+`gpt-image-2.5-flare` is the fast variant and the target of the bare `gpt-image` alias. `gpt-image-2.5-sunburst` takes longer and follows detailed prompts more precisely. Text output tokens are not billed on GPT-Image, so cost is text input plus image input plus image output.
+
+Default sizes differ: `"auto"` sends nothing on GPT-Image (OpenAI decides), resolves to `2048x2048` on `seedream-4.5`, and to `1024x1024` on `seedream-4` and `seedream-5-pro`. On Gemini, `"auto"` is never sent at all.
+
+DeepInfra reports no usage on the images endpoint, so `input_tokens` / `output_tokens` / `total_tokens` come back `None` for Seedream and `cost` is the registry's per-image price times the number of images returned. Gemini's numbers come straight off the chat response.
 
 ### Response
 
@@ -559,16 +596,16 @@ resp.save("composite.png")
 | Field | Type | Description |
 |---|---|---|
 | `images` | list[bytes] | One entry per image, already base64-decoded |
-| `format` | str | `"png"`, `"jpeg"`, or `"webp"` |
+| `format` | str | `"png"`, `"jpeg"`, or `"webp"` — what the bytes actually are |
 | `model` | str | Provider-reported model name |
-| `size` | str | The size that was requested |
+| `size` | str | The size that went on the wire (`"auto"` resolved to a real size where the provider needs one) |
 | `quality` | str | The quality that was requested |
-| `input_tokens` | int \| None | Prompt plus reference-image tokens |
-| `output_tokens` | int \| None | Image output tokens |
-| `total_tokens` | int \| None | Provider-reported total |
-| `cost` | float \| None | USD, from usage × registry prices. `None` when the model has no registered prices or the provider reported no usage |
-| `duration_seconds` | float \| None | Wall time of the HTTP request |
-| `raw_response` | Any | The untouched SDK object |
+| `input_tokens` | int \| None | Prompt plus reference-image tokens. `None` on DeepInfra |
+| `output_tokens` | int \| None | Image output tokens. `None` on DeepInfra |
+| `total_tokens` | int \| None | Provider-reported total. `None` on DeepInfra |
+| `cost` | float \| None | USD. Tokens × registry prices on GPT-Image, per-image price × count on Seedream, the chat response's cost on Gemini. `None` when nothing is registered |
+| `duration_seconds` | float \| None | Wall time of the provider call |
+| `raw_response` | Any | The untouched SDK object, or the `AIResponse` on Gemini |
 
 ### `save()`
 
@@ -590,10 +627,10 @@ All errors are `RouterError`:
 | Code | Triggered by |
 |---|---|
 | `INVALID_MODEL` | unknown alias passed to `generate_image(model_alias=...)` |
-| `MISSING_ENV` | `OPENAI_API_KEY` not in env or `config` |
-| `INVALID_INPUT` | empty prompt, `images` not a list, unreadable reference image, or edits on a model that doesn't support them |
-| `INVALID_PARAM` | `size`, `quality`, `background`, `output_format`, `output_compression`, or `n` outside the model's allowed values |
-| `PROVIDER_ERROR` | OpenAI failure after retries, or a response with no base64 image data. Fixed safe message and category, no original provider exception attached |
+| `MISSING_ENV` | the provider's key is in neither the environment nor `config` |
+| `INVALID_INPUT` | empty prompt, `images` not a list, unreadable reference image, or reference images on a model that doesn't accept them |
+| `INVALID_PARAM` | `size`, `quality`, `background`, `output_format`, `output_compression`, or `n` outside the model's allowed values, **or** a non-default value for a parameter the provider doesn't support |
+| `PROVIDER_ERROR` | provider failure after retries, a response with no image data, or a malformed data URL from Gemini. Fixed safe message and category, no original provider exception attached |
 
 Validation runs before the HTTP call, so a bad `quality` costs nothing. Retries follow the same policy as the rest of the router: 3 attempts on 429/5xx/timeout with `Retry-After` honored.
 

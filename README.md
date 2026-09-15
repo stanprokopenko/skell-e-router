@@ -96,7 +96,7 @@ response = ask_ai(
 )
 ```
 
-For standalone image files, `generate_image()` calls OpenAI's GPT-Image models and hands back decoded bytes plus a `save()` helper.
+For standalone image files, `generate_image()` hands back decoded bytes plus a `save()` helper. One call covers OpenAI GPT-Image, ByteDance Seedream on DeepInfra, and Gemini.
 
 ```python
 from skell_e_router import generate_image
@@ -104,6 +104,10 @@ from skell_e_router import generate_image
 resp = generate_image("gpt-image", "a simple red circle on white", quality="low")
 resp.save("circle.png")
 print(resp.cost, resp.input_tokens, resp.output_tokens)
+
+# Same call, cheaper provider — Seedream bills a flat $0.04 per image
+resp = generate_image("seedream-4.5", "a simple red circle on white", size="2048x2048")
+resp.save("circle.jpg")   # returns JPEG; resp.format says what the bytes really are
 
 # Pass reference images to edit instead of generate
 resp = generate_image(
@@ -117,7 +121,9 @@ resp = generate_image(
 resp.save("out/", stem="beach")  # ['out/beach_0.png', 'out/beach_1.png']
 ```
 
-Available models: `gpt-image` / `gpt-image-2.5` (both the fast `gpt-image-2.5-flare`), `gpt-image-2.5-sunburst`, `gpt-image-2`. See [the technical reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-generation-openai-gpt-image) for sizes, quality tiers, pricing, and error codes.
+Available models: `gpt-image` / `gpt-image-2.5` (both the fast `gpt-image-2.5-flare`), `gpt-image-2.5-sunburst`, `gpt-image-2`, `seedream-4.5`, `seedream-4`, `seedream-5-pro`, and `nano-banana-3` / `gemini-3-pro-image` / `nano-banana-pro`.
+
+`quality`, `background`, `output_format` and `output_compression` are GPT-Image only. Setting one on Seedream or Gemini raises `RouterError("INVALID_PARAM")` instead of silently ignoring it; the defaults pass everywhere. See [the technical reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-generation-generate_image) for sizes, quality tiers, pricing, and error codes.
 
 ### Embeddings
 

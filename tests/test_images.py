@@ -11,7 +11,7 @@ from skell_e_router.model_config import IMAGE_CONFIG, ImageModel, resolve_image_
 from skell_e_router.response import ImageResponse
 from skell_e_router.utils import RouterError
 
-from .helpers import FAKE_OPENAI_KEY
+from .helpers import FAKE_DEEPINFRA_KEY, FAKE_GEMINI_KEY, FAKE_OPENAI_KEY
 
 
 PNG_BYTES = (
@@ -110,10 +110,55 @@ class TestAliasResolution:
         assert exc.value.code == "INVALID_MODEL"
         assert "gpt-image-2.5-flare" in exc.value.message
 
-    def test_all_entries_are_openai(self):
-        for model in IMAGE_CONFIG.values():
+    def test_gpt_image_entries_are_openai(self):
+        for alias in ("gpt-image", "gpt-image-2.5", "gpt-image-2.5-flare",
+                      "gpt-image-2.5-sunburst", "gpt-image-2"):
+            model = IMAGE_CONFIG[alias]
             assert model.provider == "openai"
             assert model.is_openai
+
+    def test_every_entry_has_a_known_provider(self):
+        for model in IMAGE_CONFIG.values():
+            assert model.provider in ("openai", "deepinfra", "gemini")
+
+    def test_deepinfra_aliases(self):
+        assert resolve_image_alias("seedream-4.5").name == "ByteDance/Seedream-4.5"
+        assert resolve_image_alias("seedream-4").name == "ByteDance/Seedream-4"
+        assert resolve_image_alias("seedream-5-pro").name == "ByteDance/Seedream-5.0-Pro"
+        for alias in ("seedream-4.5", "seedream-4", "seedream-5-pro"):
+            model = resolve_image_alias(alias)
+            assert model.is_deepinfra
+            assert model.api_base == "https://api.deepinfra.com/v1/openai"
+            assert model.supported_params == frozenset({"n"})
+        # 4.5 refuses anything under 3,686,400 px, so its default opens at 2K square.
+        assert resolve_image_alias("seedream-4.5").default_size == "2048x2048"
+        assert resolve_image_alias("seedream-4.5").min_pixels == 3_686_400
+        assert resolve_image_alias("seedream-4").default_size == "1024x1024"
+        assert resolve_image_alias("seedream-5-pro").default_size == "1024x1024"
+        assert resolve_image_alias("seedream-4").min_pixels is None
+
+    def test_gemini_aliases_share_one_entry(self):
+        entries = [resolve_image_alias(a) for a in
+                   ("nano-banana-3", "gemini-3-pro-image", "nano-banana-pro")]
+        assert all(e is entries[0] for e in entries)
+        assert entries[0].is_gemini
+        assert entries[0].chat_alias == "nano-banana-3"
+        assert entries[0].supported_params == frozenset()
+        assert entries[0].allows_custom_sizes is False
+
+    def test_per_image_pricing(self):
+        flat = resolve_image_alias("seedream-4.5")
+        assert flat.has_per_image_pricing
+        assert flat.price_for_size("4096x4096") == 0.04
+        tiered = resolve_image_alias("seedream-5-pro")
+        assert tiered.price_for_size("1024x1024") == 0.0495
+        assert tiered.price_for_size("1536x1536") == 0.0495     # exactly the tier edge
+        assert tiered.price_for_size("1536x1537") == 0.099      # one row over it
+        assert tiered.price_for_size("2048x2048") == 0.099
+        assert tiered.price_for_size("bogus") is None
+
+    def test_gpt_image_has_no_per_image_price(self):
+        assert resolve_image_alias("gpt-image").has_per_image_pricing is False
 
     def test_25_models_have_extended_quality_tiers(self):
         for alias in ("gpt-image-2.5-flare", "gpt-image-2.5-sunburst"):
@@ -493,3 +538,382 @@ class TestVerbosity:
     def test_none_verbosity_is_silent(self, fake_openai_env, mock_client, capsys):
         generate_image("gpt-image", "a cat")
         assert capsys.readouterr().out == ""
+
+
+# ---------------------------------------------------------------------------
+# DeepInfra (ByteDance Seedream) via the OpenAI-compatible endpoint
+# ---------------------------------------------------------------------------
+
+JPEG_BYTES = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01" + b"\x00" * 16
+JPEG_B64 = base64.b64encode(JPEG_BYTES).decode()
+
+
+def make_deepinfra_response(n: int = 1, payload_b64: str = JPEG_B64,
+                            model: str = "ByteDance/Seedream-4.5"):
+    """DeepInfra answers in the OpenAI images shape but reports no usage."""
+    response = MagicMock()
+    response.data = [{"b64_json": payload_b64, "revised_prompt": "a cat"} for _ in range(n)]
+    response.model = model
+    response.usage = None
+    return response
+
+
+@pytest.fixture
+def fake_deepinfra_env(monkeypatch):
+    monkeypatch.setenv("DEEPINFRA_API_KEY", FAKE_DEEPINFRA_KEY)
+
+
+@pytest.fixture
+def deepinfra_client():
+    client = MagicMock()
+    client.images.generate.return_value = make_deepinfra_response()
+    with patch("skell_e_router.images._get_openai_client", return_value=client) as f:
+        f.client = client
+        yield f
+
+
+class TestDeepInfraRouting:
+
+    def test_uses_deepinfra_base_url_and_key(self, fake_deepinfra_env, deepinfra_client):
+        generate_image("seedream-4.5", "a cat")
+        args = deepinfra_client.call_args.args
+        assert args[0] == FAKE_DEEPINFRA_KEY
+        assert args[1] == "https://api.deepinfra.com/v1/openai"
+
+    def test_openai_models_still_get_no_base_url(self, fake_openai_env, mock_client):
+        generate_image("gpt-image", "a cat")
+        assert mock_client.call_args.args[1] is None
+
+    def test_config_key_overrides_env(self, monkeypatch, deepinfra_client):
+        monkeypatch.setenv("DEEPINFRA_API_KEY", "from-env")
+        generate_image("seedream-4.5", "a cat", config={"deepinfra_api_key": "from-config"})
+        assert deepinfra_client.call_args.args[0] == "from-config"
+
+    def test_missing_key_raises_missing_env(self, monkeypatch, deepinfra_client):
+        monkeypatch.delenv("DEEPINFRA_API_KEY", raising=False)
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat")
+        assert exc.value.code == "MISSING_ENV"
+        assert exc.value.details["required"] == "DEEPINFRA_API_KEY"
+
+    def test_request_body_is_the_documented_four_fields(self, fake_deepinfra_env, deepinfra_client):
+        generate_image("seedream-4.5", "a cat", size="2560x1440", n=2)
+        kwargs = deepinfra_client.client.images.generate.call_args.kwargs
+        assert kwargs == {
+            "prompt": "a cat",
+            "model": "ByteDance/Seedream-4.5",
+            "size": "2560x1440",
+            "n": 2,
+            "response_format": "b64_json",
+        }
+
+    def test_auto_size_resolves_to_the_model_default(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-4.5", "a cat")
+        assert deepinfra_client.client.images.generate.call_args.kwargs["size"] == "2048x2048"
+        assert resp.size == "2048x2048"
+
+        resp = generate_image("seedream-4", "a cat")
+        assert deepinfra_client.client.images.generate.call_args.kwargs["size"] == "1024x1024"
+        assert resp.size == "1024x1024"
+
+    def test_custom_pixel_size_passes_through(self, fake_deepinfra_env, deepinfra_client):
+        generate_image("seedream-4.5", "a cat", size="3840x2160")
+        assert deepinfra_client.client.images.generate.call_args.kwargs["size"] == "3840x2160"
+
+    def test_shorthand_resolutions_are_rejected(self, fake_deepinfra_env, deepinfra_client):
+        # DeepInfra's gateway 422s on "2K" — only "{width}x{height}" is accepted.
+        for size in ("2K", "4K"):
+            with pytest.raises(RouterError) as exc:
+                generate_image("seedream-4", "a cat", size=size)
+            assert exc.value.code == "INVALID_PARAM"
+        deepinfra_client.client.images.generate.assert_not_called()
+
+    def test_size_below_the_model_floor_rejected_locally(self, fake_deepinfra_env, deepinfra_client):
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat", size="1024x1024")
+        assert exc.value.code == "INVALID_PARAM"
+        assert "at least 3,686,400 pixels" in exc.value.message
+        deepinfra_client.client.images.generate.assert_not_called()
+
+    def test_no_floor_on_the_other_seedream_models(self, fake_deepinfra_env, deepinfra_client):
+        generate_image("seedream-4", "a cat", size="1024x1024")
+        generate_image("seedream-5-pro", "a cat", size="1024x1024")
+        assert deepinfra_client.client.images.generate.call_count == 2
+
+    def test_unparseable_size_rejected_before_the_call(self, fake_deepinfra_env, deepinfra_client):
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat", size="enormous")
+        assert exc.value.code == "INVALID_PARAM"
+        deepinfra_client.client.images.generate.assert_not_called()
+
+    def test_gpt_image_custom_size_rules_do_not_apply(self, fake_deepinfra_env, deepinfra_client):
+        # 300x300 is far below GPT-Image's pixel floor and not a multiple of 16.
+        generate_image("seedream-4", "a cat", size="300x300")
+        assert deepinfra_client.client.images.generate.call_args.kwargs["size"] == "300x300"
+
+    def test_extra_kwargs_forwarded(self, fake_deepinfra_env, deepinfra_client):
+        generate_image("seedream-4.5", "a cat", seed=7)
+        assert deepinfra_client.client.images.generate.call_args.kwargs["seed"] == 7
+
+    def test_reference_images_rejected(self, fake_deepinfra_env, deepinfra_client):
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat", images=["ref.png"])
+        assert exc.value.code == "INVALID_INPUT"
+        assert "reference images" in exc.value.message
+
+
+class TestDeepInfraResponse:
+
+    def test_format_sniffed_from_jpeg_magic_bytes(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-4.5", "a cat")
+        assert resp.images == [JPEG_BYTES]
+        assert resp.format == "jpeg"
+        assert resp.extension == "jpg"
+
+    def test_format_sniffed_from_png_magic_bytes(self, fake_deepinfra_env, deepinfra_client):
+        deepinfra_client.client.images.generate.return_value = make_deepinfra_response(
+            payload_b64=PNG_B64
+        )
+        resp = generate_image("seedream-4.5", "a cat")
+        assert resp.format == "png"
+
+    def test_format_falls_back_when_magic_bytes_are_unknown(self, fake_deepinfra_env, deepinfra_client):
+        blob = base64.b64encode(b"NOTANIMAGE" + b"\x00" * 16).decode()
+        deepinfra_client.client.images.generate.return_value = make_deepinfra_response(
+            payload_b64=blob
+        )
+        resp = generate_image("seedream-4.5", "a cat")
+        assert resp.format == "png"
+
+    def test_webp_magic_bytes(self, fake_deepinfra_env, deepinfra_client):
+        webp = b"RIFF" + b"\x00\x00\x00\x00" + b"WEBPVP8 " + b"\x00" * 8
+        deepinfra_client.client.images.generate.return_value = make_deepinfra_response(
+            payload_b64=base64.b64encode(webp).decode()
+        )
+        resp = generate_image("seedream-4.5", "a cat")
+        assert resp.format == "webp"
+
+    def test_empty_data_raises_provider_error(self, fake_deepinfra_env, deepinfra_client):
+        empty = MagicMock()
+        empty.data = []
+        empty.usage = None
+        empty.model = "ByteDance/Seedream-4.5"
+        deepinfra_client.client.images.generate.return_value = empty
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat")
+        assert exc.value.code == "PROVIDER_ERROR"
+
+    def test_no_usage_reported_leaves_token_fields_none(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-4.5", "a cat")
+        assert (resp.input_tokens, resp.output_tokens, resp.total_tokens) == (None, None, None)
+        assert resp.duration_seconds is not None
+
+
+class TestDeepInfraCost:
+
+    def test_flat_price_per_image(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-4.5", "a cat")
+        assert resp.cost == pytest.approx(0.04)
+
+    def test_flat_price_scales_with_n(self, fake_deepinfra_env, deepinfra_client):
+        deepinfra_client.client.images.generate.return_value = make_deepinfra_response(n=3)
+        resp = generate_image("seedream-4", "a cat", n=3)
+        assert resp.cost == pytest.approx(0.12)
+
+    def test_tiered_price_low_tier(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-5-pro", "a cat", size="1024x1024")
+        assert resp.cost == pytest.approx(0.0495)
+
+    def test_tiered_price_high_tier(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image("seedream-5-pro", "a cat", size="2048x2048")
+        assert resp.cost == pytest.approx(0.099)
+
+    def test_tiered_price_uses_the_size_actually_sent(self, fake_deepinfra_env, deepinfra_client):
+        # size="auto" becomes 1024x1024, which prices in the low tier.
+        resp = generate_image("seedream-5-pro", "a cat")
+        assert resp.size == "1024x1024"
+        assert resp.cost == pytest.approx(0.0495)
+
+
+# ---------------------------------------------------------------------------
+# Unsupported parameters per provider
+# ---------------------------------------------------------------------------
+
+class TestUnsupportedParams:
+
+    @pytest.mark.parametrize("kwargs, param", [
+        ({"quality": "high"}, "quality"),
+        ({"background": "transparent"}, "background"),
+        ({"background": "opaque"}, "background"),
+        ({"output_format": "jpeg"}, "output_format"),
+        ({"output_compression": 80}, "output_compression"),
+    ])
+    def test_deepinfra_rejects_non_default(self, fake_deepinfra_env, deepinfra_client, kwargs, param):
+        with pytest.raises(RouterError) as exc:
+            generate_image("seedream-4.5", "a cat", **kwargs)
+        assert exc.value.code == "INVALID_PARAM"
+        assert f"`{param}` is not supported" in exc.value.message
+        deepinfra_client.client.images.generate.assert_not_called()
+
+    def test_deepinfra_accepts_every_default(self, fake_deepinfra_env, deepinfra_client):
+        resp = generate_image(
+            "seedream-4.5", "a cat",
+            quality="auto", background=None, output_format="png", output_compression=None, n=1,
+        )
+        assert resp.images == [JPEG_BYTES]
+
+    def test_deepinfra_accepts_n_because_it_is_supported(self, fake_deepinfra_env, deepinfra_client):
+        deepinfra_client.client.images.generate.return_value = make_deepinfra_response(n=2)
+        resp = generate_image("seedream-4.5", "a cat", n=2)
+        assert len(resp.images) == 2
+
+    @pytest.mark.parametrize("kwargs, param", [
+        ({"quality": "high"}, "quality"),
+        ({"output_format": "webp"}, "output_format"),
+        ({"n": 2}, "n"),
+    ])
+    def test_gemini_rejects_non_default(self, fake_gemini_env, gemini_ask_ai, kwargs, param):
+        with pytest.raises(RouterError) as exc:
+            generate_image("nano-banana-3", "a cat", **kwargs)
+        assert exc.value.code == "INVALID_PARAM"
+        assert f"`{param}` is not supported" in exc.value.message
+        gemini_ask_ai.assert_not_called()
+
+    def test_gemini_accepts_every_default(self, fake_gemini_env, gemini_ask_ai):
+        resp = generate_image("nano-banana-3", "a cat")
+        assert resp.images == [PNG_BYTES]
+
+    def test_openai_still_takes_all_params(self, fake_openai_env, mock_client):
+        generate_image("gpt-image", "a cat", quality="high", background="opaque",
+                       output_format="webp", output_compression=70, n=1)
+        kwargs = mock_client.client.images.generate.call_args.kwargs
+        assert kwargs["quality"] == "high"
+        assert kwargs["background"] == "opaque"
+        assert kwargs["output_compression"] == 70
+
+
+# ---------------------------------------------------------------------------
+# Gemini through the chat path
+# ---------------------------------------------------------------------------
+
+def make_ai_response(mime: str = "image/png", payload_b64: str = PNG_B64, count: int = 1):
+    """Stand-in for the AIResponse that ask_ai returns for nano-banana-3."""
+    response = MagicMock()
+    response.images = [
+        {"image_url": {"url": f"data:{mime};base64,{payload_b64}", "detail": "auto"},
+         "index": i, "type": "image_url"}
+        for i in range(count)
+    ]
+    response.model = "gemini-3-pro-image-preview"
+    response.prompt_tokens = 11
+    response.completion_tokens = 1290
+    response.total_tokens = 1301
+    response.cost = 0.134
+    response.duration_seconds = 4.2
+    return response
+
+
+@pytest.fixture
+def fake_gemini_env(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", FAKE_GEMINI_KEY)
+
+
+@pytest.fixture
+def gemini_ask_ai():
+    with patch("skell_e_router.images.ask_ai", return_value=make_ai_response()) as f:
+        yield f
+
+
+class TestGemini:
+
+    def test_calls_ask_ai_with_the_chat_alias(self, fake_gemini_env, gemini_ask_ai):
+        generate_image("nano-banana-3", "a cat")
+        args, kwargs = gemini_ask_ai.call_args
+        assert args == ("nano-banana-3", "a cat")
+        assert kwargs["rich_response"] is True
+        assert kwargs["images"] is None
+
+    def test_size_is_never_sent_to_the_api(self, fake_gemini_env, gemini_ask_ai):
+        resp = generate_image("nano-banana-3", "a cat", size="1024x1024")
+        assert "size" not in gemini_ask_ai.call_args.kwargs
+        assert resp.size == "1024x1024"
+
+    def test_only_auto_and_1024_sizes_accepted(self, fake_gemini_env, gemini_ask_ai):
+        for size in ("auto", "1024x1024"):
+            generate_image("nano-banana-3", "a cat", size=size)
+        assert gemini_ask_ai.call_count == 2
+
+    @pytest.mark.parametrize("size", ["1536x1024", "2048x2048", "2K"])
+    def test_other_sizes_rejected(self, fake_gemini_env, gemini_ask_ai, size):
+        with pytest.raises(RouterError) as exc:
+            generate_image("nano-banana-3", "a cat", size=size)
+        assert exc.value.code == "INVALID_PARAM"
+        assert "picks the output resolution itself" in exc.value.message
+        gemini_ask_ai.assert_not_called()
+
+    def test_reference_images_forwarded(self, fake_gemini_env, gemini_ask_ai):
+        generate_image("nano-banana-3", "restyle this", images=["ref.png"])
+        assert gemini_ask_ai.call_args.kwargs["images"] == ["ref.png"]
+
+    def test_data_urls_decoded_to_bytes(self, fake_gemini_env, gemini_ask_ai):
+        resp = generate_image("nano-banana-3", "a cat")
+        assert resp.images == [PNG_BYTES]
+        assert resp.format == "png"
+
+    def test_format_from_jpeg_payload(self, fake_gemini_env):
+        with patch("skell_e_router.images.ask_ai",
+                   return_value=make_ai_response(mime="image/jpeg", payload_b64=JPEG_B64)):
+            resp = generate_image("nano-banana-3", "a cat")
+        assert resp.format == "jpeg"
+
+    def test_format_falls_back_to_the_declared_mime(self, fake_gemini_env):
+        blob = base64.b64encode(b"NOTANIMAGE" + b"\x00" * 16).decode()
+        with patch("skell_e_router.images.ask_ai",
+                   return_value=make_ai_response(mime="image/webp", payload_b64=blob)):
+            resp = generate_image("nano-banana-3", "a cat")
+        assert resp.format == "webp"
+
+    def test_multiple_images_decoded(self, fake_gemini_env):
+        with patch("skell_e_router.images.ask_ai", return_value=make_ai_response(count=3)):
+            resp = generate_image("nano-banana-3", "a cat")
+        assert len(resp.images) == 3
+
+    def test_usage_and_cost_carried_from_the_chat_response(self, fake_gemini_env, gemini_ask_ai):
+        resp = generate_image("nano-banana-3", "a cat")
+        assert resp.input_tokens == 11
+        assert resp.output_tokens == 1290
+        assert resp.total_tokens == 1301
+        assert resp.cost == pytest.approx(0.134)
+        assert resp.duration_seconds == pytest.approx(4.2)
+        assert resp.model == "gemini-3-pro-image-preview"
+
+    def test_text_only_answer_raises_provider_error(self, fake_gemini_env):
+        text_only = MagicMock()
+        text_only.images = None
+        with patch("skell_e_router.images.ask_ai", return_value=text_only):
+            with pytest.raises(RouterError) as exc:
+                generate_image("nano-banana-3", "a cat")
+        assert exc.value.code == "PROVIDER_ERROR"
+        assert "no image data" in exc.value.message
+
+    def test_malformed_data_url_raises_provider_error(self, fake_gemini_env):
+        broken = MagicMock()
+        broken.images = [{"image_url": {"url": "data:image/png;base64"}}]
+        with patch("skell_e_router.images.ask_ai", return_value=broken):
+            with pytest.raises(RouterError) as exc:
+                generate_image("nano-banana-3", "a cat")
+        assert exc.value.code == "PROVIDER_ERROR"
+
+    def test_missing_gemini_key_raises_before_the_call(self, monkeypatch, gemini_ask_ai):
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        with pytest.raises(RouterError) as exc:
+            generate_image("nano-banana-3", "a cat")
+        assert exc.value.code == "MISSING_ENV"
+        gemini_ask_ai.assert_not_called()
+
+    def test_save_uses_the_real_format(self, fake_gemini_env, tmp_path):
+        with patch("skell_e_router.images.ask_ai",
+                   return_value=make_ai_response(mime="image/jpeg", payload_b64=JPEG_B64)):
+            resp = generate_image("nano-banana-3", "a cat")
+        paths = resp.save(str(tmp_path / "out"))
+        assert paths[0].endswith("image_0.jpg")

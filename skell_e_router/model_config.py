@@ -921,42 +921,118 @@ class ImageModel:
 
     def __init__(
         self,
-        name: str,                                  # OpenAI model id (no provider prefix)
-        provider: str,                              # "openai"
-        supported_sizes: tuple[str, ...],           # named sizes; custom "WxH" also allowed
-        supported_qualities: tuple[str, ...],
+        name: str,                                  # provider model id (no LiteLLM prefix)
+        provider: str,                              # "openai" | "deepinfra" | "gemini"
+        supported_sizes: tuple[str, ...],           # named sizes accepted by this model
+        supported_qualities: tuple[str, ...] = ("auto",),
+        supported_params: tuple[str, ...] = (),     # scalar request params the provider honors
         supports_transparent_background: bool = False,
-        supports_edits: bool = False,
+        supports_edits: bool = False,               # accepts reference images
+        allows_custom_sizes: bool = True,           # accepts arbitrary "WIDTHxHEIGHT"
+        default_size: str = "auto",                 # what size="auto" resolves to on the wire
+        api_base: str | None = None,                # OpenAI-compatible endpoint override
+        chat_alias: str | None = None,              # MODEL_CONFIG alias for chat-path providers
         text_input_price: float | None = None,      # USD per 1M text input tokens
         image_input_price: float | None = None,     # USD per 1M image input tokens
         image_output_price: float | None = None,    # USD per 1M image output tokens
+        price_per_image: float | None = None,       # flat USD per generated image
+        price_per_image_tiers: tuple[tuple[int | None, float], ...] | None = None,
+        min_pixels: int | None = None,              # provider-enforced floor on width*height
     ):
         self.name = name
         self.provider = provider
         self.supported_sizes = supported_sizes
         self.supported_qualities = supported_qualities
+        # Params outside this set must be left at their generate_image() default;
+        # a non-default value raises INVALID_PARAM instead of being silently dropped.
+        self.supported_params = frozenset(supported_params)
         self.supports_transparent_background = supports_transparent_background
         self.supports_edits = supports_edits
+        self.allows_custom_sizes = allows_custom_sizes
+        self.default_size = default_size
+        self.api_base = api_base
+        self.chat_alias = chat_alias
         self.text_input_price = text_input_price
         self.image_input_price = image_input_price
         self.image_output_price = image_output_price
+        # Flat per-image price (DeepInfra bills per image, not per token).
+        self.price_per_image = price_per_image
+        # Resolution-tiered per-image price as ((max_pixels, usd), ...) ascending.
+        # A max_pixels of None is the open-ended top tier.
+        self.price_per_image_tiers = price_per_image_tiers
+        # Smallest width*height the provider will render. Checked locally so an
+        # undersized request fails fast instead of burning three retries on the
+        # 500 the gateway returns.
+        self.min_pixels = min_pixels
 
     @property
     def is_openai(self) -> bool:
         return self.provider == "openai"
 
     @property
+    def is_deepinfra(self) -> bool:
+        return self.provider == "deepinfra"
+
+    @property
+    def is_gemini(self) -> bool:
+        return self.provider == "gemini"
+
+    @property
     def has_pricing(self) -> bool:
+        """True when token-based pricing is registered (OpenAI GPT-Image)."""
         return None not in (
             self.text_input_price,
             self.image_input_price,
             self.image_output_price,
         )
 
+    @property
+    def has_per_image_pricing(self) -> bool:
+        return self.price_per_image is not None or bool(self.price_per_image_tiers)
+
+    def price_for_size(self, size: str) -> float | None:
+        """USD for one image at `size`. None when no per-image price is registered."""
+        if self.price_per_image is not None:
+            return self.price_per_image
+        if not self.price_per_image_tiers:
+            return None
+        pixels = image_size_pixels(size)
+        if pixels is None:
+            return None
+        for max_pixels, price in self.price_per_image_tiers:
+            if max_pixels is None or pixels <= max_pixels:
+                return price
+        return self.price_per_image_tiers[-1][1]
+
+
+def image_size_pixels(size: str) -> int | None:
+    """Total pixels for a "WIDTHxHEIGHT" size string. None if unparseable."""
+    if not isinstance(size, str):
+        return None
+    normalized = size.strip().lower()
+    parts = normalized.split("x")
+    if len(parts) == 2 and all(p.isdigit() for p in parts):
+        return int(parts[0]) * int(parts[1])
+    return None
+
 
 # Named sizes OpenAI recommends for every GPT-Image model. Custom "WIDTHxHEIGHT"
-# values are also accepted — see IMAGE_CUSTOM_SIZE_RULES in images.py.
+# values are also accepted - see IMAGE_CUSTOM_SIZE_RULES in images.py.
 _GPT_IMAGE_SIZES = ("auto", "1024x1024", "1536x1024", "1024x1536")
+
+# Every scalar knob generate_image() exposes. GPT-Image honors all of them.
+_GPT_IMAGE_PARAMS = ("quality", "background", "output_format", "output_compression", "n")
+
+# DeepInfra fronts its image models with an OpenAI-compatible images endpoint.
+DEEPINFRA_IMAGE_API_BASE = "https://api.deepinfra.com/v1/openai"
+
+# DeepInfra's gateway only takes explicit "{width}x{height}" — the shorthand
+# "2K" / "4K" the model card mentions is rejected with a 422 (probed 2026-09-14).
+# Seedream 4.5 additionally refuses anything under 3,686,400 pixels.
+_SEEDREAM_45_SIZES = ("auto", "2560x1440", "2048x2048", "3840x2160", "4096x4096")
+_SEEDREAM_4_SIZES = ("auto", "1024x1024", "2048x2048", "2560x1440", "4096x4096")
+# Seedream 5.0 Pro renders up to 2K.
+_SEEDREAM_5_SIZES = ("auto", "1024x1024", "1536x1536", "2048x2048")
 
 IMAGE_CONFIG: dict[str, ImageModel] = {
     "gpt-image-2.5-flare": ImageModel(
@@ -964,6 +1040,7 @@ IMAGE_CONFIG: dict[str, ImageModel] = {
         provider="openai",
         supported_sizes=_GPT_IMAGE_SIZES,
         supported_qualities=("auto", "low", "medium", "high", "xhigh", "max"),
+        supported_params=_GPT_IMAGE_PARAMS,
         supports_transparent_background=True,
         supports_edits=True,
         text_input_price=5.00,
@@ -975,6 +1052,7 @@ IMAGE_CONFIG: dict[str, ImageModel] = {
         provider="openai",
         supported_sizes=_GPT_IMAGE_SIZES,
         supported_qualities=("auto", "low", "medium", "high", "xhigh", "max"),
+        supported_params=_GPT_IMAGE_PARAMS,
         supports_transparent_background=True,
         supports_edits=True,
         text_input_price=5.00,
@@ -985,19 +1063,71 @@ IMAGE_CONFIG: dict[str, ImageModel] = {
         name="gpt-image-2",
         provider="openai",
         supported_sizes=_GPT_IMAGE_SIZES,
-        # Models before 2.5 top out at "high" — no "xhigh" / "max" tiers.
+        # Models before 2.5 top out at "high" - no "xhigh" / "max" tiers.
         supported_qualities=("auto", "low", "medium", "high"),
+        supported_params=_GPT_IMAGE_PARAMS,
         supports_transparent_background=True,
         supports_edits=True,
         text_input_price=5.00,
         image_input_price=8.00,
         image_output_price=30.00,
     ),
+
+    # DEEPINFRA (ByteDance Seedream) - flat per-image billing, JPEG output.
+    # No quality / background / output_format knobs: the OpenAI-compatible
+    # endpoint takes prompt, model, size, n and response_format only.
+    "seedream-4.5": ImageModel(
+        name="ByteDance/Seedream-4.5",
+        provider="deepinfra",
+        supported_sizes=_SEEDREAM_45_SIZES,
+        supported_params=("n",),
+        # 1024x1024 is below this model's floor, so "auto" opens at 2K square.
+        default_size="2048x2048",
+        min_pixels=3_686_400,
+        api_base=DEEPINFRA_IMAGE_API_BASE,
+        price_per_image=0.04,
+    ),
+    "seedream-4": ImageModel(
+        name="ByteDance/Seedream-4",
+        provider="deepinfra",
+        supported_sizes=_SEEDREAM_4_SIZES,
+        supported_params=("n",),
+        default_size="1024x1024",
+        api_base=DEEPINFRA_IMAGE_API_BASE,
+        price_per_image=0.04,
+    ),
+    # Seedream 5.0 Pro is billed by resolution tier: $0.0495/image up to 1.5K
+    # (2,359,296 px) and $0.099/image above that. DeepInfra model page, 2026-09-14.
+    # It renders 1024x1024 happily, so it keeps the cheap default.
+    "seedream-5-pro": ImageModel(
+        name="ByteDance/Seedream-5.0-Pro",
+        provider="deepinfra",
+        supported_sizes=_SEEDREAM_5_SIZES,
+        supported_params=("n",),
+        default_size="1024x1024",
+        api_base=DEEPINFRA_IMAGE_API_BASE,
+        price_per_image_tiers=((1536 * 1536, 0.0495), (None, 0.099)),
+    ),
+
+    # GEMINI - image output arrives through the chat path, so generate_image()
+    # delegates to ask_ai(chat_alias, ..., rich_response=True) and unpacks the
+    # data URLs. Gemini picks the resolution itself; size is never sent.
+    "nano-banana-3": ImageModel(
+        name="gemini-3-pro-image-preview",
+        provider="gemini",
+        supported_sizes=("auto", "1024x1024"),
+        supported_params=(),
+        supports_edits=True,          # reference images ride along as chat input
+        allows_custom_sizes=False,
+        chat_alias="nano-banana-3",
+    ),
 }
 
-# Additional aliases — the fast 2.5 variant is the default "just give me an image".
+# Additional aliases - the fast 2.5 variant is the default "just give me an image".
 IMAGE_CONFIG["gpt-image-2.5"] = IMAGE_CONFIG["gpt-image-2.5-flare"]
 IMAGE_CONFIG["gpt-image"] = IMAGE_CONFIG["gpt-image-2.5-flare"]
+IMAGE_CONFIG["gemini-3-pro-image"] = IMAGE_CONFIG["nano-banana-3"]
+IMAGE_CONFIG["nano-banana-pro"] = IMAGE_CONFIG["nano-banana-3"]
 
 # Allow lookup by full model name in addition to alias.
 for _img_cfg in list(IMAGE_CONFIG.values()):
