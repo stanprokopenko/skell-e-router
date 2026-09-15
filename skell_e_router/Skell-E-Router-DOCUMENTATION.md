@@ -481,6 +481,124 @@ Each item in `response.images` is a dict with this structure:
 
 ---
 
+## Image Generation (OpenAI GPT-Image)
+
+`generate_image()` calls OpenAI's GPT-Image models through the `openai` SDK directly. LiteLLM's image helper silently drops the newer parameters (`background`, `output_format`, `output_compression`), so this path bypasses it, for the same reason the direct Anthropic and Gemini paths exist. Key resolution, retry/backoff, and error wrapping are shared with the rest of the router.
+
+Use this when you want a standalone image file. For image output inside a chat turn (text and images in one response), use `nano-banana-3` with `ask_ai()`. See [Image Output (Generation)](#image-output-generation).
+
+### Usage
+
+```python
+from skell_e_router import generate_image
+
+resp = generate_image("gpt-image", "a simple red circle on white")
+resp.save("circle.png")
+
+print(resp.model, resp.input_tokens, resp.output_tokens, resp.cost)
+```
+
+Several images at once, written into a folder:
+
+```python
+resp = generate_image(
+    "gpt-image-2.5-sunburst",
+    "an anatomical study of a human hand, graphite",
+    size="1024x1536",
+    quality="high",
+    n=3,
+)
+paths = resp.save("out/", stem="hand")  # ['out/hand_0.png', 'out/hand_1.png', 'out/hand_2.png']
+```
+
+Editing reference images (routes to `/v1/images/edits`):
+
+```python
+resp = generate_image(
+    "gpt-image",
+    "put the character on a beach at sunset",
+    images=["character.png", "https://example.com/beach.jpg"],
+    background="transparent",
+)
+resp.save("composite.png")
+```
+
+### Parameters
+
+| Parameter | Type | Default | Notes |
+|---|---|---|---|
+| `model_alias` | str | required | Alias from the models table below |
+| `prompt` | str | required | What to draw, or how to change `images` |
+| `size` | str | `"auto"` | `"auto"`, a named size, or a custom `"WIDTHxHEIGHT"` (see below) |
+| `quality` | str | `"auto"` | Validated against the model's tiers |
+| `n` | int | `1` | 1–10 images per call |
+| `background` | str \| None | `None` | `"auto"`, `"transparent"`, `"opaque"`. Transparent needs PNG or WebP output |
+| `output_format` | str | `"png"` | `"png"`, `"jpeg"`, `"webp"` |
+| `output_compression` | int \| None | `None` | 0–100, JPEG and WebP only |
+| `images` | list \| None | `None` | Reference images. Any value routes the call to the edits endpoint. Each entry may be a local path, an http(s) URL, a `data:` URI, or raw `bytes` |
+| `verbosity` | str | `"none"` | `"none" \| "response" \| "info" \| "debug"` |
+| `config` | dict \| None | `None` | e.g. `{"openai_api_key": "sk-..."}`, overrides the env var |
+| `**kwargs` | any | none | Forwarded verbatim to the OpenAI images endpoint |
+
+**Sizes.** Every GPT-Image model takes `"auto"` plus the recommended `1024x1024`, `1536x1024`, and `1024x1536`. Custom `"WIDTHxHEIGHT"` values are also accepted when both edges are divisible by 16, the longest edge is ≤ 3840, total pixels land between 655,360 and 8,294,400, and the aspect ratio stays between 1:3 and 3:1. The router checks all of this before spending a request.
+
+### Models
+
+| Alias | Model | Quality tiers | Edits | Transparent bg | Text in / Image in / Image out per 1M tokens |
+|---|---|---|---|---|---|
+| `gpt-image`, `gpt-image-2.5` | `gpt-image-2.5-flare` | auto, low, medium, high, xhigh, max | yes | yes | $5.00 / $8.00 / $30.00 |
+| `gpt-image-2.5-sunburst` | `gpt-image-2.5-sunburst` | auto, low, medium, high, xhigh, max | yes | yes | $5.00 / $8.00 / $30.00 |
+| `gpt-image-2` | `gpt-image-2` | auto, low, medium, high | yes | yes | $5.00 / $8.00 / $30.00 |
+
+`gpt-image-2.5-flare` is the fast variant and the target of the bare `gpt-image` alias. `gpt-image-2.5-sunburst` takes longer and follows detailed prompts more precisely. Text output tokens are not billed on these models, so cost is text input plus image input plus image output.
+
+### Response
+
+`generate_image()` always returns an `ImageResponse`:
+
+| Field | Type | Description |
+|---|---|---|
+| `images` | list[bytes] | One entry per image, already base64-decoded |
+| `format` | str | `"png"`, `"jpeg"`, or `"webp"` |
+| `model` | str | Provider-reported model name |
+| `size` | str | The size that was requested |
+| `quality` | str | The quality that was requested |
+| `input_tokens` | int \| None | Prompt plus reference-image tokens |
+| `output_tokens` | int \| None | Image output tokens |
+| `total_tokens` | int \| None | Provider-reported total |
+| `cost` | float \| None | USD, from usage × registry prices. `None` when the model has no registered prices or the provider reported no usage |
+| `duration_seconds` | float \| None | Wall time of the HTTP request |
+| `raw_response` | Any | The untouched SDK object |
+
+### `save()`
+
+```python
+resp.save(path_or_dir, stem="image") -> list[str]
+```
+
+- A directory (existing, or any path without a file extension) gets one file per image, named `<stem>_<i>.<ext>`. Missing directories are created.
+- A file path with exactly one image is written verbatim.
+- A file path with several images inserts the index before the extension: `shot_0.png`, `shot_1.png`.
+- The extension follows `format`, with `jpeg` written as `.jpg`. `resp.extension` exposes it.
+
+Returns the written paths in image order.
+
+### Errors
+
+All errors are `RouterError`:
+
+| Code | Triggered by |
+|---|---|
+| `INVALID_MODEL` | unknown alias passed to `generate_image(model_alias=...)` |
+| `MISSING_ENV` | `OPENAI_API_KEY` not in env or `config` |
+| `INVALID_INPUT` | empty prompt, `images` not a list, unreadable reference image, or edits on a model that doesn't support them |
+| `INVALID_PARAM` | `size`, `quality`, `background`, `output_format`, `output_compression`, or `n` outside the model's allowed values |
+| `PROVIDER_ERROR` | OpenAI failure after retries, or a response with no base64 image data. Fixed safe message and category, no original provider exception attached |
+
+Validation runs before the HTTP call, so a bad `quality` costs nothing. Retries follow the same policy as the rest of the router: 3 attempts on 429/5xx/timeout with `Retry-After` honored.
+
+---
+
 ## Gemini Deep Research Agent
 
 The Gemini Deep Research Agent autonomously plans, executes, and synthesizes multi-step research tasks. It navigates complex information landscapes using web search to produce detailed, cited reports.

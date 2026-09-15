@@ -909,3 +909,112 @@ def resolve_embedding_alias(model_alias: str) -> EmbeddingModel:
             message=f"Invalid embedding model alias '{model_alias}'. Available: {available}",
         )
     return model
+
+
+# ============================================================
+# IMAGE GENERATION MODEL CONFIGURATION
+# ============================================================
+
+
+class ImageModel:
+    """Registry entry for an image-generation model. Distinct from chat AIModel."""
+
+    def __init__(
+        self,
+        name: str,                                  # OpenAI model id (no provider prefix)
+        provider: str,                              # "openai"
+        supported_sizes: tuple[str, ...],           # named sizes; custom "WxH" also allowed
+        supported_qualities: tuple[str, ...],
+        supports_transparent_background: bool = False,
+        supports_edits: bool = False,
+        text_input_price: float | None = None,      # USD per 1M text input tokens
+        image_input_price: float | None = None,     # USD per 1M image input tokens
+        image_output_price: float | None = None,    # USD per 1M image output tokens
+    ):
+        self.name = name
+        self.provider = provider
+        self.supported_sizes = supported_sizes
+        self.supported_qualities = supported_qualities
+        self.supports_transparent_background = supports_transparent_background
+        self.supports_edits = supports_edits
+        self.text_input_price = text_input_price
+        self.image_input_price = image_input_price
+        self.image_output_price = image_output_price
+
+    @property
+    def is_openai(self) -> bool:
+        return self.provider == "openai"
+
+    @property
+    def has_pricing(self) -> bool:
+        return None not in (
+            self.text_input_price,
+            self.image_input_price,
+            self.image_output_price,
+        )
+
+
+# Named sizes OpenAI recommends for every GPT-Image model. Custom "WIDTHxHEIGHT"
+# values are also accepted — see IMAGE_CUSTOM_SIZE_RULES in images.py.
+_GPT_IMAGE_SIZES = ("auto", "1024x1024", "1536x1024", "1024x1536")
+
+IMAGE_CONFIG: dict[str, ImageModel] = {
+    "gpt-image-2.5-flare": ImageModel(
+        name="gpt-image-2.5-flare",
+        provider="openai",
+        supported_sizes=_GPT_IMAGE_SIZES,
+        supported_qualities=("auto", "low", "medium", "high", "xhigh", "max"),
+        supports_transparent_background=True,
+        supports_edits=True,
+        text_input_price=5.00,
+        image_input_price=8.00,
+        image_output_price=30.00,
+    ),
+    "gpt-image-2.5-sunburst": ImageModel(
+        name="gpt-image-2.5-sunburst",
+        provider="openai",
+        supported_sizes=_GPT_IMAGE_SIZES,
+        supported_qualities=("auto", "low", "medium", "high", "xhigh", "max"),
+        supports_transparent_background=True,
+        supports_edits=True,
+        text_input_price=5.00,
+        image_input_price=8.00,
+        image_output_price=30.00,
+    ),
+    "gpt-image-2": ImageModel(
+        name="gpt-image-2",
+        provider="openai",
+        supported_sizes=_GPT_IMAGE_SIZES,
+        # Models before 2.5 top out at "high" — no "xhigh" / "max" tiers.
+        supported_qualities=("auto", "low", "medium", "high"),
+        supports_transparent_background=True,
+        supports_edits=True,
+        text_input_price=5.00,
+        image_input_price=8.00,
+        image_output_price=30.00,
+    ),
+}
+
+# Additional aliases — the fast 2.5 variant is the default "just give me an image".
+IMAGE_CONFIG["gpt-image-2.5"] = IMAGE_CONFIG["gpt-image-2.5-flare"]
+IMAGE_CONFIG["gpt-image"] = IMAGE_CONFIG["gpt-image-2.5-flare"]
+
+# Allow lookup by full model name in addition to alias.
+for _img_cfg in list(IMAGE_CONFIG.values()):
+    if _img_cfg.name not in IMAGE_CONFIG:
+        IMAGE_CONFIG[_img_cfg.name] = _img_cfg
+
+
+def resolve_image_alias(model_alias: str) -> ImageModel:
+    """Resolve an image model alias (or full model name) to its ImageModel."""
+    # Local import avoids a circular reference (utils.py imports model_config at module load).
+    from .utils import RouterError
+
+    model = IMAGE_CONFIG.get(model_alias)
+    if not model:
+        available = sorted(IMAGE_CONFIG)
+        raise RouterError(
+            code="INVALID_MODEL",
+            message=f"Invalid image model alias '{model_alias}'. Available: {available}",
+        )
+    return model

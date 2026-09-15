@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skell-e-router"
-version = "3.27.2"
+version = "3.28.0"
 description = "Simple AI router using LiteLLM with Gemini Deep Research Agent support."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -14,6 +14,7 @@ dependencies = [
     "tenacity>=8.0.0",
     "google-genai>=1.0.0",  # Required for Gemini Deep Research Agent and direct SDK path
     "anthropic>=0.39.0",  # Required for direct Anthropic SDK path
+    "openai>=1.60.0",  # Required for direct OpenAI image-generation path
     "requests>=2.25.0",  # Required for citation URL resolution
 ]
 

@@ -96,6 +96,29 @@ response = ask_ai(
 )
 ```
 
+For standalone image files, `generate_image()` calls OpenAI's GPT-Image models and hands back decoded bytes plus a `save()` helper.
+
+```python
+from skell_e_router import generate_image
+
+resp = generate_image("gpt-image", "a simple red circle on white", quality="low")
+resp.save("circle.png")
+print(resp.cost, resp.input_tokens, resp.output_tokens)
+
+# Pass reference images to edit instead of generate
+resp = generate_image(
+    "gpt-image-2.5-sunburst",
+    "put this character on a beach at sunset",
+    images=["character.png"],
+    size="1536x1024",
+    quality="high",
+    n=2,
+)
+resp.save("out/", stem="beach")  # ['out/beach_0.png', 'out/beach_1.png']
+```
+
+Available models: `gpt-image` / `gpt-image-2.5` (both the fast `gpt-image-2.5-flare`), `gpt-image-2.5-sunburst`, `gpt-image-2`. See [the technical reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-generation-openai-gpt-image) for sizes, quality tiers, pricing, and error codes.
+
 ### Embeddings
 
 Route embedding calls through skell-e-router with `get_embedding()`. Supports OpenAI text embeddings and Gemini multimodal embeddings.

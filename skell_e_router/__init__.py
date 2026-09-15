@@ -1,4 +1,4 @@
-from .response import AIResponse, GeminiFileRef, EmbeddingResponse
+from .response import AIResponse, GeminiFileRef, EmbeddingResponse, ImageResponse
 from .utils import ask_ai, upload_file, resolve_model_alias, check_environment_variables, RouterError
 from .gemini_deep_research import (
     ask_deep_research,
@@ -15,7 +15,13 @@ from .gemini_deep_research import (
     ParsedCitation,
 )
 from .embeddings import get_embedding
-from .model_config import EmbeddingModel, resolve_embedding_alias
+from .images import generate_image
+from .model_config import (
+    EmbeddingModel,
+    ImageModel,
+    resolve_embedding_alias,
+    resolve_image_alias,
+)
 
 __all__ = [
     # Core LiteLLM-based functions
@@ -31,6 +37,11 @@ __all__ = [
     "EmbeddingResponse",
     "EmbeddingModel",
     "resolve_embedding_alias",
+    # Image generation
+    "generate_image",
+    "ImageResponse",
+    "ImageModel",
+    "resolve_image_alias",
     # Gemini Deep Research Agent
     "ask_deep_research",
     "deep_research_follow_up",
@@ -46,4 +57,4 @@ __all__ = [
     "ParsedCitation",
 ]
 
-__version__ = "3.26.3"
+__version__ = "3.28.0"
