@@ -77,6 +77,21 @@ class EmbeddingResponse:
         )
 
 
+@dataclass
+class ClassificationResponse:
+    """Typed answers with native probabilities and optional reported usage.
+
+    Cost is USD for the successful response only; duration includes retries.
+    """
+
+    answers: dict[str, dict]
+    model: str
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    cost: float | None = None
+    duration_seconds: float | None = None
+
+
 # Extension written by ImageResponse.save() for each output format.
 _IMAGE_FORMAT_EXTENSION = {"png": "png", "jpeg": "jpg", "webp": "webp"}
 

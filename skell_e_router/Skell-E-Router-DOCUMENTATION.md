@@ -252,6 +252,57 @@ print(response)  # Prints content via __str__
 
 ---
 
+## Classification with Jev
+
+Experimental direct TypeSafe support, with offline contract tests. Authenticated verification and the Jev comparison remain pending account access. Jev produces typed decisions and has a separate registry from chat, image and embedding models. Calling `ask_ai()` with a registered Jev alias raises `RouterError("INVALID_MODEL")` before a provider call.
+
+```python
+from skell_e_router import classify, resolve_classification_alias
+
+result = classify(
+    "jev",
+    "The customer requests a refund for a duplicate charge.",
+    {
+        "team": {
+            "type": "choice",
+            "instructions": "Which team should handle this message?",
+            "criteria": {"billing": "Payments and refunds", "technical": "Bugs and outages"},
+        },
+        "refund_requested": {
+            "type": "noul",
+            "instructions": "Does the customer request a refund?",
+        },
+        "urgency": {
+            "type": "score",
+            "instructions": "Rate the urgency.",
+            "criteria": ["Routine", "Time-sensitive", "Immediate action needed"],
+        },
+    },
+    timeout=30,
+)
+print(result.answers["team"]["choice"])
+print(result.answers["refund_requested"]["noul"])
+print(result.cost, result.duration_seconds)
+```
+
+`classify(model, state, questions, *, config=None, timeout=30)` always returns `ClassificationResponse`. State is a string, JSON object or JSON array. Questions are a nonempty map of IDs to native TypeSafe question objects. IDs match the returned answer keys. Instructions and criteria descriptions may be text, objects or arrays. Choice criteria map 2 to 255 labels to descriptions or null. Score criteria contain 2 to 10 ordered descriptions. Noul asks a yes/no question and optionally describes the true and false cases. Unsupported chat arguments such as reasoning effort, temperature, tools and streaming are absent from this API. See [structured criteria](https://docs.typesafe.ai/primitives/advanced).
+
+`jev` and `jev-1.13.0` resolve to the pinned version `jev-1.13.0`. `jev-latest` sends that alias to the provider and can change behavior when TypeSafe updates it. `resolve_classification_alias()` exposes the selected model metadata. Jev's current documented limits are 64,000 tokens for state plus all questions, and 32,000 for state plus the longest question. The provider enforces these limits with its own tokenizer.
+
+Set `TYPESAFE_API_KEY` or supply `config={"typesafe_api_key": key}`. Supplying a config dictionary makes it the credential source; an absent or empty key in that dictionary does not fall back to the environment. No key, state or raw provider error body appears in controlled error messages. HTTP redirects are disabled. Timeout applies to each attempt, with at most three attempts for retryable failures and the shared Retry-After policy. Authentication and invalid requests are not retried.
+
+| Response field | Meaning |
+| --- | --- |
+| `answers` | Native answer map, including probabilities and confidence when applicable |
+| `model` | Provider-reported model identifier |
+| `input_tokens`, `output_tokens` | Reported counts, or None if absent |
+| `cost` | Estimated USD at $0.042 per million input tokens and free output, or None without input usage |
+| `duration_seconds` | Wall-clock duration including retries |
+
+Choice answers contain `choice`, `probabilities` and `confidence`. Score answers contain a probability-weighted `score`, `legend`, `probabilities` and `confidence`. Noul answers contain a value named `noul` between zero and one. Confidence is not a guarantee of correctness. Malformed responses raise a controlled provider error instead of returning an invented label. Reported usage covers the successful response; failed attempts may incur additional provider charges.
+
+Sources: [TypeSafe API](https://docs.typesafe.ai/api), [models and pricing](https://docs.typesafe.ai/models), [Jev limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13). Research and comparison evidence lives in [docs/jev-classification.md](../docs/jev-classification.md).
+
 ## Image Input (Vision)
 
 The `images` parameter on `ask_ai()` lets you send images alongside a text prompt. It works with any vision-capable model across all providers.

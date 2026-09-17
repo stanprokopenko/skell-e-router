@@ -1,4 +1,4 @@
-from .response import AIResponse, GeminiFileRef, EmbeddingResponse, ImageResponse
+from .response import AIResponse, GeminiFileRef, EmbeddingResponse, ImageResponse, ClassificationResponse
 from .utils import ask_ai, upload_file, resolve_model_alias, check_environment_variables, RouterError
 from .gemini_deep_research import (
     ask_deep_research,
@@ -16,11 +16,14 @@ from .gemini_deep_research import (
 )
 from .embeddings import get_embedding
 from .images import generate_image
+from .classification import classify
 from .model_config import (
     EmbeddingModel,
     ImageModel,
     resolve_embedding_alias,
     resolve_image_alias,
+    ClassificationModel,
+    resolve_classification_alias,
 )
 
 __all__ = [
@@ -42,6 +45,10 @@ __all__ = [
     "ImageResponse",
     "ImageModel",
     "resolve_image_alias",
+    "classify",
+    "ClassificationResponse",
+    "ClassificationModel",
+    "resolve_classification_alias",
     # Gemini Deep Research Agent
     "ask_deep_research",
     "deep_research_follow_up",
@@ -57,4 +64,4 @@ __all__ = [
     "ParsedCitation",
 ]
 
-__version__ = "3.29.0"
+__version__ = "3.30.0"

@@ -1,5 +1,9 @@
 # Active Tasks & Deferred Follow-ups
 
+## Jev classification comparison
+
+- [ ] Complete authenticated Jev verification and its matched comparison with gpt-5.6-luna once Stan supplies TypeSafe access. Experimental direct integration and 37 labeled project fixtures are prepared; Luna's baseline is complete. Account access is unresolved, so no production adoption or installation rollout is approved by these results. [Findings, evidence, spend and reproduction](jev-classification.md).
+
 ## Provider error credential disclosure
 
 - [x] Fixed v3.26.2 provider error and traceback disclosure in v3.26.3 source `63b5fd22bacef9100b09cdee355bd8839439be78`. All 781 tests pass on source and wheel, the actual Houston helper passes offline, and fresh independent Astra review is clean in round 2 of the three-round cap. [Reproduction, validation and release record](credential-error-security.md).

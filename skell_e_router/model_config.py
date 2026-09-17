@@ -1148,3 +1148,34 @@ def resolve_image_alias(model_alias: str) -> ImageModel:
             message=f"Invalid image model alias '{model_alias}'. Available: {available}",
         )
     return model
+
+
+class ClassificationModel:
+    """Typed evaluation model, separate from generative chat models."""
+
+    def __init__(self, name: str):
+        self.name = name
+        self.provider = "typesafe"
+        self.input_cost_per_million = 0.042
+        self.output_cost_per_million = 0.0
+        # Provider limits, enforced by the API using its own tokenizer.
+        self.max_input_tokens = 64000
+        self.max_state_question_tokens = 32000
+        self.question_types = frozenset({"choice", "score", "noul"})
+
+
+# https://docs.typesafe.ai/models and /model-jaggedness/jev-1.13
+# The short alias is pinned; callers opt into provider upgrades with jev-latest.
+CLASSIFICATION_MODEL_CONFIG = {
+    "jev": ClassificationModel("jev-1.13.0"),
+    "jev-latest": ClassificationModel("jev-latest"),
+}
+CLASSIFICATION_MODEL_CONFIG["jev-1.13.0"] = CLASSIFICATION_MODEL_CONFIG["jev"]
+
+
+def resolve_classification_alias(model_alias: str) -> ClassificationModel:
+    from .utils import RouterError
+
+    if not isinstance(model_alias, str) or model_alias not in CLASSIFICATION_MODEL_CONFIG:
+        raise RouterError("INVALID_MODEL", "Unknown classification model alias.")
+    return CLASSIFICATION_MODEL_CONFIG[model_alias]

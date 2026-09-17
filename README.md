@@ -26,6 +26,26 @@ response = ask_ai(
 
 Pass `max_tokens=600` to cap generated tokens on OpenAI reasoning models, including `gpt-5.6-luna`. The router forwards the provider's output-limit field. The cap includes reasoning tokens, so the visible answer may be shorter or empty. See the [parameter contract](skell_e_router/Skell-E-Router-DOCUMENTATION.md#output-token-limits) for aliases and validation rules.
 
+### Classification with Jev
+
+Experimental direct TypeSafe support. The adapter has offline contract tests; authenticated verification is pending account access. Jev returns typed decisions rather than text, so use `classify()` instead of `ask_ai()`.
+
+```python
+from skell_e_router import classify
+
+result = classify("jev", "I was charged twice.", {
+    "team": {
+        "type": "choice",
+        "instructions": "Which team should handle this message?",
+        "criteria": {"billing": "Payments or refunds", "technical": "Bugs or outages"},
+    }
+})
+print(result.answers["team"]["choice"])
+print(result.answers["team"]["probabilities"])
+```
+
+Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
+
 ### Image Input (Vision)
 
 Send an image alongside your prompt. You can pass a local file path, a URL, or a base64 data URI — the router handles encoding for you.
