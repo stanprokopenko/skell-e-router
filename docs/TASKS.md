@@ -2,7 +2,8 @@
 
 ## Jev classification comparison
 
-- [x] Verified Jev account access, all three aliases and Choice/Noul/Score. Completed 333 matched calls against gpt-5.6-luna on 37 project fixtures repeated three times. Jev scored 109/111 versus Luna's 111/111, with about 3.9 times lower median latency and 4.0 to 4.7 times lower cost per call. Total task API spend was about $0.0461. No production routing changed. [Findings, evidence and reproduction](jev-classification.md).
+- [x] Added and authenticated Jev support, including all three aliases and Choice/Noul/Score. The 333-call fixture benchmark verified integration and measured speed/cost, but used examples covered by deterministic rules. It does not establish whether Jev can replace an existing AI step. Total task API spend was about $0.0461. No production routing changed. [Evidence and corrected interpretation](jev-classification.md).
+- [ ] Complete the intended Jev versus gpt-5.6-luna comparison on an actual existing AI classification step and representative inputs. Trace the production model call and prompt first; use independently justified expected labels, not deterministic-rule fixtures or mocked model outputs. Access is ready. Resume details and remaining budget are in the report's next-session section. Paused at Stan's end-session request.
 
 ## Provider error credential disclosure
 

@@ -2,7 +2,7 @@
 
 This note is for Stan, with reproduction details for developers at the end. Research began September 17; authenticated testing completed September 19, 2026.
 
-Jev works through our router and this account. On 37 project test cases repeated three times, it made 109 of 111 decisions correctly, versus 111 of 111 for both Luna settings. It answered about 3.9 times faster and cost 4.0 to 4.7 times less per call. I would trial it for simple routing where speed matters, with a fallback for uncertain answers. This small test does not justify a broad production switch.
+Jev works through our router and this account. The benchmark selected examples already covered by deterministic application rules, then asked models to reproduce those rules. That was the wrong task selection for evaluating whether Jev could replace an existing AI step. The recorded results are valid for those fixtures: 109 of 111 correct decisions, versus Luna's 111 of 111, about 3.9 times faster and 4.0 to 4.7 times cheaper per call. The intended adoption comparison remains unfinished. No production recommendation should rely on this accuracy score.
 
 ## What launched
 
@@ -55,6 +55,10 @@ There are 37 distinct fixture inputs, not 111 independent cases per model. Repet
 
 The [matched raw results](jev-classification-matched.jsonl) contain every expected and returned label, confidence, model identifier, token count, elapsed time and estimated cost. The [summary](jev-classification-summary.json) records the aggregates and the raw file hash. The September 17 [Luna baseline](jev-luna-baseline.jsonl) and [Luna pilot](jev-luna-pilot.jsonl) remain historical evidence and are excluded from the matched table. The [Jev access pilot](jev-access-pilot.jsonl) is also excluded.
 
+## Later threshold replay
+
+Re-scoring the saved ticket-completeness probabilities with a rule that flags insufficient only at probability 0.60 or above fixes both misses and changes no other answers. The fixture score becomes 111/111, with no new model calls. This is an adjustment made after inspecting the failures, not fresh evidence of model quality or a production change. The actual support pipeline uses deterministic code for this advisory check and has no probability threshold. Its warning helps the drafting agent identify incomplete content; it does not automatically close or spam tickets.
+
 ## Spend
 
 | Calls | Estimated USD |
@@ -95,3 +99,11 @@ Verification so far: all 37 fixture inputs and labels match the source tests, an
 Independent results review confirmed all 333 sample/model/repetition combinations, both evidence hashes, every label and cost calculation, the latency summaries and the complete spend total. It found no material errors.
 
 The September 17 wheel is dist/skell_e_router-3.30.0-py3-none-any.whl, SHA-256 d9ae154b1378bcb653f1e09b91d400da36ba9647065b8246dd61bbf39a88a87a. Its runtime code matches the authenticated run; this report and the current documentation also contain the September 19 verification. No global package installation or benchmark environment upgrade has occurred. Ordinary pytest startup on this PC encounters an unrelated installed Logfire plugin with a missing dependency; the existing offline test launcher disables plugin auto-loading, so no shared environment repair was needed.
+
+## Next session
+
+Developer continuation notes. Stan ended the session after identifying the task-selection mistake. The original request to evaluate an actual AI classification step remains open; do not repeat the deterministic completeness test as a substitute. Inspect a real model call in a consuming project, preserve its purpose and policy, select representative inputs with justified labels, then compare Jev and Luna. Retain the existing fixture results as historical evidence rather than overwriting them. No production migration is requested.
+
+Use classify() for Jev and ask_ai() for Luna through this router checkout. Jev does not support the generative benchmark suite or low/high reasoning controls. TYPESAFE_API_KEY is saved in the Windows machine environment; OPENAI_API_KEY is available in the user environment. A process launched before those variables were saved may need to load them into its child environment. Never print or commit their values. The task has spent an estimated $0.046080192 of its standing $20 API budget, leaving about $19.9539.
+
+The canonical TypeSafe skill is C:/Users/Stan/.claude/skills/typesafe-ai/SKILL.md. Its shortened description was verified in both that file and the relay-synced Codex copy. Existing integration tests and source files are listed above. The support check we mistakenly converted lives in skell-e-web/backend/rag/ticket_quality.py, called by support_pipeline.py while preparing agent context. Production deployment itself was not inspected during this clarification.
