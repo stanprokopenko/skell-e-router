@@ -1,0 +1,482 @@
+{
+ "ticket-10986401": {
+  "label": "NOT_SPAM",
+  "note": "customer cancelling a refund request"
+ },
+ "ticket-12304742": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-11763987": {
+  "label": "SPAM",
+  "note": "consumer travel promo newsletter"
+ },
+ "ticket-10074903": {
+  "label": "SPAM",
+  "note": "video editing / virality pitch"
+ },
+ "ticket-11962560": {
+  "label": "SPAM",
+  "note": "sleep supplement promo"
+ },
+ "ticket-12492942": {
+  "label": "SPAM",
+  "note": "blog comment spam with game link"
+ },
+ "ticket-11080206": {
+  "label": "NOT_SPAM",
+  "note": "pricing currency question"
+ },
+ "ticket-10373572": {
+  "label": "CLOSE",
+  "note": "auto-reply (Chinese)"
+ },
+ "ticket-12328797": {
+  "label": "NOT_SPAM",
+  "note": "refund request"
+ },
+ "ticket-12007909": {
+  "label": "NOT_SPAM",
+  "note": "course release date question"
+ },
+ "ticket-12302454": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-10952018": {
+  "label": "NOT_SPAM",
+  "note": "which course to buy"
+ },
+ "ticket-9489164": {
+  "label": "NOT_SPAM",
+  "note": "moderation dispute, real student"
+ },
+ "ticket-10218195": {
+  "label": "UNSURE",
+  "note": "'otp problem' from a pharma-named account; could be a real login issue"
+ },
+ "ticket-11751560": {
+  "label": "SPAM",
+  "note": "supplement promo"
+ },
+ "ticket-11551029": {
+  "label": "NOT_SPAM",
+  "note": "charged full price during presale error"
+ },
+ "ticket-11783361": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-10320166": {
+  "label": "CLOSE",
+  "note": "auto-reply (Chinese)"
+ },
+ "ticket-10692628": {
+  "label": "SPAM",
+  "note": "juicer influencer collab pitch"
+ },
+ "ticket-10875528": {
+  "label": "SPAM",
+  "note": "growth agency pitch"
+ },
+ "ticket-10378458": {
+  "label": "NOT_SPAM",
+  "note": "refund request with order number"
+ },
+ "ticket-9791761": {
+  "label": "NOT_SPAM",
+  "note": "purchased course disappeared"
+ },
+ "ticket-12395551": {
+  "label": "NOT_SPAM",
+  "note": "return of reference pack"
+ },
+ "ticket-11038497": {
+  "label": "SPAM",
+  "note": "guest post / casino links"
+ },
+ "ticket-10992364": {
+  "label": "NOT_SPAM",
+  "note": "asks about official Twitch channel"
+ },
+ "ticket-10589644": {
+  "label": "NOT_SPAM",
+  "note": "reference pack license question"
+ },
+ "ticket-12489550": {
+  "label": "SPAM",
+  "note": "AI video tool collab pitch"
+ },
+ "ticket-11760141": {
+  "label": "CLOSE",
+  "note": "Proko's own newsletter landed in support"
+ },
+ "ticket-10349464": {
+  "label": "NOT_SPAM",
+  "note": "paid video player bug"
+ },
+ "ticket-12297038": {
+  "label": "NOT_SPAM",
+  "note": "refund request, course too hard"
+ },
+ "ticket-10386774": {
+  "label": "CLOSE",
+  "note": "auto-reply (Chinese)"
+ },
+ "ticket-11814531": {
+  "label": "NOT_SPAM",
+  "note": "bundle discount question"
+ },
+ "ticket-12000629": {
+  "label": "UNSURE",
+  "note": "person asking Proko to draw a comic for them; misdirected, not a solicitation"
+ },
+ "ticket-11820929": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-10299003": {
+  "label": "NOT_SPAM",
+  "note": "cancel course and switch"
+ },
+ "ticket-11749832": {
+  "label": "CLOSE",
+  "note": "DMARC aggregate report"
+ },
+ "ticket-11503094": {
+  "label": "SPAM",
+  "note": "community platform promo"
+ },
+ "ticket-11800934": {
+  "label": "SPAM",
+  "note": "brand deal follow-up"
+ },
+ "ticket-12296844": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-9492122": {
+  "label": "NOT_SPAM",
+  "note": "order stuck on payment pending"
+ },
+ "ticket-12301756": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-10308590": {
+  "label": "CLOSE",
+  "note": "customer says they solved it themselves, nothing to answer"
+ },
+ "ticket-10904548": {
+  "label": "NOT_SPAM",
+  "note": "price question"
+ },
+ "ticket-11863258": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-11828577": {
+  "label": "NOT_SPAM",
+  "note": "partial refund for sale code"
+ },
+ "ticket-10445575": {
+  "label": "NOT_SPAM",
+  "note": "payment structure question"
+ },
+ "ticket-11459122": {
+  "label": "CLOSE",
+  "note": "internal test ticket from staff"
+ },
+ "ticket-11086676": {
+  "label": "NOT_SPAM",
+  "note": "paid but no access"
+ },
+ "ticket-11993682": {
+  "label": "NOT_SPAM",
+  "note": "purchased package missing after site change"
+ },
+ "ticket-11687567": {
+  "label": "NOT_SPAM",
+  "note": "promo code invalid"
+ },
+ "ticket-12352659": {
+  "label": "SPAM",
+  "note": "moderation dispute from an Ambien spam account"
+ },
+ "ticket-12275642": {
+  "label": "NOT_SPAM",
+  "note": "bundle discount on earlier purchase"
+ },
+ "ticket-12305339": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-11779200": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12307316": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12345717": {
+  "label": "NOT_SPAM",
+  "note": "refund, wrong course bought"
+ },
+ "ticket-11693791": {
+  "label": "SPAM",
+  "note": "supplement sale promo"
+ },
+ "ticket-11892615": {
+  "label": "SPAM",
+  "note": "app growth agency pitch"
+ },
+ "ticket-11144254": {
+  "label": "NOT_SPAM",
+  "note": "collaborator asking about premium access and fit; real relationship"
+ },
+ "ticket-12335908": {
+  "label": "NOT_SPAM",
+  "note": "asks for a future course topic"
+ },
+ "ticket-9775009": {
+  "label": "NOT_SPAM",
+  "note": "Skelly app bug"
+ },
+ "ticket-12392371": {
+  "label": "NOT_SPAM",
+  "note": "moderation dispute, real student"
+ },
+ "ticket-10220052": {
+  "label": "NOT_SPAM",
+  "note": "refund, unhappy with course"
+ },
+ "ticket-11601401": {
+  "label": "SPAM",
+  "note": "AI chatbot clone pitch"
+ },
+ "ticket-11546471": {
+  "label": "NOT_SPAM",
+  "note": "transcript feature request"
+ },
+ "ticket-11751113": {
+  "label": "SPAM",
+  "note": "junk 'surprise' mail"
+ },
+ "ticket-10337327": {
+  "label": "NOT_SPAM",
+  "note": "VAT invoice correction"
+ },
+ "ticket-12299329": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12300812": {
+  "label": "NOT_SPAM",
+  "note": "bought course, cannot access lessons"
+ },
+ "ticket-12334971": {
+  "label": "NOT_SPAM",
+  "note": "payment from sanctioned country question"
+ },
+ "ticket-12304032": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12475002": {
+  "label": "NOT_SPAM",
+  "note": "refund request"
+ },
+ "ticket-11252576": {
+  "label": "NOT_SPAM",
+  "note": "lost two-factor authenticator"
+ },
+ "ticket-12049360": {
+  "label": "NOT_SPAM",
+  "note": "vague prospect 'I want to learn how to draw'"
+ },
+ "ticket-11498381": {
+  "label": "SPAM",
+  "note": "TikTok Shop invite"
+ },
+ "ticket-9794303": {
+  "label": "NOT_SPAM",
+  "note": "card declined, wants to pay again"
+ },
+ "ticket-12150478": {
+  "label": "SPAM",
+  "note": "offer to buy Google Play account"
+ },
+ "ticket-12241665": {
+  "label": "SPAM",
+  "note": "flashlight review pitch"
+ },
+ "ticket-12244999": {
+  "label": "NOT_SPAM",
+  "note": "bought course, cannot find lessons"
+ },
+ "ticket-11590778": {
+  "label": "SPAM",
+  "note": "earbuds collab pitch"
+ },
+ "ticket-11522192": {
+  "label": "SPAM",
+  "note": "guest post pitch"
+ },
+ "ticket-12635857": {
+  "label": "CLOSE",
+  "note": "reply to automation, no question"
+ },
+ "ticket-11499549": {
+  "label": "NOT_SPAM",
+  "note": "community member asks about fire relief thread"
+ },
+ "ticket-11175945": {
+  "label": "UNSURE",
+  "note": "Famous Birthdays asking permission to use photos; outreach but a real request"
+ },
+ "ticket-12375099": {
+  "label": "NOT_SPAM",
+  "note": "refund request"
+ },
+ "ticket-11233608": {
+  "label": "NOT_SPAM",
+  "note": "abuse report about a rogue pharmacy profile; needs action"
+ },
+ "ticket-12559338": {
+  "label": "NOT_SPAM",
+  "note": "refund request"
+ },
+ "ticket-9761265": {
+  "label": "NOT_SPAM",
+  "note": "how to become premium"
+ },
+ "ticket-12305330": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-9733968": {
+  "label": "NOT_SPAM",
+  "note": "financial aid request"
+ },
+ "ticket-10678291": {
+  "label": "UNSURE",
+  "note": "vendor follow-up citing a prior interview with Stan"
+ },
+ "ticket-11239304": {
+  "label": "NOT_SPAM",
+  "note": "asks about seasonal promotions"
+ },
+ "ticket-12489936": {
+  "label": "SPAM",
+  "note": "AI video tool collab pitch"
+ },
+ "ticket-12350939": {
+  "label": "NOT_SPAM",
+  "note": "change account email"
+ },
+ "ticket-11539536": {
+  "label": "SPAM",
+  "note": "course platform partnership pitch"
+ },
+ "ticket-10728634": {
+  "label": "SPAM",
+  "note": "hair extensions collab pitch"
+ },
+ "ticket-10345279": {
+  "label": "NOT_SPAM",
+  "note": "assignment help question"
+ },
+ "ticket-11903569": {
+  "label": "CLOSE",
+  "note": "thank-you note, no question"
+ },
+ "ticket-12352240": {
+  "label": "NOT_SPAM",
+  "note": "refund request"
+ },
+ "ticket-10078071": {
+  "label": "UNSURE",
+  "note": "affiliate application with a wall of links"
+ },
+ "ticket-11481113": {
+  "label": "CLOSE",
+  "note": "'congratulations' reply to newsletter"
+ },
+ "ticket-11653658": {
+  "label": "SPAM",
+  "note": "course platform partnership pitch"
+ },
+ "ticket-11816854": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12217314": {
+  "label": "NOT_SPAM",
+  "note": "download limit complaint"
+ },
+ "ticket-11932861": {
+  "label": "NOT_SPAM",
+  "note": "extra discount request"
+ },
+ "ticket-11828258": {
+  "label": "NOT_SPAM",
+  "note": "apply sale discount after purchase"
+ },
+ "ticket-11927262": {
+  "label": "SPAM",
+  "note": "guest post / casino links"
+ },
+ "ticket-12294229": {
+  "label": "SPAM",
+  "note": "bot form submission, random latin word"
+ },
+ "ticket-12137242": {
+  "label": "NOT_SPAM",
+  "note": "change video language"
+ },
+ "ticket-10326696": {
+  "label": "NOT_SPAM",
+  "note": "gift purchase on wrong account"
+ },
+ "ticket-11760157": {
+  "label": "SPAM",
+  "note": "Portuguese insurance promo"
+ },
+ "ticket-12212649": {
+  "label": "NOT_SPAM",
+  "note": "sale after purchase"
+ },
+ "ticket-11759254": {
+  "label": "CLOSE",
+  "note": "internal publishing review notification"
+ },
+ "ticket-10520714": {
+  "label": "CLOSE",
+  "note": "auto-reply (Chinese)"
+ },
+ "ticket-12178406": {
+  "label": "NOT_SPAM",
+  "note": "return request with order number"
+ },
+ "ticket-10101874": {
+  "label": "SPAM",
+  "note": "partnership pitch follow-up"
+ },
+ "ticket-11352368": {
+  "label": "NOT_SPAM",
+  "note": "refund accidental purchase"
+ },
+ "ticket-12033524": {
+  "label": "NOT_SPAM",
+  "note": "presale course not accessible"
+ },
+ "ticket-12403992": {
+  "label": "SPAM",
+  "note": "paid AI collab pitch"
+ },
+ "ticket-11758629": {
+  "label": "SPAM",
+  "note": "junk 'surprise' mail"
+ }
+}

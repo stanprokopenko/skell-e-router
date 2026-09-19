@@ -1,8 +1,70 @@
 # Jev for classification
 
-This note is for Stan, with reproduction details for developers at the end. Research began September 17; authenticated testing completed September 19, 2026.
+This note is for Stan. Developer notes with every number live in docs/jev-real/. Research began September 17; the real-task comparison ran September 19, 2026.
 
-Jev works through our router and this account. The benchmark selected examples already covered by deterministic application rules, then asked models to reproduce those rules. That was the wrong task selection for evaluating whether Jev could replace an existing AI step. The recorded results are valid for those fixtures: 109 of 111 correct decisions, versus Luna's 111 of 111, about 3.9 times faster and 4.0 to 4.7 times cheaper per call. The intended adoption comparison remains unfinished. No production recommendation should rely on this accuracy score.
+## Bottom line
+
+Jev is a real option for two of our three AI steps and not for the third. On the chat routing decision in skell-e-web (which model answers a staff message), Jev beat both gpt-5.6-luna and the model we run today, at a fifth of the cost and a third of the latency. On support ticket spam triage it is roughly as good as today's model once you gate it on its own confidence, and it is the fastest and cheapest of the three. On the rough cut sentence rating in solar-sailer (which transcript sentences survive the edit), Luna is still better and Jev cuts too much.
+
+The pattern across all three: Jev's confidence number is honest. When it says it is sure, it is right. That is what makes it usable as a first pass with a fallback, and it is the thing our generative prompts never gave us.
+
+Total spend for this session was $0.74, and $0.78 for the whole task against the $20 allowance.
+
+## Task 1: chat routing (skell-e-web)
+
+What it is. Every message to the internal Proko assistant gets sent to a cheap model or an expensive one. Simple rules catch the obvious cases and an AI classifier decides the rest. Getting it wrong costs money one way (expensive model on a data pull) and quality the other (cheap model on a pricing decision). The test set is 565 real staff messages with hand-written labels, already in the skell-e-web repo, with the surrounding conversation joined in.
+
+How Jev was set up. Instead of the production prompt, Jev got the conversation as structured fields (setting, earlier turns, the new message, the sender's history) and one "which model" choice question whose two options carry the prompt's own definitions and examples. Four extra yes/no questions rode along in the same request (does the user want it quick, is there money at stake, is it customer-facing writing, is it a simple pull) so code could combine them. Luna and today's production model got the production prompt unchanged.
+
+| Model | Correct of 565 | Expensive model missed | Cheap model wrongly skipped | Median latency | Cost per 1,000 calls |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Today's production model (gemini-3.5-flash-lite) | 491 (86.9%) | 21 | 53 | 0.61 s | $0.30 |
+| gpt-5.6-luna, low reasoning | 494 (87.4%) | 13 | 58 | 1.09 s | $0.20 |
+| Jev 1.13.0 | 522 (92.4%) | 23 | 20 | 0.21 s | $0.06 |
+
+Jev's win comes almost entirely from not over-escalating. Luna and the production model send about 55 cheap messages to the expensive model; Jev sends 20. Jev misses a few more big ones, mostly short marketing asks that look like data pulls ("generate titles for that episode").
+
+Two things make this more than a one-off number. First, Jev's confidence means something: it was perfect on its most confident quarter of messages and 40 of its 43 mistakes sat in the least confident half. Second, the cheap tricks work. A rule that says "when Jev's confidence is under 0.3, choose big unless the user asked for something quick" drops the missed-big count to 13, matching Luna, while keeping false-bigs at 32. Fitting a probability threshold on half the data and testing on the other half gave 93.3% with only 3 missed-big. Combining the yes/no side questions with hand-picked cutoffs did not work (76%), so the choice question is the part that carries the result.
+
+What I did not do: change production. The numbers use the labels' own history for context, not the model's earlier decisions, so a live rollout will compound its own mistakes in a way this test does not. A limited live trial with the current classifier as a fallback would settle it.
+
+## Task 2: rough cut sentence rating (solar-sailer)
+
+What it is. The video editor rates every transcript sentence 0 to 5 for whether it earns a place in the final edit, and the app cuts from those scores. Ground truth is the human editor's actual cut for 19 real lessons. I used five mid-sized episodes, 1,597 sentences in total.
+
+How Jev was set up. The production prompt asks for one big pass over the whole transcript. Jev cannot write, so each sentence became its own "score" question with the production rubric's six levels as the answer set, plus a yes/no question "is this a repeated take that should go". Questions were batched 25 per request with the whole transcript as shared context. A second variant gave Jev only a window of 30 surrounding sentences, in case the long transcript was hurting it. Luna ran the production prompt as it does today.
+
+| Model | Editor agreement (WORD SCORE) | Keep/cut accuracy | Sentences cut that the editor kept | Time per episode | Cost for five episodes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| gpt-5.6-luna, medium reasoning | 0.770 | 85.1% | 200 | 21 s | $0.03 |
+| Jev, whole transcript | 0.759 | 79.5% | 297 | 2 s | $0.05 |
+| Jev, 30-sentence window | 0.713 | 76.5% | 315 | 2 s | $0.03 |
+
+Luna wins, and not by a little. Jev is right about what to keep when it keeps (96% precision, same as Luna) but it cuts about half again as many sentences the editor wanted. Giving it less context made it worse, so this is not a long-context problem. The judgment itself is the issue: deciding whether a rambling sentence stays because it is funny, or a false start stays for continuity, is exactly where both models struggle and where Luna's full read-through helps. Jev did beat Luna on the two smallest episodes, so on short clips it is competitive.
+
+Jev is ten times faster per episode and its confidence again tracked its accuracy, so a hybrid (Jev first, Luna on the sentences it is unsure about) is conceivable. I would not build it: the editor already runs one Luna call per episode, and the cost is 3 cents. Jev is slightly more expensive here because every batch re-sends the transcript.
+
+One bug fell out of this. The router rejected about a third of Jev's score answers as malformed because it checked that the probabilities add up to exactly 1, and Jev rounds them to two decimals. The check now allows for that rounding, tests pass, and the fix is committed in this repo.
+
+## Task 3: support ticket spam triage (skell-e-web)
+
+What it is. Every incoming support ticket gets sorted into spam (delete), close (archive a notification), not spam (a real customer, draft a reply) or unsure (a human looks). A miss in the wrong direction loses a paying customer. There were no labels for this one, so I sampled 120 real tickets (40 that Teamwork itself filed as spam, 40 that the knowledge base filter had excluded, 40 ordinary kept tickets) and labeled them myself before running any model. Those labels are mine, not human-verified, and the five I marked unsure are judgment calls. The results file says so.
+
+How Jev was set up. Same shape as routing: the ticket as structured fields, one four-way choice question with the production prompt's category lists as examples, and four yes/no side questions (real customer, solicitation, automated mail, money issue). Today's production model (claude-haiku-4-5) and Luna got the production prompt unchanged.
+
+| Model | Correct of 120 | Real customers lost | Spam let through | Sent to a human | Median latency | Cost per 1,000 tickets |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Today's production model (claude-haiku-4-5) | 101 (84%) | 0 | 2 | 8 | 0.53 s | $2.10 |
+| gpt-5.6-luna, low reasoning | 107 (89%) | 0 | 0 | 4 | 0.59 s | $0.06 |
+| Jev 1.13.0, its own choice | 97 (81%) | 0 | 0 | 0 | 0.21 s | $0.06 |
+
+Nobody lost a customer. Jev's raw score looks worst, but 15 of its 23 misses are one pattern: bot form submissions (a fake name, an unrelated email, one random Latin word) that it filed as "close" instead of "spam". Both labels remove the ticket without a reply, so operationally that is not an error. Counting spam and close as the same outcome, Jev gets 112 of 120, Luna 107 and Haiku 101.
+
+The bigger difference is that Jev never says "unsure". It always picks. That would be a problem, except its confidence does the job instead: on the 90 tickets where it was at least 91% sure it was right on 87, and on the 30 where it was less sure it was right on 10. Routing anything under 0.9 confidence to a human sends 29 tickets to a person and leaves 3 mistakes in the other 91, two of which are tickets I had marked unsure myself. That threshold was picked after seeing the results, so treat it as the shape of a policy, not a measured one.
+
+Combining the yes/no side questions with hand-set cutoffs did worse again (83 of 120), same as in routing. The choice question is the part that works. If we ever adopt Jev here, the fix for the bot-form pattern is to add it as an example under spam, which is one line.
+
+One caveat that applies to all three models: the Teamwork export carries no sender address, so nobody saw the "From" line production sees. That is a strong spam signal, so all three would do better live.
 
 ## What launched
 
@@ -24,7 +86,9 @@ Luna cached input is $0.02 per million tokens. Prices above are the standard rat
 
 TypeSafe claims 70 to 500 milliseconds per call. Its headline speed and cost multiples use selected workflows and stronger models, so they do not establish a speed advantage over Luna on our tasks. The matched measurements below establish the difference on our selected cases. [TypeSafe announcement](https://typesafe.ai/blog/introducing-system-one-models-and-jev).
 
-## Our comparison
+## Earlier fixture comparison (September 19, historical)
+
+This round compared the models on fixtures that already had deterministic rules. It is kept as evidence of the integration working, not as a task comparison. The results above supersede it.
 
 The sample file contains 37 developer-authored test fixtures from skell-e-web. These exercise real application tasks, but they are not a held-out sample of customer traffic.
 
@@ -63,15 +127,13 @@ Re-scoring the saved ticket-completeness probabilities with a rule that flags in
 
 | Calls | Estimated USD |
 | --- | ---: |
-| Earlier Luna baseline and pilot | $0.010665600 |
-| Jev access pilot | $0.000036540 |
-| Matched Jev calls | $0.003617586 |
-| Matched Luna low calls | $0.014630400 |
-| Matched Luna high calls | $0.017080800 |
-| Three mixed-question integration checks | $0.000049266 |
-| Total task spend | $0.046080192 |
+| September 17 to 19 fixture round (all calls) | $0.046 |
+| Chat routing, 1,695 calls across three models | $0.320 |
+| Rough cut, 239 requests across three arms | $0.107 |
+| Spam triage, including one aborted run that only reached Luna | $0.309 |
+| Total task spend | $0.783 |
 
-Total spend was about 4.6 cents against the $20 cap. These estimates use provider-reported token counts and official prices. They are not an invoice reconciliation. Successful-response usage does not establish whether a provider billed any unseen retry work.
+About 78 cents against the $20 cap. These estimates use provider-reported token counts and official prices. They are not an invoice reconciliation.
 
 ## Integration and limits
 
@@ -102,8 +164,8 @@ The September 17 wheel is dist/skell_e_router-3.30.0-py3-none-any.whl, SHA-256 d
 
 ## Next session
 
-Developer continuation notes. Stan ended the session after identifying the task-selection mistake. The original request to evaluate an actual AI classification step remains open; do not repeat the deterministic completeness test as a substitute. Inspect a real model call in a consuming project, preserve its purpose and policy, select representative inputs with justified labels, then compare Jev and Luna. Retain the existing fixture results as historical evidence rather than overwriting them. No production migration is requested.
+Developer continuation notes. The real-task comparison is done and documented above; the earlier fixture round is historical. Runners live in scripts/jev_real/ (routing_bench.py, roughcut_bench.py, spam_bench.py, common.py) and every result, summary and developer note lives in docs/jev-real/. Each runner prints a plan and cost estimate without --run and refuses to overwrite existing result files. The API keys are Machine-scope on this PC and missing from a fresh shell; the hydration recipe is in docs/jev-real/routing-notes.md. Never print or commit key values.
 
-Use classify() for Jev and ask_ai() for Luna through this router checkout. Jev does not support the generative benchmark suite or low/high reasoning controls. TYPESAFE_API_KEY is saved in the Windows machine environment; OPENAI_API_KEY is available in the user environment. A process launched before those variables were saved may need to load them into its child environment. Never print or commit their values. The task has spent an estimated $0.046080192 of its standing $20 API budget, leaving about $19.9539.
+Customer text stays out of git: the chat export and the ticket sample live under scripts/temp/ (gitignored) and can be rebuilt with scripts/temp/build_spam_sample.py and the skell-e-web export. Result files carry ids, subjects and the committed 120-character text heads only.
 
-The canonical TypeSafe skill is C:/Users/Stan/.claude/skills/typesafe-ai/SKILL.md. Its shortened description was verified in both that file and the relay-synced Codex copy. Existing integration tests and source files are listed above. The support check we mistakenly converted lives in skell-e-web/backend/rag/ticket_quality.py, called by support_pipeline.py while preparing agent context. Production deployment itself was not inspected during this clarification.
+Open follow-ups, none of them started: a limited live trial of Jev on chat routing with the current classifier as fallback; adding the bot-form pattern to the spam criteria and re-running the 120; and deciding whether the spam labels should get a human pass. No production routing changed in this task.

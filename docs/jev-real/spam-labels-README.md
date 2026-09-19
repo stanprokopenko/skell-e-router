@@ -1,0 +1,1 @@
+Labels in spam-labels.json were assigned by the lead agent (Claude Fable 5.1) in a single pass on 2026-09-19, blind to every model output. They are not human-verified. Labels: SPAM, CLOSE, UNSURE, NOT_SPAM.

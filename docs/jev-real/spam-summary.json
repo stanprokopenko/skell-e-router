@@ -1,0 +1,219 @@
+{
+  "generated_at": "2026-09-19T19:32:17.016508+00:00",
+  "sample": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\scripts\\temp\\spam-sample.json",
+  "labels": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\spam-labels.json",
+  "tickets_attempted": 120,
+  "spend_usd": 0.2649653999999999,
+  "arms": {
+    "haiku_prod": {
+      "attempted": 120,
+      "errors": 0,
+      "unparsed": 0,
+      "labeled": 120,
+      "correct": 101,
+      "accuracy": 0.8416666666666667,
+      "real_customers_lost": 0,
+      "real_customers_lost_ids": [],
+      "spam_let_through": 2,
+      "spam_let_through_ids": [
+        "ticket-12304742",
+        "ticket-12294229"
+      ],
+      "unsure_predictions": 8,
+      "confusion": {
+        "NOT_SPAM": {
+          "NOT_SPAM": 58
+        },
+        "SPAM": {
+          "NOT_SPAM": 2,
+          "SPAM": 35,
+          "UNSURE": 8
+        },
+        "CLOSE": {
+          "CLOSE": 8,
+          "NOT_SPAM": 4
+        },
+        "UNSURE": {
+          "SPAM": 5
+        }
+      },
+      "teamwork_spam_status_tickets": 40,
+      "teamwork_spam_status_called_spam": 21,
+      "teamwork_spam_status_agreement": 0.525,
+      "teamwork_spam_status_called_not_spam": 8,
+      "latency": {
+        "n": 120,
+        "median_s": 0.5325067500234582,
+        "p95_s": 1.5506716999807395,
+        "mean_s": 0.6863290049965144
+      },
+      "cost_usd_total": 0.251629,
+      "cost_usd_per_1000_tickets": 2.0969083333333334
+    },
+    "jev_composed": {
+      "attempted": 120,
+      "errors": 0,
+      "unparsed": 0,
+      "labeled": 120,
+      "correct": 83,
+      "accuracy": 0.6916666666666667,
+      "real_customers_lost": 0,
+      "real_customers_lost_ids": [],
+      "spam_let_through": 3,
+      "spam_let_through_ids": [
+        "ticket-12304742",
+        "ticket-12305330",
+        "ticket-12294229"
+      ],
+      "unsure_predictions": 5,
+      "confusion": {
+        "NOT_SPAM": {
+          "NOT_SPAM": 55,
+          "UNSURE": 3
+        },
+        "SPAM": {
+          "NOT_SPAM": 3,
+          "CLOSE": 23,
+          "SPAM": 18,
+          "UNSURE": 1
+        },
+        "CLOSE": {
+          "CLOSE": 9,
+          "NOT_SPAM": 3
+        },
+        "UNSURE": {
+          "CLOSE": 1,
+          "UNSURE": 1,
+          "SPAM": 3
+        }
+      },
+      "teamwork_spam_status_tickets": 40,
+      "teamwork_spam_status_called_spam": 7,
+      "teamwork_spam_status_agreement": 0.175,
+      "teamwork_spam_status_called_not_spam": 9,
+      "latency": {
+        "n": 120,
+        "median_s": 0.20806994999293238,
+        "p95_s": 0.2763221000204794,
+        "mean_s": 0.21085644082874447
+      },
+      "cost_usd_total": 0,
+      "cost_usd_per_1000_tickets": null
+    },
+    "jev_raw": {
+      "attempted": 120,
+      "errors": 0,
+      "unparsed": 0,
+      "labeled": 120,
+      "correct": 97,
+      "accuracy": 0.8083333333333333,
+      "real_customers_lost": 0,
+      "real_customers_lost_ids": [],
+      "spam_let_through": 0,
+      "spam_let_through_ids": [],
+      "unsure_predictions": 0,
+      "confusion": {
+        "NOT_SPAM": {
+          "NOT_SPAM": 58
+        },
+        "SPAM": {
+          "CLOSE": 15,
+          "SPAM": 30
+        },
+        "CLOSE": {
+          "CLOSE": 9,
+          "NOT_SPAM": 3
+        },
+        "UNSURE": {
+          "SPAM": 4,
+          "NOT_SPAM": 1
+        }
+      },
+      "teamwork_spam_status_tickets": 40,
+      "teamwork_spam_status_called_spam": 16,
+      "teamwork_spam_status_agreement": 0.4,
+      "teamwork_spam_status_called_not_spam": 6,
+      "latency": {
+        "n": 120,
+        "median_s": 0.20806994999293238,
+        "p95_s": 0.2763221000204794,
+        "mean_s": 0.21085644082874447
+      },
+      "cost_usd_total": 0.006636,
+      "cost_usd_per_1000_tickets": 0.0553
+    },
+    "luna_low": {
+      "attempted": 120,
+      "errors": 0,
+      "unparsed": 0,
+      "labeled": 120,
+      "correct": 107,
+      "accuracy": 0.8916666666666667,
+      "real_customers_lost": 0,
+      "real_customers_lost_ids": [],
+      "spam_let_through": 0,
+      "spam_let_through_ids": [],
+      "unsure_predictions": 4,
+      "confusion": {
+        "NOT_SPAM": {
+          "NOT_SPAM": 58
+        },
+        "SPAM": {
+          "SPAM": 41,
+          "UNSURE": 4
+        },
+        "CLOSE": {
+          "CLOSE": 8,
+          "NOT_SPAM": 4
+        },
+        "UNSURE": {
+          "SPAM": 5
+        }
+      },
+      "teamwork_spam_status_tickets": 40,
+      "teamwork_spam_status_called_spam": 27,
+      "teamwork_spam_status_agreement": 0.675,
+      "teamwork_spam_status_called_not_spam": 6,
+      "latency": {
+        "n": 120,
+        "median_s": 0.5928312499891035,
+        "p95_s": 1.136432999977842,
+        "mean_s": 0.6804974608341581
+      },
+      "cost_usd_total": 0.0067004000000000005,
+      "cost_usd_per_1000_tickets": 0.05583666666666667
+    }
+  },
+  "agreement": {
+    "haiku_prod vs jev_composed": {
+      "compared": 120,
+      "same": 89,
+      "agreement": 0.7416666666666667
+    },
+    "haiku_prod vs jev_raw": {
+      "compared": 120,
+      "same": 103,
+      "agreement": 0.8583333333333333
+    },
+    "haiku_prod vs luna_low": {
+      "compared": 120,
+      "same": 112,
+      "agreement": 0.9333333333333333
+    },
+    "jev_composed vs jev_raw": {
+      "compared": 120,
+      "same": 100,
+      "agreement": 0.8333333333333334
+    },
+    "jev_composed vs luna_low": {
+      "compared": 120,
+      "same": 87,
+      "agreement": 0.725
+    },
+    "jev_raw vs luna_low": {
+      "compared": 120,
+      "same": 103,
+      "agreement": 0.8583333333333333
+    }
+  }
+}
