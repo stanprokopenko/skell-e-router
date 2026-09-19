@@ -1,0 +1,1254 @@
+{
+  "generated_utc": "2026-09-19T19:20:38.566642+00:00",
+  "episodes": [
+    "colman-02.04-skeleton-demo",
+    "hampton-5.4-assignment-demo",
+    "colman-03.03-muscles-crit",
+    "edges-7.01-intro",
+    "hampton-5.2-shape-demo"
+  ],
+  "arms": [
+    "luna",
+    "jev_full",
+    "jev_full_retake",
+    "jev_window",
+    "jev_window_retake"
+  ],
+  "settings": {
+    "luna_model": "gpt-5.6-luna",
+    "luna_reasoning_effort": "medium",
+    "luna_max_tokens": 32000,
+    "prompt": "D:\\solar-sailer\\benchmarks\\roughcut\\prompts\\roughcut_system_v1.md",
+    "jev_model": "jev-1.13.0",
+    "jev_block_full": 25,
+    "jev_block_window": 10,
+    "jev_window_pad": 15,
+    "jev_concurrency": 4,
+    "retake_noul_cut": 0.6,
+    "still_missing_score": 3,
+    "neutral_level": "4"
+  },
+  "scores": {
+    "luna": {
+      "pooled": {
+        "neutral_threshold": 2.1,
+        "kept_ratio": 1.0247230648459533,
+        "sentence_points": 0.2545397620538516,
+        "word_score": 0.7699111991266223,
+        "mcc": 0.44893210453833543,
+        "frame_match": 0.7301856810022749,
+        "grade": 0.8568306782264593,
+        "keep_cut_accuracy": 0.8509705698184096,
+        "keep_cells": {
+          "keep_keep": 898,
+          "kept_but_editor_cut": 38,
+          "cut_but_editor_kept": 200,
+          "cut_cut": 461
+        },
+        "keep_precision": 0.9594017094017094,
+        "keep_recall": 0.8178506375227687
+      },
+      "episodes": {
+        "colman-02.04-skeleton-demo": {
+          "n_sentences": 194,
+          "sentence_points": 0.12061855670103194,
+          "sentence_points_raw": 0.6206185567010319,
+          "sentence_points_penalty": true,
+          "n_partial_human": 91,
+          "word_score": 0.6805325583228824,
+          "mcc": 0.23903449863920234,
+          "frame_match": 0.6299584567033965,
+          "grade": 0.8824300793247122,
+          "keep_cut_accuracy": 0.8350515463917526,
+          "kept_by_model": 149,
+          "kept_by_human": 165,
+          "keep_cells": {
+            "keep_keep": 141,
+            "kept_but_editor_cut": 8,
+            "cut_but_editor_kept": 24,
+            "cut_cut": 21
+          }
+        },
+        "hampton-5.4-assignment-demo": {
+          "n_sentences": 300,
+          "sentence_points": 0.2326666666666678,
+          "sentence_points_raw": 0.7326666666666678,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.8085948652530772,
+          "mcc": 0.45179409384269004,
+          "frame_match": 0.7243671399410705,
+          "grade": 0.8911327478736968,
+          "keep_cut_accuracy": 0.8666666666666667,
+          "kept_by_model": 197,
+          "kept_by_human": 225,
+          "keep_cells": {
+            "keep_keep": 191,
+            "kept_but_editor_cut": 6,
+            "cut_but_editor_kept": 34,
+            "cut_cut": 69
+          }
+        },
+        "colman-03.03-muscles-crit": {
+          "n_sentences": 303,
+          "sentence_points": 0.17986798679868077,
+          "sentence_points_raw": 0.6798679867986808,
+          "sentence_points_penalty": true,
+          "n_partial_human": 70,
+          "word_score": 0.6498813604086002,
+          "mcc": 0.21343617760064368,
+          "frame_match": 0.647235551440266,
+          "grade": 0.7693020802654968,
+          "keep_cut_accuracy": 0.7821782178217822,
+          "kept_by_model": 221,
+          "kept_by_human": 275,
+          "keep_cells": {
+            "keep_keep": 215,
+            "kept_but_editor_cut": 6,
+            "cut_but_editor_kept": 60,
+            "cut_cut": 22
+          }
+        },
+        "edges-7.01-intro": {
+          "n_sentences": 389,
+          "sentence_points": 0.3483290488431875,
+          "sentence_points_raw": 0.8483290488431875,
+          "sentence_points_penalty": true,
+          "n_partial_human": 15,
+          "word_score": 0.8464222864836741,
+          "mcc": 0.6893729487516355,
+          "frame_match": 0.8391294960511138,
+          "grade": 0.857361839411205,
+          "keep_cut_accuracy": 0.8560411311053985,
+          "kept_by_model": 104,
+          "kept_by_human": 150,
+          "keep_cells": {
+            "keep_keep": 99,
+            "kept_but_editor_cut": 5,
+            "cut_but_editor_kept": 51,
+            "cut_cut": 234
+          }
+        },
+        "hampton-5.2-shape-demo": {
+          "n_sentences": 411,
+          "sentence_points": 0.3000000000000007,
+          "sentence_points_raw": 0.8000000000000007,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.8417674154528294,
+          "mcc": 0.5578292692231918,
+          "frame_match": 0.7689132419254077,
+          "grade": 0.8865505208405888,
+          "keep_cut_accuracy": 0.8929440389294404,
+          "kept_by_model": 265,
+          "kept_by_human": 283,
+          "keep_cells": {
+            "keep_keep": 252,
+            "kept_but_editor_cut": 13,
+            "cut_but_editor_kept": 31,
+            "cut_cut": 115
+          }
+        }
+      },
+      "episodes_scored": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo"
+      ]
+    },
+    "jev_full": {
+      "pooled": {
+        "neutral_threshold": 2.4,
+        "kept_ratio": 0.9479759262669238,
+        "sentence_points": 0.21696931747025738,
+        "word_score": 0.7591937963874602,
+        "mcc": 0.4169894739941547,
+        "frame_match": 0.7195907258983074,
+        "grade": 0.8459903721173438,
+        "keep_cut_accuracy": 0.7952410770194114,
+        "keep_cells": {
+          "keep_keep": 801,
+          "kept_but_editor_cut": 30,
+          "cut_but_editor_kept": 297,
+          "cut_cut": 469
+        },
+        "keep_precision": 0.9638989169675091,
+        "keep_recall": 0.7295081967213115
+      },
+      "episodes": {
+        "colman-02.04-skeleton-demo": {
+          "n_sentences": 194,
+          "sentence_points": 0.11546391752577423,
+          "sentence_points_raw": 0.6154639175257742,
+          "sentence_points_penalty": true,
+          "n_partial_human": 91,
+          "word_score": 0.6911854313728633,
+          "mcc": 0.2693872659530384,
+          "frame_match": 0.6478462760075522,
+          "grade": 0.9074868900390481,
+          "keep_cut_accuracy": 0.7989690721649485,
+          "kept_by_model": 130,
+          "kept_by_human": 165,
+          "keep_cells": {
+            "keep_keep": 128,
+            "kept_but_editor_cut": 2,
+            "cut_but_editor_kept": 37,
+            "cut_cut": 27
+          }
+        },
+        "hampton-5.4-assignment-demo": {
+          "n_sentences": 300,
+          "sentence_points": 0.20933333333333448,
+          "sentence_points_raw": 0.7093333333333345,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.7997493174444573,
+          "mcc": 0.43869425966803083,
+          "frame_match": 0.7247841731256731,
+          "grade": 0.8916457914772205,
+          "keep_cut_accuracy": 0.81,
+          "kept_by_model": 178,
+          "kept_by_human": 225,
+          "keep_cells": {
+            "keep_keep": 173,
+            "kept_but_editor_cut": 5,
+            "cut_but_editor_kept": 52,
+            "cut_cut": 70
+          }
+        },
+        "colman-03.03-muscles-crit": {
+          "n_sentences": 303,
+          "sentence_points": 0.14356435643564447,
+          "sentence_points_raw": 0.6435643564356445,
+          "sentence_points_penalty": true,
+          "n_partial_human": 70,
+          "word_score": 0.6854859659247385,
+          "mcc": 0.23967826487636168,
+          "frame_match": 0.6595693384942583,
+          "grade": 0.7839619796129196,
+          "keep_cut_accuracy": 0.7227722772277227,
+          "kept_by_model": 197,
+          "kept_by_human": 275,
+          "keep_cells": {
+            "keep_keep": 194,
+            "kept_but_editor_cut": 3,
+            "cut_but_editor_kept": 81,
+            "cut_cut": 25
+          }
+        },
+        "edges-7.01-intro": {
+          "n_sentences": 389,
+          "sentence_points": 0.3277634961439587,
+          "sentence_points_raw": 0.8277634961439587,
+          "sentence_points_penalty": true,
+          "n_partial_human": 15,
+          "word_score": 0.8237596088042813,
+          "mcc": 0.6484883380158131,
+          "frame_match": 0.8173358339488754,
+          "grade": 0.8350946514319814,
+          "keep_cut_accuracy": 0.8329048843187661,
+          "kept_by_model": 95,
+          "kept_by_human": 150,
+          "keep_cells": {
+            "keep_keep": 90,
+            "kept_but_editor_cut": 5,
+            "cut_but_editor_kept": 60,
+            "cut_cut": 234
+          }
+        },
+        "hampton-5.2-shape-demo": {
+          "n_sentences": 411,
+          "sentence_points": 0.219708029197081,
+          "sentence_points_raw": 0.719708029197081,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.7880828048174497,
+          "mcc": 0.4408868140337335,
+          "frame_match": 0.7263382899359505,
+          "grade": 0.837461958174532,
+          "keep_cut_accuracy": 0.8004866180048662,
+          "kept_by_model": 231,
+          "kept_by_human": 283,
+          "keep_cells": {
+            "keep_keep": 216,
+            "kept_but_editor_cut": 15,
+            "cut_but_editor_kept": 67,
+            "cut_cut": 113
+          }
+        }
+      },
+      "episodes_scored": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo"
+      ]
+    },
+    "jev_full_retake": {
+      "pooled": {
+        "neutral_threshold": 2.4,
+        "kept_ratio": 0.9300175416493027,
+        "sentence_points": 0.2169693174702574,
+        "word_score": 0.7655287482062004,
+        "mcc": 0.42620072124718367,
+        "frame_match": 0.7234087411336287,
+        "grade": 0.8508370021911973,
+        "keep_cut_accuracy": 0.7927363807138385,
+        "keep_cells": {
+          "keep_keep": 793,
+          "kept_but_editor_cut": 26,
+          "cut_but_editor_kept": 305,
+          "cut_cut": 473
+        },
+        "keep_precision": 0.9682539682539683,
+        "keep_recall": 0.7222222222222222
+      },
+      "episodes": {
+        "colman-02.04-skeleton-demo": {
+          "n_sentences": 194,
+          "sentence_points": 0.11546391752577423,
+          "sentence_points_raw": 0.6154639175257742,
+          "sentence_points_penalty": true,
+          "n_partial_human": 91,
+          "word_score": 0.6918320025477541,
+          "mcc": 0.26341198715086384,
+          "frame_match": 0.645865657539414,
+          "grade": 0.9047124891347453,
+          "keep_cut_accuracy": 0.788659793814433,
+          "kept_by_model": 128,
+          "kept_by_human": 165,
+          "keep_cells": {
+            "keep_keep": 126,
+            "kept_but_editor_cut": 2,
+            "cut_but_editor_kept": 39,
+            "cut_cut": 27
+          }
+        },
+        "hampton-5.4-assignment-demo": {
+          "n_sentences": 300,
+          "sentence_points": 0.2126666666666679,
+          "sentence_points_raw": 0.7126666666666679,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.8192291017561475,
+          "mcc": 0.4711808726055968,
+          "frame_match": 0.7410031121315602,
+          "grade": 0.9115986950353357,
+          "keep_cut_accuracy": 0.8133333333333334,
+          "kept_by_model": 177,
+          "kept_by_human": 225,
+          "keep_cells": {
+            "keep_keep": 173,
+            "kept_but_editor_cut": 4,
+            "cut_but_editor_kept": 52,
+            "cut_cut": 71
+          }
+        },
+        "colman-03.03-muscles-crit": {
+          "n_sentences": 303,
+          "sentence_points": 0.14356435643564447,
+          "sentence_points_raw": 0.6435643564356445,
+          "sentence_points_penalty": true,
+          "n_partial_human": 70,
+          "word_score": 0.6854859659247385,
+          "mcc": 0.23967826487636168,
+          "frame_match": 0.6595693384942583,
+          "grade": 0.7839619796129196,
+          "keep_cut_accuracy": 0.7227722772277227,
+          "kept_by_model": 197,
+          "kept_by_human": 275,
+          "keep_cells": {
+            "keep_keep": 194,
+            "kept_but_editor_cut": 3,
+            "cut_but_editor_kept": 81,
+            "cut_cut": 25
+          }
+        },
+        "edges-7.01-intro": {
+          "n_sentences": 389,
+          "sentence_points": 0.3226221079691515,
+          "sentence_points_raw": 0.8226221079691515,
+          "sentence_points_penalty": true,
+          "n_partial_human": 15,
+          "word_score": 0.8113433685473479,
+          "mcc": 0.6349080150455335,
+          "frame_match": 0.8060891040713545,
+          "grade": 0.8236035561236538,
+          "keep_cut_accuracy": 0.8226221079691517,
+          "kept_by_model": 87,
+          "kept_by_human": 150,
+          "keep_cells": {
+            "keep_keep": 84,
+            "kept_but_editor_cut": 3,
+            "cut_but_editor_kept": 66,
+            "cut_cut": 236
+          }
+        },
+        "hampton-5.2-shape-demo": {
+          "n_sentences": 411,
+          "sentence_points": 0.2221411192214119,
+          "sentence_points_raw": 0.7221411192214119,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.807976800066501,
+          "mcc": 0.46915022083504787,
+          "frame_match": 0.7404574706794362,
+          "grade": 0.8537412551868131,
+          "keep_cut_accuracy": 0.8029197080291971,
+          "kept_by_model": 230,
+          "kept_by_human": 283,
+          "keep_cells": {
+            "keep_keep": 216,
+            "kept_but_editor_cut": 14,
+            "cut_but_editor_kept": 67,
+            "cut_cut": 114
+          }
+        }
+      },
+      "episodes_scored": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo"
+      ]
+    },
+    "jev_window": {
+      "pooled": {
+        "neutral_threshold": 2.2,
+        "kept_ratio": 0.9544014033319442,
+        "sentence_points": 0.18941765810895492,
+        "word_score": 0.7128379476284634,
+        "mcc": 0.3416629935084755,
+        "frame_match": 0.6846001201025319,
+        "grade": 0.8051013046866404,
+        "keep_cut_accuracy": 0.7645585472761428,
+        "keep_cells": {
+          "keep_keep": 783,
+          "kept_but_editor_cut": 61,
+          "cut_but_editor_kept": 315,
+          "cut_cut": 438
+        },
+        "keep_precision": 0.9277251184834123,
+        "keep_recall": 0.7131147540983607
+      },
+      "episodes": {
+        "colman-02.04-skeleton-demo": {
+          "n_sentences": 194,
+          "sentence_points": 0.11546391752577423,
+          "sentence_points_raw": 0.6154639175257742,
+          "sentence_points_penalty": true,
+          "n_partial_human": 91,
+          "word_score": 0.6790194943207607,
+          "mcc": 0.24585788420512958,
+          "frame_match": 0.6392933318879259,
+          "grade": 0.8955061394393381,
+          "keep_cut_accuracy": 0.8041237113402062,
+          "kept_by_model": 131,
+          "kept_by_human": 165,
+          "keep_cells": {
+            "keep_keep": 129,
+            "kept_but_editor_cut": 2,
+            "cut_but_editor_kept": 36,
+            "cut_cut": 27
+          }
+        },
+        "hampton-5.4-assignment-demo": {
+          "n_sentences": 300,
+          "sentence_points": 0.1493333333333342,
+          "sentence_points_raw": 0.6493333333333342,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.7081330198499881,
+          "mcc": 0.30547235424133823,
+          "frame_match": 0.6626290369275512,
+          "grade": 0.8151811449456254,
+          "keep_cut_accuracy": 0.7533333333333333,
+          "kept_by_model": 177,
+          "kept_by_human": 225,
+          "keep_cells": {
+            "keep_keep": 164,
+            "kept_but_editor_cut": 13,
+            "cut_but_editor_kept": 61,
+            "cut_cut": 62
+          }
+        },
+        "colman-03.03-muscles-crit": {
+          "n_sentences": 303,
+          "sentence_points": 0.15016501650165115,
+          "sentence_points_raw": 0.6501650165016511,
+          "sentence_points_penalty": true,
+          "n_partial_human": 70,
+          "word_score": 0.705320155453091,
+          "mcc": 0.2730964985475696,
+          "frame_match": 0.6752513088195851,
+          "grade": 0.8026015187530205,
+          "keep_cut_accuracy": 0.7227722772277227,
+          "kept_by_model": 199,
+          "kept_by_human": 275,
+          "keep_cells": {
+            "keep_keep": 195,
+            "kept_but_editor_cut": 4,
+            "cut_but_editor_kept": 80,
+            "cut_cut": 24
+          }
+        },
+        "edges-7.01-intro": {
+          "n_sentences": 389,
+          "sentence_points": 0.3149100257069408,
+          "sentence_points_raw": 0.8149100257069408,
+          "sentence_points_penalty": true,
+          "n_partial_human": 15,
+          "word_score": 0.8042479129021071,
+          "mcc": 0.613318434763289,
+          "frame_match": 0.800158795591322,
+          "grade": 0.8175443957549103,
+          "keep_cut_accuracy": 0.8226221079691517,
+          "kept_by_model": 95,
+          "kept_by_human": 150,
+          "keep_cells": {
+            "keep_keep": 88,
+            "kept_but_editor_cut": 7,
+            "cut_but_editor_kept": 62,
+            "cut_cut": 232
+          }
+        },
+        "hampton-5.2-shape-demo": {
+          "n_sentences": 411,
+          "sentence_points": 0.16374695863747035,
+          "sentence_points_raw": 0.6637469586374704,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.6762808631879599,
+          "mcc": 0.25786810228825113,
+          "frame_match": 0.6406628640416815,
+          "grade": 0.7386789104803528,
+          "keep_cut_accuracy": 0.7299270072992701,
+          "kept_by_model": 242,
+          "kept_by_human": 283,
+          "keep_cells": {
+            "keep_keep": 207,
+            "kept_but_editor_cut": 35,
+            "cut_but_editor_kept": 76,
+            "cut_cut": 93
+          }
+        }
+      },
+      "episodes_scored": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo"
+      ]
+    },
+    "jev_window_retake": {
+      "pooled": {
+        "neutral_threshold": 2.2,
+        "kept_ratio": 0.9401354874349457,
+        "sentence_points": 0.18879148403256168,
+        "word_score": 0.7169273889198564,
+        "mcc": 0.34954498022159725,
+        "frame_match": 0.6876567012734952,
+        "grade": 0.8084412109313877,
+        "keep_cut_accuracy": 0.7620538509705698,
+        "keep_cells": {
+          "keep_keep": 776,
+          "kept_but_editor_cut": 58,
+          "cut_but_editor_kept": 322,
+          "cut_cut": 441
+        },
+        "keep_precision": 0.9304556354916067,
+        "keep_recall": 0.7067395264116576
+      },
+      "episodes": {
+        "colman-02.04-skeleton-demo": {
+          "n_sentences": 194,
+          "sentence_points": 0.11546391752577423,
+          "sentence_points_raw": 0.6154639175257742,
+          "sentence_points_penalty": true,
+          "n_partial_human": 91,
+          "word_score": 0.6768067235208678,
+          "mcc": 0.23926924776284794,
+          "frame_match": 0.6366263565099325,
+          "grade": 0.891770306910515,
+          "keep_cut_accuracy": 0.7989690721649485,
+          "kept_by_model": 130,
+          "kept_by_human": 165,
+          "keep_cells": {
+            "keep_keep": 128,
+            "kept_but_editor_cut": 2,
+            "cut_but_editor_kept": 37,
+            "cut_cut": 27
+          }
+        },
+        "hampton-5.4-assignment-demo": {
+          "n_sentences": 300,
+          "sentence_points": 0.1460000000000009,
+          "sentence_points_raw": 0.6460000000000009,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.7037162925112903,
+          "mcc": 0.2973269417354851,
+          "frame_match": 0.6590675305484684,
+          "grade": 0.8107996996934018,
+          "keep_cut_accuracy": 0.75,
+          "kept_by_model": 176,
+          "kept_by_human": 225,
+          "keep_cells": {
+            "keep_keep": 163,
+            "kept_but_editor_cut": 13,
+            "cut_but_editor_kept": 62,
+            "cut_cut": 62
+          }
+        },
+        "colman-03.03-muscles-crit": {
+          "n_sentences": 303,
+          "sentence_points": 0.1468646864686478,
+          "sentence_points_raw": 0.6468646864686478,
+          "sentence_points_penalty": true,
+          "n_partial_human": 70,
+          "word_score": 0.7049366109222334,
+          "mcc": 0.2725903693109101,
+          "frame_match": 0.6750160307165898,
+          "grade": 0.8023218679617863,
+          "keep_cut_accuracy": 0.7194719471947195,
+          "kept_by_model": 198,
+          "kept_by_human": 275,
+          "keep_cells": {
+            "keep_keep": 194,
+            "kept_but_editor_cut": 4,
+            "cut_but_editor_kept": 81,
+            "cut_cut": 24
+          }
+        },
+        "edges-7.01-intro": {
+          "n_sentences": 389,
+          "sentence_points": 0.3149100257069408,
+          "sentence_points_raw": 0.8149100257069408,
+          "sentence_points_penalty": true,
+          "n_partial_human": 15,
+          "word_score": 0.8023323327802383,
+          "mcc": 0.6235719245319649,
+          "frame_match": 0.8014260587068266,
+          "grade": 0.8188391935672147,
+          "keep_cut_accuracy": 0.8174807197943444,
+          "kept_by_model": 89,
+          "kept_by_human": 150,
+          "keep_cells": {
+            "keep_keep": 84,
+            "kept_but_editor_cut": 5,
+            "cut_but_editor_kept": 66,
+            "cut_cut": 234
+          }
+        },
+        "hampton-5.2-shape-demo": {
+          "n_sentences": 411,
+          "sentence_points": 0.16618004866180125,
+          "sentence_points_raw": 0.6661800486618012,
+          "sentence_points_penalty": true,
+          "n_partial_human": 77,
+          "word_score": 0.6966530902794519,
+          "mcc": 0.2887068420522225,
+          "frame_match": 0.6551039614054993,
+          "grade": 0.7553293746567057,
+          "keep_cut_accuracy": 0.732360097323601,
+          "kept_by_model": 241,
+          "kept_by_human": 283,
+          "keep_cells": {
+            "keep_keep": 207,
+            "kept_but_editor_cut": 34,
+            "cut_but_editor_kept": 76,
+            "cut_cut": 94
+          }
+        }
+      },
+      "episodes_scored": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo"
+      ]
+    }
+  },
+  "operations": {
+    "by_arm": {
+      "luna": {
+        "requests": 5,
+        "errors": 0,
+        "input_tokens": 26404,
+        "output_tokens": 21290,
+        "cost_usd": 0.0308288,
+        "wall_clock_s": 115.97276950004743,
+        "latency": {
+          "n": 5,
+          "total_s": 109.01753239997197,
+          "median_s": 20.76784659997793,
+          "p95_s": 25.57281589997001,
+          "max_s": 25.57281589997001
+        }
+      },
+      "jev_full": {
+        "requests": 68,
+        "errors": 2,
+        "input_tokens": 1117080,
+        "output_tokens": 55059,
+        "cost_usd": 0.04691736000000001,
+        "wall_clock_s": 11.016142000094987,
+        "latency": {
+          "n": 68,
+          "total_s": 28.879488900129218,
+          "median_s": 0.418513200012967,
+          "p95_s": 0.5481700000236742,
+          "max_s": 0.6236444999813102
+        }
+      },
+      "jev_window": {
+        "requests": 166,
+        "errors": 4,
+        "input_tokens": 701982,
+        "output_tokens": 55443,
+        "cost_usd": 0.029483244000000002,
+        "wall_clock_s": 11.376026899961289,
+        "latency": {
+          "n": 166,
+          "total_s": 44.36124870006461,
+          "median_s": 0.2529779000033159,
+          "p95_s": 0.3807331999996677,
+          "max_s": 0.6544533999986015
+        }
+      }
+    },
+    "by_arm_episode": {
+      "luna|colman-02.04-skeleton-demo": {
+        "requests": 1,
+        "cost_usd": 0.0048246,
+        "wall_clock_s": 24.296410700015258,
+        "errors": 0
+      },
+      "jev_full|colman-02.04-skeleton-demo": {
+        "requests": 8,
+        "cost_usd": 0.004409748,
+        "wall_clock_s": 4.379674700030591,
+        "errors": 0
+      },
+      "jev_window|colman-02.04-skeleton-demo": {
+        "requests": 20,
+        "cost_usd": 0.0036464820000000004,
+        "wall_clock_s": 1.602558999962639,
+        "errors": 0
+      },
+      "luna|hampton-5.4-assignment-demo": {
+        "requests": 1,
+        "cost_usd": 0.005506,
+        "wall_clock_s": 22.958296400029212,
+        "errors": 0
+      },
+      "luna|colman-03.03-muscles-crit": {
+        "requests": 1,
+        "cost_usd": 0.0057675999999999995,
+        "wall_clock_s": 19.091534100007266,
+        "errors": 0
+      },
+      "luna|edges-7.01-intro": {
+        "requests": 1,
+        "cost_usd": 0.0071204,
+        "wall_clock_s": 24.052270099986345,
+        "errors": 0
+      },
+      "luna|hampton-5.2-shape-demo": {
+        "requests": 1,
+        "cost_usd": 0.0076102,
+        "wall_clock_s": 25.574258200009353,
+        "errors": 0
+      },
+      "jev_full|hampton-5.4-assignment-demo": {
+        "requests": 12,
+        "cost_usd": 0.007834512,
+        "wall_clock_s": 1.3234889999730512,
+        "errors": 0
+      },
+      "jev_full|colman-03.03-muscles-crit": {
+        "requests": 14,
+        "cost_usd": 0.009047094,
+        "wall_clock_s": 1.5114345000474714,
+        "errors": 1
+      },
+      "jev_full|edges-7.01-intro": {
+        "requests": 17,
+        "cost_usd": 0.011700318000000003,
+        "wall_clock_s": 1.8230993000324816,
+        "errors": 1
+      },
+      "jev_full|hampton-5.2-shape-demo": {
+        "requests": 17,
+        "cost_usd": 0.013925688000000002,
+        "wall_clock_s": 1.978444500011392,
+        "errors": 0
+      },
+      "jev_window|hampton-5.4-assignment-demo": {
+        "requests": 31,
+        "cost_usd": 0.00543816,
+        "wall_clock_s": 2.040568800002802,
+        "errors": 1
+      },
+      "jev_window|colman-03.03-muscles-crit": {
+        "requests": 32,
+        "cost_usd": 0.005740518000000001,
+        "wall_clock_s": 2.1758019999833778,
+        "errors": 1
+      },
+      "jev_window|edges-7.01-intro": {
+        "requests": 40,
+        "cost_usd": 0.006992748,
+        "wall_clock_s": 2.65853590000188,
+        "errors": 1
+      },
+      "jev_window|hampton-5.2-shape-demo": {
+        "requests": 43,
+        "cost_usd": 0.007665335999999998,
+        "wall_clock_s": 2.8985612000105903,
+        "errors": 1
+      }
+    },
+    "total_cost_usd": 0.10722940400000001,
+    "total_requests": 239,
+    "total_errors": 6
+  },
+  "confidence_quartiles": {
+    "jev_full": [
+      {
+        "quartile": 1,
+        "n": 399,
+        "confidence_min": 0.0,
+        "confidence_max": 0.43,
+        "accuracy": 0.7218045112781954
+      },
+      {
+        "quartile": 2,
+        "n": 399,
+        "confidence_min": 0.43,
+        "confidence_max": 0.55,
+        "accuracy": 0.7994987468671679
+      },
+      {
+        "quartile": 3,
+        "n": 399,
+        "confidence_min": 0.55,
+        "confidence_max": 0.64,
+        "accuracy": 0.8270676691729323
+      },
+      {
+        "quartile": 4,
+        "n": 400,
+        "confidence_min": 0.64,
+        "confidence_max": 0.99,
+        "accuracy": 0.8325
+      }
+    ],
+    "jev_window": [
+      {
+        "quartile": 1,
+        "n": 399,
+        "confidence_min": 0.0,
+        "confidence_max": 0.43,
+        "accuracy": 0.6917293233082706
+      },
+      {
+        "quartile": 2,
+        "n": 399,
+        "confidence_min": 0.43,
+        "confidence_max": 0.58,
+        "accuracy": 0.7844611528822055
+      },
+      {
+        "quartile": 3,
+        "n": 399,
+        "confidence_min": 0.58,
+        "confidence_max": 0.71,
+        "accuracy": 0.7944862155388471
+      },
+      {
+        "quartile": 4,
+        "n": 400,
+        "confidence_min": 0.71,
+        "confidence_max": 1.0,
+        "accuracy": 0.7875
+      }
+    ]
+  },
+  "retake_noul": {
+    "jev_full": {
+      "n": 1597,
+      "mean_noul_human_cut": 0.5418436873747499,
+      "mean_noul_human_kept": 0.2705828779599271,
+      "point_biserial_r_vs_human_cut": 0.5703991308265531,
+      "point_biserial_r_vs_corpus_is_retake": 0.5505440921764813,
+      "fired_at_0.6": 277,
+      "precision_vs_human_cut": 0.8267148014440433,
+      "recall_vs_human_cut": 0.4589178356713427,
+      "precision_vs_corpus_is_retake": 0.5054151624548736,
+      "corpus_is_retake_count": 206
+    },
+    "jev_full_retake": {
+      "n": 1597,
+      "mean_noul_human_cut": 0.5418436873747499,
+      "mean_noul_human_kept": 0.2705828779599271,
+      "point_biserial_r_vs_human_cut": 0.5703991308265531,
+      "point_biserial_r_vs_corpus_is_retake": 0.5505440921764813,
+      "fired_at_0.6": 277,
+      "precision_vs_human_cut": 0.8267148014440433,
+      "recall_vs_human_cut": 0.4589178356713427,
+      "precision_vs_corpus_is_retake": 0.5054151624548736,
+      "corpus_is_retake_count": 206
+    },
+    "jev_window": {
+      "n": 1597,
+      "mean_noul_human_cut": 0.5469138276553109,
+      "mean_noul_human_kept": 0.2788615664845172,
+      "point_biserial_r_vs_human_cut": 0.5298358971601089,
+      "point_biserial_r_vs_corpus_is_retake": 0.5774325536633407,
+      "fired_at_0.6": 301,
+      "precision_vs_human_cut": 0.7641196013289037,
+      "recall_vs_human_cut": 0.46092184368737477,
+      "precision_vs_corpus_is_retake": 0.5149501661129569,
+      "corpus_is_retake_count": 206
+    },
+    "jev_window_retake": {
+      "n": 1597,
+      "mean_noul_human_cut": 0.5469138276553109,
+      "mean_noul_human_kept": 0.2788615664845172,
+      "point_biserial_r_vs_human_cut": 0.5298358971601089,
+      "point_biserial_r_vs_corpus_is_retake": 0.5774325536633407,
+      "fired_at_0.6": 301,
+      "precision_vs_human_cut": 0.7641196013289037,
+      "recall_vs_human_cut": 0.46092184368737477,
+      "precision_vs_corpus_is_retake": 0.5149501661129569,
+      "corpus_is_retake_count": 206
+    }
+  },
+  "position_accuracy": {
+    "luna": [
+      {
+        "bin": 1,
+        "n": 321,
+        "correct": 272,
+        "accuracy": 0.8473520249221184
+      },
+      {
+        "bin": 2,
+        "n": 320,
+        "correct": 267,
+        "accuracy": 0.834375
+      },
+      {
+        "bin": 3,
+        "n": 319,
+        "correct": 274,
+        "accuracy": 0.8589341692789969
+      },
+      {
+        "bin": 4,
+        "n": 320,
+        "correct": 266,
+        "accuracy": 0.83125
+      },
+      {
+        "bin": 5,
+        "n": 317,
+        "correct": 280,
+        "accuracy": 0.8832807570977917
+      }
+    ],
+    "jev_full": [
+      {
+        "bin": 1,
+        "n": 321,
+        "correct": 255,
+        "accuracy": 0.794392523364486
+      },
+      {
+        "bin": 2,
+        "n": 320,
+        "correct": 240,
+        "accuracy": 0.75
+      },
+      {
+        "bin": 3,
+        "n": 319,
+        "correct": 254,
+        "accuracy": 0.7962382445141066
+      },
+      {
+        "bin": 4,
+        "n": 320,
+        "correct": 251,
+        "accuracy": 0.784375
+      },
+      {
+        "bin": 5,
+        "n": 317,
+        "correct": 270,
+        "accuracy": 0.8517350157728707
+      }
+    ],
+    "jev_full_retake": [
+      {
+        "bin": 1,
+        "n": 321,
+        "correct": 254,
+        "accuracy": 0.7912772585669782
+      },
+      {
+        "bin": 2,
+        "n": 320,
+        "correct": 236,
+        "accuracy": 0.7375
+      },
+      {
+        "bin": 3,
+        "n": 319,
+        "correct": 253,
+        "accuracy": 0.7931034482758621
+      },
+      {
+        "bin": 4,
+        "n": 320,
+        "correct": 253,
+        "accuracy": 0.790625
+      },
+      {
+        "bin": 5,
+        "n": 317,
+        "correct": 270,
+        "accuracy": 0.8517350157728707
+      }
+    ],
+    "jev_window": [
+      {
+        "bin": 1,
+        "n": 321,
+        "correct": 252,
+        "accuracy": 0.7850467289719626
+      },
+      {
+        "bin": 2,
+        "n": 320,
+        "correct": 236,
+        "accuracy": 0.7375
+      },
+      {
+        "bin": 3,
+        "n": 319,
+        "correct": 253,
+        "accuracy": 0.7931034482758621
+      },
+      {
+        "bin": 4,
+        "n": 320,
+        "correct": 233,
+        "accuracy": 0.728125
+      },
+      {
+        "bin": 5,
+        "n": 317,
+        "correct": 247,
+        "accuracy": 0.7791798107255521
+      }
+    ],
+    "jev_window_retake": [
+      {
+        "bin": 1,
+        "n": 321,
+        "correct": 250,
+        "accuracy": 0.778816199376947
+      },
+      {
+        "bin": 2,
+        "n": 320,
+        "correct": 235,
+        "accuracy": 0.734375
+      },
+      {
+        "bin": 3,
+        "n": 319,
+        "correct": 250,
+        "accuracy": 0.7836990595611285
+      },
+      {
+        "bin": 4,
+        "n": 320,
+        "correct": 235,
+        "accuracy": 0.734375
+      },
+      {
+        "bin": 5,
+        "n": 317,
+        "correct": 247,
+        "accuracy": 0.7791798107255521
+      }
+    ]
+  },
+  "retake_sentence_accuracy": {
+    "luna": {
+      "is_retake": {
+        "n": 206,
+        "correct": 164,
+        "accuracy": 0.7961165048543689
+      },
+      "not_retake": {
+        "n": 1391,
+        "correct": 1195,
+        "accuracy": 0.8590941768511862
+      }
+    },
+    "jev_full": {
+      "is_retake": {
+        "n": 206,
+        "correct": 164,
+        "accuracy": 0.7961165048543689
+      },
+      "not_retake": {
+        "n": 1391,
+        "correct": 1106,
+        "accuracy": 0.7951114306254493
+      }
+    },
+    "jev_full_retake": {
+      "is_retake": {
+        "n": 206,
+        "correct": 164,
+        "accuracy": 0.7961165048543689
+      },
+      "not_retake": {
+        "n": 1391,
+        "correct": 1102,
+        "accuracy": 0.792235801581596
+      }
+    },
+    "jev_window": {
+      "is_retake": {
+        "n": 206,
+        "correct": 164,
+        "accuracy": 0.7961165048543689
+      },
+      "not_retake": {
+        "n": 1391,
+        "correct": 1057,
+        "accuracy": 0.7598849748382459
+      }
+    },
+    "jev_window_retake": {
+      "is_retake": {
+        "n": 206,
+        "correct": 164,
+        "accuracy": 0.7961165048543689
+      },
+      "not_retake": {
+        "n": 1391,
+        "correct": 1053,
+        "accuracy": 0.7570093457943925
+      }
+    }
+  },
+  "luna_categories": {
+    "keep": {
+      "n": 1009,
+      "human_kept": 927,
+      "model_kept": 933,
+      "correct": 945
+    },
+    "false_start": {
+      "n": 197,
+      "human_kept": 83,
+      "model_kept": 0,
+      "correct": 114
+    },
+    "filler": {
+      "n": 142,
+      "human_kept": 28,
+      "model_kept": 0,
+      "correct": 114
+    },
+    "off_topic": {
+      "n": 110,
+      "human_kept": 3,
+      "model_kept": 0,
+      "correct": 107
+    },
+    "repeated_take": {
+      "n": 86,
+      "human_kept": 31,
+      "model_kept": 2,
+      "correct": 53
+    },
+    "rambling": {
+      "n": 30,
+      "human_kept": 23,
+      "model_kept": 1,
+      "correct": 6
+    },
+    "tangent": {
+      "n": 23,
+      "human_kept": 3,
+      "model_kept": 0,
+      "correct": 20
+    }
+  },
+  "archived_reference": {
+    "run": "2026-09-06-all18-partial-single-gpt-5.6-luna.json",
+    "workflow": "single_full_context_partial",
+    "note": "partial-capable arm: it emits sub-sentence keeps, so it escapes the flat 0.5 no-partial penalty that every whole-sentence arm here pays",
+    "episodes": {
+      "colman-02.04-skeleton-demo": {
+        "sentence_points": 0.5840206185567021,
+        "sentence_points_raw": 0.5840206185567021,
+        "word_score": 0.6373442734246249,
+        "mcc": 0.15802585403480449,
+        "frame_match": 0.5898454571436208
+      },
+      "hampton-5.4-assignment-demo": {
+        "sentence_points": 0.610333333333334,
+        "sentence_points_raw": 0.610333333333334,
+        "word_score": 0.5837017510262189,
+        "mcc": 0.01482133390506167,
+        "frame_match": 0.547237580914583
+      },
+      "colman-03.03-muscles-crit": {
+        "sentence_points": 0.25907590759076016,
+        "sentence_points_raw": 0.7590759075907602,
+        "word_score": 0.5997199551481948,
+        "mcc": 0.06737483171302214,
+        "frame_match": 0.593203067715339
+      },
+      "edges-7.01-intro": {
+        "sentence_points": 0.16323907455012865,
+        "sentence_points_raw": 0.6632390745501286,
+        "word_score": 0.8034976599825326,
+        "mcc": 0.5904292687274458,
+        "frame_match": 0.7929260072416819
+      },
+      "hampton-5.2-shape-demo": {
+        "sentence_points": 0.09075425790754332,
+        "sentence_points_raw": 0.5907542579075433,
+        "word_score": 0.5835236850551224,
+        "mcc": 0.07311069120595236,
+        "frame_match": 0.5599775847723322
+      }
+    }
+  },
+  "caveats": [
+    "SENTENCE POINTS punishes every whole-sentence arm here with the harness's flat 0.5 no-partial penalty on any episode where the editor trimmed inside sentences, because none of these arms can emit sub-sentence keeps. The penalty is identical across arms, so the ranking holds; the `SP raw` column is the same score before the penalty.",
+    "The corpus already carries `is_retake` from solar-sailer's own retakes pass, and `ranges.kept_segments_from_score` cuts those sentences for EVERY arm regardless of model score. That deterministic layer sits underneath all five arms and dampens the measurable effect of Jev's retake noul, especially on edges-7.01-intro (169 of 389 sentences are flagged).",
+    "The keep threshold is calibrated per arm by the harness (the threshold that maximises the retired GRADE, pooled across the scored episodes), so the arms are compared at each one's own best operating point rather than at a fixed cut-off.",
+    "The archived Luna run 2026-07-15-13d-v1-single-gpt-5.6-luna.json records model/prompt/max_tokens but not reasoning effort, so the Luna arm here uses medium.",
+    "Costs are token-based estimates from the recorded usage, not an invoice. Failed and retried requests may add unreported provider charges.",
+    "Read-only against solar-sailer: the answer-key loader is monkeypatched to read the committed cache rather than re-extract and rewrite it.",
+    "This benchmark could not run until a router bug was fixed. `skell_e_router.classification._parse` required a score answer's probabilities to sum to 1.000 +/- 0.001 and to reproduce the reported score within 0.001 per level. Jev rounds both to two decimals, so a six-level score legitimately sums to 0.99 and drifts up to 0.04 from its score. About a third of live requests were rejected as malformed. Both tolerances now derive from that rounding.",
+    "6 of 239 requests came back as a bare PROVIDER_ERROR with no HTTP status and did not reproduce on a re-request. Each was re-issued once; all succeeded, and both attempts are in roughcut-requests.jsonl (the repaired rows carry `repair: true`). Cause unknown, roughly a 2.5% sporadic failure rate."
+  ]
+}

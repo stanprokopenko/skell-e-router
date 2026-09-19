@@ -114,6 +114,45 @@ def _number(value, maximum=1):
     return type(value) in (int, float) and math.isfinite(value) and 0 <= value <= maximum
 
 
+#: Decimal places the provider rounds probabilities and score answers to.
+#: Every tolerance below is derived from this, because a value rounded to two
+#: places cannot be checked more precisely than the rounding itself allows.
+_ANSWER_DECIMALS = 2
+_HALF_ULP = 0.5 * 10 ** -_ANSWER_DECIMALS
+
+
+def _sum_tolerance(options):
+    """How far a rounded distribution's sum may honestly sit from 1.
+
+    Each of the ``options`` probabilities is rounded independently, so it
+    carries up to half a unit in the last place of error and the reported sum
+    can miss 1 by ``options * half_ulp``. A six-level score routinely comes
+    back summing to 0.99; demanding 1.000 +/- 0.001 rejected those real answers
+    as a malformed provider response. The test that survives is whether SOME
+    valid distribution rounds to the reported numbers, which is exactly this
+    bound.
+    """
+    return _HALF_ULP * options
+
+
+def _score_tolerance(levels):
+    """Largest honest gap between a reported score and its probabilities.
+
+    The score is the probability-weighted mean of the level numbers, but the
+    caller only ever sees rounded probabilities, so recomputing the mean from
+    them cannot reproduce the reported score exactly. The rounding errors sum
+    to roughly zero, so the worst case shifts half a unit in the last place off
+    the lowest levels onto the highest: ``half_ulp * floor(levels ** 2 / 4)``.
+    One more half ulp covers the score's own rounding.
+
+    For a six-level score that is 0.05, eight times what a flat
+    ``0.001 * levels`` rule allowed. Real answers drift by up to 0.04, so the
+    flat rule failed roughly a third of live requests. A genuinely
+    contradictory score is still caught.
+    """
+    return _HALF_ULP * (levels ** 2 // 4) + _HALF_ULP
+
+
 def _parse(data, questions, model):
     # A malformed success is a provider failure, never a fabricated decision.
     if not isinstance(data, dict) or not isinstance(data.get("model"), str) or not data["model"]:
@@ -135,7 +174,8 @@ def _parse(data, questions, model):
         probabilities = answer.get("probabilities")
         if (not isinstance(probabilities, dict) or set(probabilities) != expected
                 or not all(_number(p) for p in probabilities.values())
-                or not math.isclose(sum(probabilities.values()), 1, abs_tol=0.001)
+                or not math.isclose(sum(probabilities.values()), 1,
+                                    abs_tol=_sum_tolerance(len(expected)))
                 or not _number(answer.get("confidence"))):
             raise ValueError("Invalid probability distribution")
         if kind == "choice":
@@ -150,7 +190,8 @@ def _parse(data, questions, model):
                     or not all(_description(v) for v in legend.values())):
                 raise ValueError("Invalid score or legend")
             weighted = sum(int(k) * p for k, p in probabilities.items())
-            if not math.isclose(answer["score"], weighted, abs_tol=0.001 * len(expected)):
+            if not math.isclose(answer["score"], weighted,
+                                abs_tol=_score_tolerance(len(expected))):
                 raise ValueError("Score contradicts probabilities")
     usage = data.get("usage")
     if usage is not None and not isinstance(usage, dict):
