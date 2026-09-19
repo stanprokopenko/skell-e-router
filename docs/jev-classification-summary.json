@@ -1,0 +1,121 @@
+{
+  "source": "jev-classification-matched.jsonl",
+  "source_sha256": "83df53c791697396fe355db194cebde581237aa983266726d78cd6c40fb8c492",
+  "unique_samples": 37,
+  "repeats": 3,
+  "completed_calls": 333,
+  "variants": {
+    "jev": {
+      "correct": 109,
+      "calls": 111,
+      "accuracy": 0.9819819819819819,
+      "median_seconds": 0.2127984000253491,
+      "p95_seconds": 0.28713440004503354,
+      "cost_usd": 0.003617585999999996,
+      "cost_per_call": 3.259086486486483e-05,
+      "input_tokens": 86133,
+      "output_tokens": 3765,
+      "reported_models": [
+        "jev-1.13.0"
+      ],
+      "errors": 0,
+      "families": {
+        "chat_routing": {
+          "correct": 75,
+          "calls": 75
+        },
+        "ticket_completeness": {
+          "correct": 34,
+          "calls": 36
+        }
+      },
+      "wrong": [
+        {
+          "id": "content-02",
+          "repeat": 1,
+          "expected": "sufficient",
+          "prediction": "insufficient",
+          "probabilities": {
+            "insufficient": 0.5,
+            "sufficient": 0.5
+          },
+          "confidence": 0.0
+        },
+        {
+          "id": "content-02",
+          "repeat": 2,
+          "expected": "sufficient",
+          "prediction": "insufficient",
+          "probabilities": {
+            "sufficient": 0.47,
+            "insufficient": 0.53
+          },
+          "confidence": 0.06
+        }
+      ]
+    },
+    "luna-low": {
+      "correct": 111,
+      "calls": 111,
+      "accuracy": 1.0,
+      "median_seconds": 0.8346319000120275,
+      "p95_seconds": 1.2815651000128128,
+      "cost_usd": 0.014630400000000003,
+      "cost_per_call": 0.00013180540540540543,
+      "input_tokens": 61728,
+      "output_tokens": 1904,
+      "reported_models": [
+        "gpt-5.6-luna"
+      ],
+      "errors": 0,
+      "families": {
+        "chat_routing": {
+          "correct": 75,
+          "calls": 75
+        },
+        "ticket_completeness": {
+          "correct": 36,
+          "calls": 36
+        }
+      },
+      "wrong": []
+    },
+    "luna-high": {
+      "correct": 111,
+      "calls": 111,
+      "accuracy": 1.0,
+      "median_seconds": 0.8265598000143655,
+      "p95_seconds": 1.5070921999868006,
+      "cost_usd": 0.0170808,
+      "cost_per_call": 0.00015388108108108108,
+      "input_tokens": 61728,
+      "output_tokens": 3946,
+      "reported_models": [
+        "gpt-5.6-luna"
+      ],
+      "errors": 0,
+      "families": {
+        "chat_routing": {
+          "correct": 75,
+          "calls": 75
+        },
+        "ticket_completeness": {
+          "correct": 36,
+          "calls": 36
+        }
+      },
+      "wrong": []
+    }
+  },
+  "ratios": {
+    "luna-low": {
+      "median_speedup_over_luna": 3.9221718768214604,
+      "cost_savings_factor": 4.044243868701399
+    },
+    "luna-high": {
+      "median_speedup_over_luna": 3.8842387908739138,
+      "cost_savings_factor": 4.721601642642364
+    }
+  },
+  "task_spend_usd_estimate": 0.04608019200000001
+}

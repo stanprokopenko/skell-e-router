@@ -254,7 +254,7 @@ print(response)  # Prints content via __str__
 
 ## Classification with Jev
 
-Experimental direct TypeSafe support, with offline contract tests. Authenticated verification and the Jev comparison remain pending account access. Jev produces typed decisions and has a separate registry from chat, image and embedding models. Calling `ask_ai()` with a registered Jev alias raises `RouterError("INVALID_MODEL")` before a provider call.
+Direct TypeSafe support, with offline contract tests and authenticated verification. Jev produces typed decisions and has a separate registry from chat, image and embedding models. Calling `ask_ai()` with a registered Jev alias raises `RouterError("INVALID_MODEL")` before a provider call. The measured comparison and its limitations are documented in [docs/jev-classification.md](../docs/jev-classification.md).
 
 ```python
 from skell_e_router import classify, resolve_classification_alias

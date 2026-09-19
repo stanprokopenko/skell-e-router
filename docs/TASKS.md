@@ -2,7 +2,7 @@
 
 ## Jev classification comparison
 
-- [ ] Complete authenticated Jev verification and its matched comparison with gpt-5.6-luna once Stan supplies TypeSafe access. Experimental direct integration and 37 labeled project fixtures are prepared; Luna's baseline is complete. Account access is unresolved, so no production adoption or installation rollout is approved by these results. [Findings, evidence, spend and reproduction](jev-classification.md).
+- [x] Verified Jev account access, all three aliases and Choice/Noul/Score. Completed 333 matched calls against gpt-5.6-luna on 37 project fixtures repeated three times. Jev scored 109/111 versus Luna's 111/111, with about 3.9 times lower median latency and 4.0 to 4.7 times lower cost per call. Total task API spend was about $0.0461. No production routing changed. [Findings, evidence and reproduction](jev-classification.md).
 
 ## Provider error credential disclosure
 

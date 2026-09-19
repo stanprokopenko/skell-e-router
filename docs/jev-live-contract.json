@@ -1,0 +1,161 @@
+{
+  "checked_utc": "2026-09-19T15:47:28.962185+00:00",
+  "state": "I was charged twice for the same course. Please refund the duplicate charge.",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which department handles the customer message?",
+      "criteria": {
+        "billing": "Charges and refunds",
+        "technical": "Software failures"
+      }
+    },
+    "refund_requested": {
+      "type": "noul",
+      "instructions": "Does the customer explicitly request a refund?"
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "Rate the urgency expressed in this message.",
+      "criteria": [
+        "Routine, no deadline stated",
+        "Time-sensitive, a deadline is stated",
+        "Immediate emergency"
+      ]
+    }
+  },
+  "results": [
+    {
+      "alias": "jev",
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 1.0,
+          "probabilities": {
+            "billing": 1.0,
+            "technical": 0.0
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "urgency": {
+          "type": "score",
+          "score": 0.0,
+          "confidence": 1.0,
+          "legend": {
+            "0": "Routine, no deadline stated",
+            "1": "Time-sensitive, a deadline is stated",
+            "2": "Immediate emergency"
+          },
+          "probabilities": {
+            "0": 1.0,
+            "1": 0.0,
+            "2": 0.0
+          }
+        }
+      },
+      "model": "jev-1.13.0",
+      "input_tokens": 391,
+      "output_tokens": 63,
+      "cost": 1.6422e-05,
+      "duration_seconds": 0.1942945999908261,
+      "checks": {
+        "model_is_pinned_version": true,
+        "department_is_billing": true,
+        "refund_probability_above_half": true,
+        "score_in_range": true
+      }
+    },
+    {
+      "alias": "jev-1.13.0",
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 1.0,
+          "probabilities": {
+            "billing": 1.0,
+            "technical": 0.0
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "urgency": {
+          "type": "score",
+          "score": 0.0,
+          "confidence": 1.0,
+          "legend": {
+            "0": "Routine, no deadline stated",
+            "1": "Time-sensitive, a deadline is stated",
+            "2": "Immediate emergency"
+          },
+          "probabilities": {
+            "0": 1.0,
+            "1": 0.0,
+            "2": 0.0
+          }
+        }
+      },
+      "model": "jev-1.13.0",
+      "input_tokens": 391,
+      "output_tokens": 63,
+      "cost": 1.6422e-05,
+      "duration_seconds": 0.19646589999319986,
+      "checks": {
+        "model_is_pinned_version": true,
+        "department_is_billing": true,
+        "refund_probability_above_half": true,
+        "score_in_range": true
+      }
+    },
+    {
+      "alias": "jev-latest",
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "billing",
+          "confidence": 1.0,
+          "probabilities": {
+            "technical": 0.0,
+            "billing": 1.0
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.99
+        },
+        "urgency": {
+          "type": "score",
+          "score": 0.0,
+          "confidence": 1.0,
+          "legend": {
+            "0": "Routine, no deadline stated",
+            "1": "Time-sensitive, a deadline is stated",
+            "2": "Immediate emergency"
+          },
+          "probabilities": {
+            "0": 1.0,
+            "1": 0.0,
+            "2": 0.0
+          }
+        }
+      },
+      "model": "jev-1.13.0",
+      "input_tokens": 391,
+      "output_tokens": 63,
+      "cost": 1.6422e-05,
+      "duration_seconds": 0.2013137000030838,
+      "checks": {
+        "model_is_pinned_version": true,
+        "department_is_billing": true,
+        "refund_probability_above_half": true,
+        "score_in_range": true
+      }
+    }
+  ]
+}

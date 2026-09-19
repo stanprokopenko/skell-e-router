@@ -28,7 +28,7 @@ Pass `max_tokens=600` to cap generated tokens on OpenAI reasoning models, includ
 
 ### Classification with Jev
 
-Experimental direct TypeSafe support. The adapter has offline contract tests; authenticated verification is pending account access. Jev returns typed decisions rather than text, so use `classify()` instead of `ask_ai()`.
+Direct TypeSafe support with offline contract tests and authenticated verification. Jev returns typed decisions rather than text, so use `classify()` instead of `ask_ai()`. See the comparison report below for measured performance and its limits.
 
 ```python
 from skell_e_router import classify
