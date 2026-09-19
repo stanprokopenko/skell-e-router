@@ -72,7 +72,7 @@ Jev accuracy by confidence quartile (cuts at 0.69 / 0.95 / 0.99):
 | q3 | 139 | 99.3% | 0 | 1 |
 | q4 highest | 126 | 100% | 0 | 0 |
 
-Calibration is real: 40 of Jev's 43 errors sit in the bottom two quartiles, and it is perfect on the top quarter.
+Calibration is real: 42 of Jev's 43 errors sit in the bottom two quartiles, and it is perfect on the top quarter.
 
 Agreement on raw predictions: gemini vs luna 88.5%, gemini vs jev 88.5%, luna vs jev 88.3%. The three disagree with each other about as much as each disagrees with the labels, so they are not making the same mistakes. Jev is right where Luna is wrong 47 times; Luna is right where Jev is wrong 19 times.
 

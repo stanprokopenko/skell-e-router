@@ -1,3 +1,4 @@
+import re
 """Matched benchmark of Jev against Luna and the production classifier on
 skell-e-web's real fast/big model-tier routing decision.
 
@@ -77,6 +78,14 @@ ASSUMED_LUNA_OUT_TOKENS = 400
 # ---------------------------------------------------------------------------
 # Cases — same construction as backend/benchmarks/routing/run_routing_labels.py
 # ---------------------------------------------------------------------------
+
+_EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+
+
+def _mask_emails(text):
+    """Customer addresses never belong in a committed results file."""
+    return _EMAIL_RE.sub("[email]", text or "")
+
 def load_export() -> dict[str, list[dict]]:
     if not EXPORT_PATH.exists():
         return {}
@@ -579,7 +588,7 @@ def main() -> int:
                         lambda c: timed(fn, payload(c)), cases)):
                     row = {"conv": case["conv"], "idx": case["idx"], "position": case["position"],
                            "arm": arm, "label": case["label"], "category": case["category"],
-                           "sender": case["sender"], "text_head": case["text_head"], **result}
+                           "sender": case["sender"], "text_head": _mask_emails(case["text_head"]), **result}
                     rows[(case["conv"], case["idx"])] = row
                     writer.write(row)
                     spend += row.get("cost_usd") or 0.0

@@ -33,6 +33,10 @@ The Teamwork column is a second, independent ground truth: the share of the 40 t
 
 Jev bills input tokens only, so its per-1k figure is not comparable line-for-line with the generative arms; the wall-clock and error columns are.
 
+## Aborted first run
+
+A first `--run` in a shell without the Machine-scope TYPESAFE_API_KEY and ANTHROPIC_API_KEY made 120 successful Luna calls ($0.0443) while the Haiku and Jev arms failed with MISSING_ENV. Its files were deleted and the run repeated with the keys hydrated. Task spend for this benchmark is therefore $0.2650 + $0.0443 = $0.3093.
+
 ## Caveats
 
 - The sample is three pools of 40: tickets Teamwork filed as Spam, tickets the knowledge base excluded, and ordinary support tickets it kept.
