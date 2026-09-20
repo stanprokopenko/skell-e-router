@@ -562,5 +562,58 @@
     "perspective-14e-boxes-critique sentence 923: no answer (block 36)",
     "perspective-14e-boxes-critique sentence 924: no answer (block 36)"
   ],
-  "n_warnings": 100
+  "n_warnings": 100,
+  "repairs": [
+    {
+      "repaired_utc": "2026-09-20T21:53:33.954090+00:00",
+      "extra_wall_clock_s": 6.124,
+      "requests": 14,
+      "errors": 3,
+      "cost_usd": 0.008809,
+      "decision_rows_rewritten": 400,
+      "episodes": [
+        {
+          "episode": "hampton-5.2-shape-demo",
+          "resent_blocks": {
+            "sentence": [
+              13
+            ]
+          },
+          "new_pick_blocks": [
+            21,
+            22
+          ],
+          "requests": 4,
+          "errors": 1,
+          "cost_usd": 0.001898,
+          "sentences_repaired": 25,
+          "still_defaulted": 0
+        },
+        {
+          "episode": "perspective-14e-boxes-critique",
+          "resent_blocks": {
+            "sentence": [
+              4,
+              11,
+              36
+            ]
+          },
+          "new_pick_blocks": [
+            60,
+            61,
+            62,
+            63,
+            64
+          ],
+          "requests": 10,
+          "errors": 2,
+          "cost_usd": 0.006912,
+          "sentences_repaired": 75,
+          "still_defaulted": 0
+        }
+      ],
+      "warnings": [],
+      "n_warnings": 0
+    }
+  ]
 }

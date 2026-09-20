@@ -25,6 +25,12 @@ Arms written to the decisions file: jev_a, jev_b, jev_b_moduleretakes,
 jev_b_notrim. The ``_mod`` arms (um removal and delete silence layered on) are a
 scoring-time option, not separate decisions.
 
+``--repair NAME`` re-sends only the blocks that have no answer in NAME's request
+log, appends the new request rows with ``repair: true`` and rewrites NAME's
+decisions file for the repaired sentences. The decisions file is the only output
+a repair overwrites; timing.json gains a ``repairs`` entry and keeps the original
+wall clock.
+
 READ-ONLY against solar-sailer: the harness, corpus and prompts are read, never
 written. No network calls without ``--run``.
 """
@@ -97,6 +103,8 @@ JEV_MODEL = "jev-1.13.0"
 JEV_TIMEOUT = 180
 JEV_INPUT_PER_MILLION = 0.042
 DEFAULT_CONCURRENCY = 8
+MAX_ATTEMPTS = 3
+RETRY_BACKOFF_S = (0.5, 1.5)   # slept before attempt 2, then before attempt 3
 DEFAULT_BUDGET_USD = 3.00
 DEFAULT_T_TRIM = 0.5
 DEFAULT_OUT = "roughcut-jev"
@@ -126,6 +134,8 @@ MAX_CHOICE_OPTIONS = 255
 
 PASSES = ["retake", "sentence", "trim_pick"]
 ARMS = ["jev_a", "jev_b", "jev_b_moduleretakes", "jev_b_notrim"]
+RETAKE_FIELDS = ("retake_group", "retake_real", "retake_take_probs",
+                 "retake_choice", "retake_winner", "retake_source")
 REMOVALS_KEYS = ("umm_word_ids", "um_word_ids", "removed_word_ids", "word_ids",
                  "umm", "ids")
 CONTEXT_ERROR_MARKS = ("context", "too long", "too large", "token", "422")
@@ -328,43 +338,49 @@ def _is_context_error(row):
     return any(mark in blob for mark in CONTEXT_ERROR_MARKS)
 
 
-def run_pass(pass_name, episode_name, jobs, concurrency, budget):
-    """Dispatch one pass, retry failures once, return rows, answers and timing.
+def _retry_job(job, request_rows):
+    """The job to re-send for a failed block, windowed if the context was rejected."""
+    rows = [r for r in request_rows if r["block"] == job["block"]]
+    if job.get("window_job") and rows and _is_context_error(rows[-1]):
+        return job["window_job"]
+    return job
+
+
+def run_pass(pass_name, episode_name, jobs, concurrency, budget, repair=False):
+    """Dispatch one pass, retry failed blocks, return rows, answers and timing.
+
+    ~7% of requests come back a bare PROVIDER_ERROR that succeeds on a
+    re-request, and a few fail twice, so a block gets up to ``MAX_ATTEMPTS``
+    attempts on any exception, ``RETRY_BACKOFF_S`` apart. Every attempt stays in
+    the log as its own row with its ``attempt`` number.
+
+    ``concurrency`` is the worker count for this pass alone: each pass opens and
+    closes its own pool, so the passes never overlap.
 
     Wall clock is measured around the whole pass, submit to last result, at the
-    concurrency used, retry included: that is the number a per-episode latency
-    column has to report.
+    concurrency used, retries and backoff included: that is the number a
+    per-episode latency column has to report.
     """
     request_rows, answers_by_block = [], {}
     started = time.perf_counter()
-    if jobs:
+    todo = list(jobs)
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        if not todo or budget.blocked():
+            break
+        if attempt > 1:
+            time.sleep(RETRY_BACKOFF_S[attempt - 2])
         with futures.ThreadPoolExecutor(max_workers=concurrency) as pool:
-            pending = {pool.submit(_request, job, budget, 1): job for job in jobs}
+            pending = {pool.submit(_request, job, budget, attempt): job
+                       for job in todo}
             for future in futures.as_completed(pending):
                 row, answers = future.result()
+                if repair:
+                    row["repair"] = True
                 request_rows.append(row)
-                answers_by_block[pending[future]["block"]] = answers
-
-        # ~2.5% of requests come back a bare PROVIDER_ERROR that succeeds on a
-        # re-request. One retry per failed block; both attempts stay in the log.
-        retry_jobs = []
-        for job in jobs:
-            if answers_by_block.get(job["block"]) is not None:
-                continue
-            failed = [r for r in request_rows if r["block"] == job["block"]]
-            if failed and _is_context_error(failed[0]) and job.get("window_job"):
-                retry_jobs.append(job["window_job"])
-            else:
-                retry_jobs.append(job)
-        if retry_jobs and not budget.blocked():
-            with futures.ThreadPoolExecutor(max_workers=concurrency) as pool:
-                pending = {pool.submit(_request, job, budget, 2): job
-                           for job in retry_jobs}
-                for future in futures.as_completed(pending):
-                    row, answers = future.result()
-                    request_rows.append(row)
-                    if answers is not None:
-                        answers_by_block[pending[future]["block"]] = answers
+                if answers is not None:
+                    answers_by_block[pending[future]["block"]] = answers
+        todo = [_retry_job(job, request_rows) for job in todo
+                if answers_by_block.get(job["block"]) is None]
     wall = time.perf_counter() - started
 
     request_rows.sort(key=lambda r: (r["block"], r["attempt"]))
@@ -375,8 +391,8 @@ def run_pass(pass_name, episode_name, jobs, concurrency, budget):
         "output_tokens": sum(r["output_tokens"] or 0 for r in request_rows),
         "cost_usd": round(sum(r["cost"] or 0.0 for r in request_rows), 6),
         "errors": sum(1 for r in request_rows if r["error"]),
-        "unanswered_blocks": sum(1 for j in jobs
-                                 if answers_by_block.get(j["block"]) is None),
+        "failed_blocks": sum(1 for j in jobs
+                             if answers_by_block.get(j["block"]) is None),
         "windowed_requests": sum(1 for r in request_rows if r["window_used"]),
         "latency": latency_summary([r["elapsed_s"] for r in request_rows]),
     }
@@ -693,9 +709,12 @@ def variant_a_keep_words(data, sid, result):
     return [[ids[lo], ids[hi]]]
 
 
-def build_decisions(data, retake_info, results, picks):
+def build_decisions(data, retake_info, results, picks, only_ids=None):
+    """Four rows per sentence; ``only_ids`` limits it to the repaired sentences."""
     rows = []
     for sid in data["order"]:
+        if only_ids is not None and sid not in only_ids:
+            continue
         result = results.get(sid, {})
         retake = retake_info.get(sid, {})
         pick = picks.get(sid, {})
@@ -737,6 +756,189 @@ def build_decisions(data, retake_info, results, picks):
                          "score": arm_score, "keep_words": keep_words,
                          "cut_retake": cut_retake, **source})
     return rows
+
+
+# ---------------------------------------------------------------------------
+# repair
+# ---------------------------------------------------------------------------
+
+def unanswered_blocks(request_log):
+    """``{(episode, pass): {block, ...}}`` for blocks whose every attempt errored.
+
+    An earlier repair's rows count as attempts, so repairing the same run twice
+    re-sends nothing that has since come back.
+    """
+    seen, answered = set(), set()
+    for row in request_log:
+        key = (row["episode"], row["pass"], row["block"])
+        seen.add(key)
+        if not row.get("error"):
+            answered.add(key)
+    gaps = defaultdict(set)
+    for episode, pass_name, block in seen - answered:
+        gaps[(episode, pass_name)].add(block)
+    return gaps
+
+
+def _retake_info_from_decisions(rows):
+    """A previous run's retake answers, read back off its decision rows."""
+    return {row["id"]: {key: row.get(key) for key in RETAKE_FIELDS}
+            for row in rows if row["arm"] == "jev_a"}
+
+
+def _patch_retake(row, info):
+    """Overwrite one decision row's retake fields with a repaired answer."""
+    row.update({key: info.get(key) for key in RETAKE_FIELDS})
+    if row["arm"] != "jev_b_moduleretakes":
+        winner = info.get("retake_winner")
+        row["cut_retake"] = bool(winner is not None and winner != row["id"])
+
+
+def repair_episode(data, gap_passes, args, budget, previous_rows, pick_block_offset):
+    """Re-send one episode's failed blocks and rebuild only what they decide.
+
+    The retake answers and the retake drop set are read back off ``previous_rows``
+    (this episode's decision rows), so a re-sent sentence block carries the same
+    transcript the original run sent it. Sentences that come back with a score
+    also get their trim-pick question asked, numbered past the original run's
+    trim_pick blocks so the request log stays unambiguous.
+
+    A failed trim_pick block of the original run cannot be rebuilt: its candidate
+    versions come from sentence-pass probabilities the request log does not
+    store. Those are reported, not re-sent.
+
+    Returns ``(request_rows, replacements, warnings, report)``. ``replacements``
+    supersede previous decision rows by (id, arm); rows that only a repaired
+    retake touches are patched in place.
+    """
+    request_rows, warnings = [], []
+    retake_info = _retake_info_from_decisions(previous_rows)
+    losers = {row["id"] for row in previous_rows
+              if row["arm"] == "jev_a" and row["cut_retake"]}
+
+    if gap_passes.get("retake"):
+        jobs = [j for j in retake_jobs(data) if j["block"] in gap_passes["retake"]]
+        rows, answers, _timing = run_pass("retake", data["name"], jobs,
+                                          args.concurrency, budget, repair=True)
+        request_rows.extend(rows)
+        info, group_losers, warn = retake_decisions(data, jobs, answers)
+        warnings.extend(warn)
+        losers = (losers - set(info)) | group_losers
+        retake_info.update(info)
+        for row in previous_rows:
+            if row["id"] in info:
+                _patch_retake(row, info[row["id"]])
+
+    results = {}
+    if gap_passes.get("sentence"):
+        jobs = [j for j in sentence_jobs(data, losers)
+                if j["block"] in gap_passes["sentence"]]
+        rows, answers, _timing = run_pass("sentence", data["name"], jobs,
+                                          args.concurrency, budget, repair=True)
+        request_rows.extend(rows)
+        results, warn = sentence_results(data, jobs, answers)
+        warnings.extend(warn)
+
+    picks = {}
+    pick_batch = pick_jobs(data, results, args.t_trim)
+    for offset, job in enumerate(pick_batch):
+        job["block"] = pick_block_offset + offset
+    if pick_batch:
+        rows, answers, _timing = run_pass("trim_pick", data["name"], pick_batch,
+                                          args.concurrency, budget, repair=True)
+        request_rows.extend(rows)
+        picks, warn = pick_results(data, pick_batch, answers)
+        warnings.extend(warn)
+
+    if gap_passes.get("trim_pick"):
+        warnings.append(
+            f"{data['name']}: trim_pick block(s) "
+            f"{sorted(gap_passes['trim_pick'])} cannot be repaired from the log "
+            f"(their candidate versions come from sentence-pass probabilities that "
+            f"the log does not store); re-run the episode to recover them")
+
+    replacements = build_decisions(data, retake_info, results, picks,
+                                   only_ids=set(results))
+    report = {
+        "episode": data["name"],
+        "resent_blocks": {p: sorted(gap_passes.get(p, ())) for p in PASSES
+                          if gap_passes.get(p)},
+        "new_pick_blocks": [j["block"] for j in pick_batch],
+        "requests": len(request_rows),
+        "errors": sum(1 for r in request_rows if r["error"]),
+        "cost_usd": round(sum(r["cost"] or 0.0 for r in request_rows), 6),
+        "sentences_repaired": sum(1 for r in results.values() if not r["defaulted"]),
+        "still_defaulted": sum(1 for r in results.values() if r["defaulted"]),
+    }
+    return request_rows, replacements, warnings, report
+
+
+def run_repair(args, parser, paths):
+    """Re-send every block with no answer in an existing run, in place."""
+    requests_path, decisions_path, timing_path = paths
+    missing = [str(p) for p in paths if not p.exists()]
+    if missing:
+        parser.error(f"--repair {args.repair}: nothing to repair, missing {missing}")
+
+    request_log = jsonl_read(requests_path)
+    decisions = jsonl_read(decisions_path)
+    summary = json.loads(timing_path.read_text(encoding="utf-8"))
+    gaps = unanswered_blocks(request_log)
+    if not gaps:
+        print("Nothing to repair: every block in the log has an answer.",
+              file=sys.stderr)
+        return 0
+
+    import skell_e_router  # noqa: F401
+
+    by_episode = defaultdict(list)
+    for row in decisions:
+        by_episode[row["episode"]].append(row)
+
+    budget = Budget(args.budget)
+    started = time.perf_counter()
+    new_requests, reports, warnings, replaced = [], [], [], {}
+    for name in sorted({episode for episode, _ in gaps}):
+        gap_passes = {p: b for (episode, p), b in gaps.items() if episode == name}
+        data = load_episode_data(name)
+        offset = 1 + max([r["block"] for r in request_log
+                          if r["episode"] == name and r["pass"] == "trim_pick"]
+                         + [-1])
+        rows, replacements, warn, report = repair_episode(
+            data, gap_passes, args, budget, by_episode[name], offset)
+        stamp = datetime.now(timezone.utc).isoformat()
+        for row in rows:
+            row["recorded_utc"] = stamp
+        new_requests.extend(rows)
+        warnings.extend(warn)
+        reports.append(report)
+        replaced.update({(name, r["id"], r["arm"]): r for r in replacements})
+        print(json.dumps(report), flush=True)
+
+    entry = {
+        "repaired_utc": datetime.now(timezone.utc).isoformat(),
+        "extra_wall_clock_s": round(time.perf_counter() - started, 3),
+        "requests": len(new_requests),
+        "errors": sum(1 for r in new_requests if r["error"]),
+        "cost_usd": round(sum(r["cost"] or 0.0 for r in new_requests), 6),
+        "decision_rows_rewritten": len(replaced),
+        "episodes": reports,
+        "warnings": warnings[:50],
+        "n_warnings": len(warnings),
+    }
+    summary.setdefault("repairs", []).append(entry)
+
+    rebuilt = [replaced.get((r["episode"], r["id"], r["arm"]), r) for r in decisions]
+    jsonl_append(requests_path, new_requests)
+    decisions_path.write_text(
+        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rebuilt),
+        encoding="utf-8")
+    timing_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    print(json.dumps(entry, indent=2))
+    for warning in warnings[:20]:
+        print(f"warning: {warning}", file=sys.stderr)
+    return 0
 
 
 # ---------------------------------------------------------------------------
@@ -838,12 +1040,23 @@ def main():
                         help="hard spend cap in USD")
     parser.add_argument("--t-trim", type=float, default=DEFAULT_T_TRIM,
                         help="P(whole) below which a sentence goes to the pick pass")
-    parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
+    parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
+                        help="in-flight requests per pass (each pass runs its own "
+                             "pool, so passes never overlap)")
+    parser.add_argument("--repair", metavar="IN_NAME",
+                        help="re-send the blocks with no answer in IN_NAME's request "
+                             "log; appends request rows with repair: true and "
+                             "rewrites IN_NAME's decisions file in place")
     args = parser.parse_args()
 
-    requests_path = OUT_DIR / f"{args.out}-requests.jsonl"
-    decisions_path = OUT_DIR / f"{args.out}-decisions.jsonl"
-    timing_path = OUT_DIR / f"{args.out}-timing.json"
+    out_name = args.repair or args.out
+    requests_path = OUT_DIR / f"{out_name}-requests.jsonl"
+    decisions_path = OUT_DIR / f"{out_name}-decisions.jsonl"
+    timing_path = OUT_DIR / f"{out_name}-timing.json"
+
+    if args.repair:
+        return run_repair(args, parser,
+                          (requests_path, decisions_path, timing_path))
 
     if not args.run:
         plan, totals = estimate(args.episodes, args.t_trim)
@@ -878,10 +1091,14 @@ def main():
         decisions, timing = run_episode(data, args, budget, request_rows, warnings)
         decision_rows.extend(decisions)
         timings[name] = timing
-        print(f"{name}: {timing['episode_wall_clock_s']}s, "
+        per_pass = ", ".join(f"{p} {timing['passes'][p]['wall_clock_s']:.2f}s"
+                             for p in PASSES)
+        print(f"{name}: {timing['episode_wall_clock_s']}s ({per_pass}), "
               f"${timing['cost_usd']:.4f}, "
-              f"{sum(p['requests'] for p in timing['passes'].values())} requests",
-              file=sys.stderr)
+              f"{sum(p['requests'] for p in timing['passes'].values())} requests, "
+              f"{sum(p['errors'] for p in timing['passes'].values())} errors, "
+              f"{sum(p['failed_blocks'] for p in timing['passes'].values())} "
+              f"failed blocks", file=sys.stderr)
         if budget.blocked():
             aborted = (f"budget cap ${args.budget:.2f} crossed at "
                        f"${budget.spent:.4f}; stopped after {name}")
@@ -898,6 +1115,8 @@ def main():
             "wall_clock_s": round(time.perf_counter() - started, 3),
             "requests": len(request_rows),
             "errors": sum(1 for r in request_rows if r["error"]),
+            "failed_blocks": sum(t["passes"][p]["failed_blocks"]
+                                 for t in timings.values() for p in PASSES),
             "input_tokens": sum(r["input_tokens"] or 0 for r in request_rows),
             "output_tokens": sum(r["output_tokens"] or 0 for r in request_rows),
             "cost_usd": round(sum(r["cost"] or 0.0 for r in request_rows), 6),
@@ -915,7 +1134,8 @@ def main():
     timing_path.parent.mkdir(parents=True, exist_ok=True)
     timing_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
-    print(json.dumps(summary["totals"], indent=2))
+    print(json.dumps({"totals": summary["totals"],
+                      "pass_wall_clock_s": summary["pass_wall_clock_s"]}, indent=2))
     for warning in warnings[:20]:
         print(f"warning: {warning}", file=sys.stderr)
     return 2 if aborted else 0

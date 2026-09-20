@@ -1,0 +1,101 @@
+{
+  "generated_utc": "2026-09-20T21:52:56.817153+00:00",
+  "model": "jev-1.13.0",
+  "prompt_version": "v1",
+  "concurrency": 8,
+  "t_trim": 0.5,
+  "budget_cap_usd": 3.0,
+  "aborted": null,
+  "episodes": {
+    "colman-03.03-muscles-crit": {
+      "sentences": 303,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\colman-03.03-muscles-crit.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 35
+      },
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.244,
+          "requests": 2,
+          "input_tokens": 4444,
+          "output_tokens": 416,
+          "cost_usd": 0.000187,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 2,
+            "total_s": 0.4232025999808684,
+            "median_s": 0.2116012999904342,
+            "p95_s": 0.24297299998579547,
+            "max_s": 0.24297299998579547
+          },
+          "groups": 8,
+          "losers_cut": 3
+        },
+        "sentence": {
+          "wall_clock_s": 2.326,
+          "requests": 14,
+          "input_tokens": 490391,
+          "output_tokens": 92242,
+          "cost_usd": 0.020596,
+          "errors": 1,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 14,
+            "total_s": 8.12195490009617,
+            "median_s": 0.5882192999997642,
+            "p95_s": 0.7221824000007473,
+            "max_s": 0.7221824000007473
+          }
+        },
+        "trim_pick": {
+          "wall_clock_s": 0.864,
+          "requests": 23,
+          "input_tokens": 149372,
+          "output_tokens": 11786,
+          "cost_usd": 0.006274,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 23,
+            "total_s": 6.375906899920665,
+            "median_s": 0.27288689999841154,
+            "p95_s": 0.3298543999553658,
+            "max_s": 0.34048539999639615
+          },
+          "items": 222
+        }
+      },
+      "episode_wall_clock_s": 3.434,
+      "cost_usd": 0.027057,
+      "trims": {
+        "jev_a": 34,
+        "jev_b": 1,
+        "jev_b_moduleretakes": 1,
+        "jev_b_notrim": 0
+      }
+    }
+  },
+  "totals": {
+    "wall_clock_s": 3.46,
+    "requests": 39,
+    "errors": 1,
+    "failed_blocks": 0,
+    "input_tokens": 644207,
+    "output_tokens": 104444,
+    "cost_usd": 0.027057,
+    "decisions": 1212
+  },
+  "pass_wall_clock_s": {
+    "retake": 0.244,
+    "sentence": 2.326,
+    "trim_pick": 0.864
+  },
+  "warnings": [],
+  "n_warnings": 0
+}

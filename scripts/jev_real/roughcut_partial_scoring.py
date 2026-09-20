@@ -285,6 +285,12 @@ def _metrics_from_level(data, sentences, level, threshold, extra):
         "n_sentences": sp.get("n_sentences", len(sentences)),
         "n_partial_human": sp.get("n_partial_human"),
         "n_partial_model": sp.get("n_partial_model"),
+        # The full/partial/removed cross-tab and the partial-vs-partial branch
+        # split ``sentence_scoring.score_sentences_points`` already computes.
+        # Passed straight through so a caller can recount the score without
+        # reaching into the level report.
+        "pair_counts": sp.get("pair_counts"),
+        "partial_branch_counts": sp.get("partial_branch_counts"),
         "word_score": level["word_grade"],
         "word_count": word.get("count", 0),
         "grade": level["grade"],
@@ -336,6 +342,36 @@ def score_episode(name, decisions, threshold, removals=None):
     }
     row, _level = _score_annotated(data, sentences, threshold, extra)
     return row
+
+
+def sentence_states_for(name, decisions, threshold, removals=None):
+    """``(human_states, model_states)`` behind one ``score_episode`` call.
+
+    Both sides are ``{sentence_id: (state, runs)}`` straight out of the
+    harness's ``sentence_scoring.sentence_states``: the same two maps SENTENCE
+    POINTS reads, so "the editor kept it" and "the arm kept it" mean here what
+    they mean in the metric. ``runs`` are word ORDER positions inside the
+    sentence, ``(first, end_exclusive)``, or ``None`` for a whole or removed
+    sentence. ``removals`` is layered exactly as ``score_episode`` layers it.
+
+    Exists so a caller can ask which sentences a pair count is made of without
+    reaching into this module's private annotation step.
+    """
+    data = load_episode(name)
+    sentences, _n = _annotate(data, decisions, [])
+    _apply_removals(sentences, threshold, removal_frames(removals))
+    pre = data["preflight"]
+    human = sentence_scoring.sentence_states(
+        pre.word_units, pre.human_by_media, pre.media_name, sentences,
+        human_rule="majority", offset=pre.offset)
+    model_by_media = ranges_mod.kept_segments_from_score(
+        sentences, threshold, pre.media_name, field="roughcut_score")
+    shifted = {media: [(start + pre.offset, end + pre.offset)
+                       for start, end in segments]
+               for media, segments in model_by_media.items()}
+    model = sentence_scoring.sentence_states(
+        pre.word_units, shifted, pre.media_name, sentences, offset=pre.offset)
+    return human, model
 
 
 # ---------------------------------------------------------------------------
