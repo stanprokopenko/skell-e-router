@@ -1,0 +1,50 @@
+text_head,label,jev_prediction,jev_confidence,jev_prob_big,luna_prediction,gemini_prediction,category,sender
+"In the visual representation I have access to, it appears there were two spikes in there that you seemed to not include,",big,big,0.0,0.5,fast,big,reasoning,user-6
+Why is drawing basics #1? can you explain your reasoning?,fast,fast,0.03,0.49,big,big,question reply,user-8
+"using only 3rd party courses, can you give me the average and median sales for the first 3 months of a course launch? i ",fast,fast,0.09,0.45,big,big,data pull,user-3
+I'm running a Perspective course google ads campaign in the U.S. right now which is converting really well. I'd like to ,fast,fast,0.13,0.44,big,fast,data pull,user-2
+"My question is, why is it more complicated to show Sold Out than Not for Sale? Check the code.",fast,fast,0.14,0.43,big,fast,tool op,user-4
+What determines the ranking of courses on the browse page when in trending sort mode and filtered by courses?  And why h,fast,fast,0.18,0.41,big,big,lookup,user-4
+Give me a non concise answer,big,big,0.27,0.64,fast,big,continuation,user-1
+"Now do the same for this, but don'",fast,fast,0.3,0.35,big,big,continuation,user-2
+"there are a few lessons that have no voice instruction, just drawing. would it be fair to consider that instrutional con",fast,fast,0.33,0.34,big,big,reasoning,user-3
+"Check the code, when a student buys with a affiliate link, does the affiliate commission get subtracted from prokos port",fast,fast,0.34,0.33,big,big,lookup,user-4
+"Based on everything you can do, write a list of 10 prompts I can send to you in another session that would results in fa",fast,fast,0.35,0.32,big,big,other,user-4
+"hey were filming in stans studio tomorrow, give me a checklist of everything i need to do to prepare!",fast,fast,0.35,0.32,big,big,lookup,user-4
+"I just spotted a potential bug on Proko. I just put a description into an upsell and the preview for it is different, it",fast,fast,0.38,0.31,big,fast,lookup,user-2
+Research if kids with allergies generally have healthier appendix.,fast,fast,0.38,0.31,big,big,lookup,user-4
+Research stephens role based on his messages throughout various slack channels,fast,fast,0.4,0.3,big,fast,summarize,user-4
+"You need to run the numbers again for Rembert's workshops. For example Rembert only offers 20 participation seats (max),",big,big,0.4,0.7,fast,big,continuation,user-2
+Research stephens role based on his messages throughout various slack channels,fast,fast,0.42,0.29,big,fast,summarize,user-4
+are there any actual outliers between the smaller countries in terms of what they buy in the Proko store? Or is roughly ,fast,fast,0.43,0.28,big,big,data pull,user-2
+get subagents to look at the actual commit diffs in the flutter repos from past 30 days. is it any different from what y,fast,fast,0.43,0.28,big,big,tool op,user-4
+that is good but your only saying no digital art expereice...waht about otehr art experience?,fast,fast,0.43,0.29,big,big,small edit,user-3
+i want to test the excel workbook feature. do some research that would be useful for me and give it to me,fast,fast,0.44,0.28,big,fast,data pull,user-4
+What does our YoY traffic look like so far for August compared to 2025? Anything that stands out?,fast,fast,0.47,0.26,big,fast,data pull,user-2
+how can electra studio hav 63300.0% conversaion rate? is your math wrong?,fast,fast,0.49,0.25,big,fast,question reply,user-2
+What does Claude code do with it's harness that make it use the capability of the newest model better? What are the form,fast,fast,0.5,0.25,big,fast,summarize,user-4
+give me the average 90 days sales for all courses not just 3rd party courses. exclude major outliiers (all stan prokopen,fast,fast,0.51,0.25,big,big,data pull,user-3
+Find what you can about Stephen bauman across all of our sources and give me a report.,fast,fast,0.52,0.24,big,big,data pull,user-4
+what about these transcripts,fast,fast,0.56,0.22,big,big,continuation,user-2
+I wonder why click up has more task each month. Are they all video production tasks?,fast,fast,0.58,0.21,big,fast,question reply,user-4
+Do I have to use their ai features or can I just use it to record?  When are they shipping orders? It attached to a phon,fast,fast,0.59,0.2,big,fast,factual,user-4
+are there any free videos that were released over the course of Drawing Basics (during non sale periods) that did cause ,fast,fast,0.6,0.2,big,fast,data pull,user-2
+did we launch any courses in August 2025? I'm trying to figure out what could've lead to higher sales during this month ,fast,fast,0.6,0.2,big,fast,data pull,user-2
+what are the refund rates for the top 10 countries that spend the most on Proko YoY. Chart them and let's see if we're s,fast,fast,0.6,0.2,big,fast,data pull,user-2
+are there any free videos that were released over the course of Drawing Basics (during non sale periods) that did cause ,fast,fast,0.61,0.19,big,fast,data pull,user-2
+Before August of 2019 we had a different website but sold a lot of courses for years before that.  Are you accounting fo,fast,fast,0.65,0.18,big,big,question reply,user-8
+Yes fix and rerun anything that was wrong before,fast,fast,0.66,0.17,big,big,tool op,user-2
+give me the assignment for this lesson. i want it simple to read and follow for students and in an easy to read format.,fast,fast,0.66,0.17,big,big,format edit,user-4
+"""Learn how to accurately measure and divide foreshortened space. These simple diagonal tricks will help you find the cen",fast,fast,0.7,0.15,big,big,factual,user-3
+"not much of a difference from 90 to 365, huh?",fast,fast,0.72,0.14,big,fast,question reply,user-3
+"That's not accurate. There are several free lessons from the course included in the playlist
+
+https://www.proko.com/cour",fast,fast,0.73,0.13,big,fast,continuation,user-2
+https://youtu.be/qV_K0nTF6gY?is=4MttHN6B87OvGYJW what did he build and how much would it cost me?,fast,fast,0.73,0.13,big,fast,summarize,user-4
+give me the assignment for this lesson. i want it simple to read and follow for students and in an easy to read format.,fast,fast,0.76,0.12,big,big,format edit,user-3
+"is ""equal sections"" correct? only part of the lesson is about making the section equal, right? arnt some of the techniqu",fast,fast,0.76,0.12,big,fast,continuation,user-3
+"I know we don't have a lot of data on it, but how does Eliza's style course and free content do? Have we noticed any spi",fast,fast,0.77,0.12,big,big,data pull,user-2
+i started the premium perspective course and I can't find where I learn how to make cubes. Lesson 1 I guess. what I'm wa,fast,fast,0.77,0.12,big,fast,lookup,user-1
+Can you exclude the Proko Course Sampler? and see what the students picked up after that? Or break it down to show proko,fast,fast,0.79,0.11,big,fast,data pull,user-8
+Can you check if afterpay is working for proko orders and if it is working for non-US countries? for last few months,fast,fast,0.8,0.1,big,fast,data pull,user-7
+Now do the same task for these two transcripts,big,big,0.99,1.0,fast,big,continuation,user-2

@@ -1,0 +1,2 @@
+cases,category_min_n,label_big,label_fast,rules_settled,rules_explicit_model,rules_unsettled,prod_shaped_n,run_date,generated_utc,spend_usd,total_calls,jev_right_luna_wrong,luna_right_jev_wrong,jev_errors_bottom_two_quartiles
+565,10,129,436,270,3,292,562,2026-09-19,2026-09-19T19:05:21.721238+00:00,0.3203618739999991,1695,47,19,42

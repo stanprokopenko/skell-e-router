@@ -1,0 +1,54 @@
+text_head,label,jev_prediction,jev_confidence,jev_prob_big,luna_prediction,gemini_prediction,category,sender
+Why is drawing basics #1? can you explain your reasoning?,fast,fast,0.03,0.49,big,big,question reply,user-8
+"using only 3rd party courses, can you give me the average and median sales for the first 3 months of a course launch? i ",fast,fast,0.09,0.45,big,big,data pull,user-3
+Explore YouTube analytics from the past 30 days and tell me something unexpected,big,big,0.12,0.56,big,fast,critique analysis,user-4
+Tell me more about the Marvel course. Have we seen a decline in sales in relation to a decline of views from the free Yo,big,big,0.12,0.56,big,fast,continuation,user-2
+"Based on everything you can do, write a list of 10 prompts I can send to you in another session that would results in fa",fast,fast,0.15,0.43,fast,big,other,user-4
+"Find a task description that I think was originally posted to Slack webste, about the Custom newsfeed posts.
+Make a bett",fast,fast,0.18,0.41,fast,big,format edit,user-7
+Tell me more about the Marvel course. Have we seen a decline in sales in relation to a decline of views from the free Yo,big,big,0.18,0.59,big,fast,reasoning,user-2
+What determines the ranking of courses on the browse page when in trending sort mode and filtered by courses?  And why h,fast,fast,0.18,0.41,big,big,lookup,user-4
+I meant to analyze some analytics about purchases and the customers that prove to the free watchers that they should buy,big,big,0.23,0.62,big,fast,continuation,user-4
+"Now do the same for this, but don'",fast,fast,0.3,0.35,big,big,continuation,user-2
+"there are a few lessons that have no voice instruction, just drawing. would it be fair to consider that instrutional con",fast,fast,0.33,0.34,big,big,reasoning,user-3
+"Check the code, when a student buys with a affiliate link, does the affiliate commission get subtracted from prokos port",fast,fast,0.34,0.33,big,big,lookup,user-4
+"Based on everything you can do, write a list of 10 prompts I can send to you in another session that would results in fa",fast,fast,0.35,0.32,big,big,other,user-4
+"hey were filming in stans studio tomorrow, give me a checklist of everything i need to do to prepare!",fast,fast,0.35,0.32,big,big,lookup,user-4
+Are you sure this data is right? We've refunded a total of close to $100k this year alone. I'm 100% sure we've refunded ,fast,fast,0.36,0.32,fast,big,continuation,user-2
+Research if kids with allergies generally have healthier appendix.,fast,fast,0.38,0.31,big,big,lookup,user-4
+"Let's look at your brain.
+
+It has a challenge ahead. Cubes prime your brain for that
+
+challenge, moving to mastery of fr",fast,fast,0.41,0.29,fast,big,summarize,user-2
+Find what you can about Stephen bauman across all of our sources and give me a report.,fast,fast,0.42,0.29,fast,big,data pull,user-4
+Launch 2 subagents to analyze a few transcripts from Stan prokopenkos and drawing basics course and find some quotes tha,big,big,0.42,0.71,big,fast,marketing copy,user-4
+Beginner. I would like to learn about old and classical paintings.,fast,fast,0.43,0.29,fast,big,lookup,user-1
+are there any actual outliers between the smaller countries in terms of what they buy in the Proko store? Or is roughly ,fast,fast,0.43,0.28,big,big,data pull,user-2
+get subagents to look at the actual commit diffs in the flutter repos from past 30 days. is it any different from what y,fast,fast,0.43,0.28,big,big,tool op,user-4
+that is good but your only saying no digital art expereice...waht about otehr art experience?,fast,fast,0.43,0.29,big,big,small edit,user-3
+give me the average 90 days sales for all courses not just 3rd party courses. exclude major outliiers (all stan prokopen,fast,fast,0.51,0.25,big,big,data pull,user-3
+Find what you can about Stephen bauman across all of our sources and give me a report.,fast,fast,0.52,0.24,big,big,data pull,user-4
+Can you list out Patrick Jones' courses by most popular to least? And can you make another list that looks at popularity,fast,fast,0.55,0.23,fast,big,data pull,user-8
+What's the standard response to a spam account that messages support contesting a moderation decision?,fast,fast,0.55,0.22,fast,big,lookup,user-1
+Great. Can you isolate the free figure drawing content that's taken the biggest decline in views over time and present m,fast,fast,0.56,0.22,fast,big,data pull,user-2
+what about these transcripts,fast,fast,0.56,0.22,big,big,continuation,user-2
+Before August of 2019 we had a different website but sold a lot of courses for years before that.  Are you accounting fo,fast,fast,0.65,0.18,big,big,question reply,user-8
+Yes fix and rerun anything that was wrong before,fast,fast,0.66,0.17,big,big,tool op,user-2
+give me the assignment for this lesson. i want it simple to read and follow for students and in an easy to read format.,fast,fast,0.66,0.17,big,big,format edit,user-4
+I want you to look at a 30 day window when a new third party course launches on our platform and the average amount of n,fast,fast,0.68,0.16,fast,big,data pull,user-2
+"Out of the new users that were added, what is their user activity like on Proko? How often do they log in, how many less",fast,fast,0.69,0.16,fast,big,data pull,user-2
+"""Learn how to accurately measure and divide foreshortened space. These simple diagonal tricks will help you find the cen",fast,fast,0.7,0.15,big,big,factual,user-3
+rewrite that summary using ASD-STE100,fast,fast,0.72,0.14,fast,big,format edit,user-4
+"Create a calculator that calculates the take home commission for an instructor based on sliders for price, discount, com",big,big,0.75,0.88,big,fast,reasoning,user-4
+What's our standard answer to spam account who dispute moderation decisions?,fast,fast,0.75,0.12,fast,big,lookup,user-1
+is there anything in our guidelines that prohibits or even mentions using suicidal images on proko,fast,fast,0.75,0.13,fast,big,lookup,user-3
+"Create a calculator that calculates the take home commission for an instructor based on sliders for price, discount, com",big,big,0.76,0.88,big,fast,reasoning,user-4
+give me the assignment for this lesson. i want it simple to read and follow for students and in an easy to read format.,fast,fast,0.76,0.12,big,big,format edit,user-3
+"I know we don't have a lot of data on it, but how does Eliza's style course and free content do? Have we noticed any spi",fast,fast,0.77,0.12,big,big,data pull,user-2
+Great. Now do the same with this transcript,big,big,0.86,0.93,big,fast,continuation,user-2
+Can you look at total Proko profit revenue by country yoy going back to 2021 and chart that as well?,fast,fast,0.87,0.06,fast,big,data pull,user-2
+what about in our instructor agreement,fast,fast,0.89,0.05,fast,big,continuation,user-3
+im trying to thnk of a thumbnail for this course. it needs to be textless. what would the main concept be that i should ,fast,fast,0.94,0.03,fast,big,marketing copy,user-3
+create a short 2-3 sentence description of what you'll learn in these videos,fast,fast,0.95,0.02,fast,big,summarize,user-2
+In your report you have 4 boxes at the top. They seem forced like they don't belong. Is that part of a template and you ,fast,fast,0.96,0.02,fast,big,question reply,user-4

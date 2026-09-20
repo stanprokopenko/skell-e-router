@@ -1,0 +1,36 @@
+check,recomputed,summary,match
+gemini_prod correct,491,491,yes
+gemini_prod missed_big,21,21,yes
+gemini_prod false_big,53,53,yes
+gemini_prod median_s,0.6098823999636807,0.6098823999636807,yes
+gemini_prod p95_s,0.7698557000258006,0.7698557000258006,yes
+gemini_prod cost_per_1000,0.3008946902654867,0.3008946902654867,yes
+luna_low correct,494,494,yes
+luna_low missed_big,13,13,yes
+luna_low false_big,58,58,yes
+luna_low median_s,1.089393200003542,1.089393200003542,yes
+luna_low p95_s,1.8071052000159398,1.8071052000159398,yes
+luna_low cost_per_1000,0.2042959292035399,0.20429592920353984,yes
+jev correct,522,522,yes
+jev missed_big,23,23,yes
+jev false_big,20,20,yes
+jev median_s,0.21369980002054945,0.21369980002054945,yes
+jev p95_s,0.28427239996381104,0.28427239996381104,yes
+jev cost_per_1000,0.06182154690265495,0.061821546902654866,yes
+jev quartile q1_lowest n,146,146,yes
+jev quartile q1_lowest correct,115,115,yes
+jev quartile q2 n,154,154,yes
+jev quartile q2 correct,143,143,yes
+jev quartile q3 n,139,139,yes
+jev quartile q3 correct,138,138,yes
+jev quartile q4_highest n,126,126,yes
+jev quartile q4_highest correct,126,126,yes
+hybrid t=0.2 escalated,32,32,yes
+hybrid t=0.4 escalated,65,65,yes
+hybrid t=0.6 escalated,117,117,yes
+agreement gemini_prod_vs_luna_low,500,500,yes
+agreement gemini_prod_vs_jev,500,500,yes
+agreement luna_low_vs_jev,499,499,yes
+jev errors,43,43,yes
+"jev right, luna wrong",47,47,yes
+"luna right, jev wrong",19,19,yes

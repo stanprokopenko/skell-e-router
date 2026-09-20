@@ -1,0 +1,5 @@
+policy,policy_label,explanation,n,correct,accuracy_pct,missed_big,false_big,kind
+a_raw_choice,Jev's own answer,Use the tier Jev picks. Nothing else.,565,522,92.4,23,20,policy
+b_composed,Built from the yes/no answers,Ignore Jev's tier and rebuild the decision from its four yes/no scores at a 0.5 cutoff.,565,430,76.1,44,91,policy
+c_choice_with_tiebreak,"Jev's answer, big when unsure","Use Jev's tier, but send it to the expensive model whenever Jev is under 30% sure, unless the writer asked for something quick.",565,520,92.0,13,32,policy
+d_prob_threshold,Tuned probability cutoff,"Ignore the tier and send to the expensive model when Jev puts the chance of big at 40% or higher. Tuned on half the cases and scored on the other half, so this row is the held-out result.",282,263,93.3,3,16,policy

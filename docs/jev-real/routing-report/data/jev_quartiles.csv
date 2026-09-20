@@ -1,0 +1,5 @@
+quartile,quartile_label,n,correct,accuracy_pct,missed_big,false_big
+q1_lowest,Least sure quarter,146,115,78.8,17,14
+q2,Second quarter,154,143,92.9,6,5
+q3,Third quarter,139,138,99.3,0,1
+q4_highest,Most sure quarter,126,126,100.0,0,0

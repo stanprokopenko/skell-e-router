@@ -1,0 +1,4 @@
+arm,model_label,model_id,description,n,correct,accuracy_pct,missed_big,false_big,median_s,p95_s,mean_s,cost_per_1000_usd,total_cost_usd,errors
+gemini_prod,Today's classifier,gemini-3.5-flash-lite,"gemini-3.5-flash-lite, running in production today",565,491,86.9,21,53,0.61,0.77,0.608,0.3009,0.17,0
+luna_low,gpt-5.6-luna,gpt-5.6-luna,"same prompt, low reasoning effort",565,494,87.4,13,58,1.089,1.807,1.172,0.2043,0.1154,0
+jev,Jev 1.13.0,jev-1.13.0,"jev-1.13.0, built only for picking between fixed choices",565,522,92.4,23,20,0.214,0.284,0.217,0.0618,0.0349,0

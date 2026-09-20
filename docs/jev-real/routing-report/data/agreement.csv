@@ -1,0 +1,4 @@
+pair,n,agree,agree_pct,both_big,both_fast,disagree
+Today's classifier vs gpt-5.6-luna,565,500,88.5,135,365,65
+Today's classifier vs Jev 1.13.0,565,500,88.5,111,389,65
+gpt-5.6-luna vs Jev 1.13.0,565,499,88.3,117,382,66

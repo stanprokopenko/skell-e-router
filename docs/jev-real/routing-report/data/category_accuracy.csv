@@ -1,0 +1,16 @@
+category,n,gemini_prod_correct,gemini_prod_accuracy_pct,luna_low_correct,luna_low_accuracy_pct,jev_correct,jev_accuracy_pct
+data pull,106,92,86.8,89,84.0,103,97.2
+lookup,79,68,86.1,69,87.3,75,94.9
+continuation,78,64,82.1,64,82.1,68,87.2
+tool op,48,45,93.8,44,91.7,45,93.8
+summarize,33,30,90.9,28,84.8,32,97.0
+factual,31,30,96.8,29,93.5,31,100.0
+marketing copy,31,24,77.4,26,83.9,25,80.6
+reasoning,30,23,76.7,28,93.3,26,86.7
+question reply,26,23,88.5,21,80.8,26,100.0
+format edit,24,20,83.3,22,91.7,23,95.8
+small edit,20,18,90.0,18,90.0,18,90.0
+critique analysis,16,15,93.8,16,100.0,14,87.5
+strategy,13,13,100.0,13,100.0,13,100.0
+long writing,12,11,91.7,11,91.7,7,58.3
+other,18,15,83.3,16,88.9,16,88.9

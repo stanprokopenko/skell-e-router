@@ -1,0 +1,57 @@
+text_head,label,jev_prediction,jev_confidence,jev_prob_big,luna_prediction,gemini_prediction,category,sender
+Can you provide me with a general prompt criteria to give to coursera students on how to critique a student. This should,big,fast,0.02,0.49,big,big,long writing,user-2
+Same thing. Remember not to use emdashes,fast,big,0.04,0.52,big,fast,continuation,user-2
+Would you please turn this into a response for a student named Anas?,big,fast,0.04,0.48,big,big,long writing,user-1
+Don't send user message without tool calls. That means your done..,big,fast,0.05,0.48,big,fast,continuation,user-4
+a new instructor wants to know how they get paid and when they get paid. What should I tell them?,fast,big,0.05,0.52,big,big,lookup,user-2
+"Hi Proko team!
+I have a course suggestion. Could you make a course about drawing environments and building worlds?
+I wou",fast,big,0.06,0.53,fast,fast,other,user-1
+"Should we mention that the site does contain nudity, but not the basics course?",big,fast,0.06,0.47,big,big,reasoning,user-1
+How many premium videos on the site haven't gotten a single view in 2026 so far? Are there any videos or courses that re,fast,big,0.07,0.54,big,big,data pull,user-4
+"I've paid for an begun the beginning drawing class, and am having a hard time navigating your site. I've completed the f",big,fast,0.07,0.47,big,big,long writing,user-1
+"Add the next message that says that the described flow has difference from what we havediscussed before, a simpler way t",big,fast,0.09,0.46,big,big,long writing,user-7
+I'm looking into customer life time tagging for our affiliate program and I'm interested in the effects that would have ,big,fast,0.1,0.45,fast,fast,pricing,user-2
+"check gitlab how does it work when they are not subscribed to a newsletter and they went to their notification settings,",big,fast,0.12,0.44,big,fast,reasoning,user-4
+Are there any details about HOW that would be interesting to somehow who has experience building Agentic harnesses?,big,fast,0.13,0.43,big,big,critique analysis,user-4
+What courses might be helpful when taking Michel H's Constructive Head Drawing course? I already have Proko's Portraitur,big,fast,0.14,0.43,big,fast,reasoning,user-1
+can you double check your math on all this?,big,fast,0.14,0.43,big,big,critique analysis,user-3
+Are there any lessons you'd recommend for our channel that don't have a youtube lesson already attached to it from Lucas,fast,big,0.15,0.57,big,fast,lookup,user-2
+make some interactive widget here related to this demo,fast,big,0.26,0.63,fast,fast,format edit,user-4
+what about here,fast,big,0.26,0.63,fast,fast,continuation,user-2
+"check gitlab how does it work when they are not subscribed to a newsletter and they went to their notification settings,",big,fast,0.27,0.36,big,fast,reasoning,user-4
+i think thats wrong. codes dont connect to affiliate clicks. get subagents to audit your script.,fast,big,0.31,0.65,big,fast,tool op,user-2
+Are there any course launches on Proko since May 2021 that have seen their revenues climb YoY? Chart out projections for,fast,big,0.33,0.67,big,big,data pull,user-2
+Make me a commission calculator,fast,big,0.33,0.67,fast,big,tool op,user-4
+"I want to learn, but where do I start with the basic studies of being an artist? The exercises will be on the fundamenta",fast,big,0.43,0.72,big,big,lookup,user-1
+I want to create a series of learning points for this art course. These contain a short title and a very short descripti,fast,big,0.47,0.73,big,big,summarize,user-3
+"Make an html presentation reporting about everything you can do. All the tools you have available to you, all the skills",fast,big,0.52,0.76,big,big,long writing,user-4
+Get a subagent to audit your script to make sure you used the db schema properly.,fast,big,0.53,0.77,fast,fast,tool op,user-4
+i only want you to look through real code on gitlab...,big,fast,0.57,0.22,fast,fast,continuation,user-4
+"Write a short, but inspirational portrait painting social post",big,fast,0.59,0.21,fast,big,marketing copy,user-2
+"replying
+1. this is the stream key
+2. instructor currently can't create a live event here
+also i need to add that the fl",big,fast,0.6,0.2,fast,fast,continuation,user-7
+Ive watched many youtube video's and ive found it hard with following how to draw eg ellipsises & cubes cuboid 3 d shape,big,fast,0.61,0.2,fast,big,continuation,user-1
+i only want you to look through real code on gitlab..,big,fast,0.61,0.19,fast,fast,continuation,user-4
+"I want to create a h3 title heading for ""Who This Course is For"" but I want something more creative then that. Can you p",big,fast,0.75,0.13,fast,fast,marketing copy,user-2
+5 learning objectives seems like a lot for a short video. Prioritize and simplify it down to 2 points max,big,fast,0.76,0.12,big,big,small edit,user-2
+same thing,fast,big,0.77,0.88,big,big,continuation,user-2
+Can you analyze the activity of these people that buy a product through Proko's affiliate link compared to the average 2,fast,big,0.82,0.91,big,big,data pull,user-2
+write a short message to the devs to get this fixed.,big,fast,0.82,0.09,big,fast,continuation,user-4
+generate titles for that episode,big,fast,0.83,0.09,fast,fast,marketing copy,user-6
+"Course Recommendation Prompt
+
+A student completed Riven Phoenix’s Structure of Man course and says they now have a basic",fast,big,0.84,0.92,big,big,lookup,user-1
+same thing here,fast,big,0.86,0.93,big,big,continuation,user-2
+Okay if that's the case what are some punchy YouTube titles that play off this sentence: the humble cube is the ultimate,big,fast,0.91,0.04,fast,fast,marketing copy,user-2
+give me a polished answer i can add the the FAQ make it happy and beginner friendly sounding but also add a part that sa,fast,big,0.92,0.96,big,big,marketing copy,user-3
+"Are there any other titles you can think of that have a strong hook that don't include ""cheat code"" directly in them?",big,fast,0.95,0.03,big,fast,marketing copy,user-2
+"Tell this guy his VAT was refunded with his order: 
+
+Hello.
+Sorry to bother you again.
+I have 2 questions .
+
+Last week, ",fast,big,0.96,0.98,big,big,small edit,user-1

@@ -87,3 +87,4 @@ scripts/temp/
 # Agent working dirs
 .worktrees/
 .agent-scratch/
+docs/jev-real/routing-report/screenshots/
