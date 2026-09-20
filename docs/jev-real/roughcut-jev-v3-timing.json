@@ -1,0 +1,526 @@
+{
+  "generated_utc": "2026-09-20T22:24:43.849437+00:00",
+  "model": "jev-1.13.0",
+  "prompt_version": "v3",
+  "arms": [
+    "jev_a",
+    "jev_b_moduleretakes",
+    "jev_b_notrim"
+  ],
+  "trim_pick": false,
+  "concurrency": 8,
+  "t_trim": 0.5,
+  "budget_cap_usd": 3.0,
+  "aborted": null,
+  "episodes": {
+    "colman-02.04-skeleton-demo": {
+      "sentences": 194,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\colman-02.04-skeleton-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 60
+      },
+      "split_chains": {
+        "rows": 44,
+        "chains": 20,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.286,
+          "requests": 1,
+          "input_tokens": 3487,
+          "output_tokens": 310,
+          "cost_usd": 0.000146,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 1,
+            "total_s": 0.2850443000206724,
+            "median_s": 0.2850443000206724,
+            "p95_s": 0.2850443000206724,
+            "max_s": 0.2850443000206724
+          },
+          "groups": 6,
+          "losers_cut": 4
+        },
+        "sentence": {
+          "wall_clock_s": 4.159,
+          "requests": 11,
+          "input_tokens": 350759,
+          "output_tokens": 59625,
+          "cost_usd": 0.014732,
+          "errors": 3,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 11,
+            "total_s": 6.957325099851005,
+            "median_s": 0.5939821999636479,
+            "p95_s": 0.8196822999743745,
+            "max_s": 0.8196822999743745
+          }
+        }
+      },
+      "episode_wall_clock_s": 4.445,
+      "cost_usd": 0.014878,
+      "trims": {
+        "jev_a": 10,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "hampton-5.4-assignment-demo": {
+      "sentences": 300,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\hampton-5.4-assignment-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 15
+      },
+      "split_chains": {
+        "rows": 61,
+        "chains": 29,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.23,
+          "requests": 1,
+          "input_tokens": 3166,
+          "output_tokens": 318,
+          "cost_usd": 0.000133,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 1,
+            "total_s": 0.22952609998174012,
+            "median_s": 0.22952609998174012,
+            "p95_s": 0.22952609998174012,
+            "max_s": 0.22952609998174012
+          },
+          "groups": 6,
+          "losers_cut": 1
+        },
+        "sentence": {
+          "wall_clock_s": 2.564,
+          "requests": 14,
+          "input_tokens": 504036,
+          "output_tokens": 74204,
+          "cost_usd": 0.02117,
+          "errors": 2,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 14,
+            "total_s": 8.506569700082764,
+            "median_s": 0.5986361000104807,
+            "p95_s": 0.8583308000233956,
+            "max_s": 0.8583308000233956
+          }
+        }
+      },
+      "episode_wall_clock_s": 2.794,
+      "cost_usd": 0.021303,
+      "trims": {
+        "jev_a": 8,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "colman-03.03-muscles-crit": {
+      "sentences": 303,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\colman-03.03-muscles-crit.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 35
+      },
+      "split_chains": {
+        "rows": 101,
+        "chains": 46,
+        "longest": 5
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.32,
+          "requests": 2,
+          "input_tokens": 4444,
+          "output_tokens": 416,
+          "cost_usd": 0.000187,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 2,
+            "total_s": 0.60867089999374,
+            "median_s": 0.30433544999687,
+            "p95_s": 0.3184044999652542,
+            "max_s": 0.3184044999652542
+          },
+          "groups": 8,
+          "losers_cut": 2
+        },
+        "sentence": {
+          "wall_clock_s": 2.777,
+          "requests": 15,
+          "input_tokens": 595355,
+          "output_tokens": 97937,
+          "cost_usd": 0.025005,
+          "errors": 2,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 15,
+            "total_s": 9.916301700053737,
+            "median_s": 0.6573367000091821,
+            "p95_s": 0.9720387000124902,
+            "max_s": 0.9720387000124902
+          }
+        }
+      },
+      "episode_wall_clock_s": 3.097,
+      "cost_usd": 0.025192,
+      "trims": {
+        "jev_a": 25,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "edges-7.01-intro": {
+      "sentences": 389,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\edges-7.01-intro.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 28
+      },
+      "split_chains": {
+        "rows": 73,
+        "chains": 35,
+        "longest": 3
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.407,
+          "requests": 11,
+          "input_tokens": 37339,
+          "output_tokens": 4120,
+          "cost_usd": 0.001568,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 11,
+            "total_s": 2.2255150001728907,
+            "median_s": 0.20105400000466034,
+            "p95_s": 0.21883970004273579,
+            "max_s": 0.21883970004273579
+          },
+          "groups": 63,
+          "losers_cut": 108
+        },
+        "sentence": {
+          "wall_clock_s": 4.49,
+          "requests": 22,
+          "input_tokens": 617437,
+          "output_tokens": 89299,
+          "cost_usd": 0.025932,
+          "errors": 6,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 22,
+            "total_s": 12.626696599880233,
+            "median_s": 0.5658937999687623,
+            "p95_s": 0.6741571999737062,
+            "max_s": 0.7504865999799222
+          }
+        }
+      },
+      "episode_wall_clock_s": 4.897,
+      "cost_usd": 0.0275,
+      "trims": {
+        "jev_a": 10,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "hampton-5.2-shape-demo": {
+      "sentences": 411,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\hampton-5.2-shape-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 28
+      },
+      "split_chains": {
+        "rows": 72,
+        "chains": 33,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.247,
+          "requests": 3,
+          "input_tokens": 7711,
+          "output_tokens": 742,
+          "cost_usd": 0.000324,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 3,
+            "total_s": 0.733714800036978,
+            "median_s": 0.24364320002496243,
+            "p95_s": 0.24652950000017881,
+            "max_s": 0.24652950000017881
+          },
+          "groups": 14,
+          "losers_cut": 14
+        },
+        "sentence": {
+          "wall_clock_s": 2.953,
+          "requests": 20,
+          "input_tokens": 795846,
+          "output_tokens": 120016,
+          "cost_usd": 0.033426,
+          "errors": 3,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 20,
+            "total_s": 13.275661800114904,
+            "median_s": 0.6593685000261758,
+            "p95_s": 0.7742977000307292,
+            "max_s": 0.7742977000307292
+          }
+        }
+      },
+      "episode_wall_clock_s": 3.2,
+      "cost_usd": 0.03375,
+      "trims": {
+        "jev_a": 27,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "perspective-14e-boxes-critique": {
+      "sentences": 1146,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\perspective-14e-boxes-critique.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 52
+      },
+      "split_chains": {
+        "rows": 153,
+        "chains": 73,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.468,
+          "requests": 14,
+          "input_tokens": 41593,
+          "output_tokens": 4280,
+          "cost_usd": 0.001747,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 14,
+            "total_s": 3.02521260001231,
+            "median_s": 0.21562370003084652,
+            "p95_s": 0.25977300002705306,
+            "max_s": 0.25977300002705306
+          },
+          "groups": 80,
+          "losers_cut": 60
+        },
+        "sentence": {
+          "wall_clock_s": 11.975,
+          "requests": 67,
+          "input_tokens": 2465480,
+          "output_tokens": 255734,
+          "cost_usd": 0.10355,
+          "errors": 23,
+          "failed_blocks": 2,
+          "windowed_requests": 0,
+          "latency": {
+            "n": 67,
+            "total_s": 59.31233970011817,
+            "median_s": 0.7589234000188299,
+            "p95_s": 2.0258585000410676,
+            "max_s": 4.169566500000656
+          }
+        }
+      },
+      "episode_wall_clock_s": 12.443,
+      "cost_usd": 0.105297,
+      "trims": {
+        "jev_a": 47,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    }
+  },
+  "totals": {
+    "wall_clock_s": 31.041,
+    "requests": 181,
+    "errors": 39,
+    "failed_blocks": 2,
+    "input_tokens": 5426653,
+    "output_tokens": 707001,
+    "cost_usd": 0.227919,
+    "decisions": 8229
+  },
+  "pass_wall_clock_s": {
+    "retake": 1.958,
+    "sentence": 28.918,
+    "trim_pick": 0
+  },
+  "warnings": [
+    "perspective-14e-boxes-critique sentence 850: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 851: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 852: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 853: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 854: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 855: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 856: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 857: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 858: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 859: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 860: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 861: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 862: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 863: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 864: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 865: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 866: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 867: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 868: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 869: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 870: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 871: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 872: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 873: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 874: no answer (block 34)",
+    "perspective-14e-boxes-critique sentence 975: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 976: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 977: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 978: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 979: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 980: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 981: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 982: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 983: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 984: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 985: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 986: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 987: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 988: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 989: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 990: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 991: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 992: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 993: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 994: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 995: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 996: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 997: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 998: no answer (block 39)",
+    "perspective-14e-boxes-critique sentence 999: no answer (block 39)"
+  ],
+  "n_warnings": 50,
+  "repairs": [
+    {
+      "repaired_utc": "2026-09-20T22:24:54.801078+00:00",
+      "extra_wall_clock_s": 3.912,
+      "requests": 5,
+      "errors": 4,
+      "cost_usd": 0.002424,
+      "decision_rows_rewritten": 150,
+      "episodes": [
+        {
+          "episode": "perspective-14e-boxes-critique",
+          "resent_blocks": {
+            "sentence": [
+              34,
+              39
+            ]
+          },
+          "new_pick_blocks": [],
+          "requests": 5,
+          "errors": 4,
+          "cost_usd": 0.002424,
+          "sentences_repaired": 25,
+          "still_defaulted": 25
+        }
+      ],
+      "warnings": [
+        "perspective-14e-boxes-critique sentence 850: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 851: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 852: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 853: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 854: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 855: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 856: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 857: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 858: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 859: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 860: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 861: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 862: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 863: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 864: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 865: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 866: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 867: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 868: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 869: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 870: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 871: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 872: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 873: no answer (block 34)",
+        "perspective-14e-boxes-critique sentence 874: no answer (block 34)"
+      ],
+      "n_warnings": 25
+    },
+    {
+      "repaired_utc": "2026-09-20T22:26:09.508951+00:00",
+      "extra_wall_clock_s": 3.791,
+      "requests": 3,
+      "errors": 2,
+      "cost_usd": 0.002264,
+      "decision_rows_rewritten": 75,
+      "episodes": [
+        {
+          "episode": "perspective-14e-boxes-critique",
+          "resent_blocks": {
+            "sentence": [
+              34
+            ]
+          },
+          "new_pick_blocks": [],
+          "requests": 3,
+          "errors": 2,
+          "cost_usd": 0.002264,
+          "sentences_repaired": 25,
+          "still_defaulted": 0
+        }
+      ],
+      "warnings": [],
+      "n_warnings": 0
+    }
+  ]
+}

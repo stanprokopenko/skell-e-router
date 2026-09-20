@@ -19,7 +19,7 @@ import os
 import re
 from types import SimpleNamespace
 
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 
 RULES_SOURCE = os.path.join(
     r"D:\solar-sailer\benchmarks\roughcut\prompts", "roughcut_system_partial_v5.md")
@@ -194,18 +194,54 @@ V2_SCORE_INSTRUCTIONS = (
     "proof of a false start."
 )
 
+# v3 keeps v2's split-sentence work and its level 0 and level 1 rewrites and
+# narrows level 3 back towards v1: the "even when plain, long or loosely worded"
+# phrase and the instruction clause are gone, the transition, set-up and list
+# cases the misses list asked for stay. It also adds ``cut_k``, a second read on
+# the same sentence asked as a direct removal question instead of a 0-5 score,
+# so the two can be compared and blended offline.
+V3_SCORE_LEVELS = list(V2_SCORE_LEVELS)
+V3_SCORE_LEVELS[3] = (
+    "Ordinary connective teaching talk: fine, keeps the flow, nothing memorable. "
+    "This includes a transition between topics or between students' pieces ('Let's "
+    "go to Dermot', 'Anthony Hernandez.'), a scripted set-up line the next line "
+    "answers ('So, how do you learn the rules?', 'When do you use a sharp edge?'), "
+    "and a list read one item per row ('Sharp, firm, soft, and lost.'). Example: "
+    "'So that's the first thing to look at.'"
+)
+
+V3_SCORE_INSTRUCTIONS = V2_SCORE_INSTRUCTIONS
+
+V3_CUT_INSTRUCTIONS = (
+    "The video editor removes sentence `targets[{k}]` from the final cut entirely, "
+    "given the whole transcript in `transcript` and the editing rules in `rules`. "
+    "Losing takes of a line said again, abandoned false starts, pure filler, "
+    "off-topic talk and operating the screen are removed. Teaching content, "
+    "transitions between students' pieces, scripted set-up lines the next line "
+    "answers, and funny or personal moments stay. When `targets[{k}].spoken_sentence` "
+    "is present, judge this row as a piece of that whole spoken sentence."
+)
+
+#: ``None`` means the version asks no ``cut_k`` question. Every version carries
+#: the field so a version that forgets it fails at import, not mid-run.
 PROMPTS = {
     "v1": dict(_SHARED, SCORE_LEVELS=V1_SCORE_LEVELS,
-               SCORE_INSTRUCTIONS=V1_SCORE_INSTRUCTIONS),
+               SCORE_INSTRUCTIONS=V1_SCORE_INSTRUCTIONS,
+               CUT_INSTRUCTIONS=None),
     "v2": dict(_SHARED, SCORE_LEVELS=V2_SCORE_LEVELS,
-               SCORE_INSTRUCTIONS=V2_SCORE_INSTRUCTIONS),
+               SCORE_INSTRUCTIONS=V2_SCORE_INSTRUCTIONS,
+               CUT_INSTRUCTIONS=None),
+    "v3": dict(_SHARED, SCORE_LEVELS=V3_SCORE_LEVELS,
+               SCORE_INSTRUCTIONS=V3_SCORE_INSTRUCTIONS,
+               CUT_INSTRUCTIONS=V3_CUT_INSTRUCTIONS),
 }
 
 PROMPT_VERSIONS = list(PROMPTS)
 
 #: Every version must carry every field, so a half-written version fails at
 #: import rather than halfway through a paid run.
-PROMPT_FIELDS = tuple(sorted(set(_SHARED) | {"SCORE_LEVELS", "SCORE_INSTRUCTIONS"}))
+PROMPT_FIELDS = tuple(sorted(set(_SHARED) | {"SCORE_LEVELS", "SCORE_INSTRUCTIONS",
+                                             "CUT_INSTRUCTIONS"}))
 
 for _name, _bundle in PROMPTS.items():
     _gaps = [_f for _f in PROMPT_FIELDS if _f not in _bundle]

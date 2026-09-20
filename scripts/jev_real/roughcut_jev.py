@@ -13,7 +13,8 @@ step 0  removals cache (``docs/jev-real/removals/<episode>.json``, built by the
         loud warning and no stripping.
 step 1  retake pass: one ``take_k`` choice and one ``real_k`` noul per retake
         group, 6 groups per request.
-step 2  sentence pass: ``score_k`` (0-5), ``first_k`` and ``last_k`` word
+step 2  sentence pass: ``score_k`` (0-5), ``cut_k`` (a noul, only in prompt
+        versions that define one), ``first_k`` and ``last_k`` word
         choices, 25 target sentences per request, state carries the rules and
         the whole transcript (windowed to +/-200 sentences when the render is
         over 24,000 estimated tokens or the provider rejects the context).
@@ -152,7 +153,13 @@ RETAKE_FIELDS = ("retake_group", "retake_real", "retake_take_probs",
                  "retake_choice", "retake_winner", "retake_source")
 REMOVALS_KEYS = ("umm_word_ids", "um_word_ids", "removed_word_ids", "word_ids",
                  "umm", "ids")
-CONTEXT_ERROR_MARKS = ("context", "too long", "too large", "token", "422")
+#: Error marks that send a failed block to its windowed job. ``invalid_request``
+#: is here because the provider rejects an oversized sentence-pass payload with a
+#: bare 400 and no message: the same block answers fine once the transcript is
+#: windowed, and every question subset of it answers fine at full size. A genuine
+#: schema error still fails windowed and is reported, so nothing is hidden.
+CONTEXT_ERROR_MARKS = ("context", "too long", "too large", "token", "422",
+                       "invalid_request")
 
 
 def arms_for(trim_pick):
@@ -611,6 +618,14 @@ def sentence_jobs(data, drop_ids, force_window=False):
                 "instructions": PROMPT.SCORE_INSTRUCTIONS.format(k=k),
                 "criteria": list(PROMPT.SCORE_LEVELS),
             }
+            # A second read on the same sentence, asked as "is it removed?"
+            # rather than "how much is it worth?". Every target gets it,
+            # one-word rows included, so no sentence is missing a ``cut_p``.
+            if PROMPT.CUT_INSTRUCTIONS:
+                questions[f"cut_{k}"] = {
+                    "type": "noul",
+                    "instructions": PROMPT.CUT_INSTRUCTIONS.format(k=k),
+                }
             words = data["words"][sid]
             if len(words) >= 2:
                 questions[f"first_{k}"] = {
@@ -657,7 +672,12 @@ def sentence_results(data, jobs, answers_by_block):
             row = {"score": None, "score_probabilities": None, "defaulted": True,
                    "first_choice": None, "first_p_whole": None,
                    "last_choice": None, "last_p_whole": None,
-                   "first_probabilities": None, "last_probabilities": None}
+                   "first_probabilities": None, "last_probabilities": None,
+                   "cut_p": None}
+            # Read independently of the score: a block that answered one and not
+            # the other is a partial answer, not a missing one.
+            if answers and f"cut_{k}" in answers:
+                row["cut_p"] = (answers[f"cut_{k}"] or {}).get("noul")
             if answers and f"score_{k}" in answers:
                 score = answers[f"score_{k}"]
                 row.update(score=score["score"],
@@ -827,6 +847,7 @@ def build_decisions(data, retake_info, results, picks, only_ids=None, arms=None)
             "last_choice": result.get("last_choice"),
             "last_p_whole": result.get("last_p_whole"),
             "score_probabilities": result.get("score_probabilities"),
+            "cut_p": result.get("cut_p"),
             "pick_choice": pick.get("pick_choice"),
             "pick_probabilities": pick.get("pick_probabilities"),
             "retake_group": retake.get("retake_group"),

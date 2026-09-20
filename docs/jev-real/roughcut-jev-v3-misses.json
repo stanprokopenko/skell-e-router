@@ -1,0 +1,3246 @@
+{
+  "generated_utc": "2026-09-20T22:28:32+00:00",
+  "script": "scripts/jev_real/roughcut_jev_misses.py",
+  "inputs": {
+    "decisions": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-decisions.jsonl",
+    "requests": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-requests.jsonl",
+    "timing": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-timing.json"
+  },
+  "input_fingerprint": {
+    "decisions": {
+      "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-decisions.jsonl",
+      "md5": "cb666315599cbfaa290df415ed56339f",
+      "modified_utc": "2026-09-20T22:26:09+00:00"
+    },
+    "requests": {
+      "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-requests.jsonl",
+      "md5": "72660b29876fd293944eb7923ff8bfee",
+      "modified_utc": "2026-09-20T22:26:09+00:00"
+    },
+    "timing": {
+      "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-timing.json",
+      "md5": "e63623a2b31feb37801f7f7a172ad8b8",
+      "modified_utc": "2026-09-20T22:26:09+00:00"
+    }
+  },
+  "arm": "jev_a (t_trim 0.3) layered with um removal + delete silence",
+  "threshold": 2.5,
+  "notrim_threshold": 2.5,
+  "episodes": [
+    "colman-02.04-skeleton-demo",
+    "hampton-5.4-assignment-demo",
+    "colman-03.03-muscles-crit",
+    "edges-7.01-intro",
+    "hampton-5.2-shape-demo",
+    "perspective-14e-boxes-critique"
+  ],
+  "missing_answers": 0,
+  "state_check_failures": [],
+  "pooled": {
+    "threshold": 2.5,
+    "episodes": 6,
+    "sentence_count": 2743,
+    "word_count": 26074,
+    "dialogue_frames": 239826,
+    "sentence_points": 0.8299671892088951,
+    "sentence_points_raw": 0.8299671892088951,
+    "word_score": 0.7677512570029025,
+    "grade": 0.8671674545631667,
+    "frame_match": 0.7660207961729533,
+    "kept_ratio": 0.9439392068021816
+  },
+  "notrim_pooled": {
+    "threshold": 2.5,
+    "episodes": 6,
+    "sentence_count": 2743,
+    "word_count": 26074,
+    "dialogue_frames": 239826,
+    "sentence_points": 0.829748450601531,
+    "sentence_points_raw": 0.829748450601531,
+    "word_score": 0.7660767614173348,
+    "grade": 0.8656353570969556,
+    "frame_match": 0.7647458637166847,
+    "kept_ratio": 0.9472349885915246
+  },
+  "per_episode": {
+    "colman-02.04-skeleton-demo": {
+      "sentence_points": 0.8587628865979385,
+      "word_score": 0.7448414070720534,
+      "grade": 1.0606962159627706,
+      "notrim_sentence_points": 0.8432989690721654,
+      "human_kept_share": 0.7617228362214036,
+      "luna-chapters-rules5_sentence_points": 0.8247422680412373,
+      "luna-chapters-rules5_word_score": 0.7607755876707687,
+      "luna-chapters-rules5_grade": 1.0442025859998496,
+      "opus5-cc-agentic_sentence_points": 0.864948453608247,
+      "opus5-cc-agentic_word_score": 0.7610385558349886,
+      "opus5-cc-agentic_grade": 1.067050478637105,
+      "gap_vs_luna": 0.03402061855670124,
+      "gap_vs_opus": -0.006185567010308479
+    },
+    "hampton-5.4-assignment-demo": {
+      "sentence_points": 0.8480000000000001,
+      "word_score": 0.7553096115778005,
+      "grade": 0.9433995757024457,
+      "notrim_sentence_points": 0.8490000000000002,
+      "human_kept_share": 0.7287683785247199,
+      "luna-chapters-rules5_sentence_points": 0.9056666666666666,
+      "luna-chapters-rules5_word_score": 0.8560429535618257,
+      "luna-chapters-rules5_grade": 1.019114209899907,
+      "opus5-cc-agentic_sentence_points": 0.9459999999999998,
+      "opus5-cc-agentic_word_score": 0.8947482651122816,
+      "opus5-cc-agentic_grade": 1.0591080742141163,
+      "gap_vs_luna": -0.05766666666666653,
+      "gap_vs_opus": -0.09799999999999975
+    },
+    "colman-03.03-muscles-crit": {
+      "sentence_points": 0.7504950495049503,
+      "word_score": 0.5992016607070414,
+      "grade": 0.7418781477194392,
+      "notrim_sentence_points": 0.7524752475247526,
+      "human_kept_share": 0.9765185261922028,
+      "luna-chapters-rules5_sentence_points": 0.69009900990099,
+      "luna-chapters-rules5_word_score": 0.6834409079912585,
+      "luna-chapters-rules5_grade": 0.8152359329062792,
+      "opus5-cc-agentic_sentence_points": 0.7363036303630356,
+      "opus5-cc-agentic_word_score": 0.6639980343445162,
+      "opus5-cc-agentic_grade": 0.8068323323553281,
+      "gap_vs_luna": 0.06039603960396023,
+      "gap_vs_opus": 0.014191419141914685
+    },
+    "edges-7.01-intro": {
+      "sentence_points": 0.7969151670951157,
+      "word_score": 0.7974483810081147,
+      "grade": 0.7964520974773509,
+      "notrim_sentence_points": 0.7969151670951157,
+      "human_kept_share": 0.4788605697151424,
+      "luna-chapters-rules5_sentence_points": 0.8958868894601539,
+      "luna-chapters-rules5_word_score": 0.8933829437592875,
+      "luna-chapters-rules5_grade": 0.8904972243070948,
+      "opus5-cc-agentic_sentence_points": 0.9038560411311053,
+      "opus5-cc-agentic_word_score": 0.897088910013786,
+      "opus5-cc-agentic_grade": 0.8926636977079099,
+      "gap_vs_luna": -0.09897172236503826,
+      "gap_vs_opus": -0.10694087403598962
+    },
+    "hampton-5.2-shape-demo": {
+      "sentence_points": 0.9270072992700724,
+      "word_score": 0.8572463546996261,
+      "grade": 0.9697065721434833,
+      "notrim_sentence_points": 0.9306569343065688,
+      "human_kept_share": 0.6898850454044407,
+      "luna-chapters-rules5_sentence_points": 0.9077858880778584,
+      "luna-chapters-rules5_word_score": 0.8160275123699526,
+      "luna-chapters-rules5_grade": 0.9367008346888697,
+      "opus5-cc-agentic_sentence_points": 0.950608272506082,
+      "opus5-cc-agentic_word_score": 0.8759562611466963,
+      "opus5-cc-agentic_grade": 0.9852736883516616,
+      "gap_vs_luna": 0.01922141119221399,
+      "gap_vs_opus": -0.023600973236009626
+    },
+    "perspective-14e-boxes-critique": {
+      "sentence_points": 0.8178010471204183,
+      "word_score": 0.7921131667235437,
+      "grade": 0.8233290101417161,
+      "notrim_sentence_points": 0.8178010471204183,
+      "human_kept_share": 0.523492568782686,
+      "luna-chapters-rules5_sentence_points": 0.8901396160558467,
+      "luna-chapters-rules5_word_score": 0.8503246893642551,
+      "luna-chapters-rules5_grade": 0.883424720773071,
+      "opus5-cc-agentic_sentence_points": 0.9054101221640491,
+      "opus5-cc-agentic_word_score": 0.8636028003496439,
+      "opus5-cc-agentic_grade": 0.8950259796442861,
+      "gap_vs_luna": -0.07233856893542834,
+      "gap_vs_opus": -0.0876090750436308
+    }
+  },
+  "confusion": {
+    "per_episode": {
+      "colman-02.04-skeleton-demo": {
+        "both_removed": 19,
+        "jev_removed_editor_kept": 9,
+        "jev_removed_editor_full": 4,
+        "both_keep": 156,
+        "jev_kept_editor_removed": 10,
+        "jev_removed_editor_partial": 5,
+        "n": 194
+      },
+      "hampton-5.4-assignment-demo": {
+        "jev_kept_editor_removed": 30,
+        "both_removed": 45,
+        "jev_removed_editor_kept": 13,
+        "jev_removed_editor_partial": 3,
+        "both_keep": 212,
+        "jev_removed_editor_full": 10,
+        "n": 300
+      },
+      "colman-03.03-muscles-crit": {
+        "both_keep": 242,
+        "jev_removed_editor_kept": 33,
+        "jev_removed_editor_full": 24,
+        "both_removed": 11,
+        "jev_kept_editor_removed": 17,
+        "jev_removed_editor_partial": 9,
+        "n": 303
+      },
+      "edges-7.01-intro": {
+        "both_removed": 215,
+        "jev_kept_editor_removed": 24,
+        "jev_removed_editor_kept": 56,
+        "jev_removed_editor_full": 47,
+        "jev_removed_editor_partial": 9,
+        "both_keep": 94,
+        "n": 389
+      },
+      "hampton-5.2-shape-demo": {
+        "jev_kept_editor_removed": 26,
+        "both_removed": 102,
+        "both_keep": 266,
+        "jev_removed_editor_kept": 17,
+        "jev_removed_editor_full": 14,
+        "jev_removed_editor_partial": 3,
+        "n": 411
+      },
+      "perspective-14e-boxes-critique": {
+        "both_removed": 618,
+        "jev_removed_editor_kept": 87,
+        "jev_removed_editor_full": 70,
+        "both_keep": 320,
+        "jev_removed_editor_partial": 17,
+        "jev_kept_editor_removed": 121,
+        "n": 1146
+      }
+    },
+    "pooled": {
+      "both_removed": 1010,
+      "jev_removed_editor_kept": 215,
+      "jev_removed_editor_full": 169,
+      "both_keep": 1290,
+      "jev_kept_editor_removed": 228,
+      "jev_removed_editor_partial": 46,
+      "n": 2743
+    },
+    "luna": {
+      "per_episode": {
+        "colman-02.04-skeleton-demo": {
+          "both_removed": 23,
+          "both_keep": 139,
+          "jev_removed_editor_kept": 26,
+          "jev_removed_editor_full": 14,
+          "jev_kept_editor_removed": 6,
+          "jev_removed_editor_partial": 12,
+          "n": 194,
+          "threshold": 2.1
+        },
+        "hampton-5.4-assignment-demo": {
+          "both_removed": 70,
+          "jev_kept_editor_removed": 5,
+          "both_keep": 204,
+          "jev_removed_editor_kept": 21,
+          "jev_removed_editor_full": 15,
+          "jev_removed_editor_partial": 6,
+          "n": 300,
+          "threshold": 1.1
+        },
+        "colman-03.03-muscles-crit": {
+          "both_keep": 213,
+          "both_removed": 19,
+          "jev_removed_editor_kept": 62,
+          "jev_removed_editor_partial": 16,
+          "jev_removed_editor_full": 46,
+          "jev_kept_editor_removed": 9,
+          "n": 303,
+          "threshold": 2.1
+        },
+        "edges-7.01-intro": {
+          "both_removed": 233,
+          "jev_removed_editor_kept": 36,
+          "jev_removed_editor_full": 31,
+          "both_keep": 114,
+          "jev_kept_editor_removed": 6,
+          "jev_removed_editor_partial": 5,
+          "n": 389,
+          "threshold": 0.1
+        },
+        "hampton-5.2-shape-demo": {
+          "both_removed": 101,
+          "both_keep": 263,
+          "jev_removed_editor_kept": 20,
+          "jev_removed_editor_full": 18,
+          "jev_removed_editor_partial": 2,
+          "jev_kept_editor_removed": 27,
+          "n": 411,
+          "threshold": 0.1
+        },
+        "perspective-14e-boxes-critique": {
+          "both_removed": 670,
+          "both_keep": 353,
+          "jev_removed_editor_kept": 54,
+          "jev_removed_editor_partial": 11,
+          "jev_removed_editor_full": 43,
+          "jev_kept_editor_removed": 69,
+          "n": 1146,
+          "threshold": 2.1
+        }
+      },
+      "pooled": {
+        "both_removed": 1116,
+        "both_keep": 1286,
+        "jev_removed_editor_kept": 219,
+        "jev_removed_editor_full": 167,
+        "jev_kept_editor_removed": 122,
+        "jev_removed_editor_partial": 52,
+        "n": 2743
+      },
+      "note": "from the archived `run_ratings` in `2026-09-08-colman0204-partial-agentic-router-v2-xhigh-chapters-r5-gpt-5.6-luna.json` and its siblings, each at its own file's Neutral threshold, with the same um removal and delete silence layers on"
+    }
+  },
+  "misses": {
+    "jev_removed_editor_kept": [
+      {
+        "episode": "hampton-5.4-assignment-demo",
+        "id": 54,
+        "score": 0.15,
+        "raw_score": 0.15,
+        "probabilities": {
+          "0": 0.96,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.03,
+          "4": 0.01,
+          "5": 0.0
+        },
+        "top_two": "level 0 0.96, level 3 0.03",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "its modification early on.",
+        "prev": "So, here's my head and what we can start to do in some of these too and totally understandable if you didn't do this in your homework, but now that we're drawing specific types, you could try changing your part also for mod..",
+        "next": "So, maybe, you know, instead of..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 82,
+        "score": 0.37,
+        "raw_score": 0.37,
+        "probabilities": {
+          "0": 0.87,
+          "1": 0.03,
+          "2": 0.01,
+          "3": 0.03,
+          "4": 0.05,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.87, level 4 0.05",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Sharp, firm, soft, and lost.",
+        "prev": "To be able to keep this stuff in our head and make decisions, it's a lot easier to think about 5 values and 4 edges.",
+        "next": "Lost is actually off the spectrum a little.",
+        "pattern": "Scripted lesson line read as filler"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 603,
+        "score": 0.45,
+        "raw_score": 0.45,
+        "probabilities": {
+          "0": 0.84,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.06,
+          "4": 0.04,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.84, level 3 0.06",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Jayoshi points out the principle behind overdoing it.",
+        "prev": "Sure.",
+        "next": "Command F.",
+        "pattern": "Producer talk and student names in a critique"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 989,
+        "score": 0.65,
+        "raw_score": 0.65,
+        "probabilities": {
+          "0": 0.79,
+          "1": 0.01,
+          "2": 0.03,
+          "3": 0.13,
+          "4": 0.04,
+          "5": 0.0
+        },
+        "top_two": "level 0 0.79, level 3 0.13",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "using atmospheric perspective on some of these planes.",
+        "prev": "There's Sandra Susser",
+        "next": "Let me see which other ones I wanna click on.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 988,
+        "score": 0.72,
+        "raw_score": 0.72,
+        "probabilities": {
+          "0": 0.77,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.15,
+          "4": 0.05,
+          "5": 0.0
+        },
+        "top_two": "level 0 0.77, level 3 0.15",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "There's Sandra Susser",
+        "prev": "Okay, then I'm gonna just show a few others and mention their name.",
+        "next": "using atmospheric perspective on some of these planes.",
+        "pattern": "Producer talk and student names in a critique"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 21,
+        "score": 0.73,
+        "raw_score": 0.73,
+        "probabilities": {
+          "0": 0.8,
+          "1": 0.01,
+          "2": 0.0,
+          "3": 0.05,
+          "4": 0.12,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.80, level 4 0.12",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Remember as I went over in the demo as well?",
+        "prev": "See how loose and almost bendy I'm being with it?",
+        "next": "Don't get..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 5,
+        "score": 0.74,
+        "raw_score": 0.74,
+        "probabilities": {
+          "0": 0.79,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.07,
+          "4": 0.13,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.79, level 4 0.13",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "And now we'll try that with a little bit more directness in terms of looking at a reference and seeing if we could practice that from that picture.",
+        "prev": "Okay, so we've been now through our, our alternative or secondary way of thinking about gesture, putting our emphasis more on shape and the simplified look of a part, uh, and then taking that part through a couple operations to customize it, be it in some kind of behavior or give it a subtle indication of perspective.",
+        "next": "So, I used, uh, these to make sure that what we have..",
+        "pattern": "Ordinary connective teaching talk"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 156,
+        "score": 0.77,
+        "raw_score": 0.77,
+        "probabilities": {
+          "0": 0.77,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.07,
+          "4": 0.11,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.77, level 4 0.11",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "5",
+        "retake_real": 0.26,
+        "text": "You have to kind of..",
+        "prev": "you draw from your head, um, remember to continue and find a balance, find weight as well and make the adjustments, you know, if this is actually a great pose but this once again, this wouldn't really work.",
+        "next": "you'd have to..",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 361,
+        "score": 0.77,
+        "raw_score": 0.77,
+        "probabilities": {
+          "0": 0.77,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.13,
+          "4": 0.07,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.77, level 3 0.13",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "62",
+        "retake_real": 0.5,
+        "text": "um, see how edges behave differently under various lighting conditions.",
+        "prev": "See how edges behave differently..",
+        "next": "Start by learning..",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 210,
+        "score": 0.86,
+        "raw_score": 0.86,
+        "probabilities": {
+          "0": 0.76,
+          "1": 0.01,
+          "2": 0.0,
+          "3": 0.08,
+          "4": 0.13,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.76, level 4 0.13",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": true,
+        "retake_group": "35",
+        "retake_real": 0.58,
+        "text": "all shapes have edges.",
+        "prev": "All shapes..",
+        "next": "And this doesn't..",
+        "pattern": "Retake pair, the wrong side cut"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 384,
+        "score": 0.87,
+        "raw_score": 0.87,
+        "probabilities": {
+          "0": 0.65,
+          "1": 0.03,
+          "2": 0.13,
+          "3": 0.18,
+          "4": 0.01,
+          "5": 0.0
+        },
+        "top_two": "level 0 0.65, level 3 0.18",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": true,
+        "retake_group": "66",
+        "retake_real": 0.62,
+        "text": "So let's get going.",
+        "prev": "Up next, your first edge assignment.",
+        "next": "Up next, your first edge assignment.",
+        "pattern": "Retake pair, the wrong side cut"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 273,
+        "score": 0.9,
+        "raw_score": 0.9,
+        "probabilities": {
+          "0": 0.7,
+          "1": 0.05,
+          "2": 0.02,
+          "3": 0.14,
+          "4": 0.08,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.70, level 3 0.14",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "As opposed to just kind of drawing it for what it is and getting a little bit more of a kind of a, uh, worried about like the silhouette and almost again, instead of looking at patterns, look at it in terms of forms, right?",
+        "prev": "So, think about things like that.",
+        "next": "Look at it in terms of volumes and building blocks and almost like you're carving it out of wood.",
+        "pattern": "Ordinary connective teaching talk"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 78,
+        "score": 0.91,
+        "raw_score": 0.91,
+        "probabilities": {
+          "0": 0.71,
+          "1": 0.02,
+          "2": 0.01,
+          "3": 0.18,
+          "4": 0.08,
+          "5": 0.0
+        },
+        "top_two": "level 0 0.71, level 3 0.18",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "It doesn't..",
+        "prev": "All just kind of flows together.",
+        "next": "not really worried once again about the, the names so much.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 941,
+        "score": 0.92,
+        "raw_score": 0.92,
+        "probabilities": {
+          "0": 0.69,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.21,
+          "4": 0.05,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.69, level 3 0.21",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Anthony Hernandez.",
+        "prev": "Yeah.",
+        "next": "It is kind of complicated, isn't it?",
+        "pattern": "Producer talk and student names in a critique"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 4,
+        "score": 0.96,
+        "raw_score": 0.96,
+        "probabilities": {
+          "0": 0.72,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.14,
+          "4": 0.11,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.72, level 3 0.14",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Let's talk about your assignment.",
+        "prev": "3, 2, 1.",
+        "next": "Uh, I want you to..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 176,
+        "score": 0.99,
+        "raw_score": 0.99,
+        "probabilities": {
+          "0": 0.73,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.07,
+          "4": 0.13,
+          "5": 0.05
+        },
+        "top_two": "level 0 0.73, level 4 0.13",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "If the..",
+        "prev": "And if it's above us, the opposite is the case.",
+        "next": "if we can see the bottom plane, that means that bottom corner is closer to us than the top corner.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 157,
+        "score": 1.01,
+        "raw_score": 1.01,
+        "probabilities": {
+          "0": 0.72,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.09,
+          "4": 0.14,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.72, level 4 0.14",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "you'd have to..",
+        "prev": "You have to kind of..",
+        "next": "a lot more balance.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 181,
+        "score": 1.01,
+        "raw_score": 1.01,
+        "probabilities": {
+          "0": 0.69,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.15,
+          "4": 0.11,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.69, level 3 0.15",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "And I do want to say something about using the Zolli app, which is great, but there is something about extremizing this.",
+        "prev": "Hard at first, easy soon.",
+        "next": "One of you..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 253,
+        "score": 1.04,
+        "raw_score": 1.04,
+        "probabilities": {
+          "0": 0.74,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.05,
+          "4": 0.17,
+          "5": 0.03
+        },
+        "top_two": "level 0 0.74, level 4 0.17",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "43",
+        "retake_real": 0.21,
+        "text": "edges are influenced by things like the light source, the composition, our preferences and style, but understanding their connection to form, that's the foundation.",
+        "prev": "edges are influenced by things..",
+        "next": "They indicate how round..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 203,
+        "score": 1.08,
+        "raw_score": 1.08,
+        "probabilities": {
+          "0": 0.71,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.06,
+          "4": 0.19,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.71, level 4 0.19",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": true,
+        "retake_group": "34",
+        "retake_real": 0.71,
+        "text": "\"They're all soft edges with a different flavor!\" Hmm...",
+        "prev": "So let me try that again.",
+        "next": "they're all soft edges with a different flavor!",
+        "pattern": "Retake pair, the wrong side cut"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 205,
+        "score": 1.09,
+        "raw_score": 1.09,
+        "probabilities": {
+          "0": 0.73,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.02,
+          "4": 0.24,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.73, level 4 0.24",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "And then foot.",
+        "prev": "And then we have our ground.",
+        "next": "A fun homework assignment could even be that you'd..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 511,
+        "score": 1.09,
+        "raw_score": 1.09,
+        "probabilities": {
+          "0": 0.67,
+          "1": 0.02,
+          "2": 0.01,
+          "3": 0.15,
+          "4": 0.13,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.67, level 3 0.15",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "It will include angled planes.",
+        "prev": "The main one is difficult to understand, which is why we're devoting the next lesson group to it.",
+        "next": "All right, I gotta open this one in Photoshop now.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 922,
+        "score": 1.09,
+        "raw_score": 1.09,
+        "probabilities": {
+          "0": 0.66,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.17,
+          "4": 0.1,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.66, level 3 0.17",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Very clean and professional looking and it looks like you more than paid your dues.",
+        "prev": "Um, Espe.",
+        "next": "How do I get out of here?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 908,
+        "score": 1.11,
+        "raw_score": 1.11,
+        "probabilities": {
+          "0": 0.66,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.19,
+          "4": 0.1,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.66, level 3 0.19",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "What commitment.",
+        "prev": "\"Rupert, 'Dddd.' Unbelievable.",
+        "next": "'SB.' And I can't make it bigger in here, right?",
+        "pattern": "Producer talk and student names in a critique"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 274,
+        "score": 1.12,
+        "raw_score": 1.12,
+        "probabilities": {
+          "0": 0.65,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.17,
+          "4": 0.11,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.65, level 3 0.17",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Look at it in terms of volumes and building blocks and almost like you're carving it out of wood.",
+        "prev": "As opposed to just kind of drawing it for what it is and getting a little bit more of a kind of a, uh, worried about like the silhouette and almost again, instead of looking at patterns, look at it in terms of forms, right?",
+        "next": "That's one thing I want you to kind of think about is you're like almost as if you're carving this out of wood and, you know, giving it a bit of structure, right?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "hampton-5.4-assignment-demo",
+        "id": 77,
+        "score": 1.12,
+        "raw_score": 1.12,
+        "probabilities": {
+          "0": 0.68,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.11,
+          "4": 0.18,
+          "5": 0.01
+        },
+        "top_two": "level 0 0.68, level 4 0.18",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Maybe we could even..",
+        "prev": "And then if I'm good with that, then I'm just going to start to put some of these more perspective-driven lines across.",
+        "next": "yeah, I don't think on her specifically, but you could broaden the hip or, or change the shape in any way that you see fit.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 623,
+        "score": 1.19,
+        "raw_score": 1.19,
+        "probabilities": {
+          "0": 0.23,
+          "1": 0.58,
+          "2": 0.06,
+          "3": 0.05,
+          "4": 0.06,
+          "5": 0.02
+        },
+        "top_two": "level 1 0.58, level 0 0.23",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Hmm?",
+        "prev": "If the vanishing point is right here and this line converges\u2014like so\u2014and like so\u2014it can tell us that this plane is actually quite long.",
+        "next": "You know, so, I mean, hmm, um, uh, like, you know, so, I mean, hmm, mm-hmm.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 29,
+        "score": 1.21,
+        "raw_score": 1.21,
+        "probabilities": {
+          "0": 0.65,
+          "1": 0.04,
+          "2": 0.03,
+          "3": 0.02,
+          "4": 0.23,
+          "5": 0.03
+        },
+        "top_two": "level 0 0.65, level 4 0.23",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "oh, like, you know, or overly smudged tones that hide uncertainty and mistakes instead of communicating form.",
+        "prev": "You'll find random sharp edges everywhere or overly smudged tones that hide uncertainty and mistakes instead..",
+        "next": "God, this thing's squeaky again.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 103,
+        "score": 1.21,
+        "raw_score": 1.21,
+        "probabilities": {
+          "0": 0.09,
+          "1": 0.77,
+          "2": 0.03,
+          "3": 0.08,
+          "4": 0.03,
+          "5": 0.0
+        },
+        "top_two": "level 1 0.77, level 0 0.09",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Um, uh, like, you know,",
+        "prev": "So, it comes this way, back here.",
+        "next": "so, I mean, hmm, mm-hmm.",
+        "pattern": "Thinking aloud, all ums"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 104,
+        "score": 1.22,
+        "raw_score": 1.22,
+        "probabilities": {
+          "0": 0.08,
+          "1": 0.77,
+          "2": 0.04,
+          "3": 0.07,
+          "4": 0.04,
+          "5": 0.0
+        },
+        "top_two": "level 1 0.77, level 0 0.08",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "so, I mean, hmm, mm-hmm.",
+        "prev": "Um, uh, like, you know,",
+        "next": "You probably need to bring this foot down or this foot up.",
+        "pattern": "Thinking aloud, all ums"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 28,
+        "score": 1.26,
+        "raw_score": 1.26,
+        "probabilities": {
+          "0": 0.69,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.02,
+          "4": 0.21,
+          "5": 0.07
+        },
+        "top_two": "level 0 0.69, level 4 0.21",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "You'll find random sharp edges everywhere or overly smudged tones that hide uncertainty and mistakes instead..",
+        "prev": "You can usually spot an amateur by looking at their edges.",
+        "next": "oh, like, you know, or overly smudged tones that hide uncertainty and mistakes instead of communicating form.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 616,
+        "score": 1.27,
+        "raw_score": 1.27,
+        "probabilities": {
+          "0": 0.33,
+          "1": 0.42,
+          "2": 0.05,
+          "3": 0.07,
+          "4": 0.1,
+          "5": 0.03
+        },
+        "top_two": "level 1 0.42, level 0 0.33",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Could this be made to look like a cube and not a compressed wafer?",
+        "prev": "I will use as an example Carlos Javier Risotto.",
+        "next": "Yes.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 617,
+        "score": 1.27,
+        "raw_score": 1.27,
+        "probabilities": {
+          "0": 0.33,
+          "1": 0.41,
+          "2": 0.06,
+          "3": 0.07,
+          "4": 0.1,
+          "5": 0.03
+        },
+        "top_two": "level 1 0.41, level 0 0.33",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Yes.",
+        "prev": "Could this be made to look like a cube and not a compressed wafer?",
+        "next": "If the vanishing point is right here..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 624,
+        "score": 1.27,
+        "raw_score": 1.27,
+        "probabilities": {
+          "0": 0.29,
+          "1": 0.47,
+          "2": 0.06,
+          "3": 0.06,
+          "4": 0.09,
+          "5": 0.03
+        },
+        "top_two": "level 1 0.47, level 0 0.29",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "43",
+        "retake_real": 0.59,
+        "text": "You know, so, I mean, hmm, um, uh, like, you know, so, I mean, hmm, mm-hmm.",
+        "prev": "Hmm?",
+        "next": "And it looks more like a cube if",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 615,
+        "score": 1.35,
+        "raw_score": 1.35,
+        "probabilities": {
+          "0": 0.35,
+          "1": 0.37,
+          "2": 0.05,
+          "3": 0.07,
+          "4": 0.12,
+          "5": 0.04
+        },
+        "top_two": "level 1 0.37, level 0 0.35",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "I will use as an example Carlos Javier Risotto.",
+        "prev": "That is a way we can get away with very foreshortened planes by extremizing the convergence.",
+        "next": "Could this be made to look like a cube and not a compressed wafer?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 209,
+        "score": 1.37,
+        "raw_score": 1.37,
+        "probabilities": {
+          "0": 0.62,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.13,
+          "4": 0.2,
+          "5": 0.03
+        },
+        "top_two": "level 0 0.62, level 4 0.20",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Like, how are..",
+        "prev": "Just keep going to the next level for sure.",
+        "next": "how is those muscles gonna work when you put it in a pose, right?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 255,
+        "score": 1.37,
+        "raw_score": 1.37,
+        "probabilities": {
+          "0": 0.64,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.08,
+          "4": 0.23,
+          "5": 0.03
+        },
+        "top_two": "level 0 0.64, level 4 0.23",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "44",
+        "retake_real": 0.22,
+        "text": "they indicate how rounded or sudden a transition is between two planes.",
+        "prev": "They indicate how round..",
+        "next": "This value change..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 102,
+        "score": 1.38,
+        "raw_score": 1.38,
+        "probabilities": {
+          "0": 0.65,
+          "1": 0.0,
+          "2": 0.03,
+          "3": 0.04,
+          "4": 0.21000000000000002,
+          "5": 0.07
+        },
+        "top_two": "level 0 0.65, level 4 0.21",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": "19",
+        "retake_real": 0.73,
+        "text": "But lost edges don't always mean that it's super blurry between the two shapes.",
+        "prev": "But lost edges don't always mean that it's super blurry between two shapes.",
+        "next": "Hmm, sometimes it just means you've made the values of neighboring shapes identical.",
+        "pattern": "Retake pair, the wrong side cut"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 841,
+        "score": 1.38,
+        "raw_score": 1.38,
+        "probabilities": {
+          "0": 0.55,
+          "1": 0.04,
+          "2": 0.04,
+          "3": 0.23,
+          "4": 0.12,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.55, level 3 0.23",
+        "human_state": "full",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Or \"ease up.\" As it is, you are impressing me with your work ethic, but I'd much rather see you grow in your skill.",
+        "prev": "It can help you know when to grind down and keep working at this.",
+        "next": "I hope you can place this hard work well for where you intend to go.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 784,
+        "score": 1.41,
+        "raw_score": 1.41,
+        "probabilities": {
+          "0": 0.47,
+          "1": 0.16,
+          "2": 0.02,
+          "3": 0.21,
+          "4": 0.12,
+          "5": 0.02
+        },
+        "top_two": "level 0 0.47, level 3 0.21",
+        "human_state": "partial",
+        "model_state": "removed",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "\"Oh dear, oh dear, spent a year over at another website fighting cubes and close to 1,000 attempts later, I decided to take an entire year off from drawing.\" Whew.",
+        "prev": "um, the comments.",
+        "next": "\"Being particularly frustrated and disappointed has been so ingrained into my psyche at this point, so no fear of me making another long break,",
+        "pattern": "unlabelled"
+      }
+    ],
+    "jev_kept_editor_removed": [
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 140,
+        "score": 4.1,
+        "raw_score": 4.1,
+        "probabilities": {
+          "0": 0.06,
+          "1": 0.03,
+          "2": 0.01,
+          "3": 0.06,
+          "4": 0.35,
+          "5": 0.49
+        },
+        "top_two": "level 5 0.49, level 4 0.35",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "10",
+        "retake_real": 0.31,
+        "text": "Alright.",
+        "prev": "Okay.",
+        "next": "Doobie, this rapid-fire page where you labeled it as such, uh, were some of your best.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 139,
+        "score": 3.96,
+        "raw_score": 3.96,
+        "probabilities": {
+          "0": 0.1,
+          "1": 0.01,
+          "2": 0.03,
+          "3": 0.05,
+          "4": 0.32,
+          "5": 0.49
+        },
+        "top_two": "level 5 0.49, level 4 0.32",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "10",
+        "retake_real": 0.31,
+        "text": "Okay.",
+        "prev": "So, at the very top will be the oldest.",
+        "next": "Alright.",
+        "pattern": "Short connective dropped for pacing"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 228,
+        "score": 3.95,
+        "raw_score": 3.95,
+        "probabilities": {
+          "0": 0.03,
+          "1": 0.02,
+          "2": 0.01,
+          "3": 0.04,
+          "4": 0.71,
+          "5": 0.19
+        },
+        "top_two": "level 4 0.71, level 5 0.19",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "This highlight is sharp here, firm here, and soft here as it slowly fades away.",
+        "prev": "Even a single small shape can have a changing edge type around it.",
+        "next": "How do you know when to use each type of edge?",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 222,
+        "score": 3.87,
+        "raw_score": 3.87,
+        "probabilities": {
+          "0": 0.03,
+          "1": 0.06,
+          "2": 0.01,
+          "3": 0.08,
+          "4": 0.53,
+          "5": 0.28
+        },
+        "top_two": "level 4 0.53, level 5 0.28",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Right?",
+        "prev": "now go to the zoo and draw gorillas, you know, after you're going through this course or any ape, you're gonna have a really, uh, successful observational trip out there.",
+        "next": "You can see how the flow of the muscles are mimicking and almost, um, being directed by what the skeletal structure is doing underneath, right?",
+        "pattern": "Short connective dropped for pacing"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 252,
+        "score": 3.8,
+        "raw_score": 3.8,
+        "probabilities": {
+          "0": 0.08,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.02,
+          "4": 0.72,
+          "5": 0.17
+        },
+        "top_two": "level 4 0.72, level 5 0.17",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "43",
+        "retake_real": 0.21,
+        "text": "edges are influenced by things..",
+        "prev": "So, edges are..",
+        "next": "edges are influenced by things like the light source, the composition, our preferences and style, but understanding their connection to form, that's the foundation.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 178,
+        "score": 3.79,
+        "raw_score": 3.79,
+        "probabilities": {
+          "0": 0.03,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.1,
+          "4": 0.79,
+          "5": 0.06
+        },
+        "top_two": "level 4 0.79, level 3 0.10",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Um, once again, making sure there's room for all the teeth even though it's completely grid-based.",
+        "prev": "I'm just kind of carving it back into it to create more, um, clearer shapes.",
+        "next": "And can I walk away from here gaining what I needed to gain, which is the understanding of all the different intricacies of that skull, right?",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1018,
+        "score": 3.79,
+        "raw_score": 3.79,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.03,
+          "2": 0.01,
+          "3": 0.1,
+          "4": 0.61,
+          "5": 0.2
+        },
+        "top_two": "level 4 0.61, level 5 0.20",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "But if you're going to sleep at night and seeing these things and you can make the jump from seeing these things and why you're doing it, it may be a good thing that they're..",
+        "prev": "The problem with this, as some of you I think have mentioned, is Charlie has mentioned it, uh, in editing this course is that you start to go to sleep at night and see these things.",
+        "next": "they're going into your brain.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1019,
+        "score": 3.78,
+        "raw_score": 3.78,
+        "probabilities": {
+          "0": 0.04,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.1,
+          "4": 0.67,
+          "5": 0.14
+        },
+        "top_two": "level 4 0.67, level 5 0.14",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "they're going into your brain.",
+        "prev": "But if you're going to sleep at night and seeing these things and you can make the jump from seeing these things and why you're doing it, it may be a good thing that they're..",
+        "next": "Oh, this was very impressive.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 66,
+        "score": 3.76,
+        "raw_score": 3.76,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.02,
+          "2": 0.01,
+          "3": 0.07,
+          "4": 0.64,
+          "5": 0.19
+        },
+        "top_two": "level 4 0.64, level 5 0.19",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Um, going back and adjusting this angle here.",
+        "prev": "um, but it's not so busy.",
+        "next": "So I really wanna see how you analyze the skeleton from the angle that you choose and how you approach the simplification and description of three-dimensional form.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 261,
+        "score": 3.76,
+        "raw_score": 3.76,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.0,
+          "2": 0.02,
+          "3": 0.09,
+          "4": 0.74,
+          "5": 0.1
+        },
+        "top_two": "level 4 0.74, level 5 0.10",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "70",
+        "retake_real": 0.22,
+        "text": "A firm edge.",
+        "prev": "A sharp corner.",
+        "next": "A firm edge would suggest a kind of rounded corner.",
+        "pattern": "Near-duplicate line, the loser kept"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1017,
+        "score": 3.75,
+        "raw_score": 3.75,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.1,
+          "4": 0.6,
+          "5": 0.2
+        },
+        "top_two": "level 4 0.60, level 5 0.20",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "The problem with this, as some of you I think have mentioned, is Charlie has mentioned it, uh, in editing this course is that you start to go to sleep at night and see these things.",
+        "prev": "Max Long.",
+        "next": "But if you're going to sleep at night and seeing these things and you can make the jump from seeing these things and why you're doing it, it may be a good thing that they're..",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1016,
+        "score": 3.74,
+        "raw_score": 3.74,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.13,
+          "4": 0.6,
+          "5": 0.18
+        },
+        "top_two": "level 4 0.60, level 5 0.18",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Max Long.",
+        "prev": "Extremely close up in three-point perspective, crazy things happen.",
+        "next": "The problem with this, as some of you I think have mentioned, is Charlie has mentioned it, uh, in editing this course is that you start to go to sleep at night and see these things.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 254,
+        "score": 3.72,
+        "raw_score": 3.72,
+        "probabilities": {
+          "0": 0.13,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.01,
+          "4": 0.58,
+          "5": 0.28
+        },
+        "top_two": "level 4 0.58, level 5 0.28",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "44",
+        "retake_real": 0.22,
+        "text": "They indicate how round..",
+        "prev": "edges are influenced by things like the light source, the composition, our preferences and style, but understanding their connection to form, that's the foundation.",
+        "next": "they indicate how rounded or sudden a transition is between two planes.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 10,
+        "score": 3.61,
+        "raw_score": 3.61,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.15,
+          "4": 0.7,
+          "5": 0.07
+        },
+        "top_two": "level 4 0.70, level 3 0.15",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Skeleton that we provided is..",
+        "prev": "So one skeleton, one skull.",
+        "next": "we only have one, which is chimpanzee.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 287,
+        "score": 3.61,
+        "raw_score": 3.61,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.24,
+          "4": 0.5599999999999999,
+          "5": 0.12
+        },
+        "top_two": "level 4 0.56, level 3 0.24",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "If you're starting to think about kind of what's going on on the other side, even though I don't see it..",
+        "prev": "and when I talk about dynamic proportions, but they'll be so great, there'll be a great sense of of a dynamic energy in your work.",
+        "next": "what's the weight like?",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1113,
+        "score": 3.58,
+        "raw_score": 3.58,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.13,
+          "4": 0.62,
+          "5": 0.13
+        },
+        "top_two": "level 4 0.62, level 3 0.13",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Piano is a great challenge.",
+        "prev": "I noticed that with Yves, uh, who did a piano, that some of you did pianos too.",
+        "next": "Of course, if it's something that you wanted to do anyway because in the first part of this course, you collected stuff you love enough to know it from all angles inside and out and be able to draw it in any positions, those are things you might want to do at this point and relate them proportionally to how that square sets depth.",
+        "pattern": "Encouragement and wrap-up the editor tightened"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 400,
+        "score": 3.57,
+        "raw_score": 3.57,
+        "probabilities": {
+          "0": 0.09,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.2,
+          "4": 0.48,
+          "5": 0.2
+        },
+        "top_two": "level 4 0.48, level 3 0.20",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "You've got your absolute reference.",
+        "prev": "And watch me dare on this next one.\" Again, you hardly need a teacher for that.",
+        "next": "You do that 100 times and you will have what you need for seeing what up to 300, even up to 600 squares in perspective if you're drawing through.",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "hampton-5.4-assignment-demo",
+        "id": 150,
+        "score": 3.55,
+        "raw_score": 3.55,
+        "probabilities": {
+          "0": 0.03,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.31,
+          "4": 0.63,
+          "5": 0.02
+        },
+        "top_two": "level 4 0.63, level 3 0.31",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "So maybe I'll just extend that a little bit lower.",
+        "prev": "And on this one, we have some of that top view on the foot.",
+        "next": "This \u2014So it looks like it's going away, but I would almost always do this unless I'm really working with that top-down view to get the asymmetrical perspective of the leg forward and back.",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 957,
+        "score": 3.53,
+        "raw_score": 3.53,
+        "probabilities": {
+          "0": 0.05,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.34,
+          "4": 0.49,
+          "5": 0.1
+        },
+        "top_two": "level 4 0.49, level 3 0.34",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "F-M-I-N-K-E-E.",
+        "prev": "At least Minkee.",
+        "next": "Laid out so clearly and with such economy of line.",
+        "pattern": "Producer talk and studio logistics"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 276,
+        "score": 3.52,
+        "raw_score": 3.52,
+        "probabilities": {
+          "0": 0.13,
+          "1": 0.0,
+          "2": 0.01,
+          "3": 0.08,
+          "4": 0.63,
+          "5": 0.15
+        },
+        "top_two": "level 4 0.63, level 5 0.15",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "and the object receiving the cast shadow.",
+        "prev": "The edge can also describe the distance between the object casting",
+        "next": "But wait, there's more!",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 343,
+        "score": 3.51,
+        "raw_score": 3.51,
+        "probabilities": {
+          "0": 0.14,
+          "1": 0.04,
+          "2": 0.03,
+          "3": 0.13,
+          "4": 0.31,
+          "5": 0.35
+        },
+        "top_two": "level 5 0.35, level 4 0.31",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "I don't know how I can make that point more emphatically and you hardly need a teacher's feedback for this.",
+        "prev": "no receding divergence.",
+        "next": "Let's close.",
+        "pattern": "Encouragement and wrap-up the editor tightened"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 11,
+        "score": 3.47,
+        "raw_score": 3.47,
+        "probabilities": {
+          "0": 0.11,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.13,
+          "4": 0.67,
+          "5": 0.07
+        },
+        "top_two": "level 4 0.67, level 3 0.13",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "we only have one, which is chimpanzee.",
+        "prev": "Skeleton that we provided is..",
+        "next": "But try a different angle, not an angle that I, I demoed, uh, during the episode.",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 54,
+        "score": 3.46,
+        "raw_score": 3.46,
+        "probabilities": {
+          "0": 0.04,
+          "1": 0.01,
+          "2": 0.16,
+          "3": 0.05,
+          "4": 0.72,
+          "5": 0.02
+        },
+        "top_two": "level 4 0.72, level 2 0.16",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "and not putting myself through college but working at my dad's law firm during the day and I would, um, you know, draw and, uh, study anatomy in 9 different classes.",
+        "prev": "when I was going to my dad's law firm and putting my..",
+        "next": "I'd have my anatomy book open when I was driving in traffic, not safe, but when I was stuck in traffic, I'd flip through it and like test myself.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 590,
+        "score": 3.45,
+        "raw_score": 3.45,
+        "probabilities": {
+          "0": 0.1,
+          "1": 0.03,
+          "2": 0.03,
+          "3": 0.19,
+          "4": 0.47,
+          "5": 0.18
+        },
+        "top_two": "level 4 0.47, level 3 0.19",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "that looks right enough.",
+        "prev": "Away, where they converge, get the other set or the other ones in that line set to converge at the same point and then, watch this, the horizon line must be at right angles to that line and then we will know that if that..",
+        "next": "When we get that together, then if we want a ramp on there, that ramp will find its hidden VP up here and will be able to connect these dots to make a ramp going up, or for that matter, a box flap.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 184,
+        "score": 3.44,
+        "raw_score": 3.44,
+        "probabilities": {
+          "0": 0.08,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.2,
+          "4": 0.59,
+          "5": 0.09
+        },
+        "top_two": "level 4 0.59, level 3 0.20",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "\u2014just",
+        "prev": "it's good to use, you know, different line weights, um, to show value, uh, mm-hmm, as well as weight, the actual weight of the subject.",
+        "next": "kind of solidifying and designing, uh, not just drawing the skull itself, right?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 30,
+        "score": 3.44,
+        "raw_score": 3.44,
+        "probabilities": {
+          "0": 0.04,
+          "1": 0.01,
+          "2": 0.04,
+          "3": 0.33,
+          "4": 0.54,
+          "5": 0.04
+        },
+        "top_two": "level 4 0.54, level 3 0.33",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "So, I'm just trying to connect all the parts, right?",
+        "prev": "So, you can see the difference there.",
+        "next": "And not getting too caught up in the details right now, I just wanna show you how we can really connect the parts.",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 285,
+        "score": 3.4,
+        "raw_score": 3.4,
+        "probabilities": {
+          "0": 0.09,
+          "1": 0.01,
+          "2": 0.17,
+          "3": 0.07,
+          "4": 0.47,
+          "5": 0.19
+        },
+        "top_two": "level 4 0.47, level 5 0.19",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "This is the way of conceptual thinking that you need that will really help you communicate volume and structure, weight, and even your posing, and even the energy in your work will really have a sense of dynamic, um, proportions and have a sense of..",
+        "prev": "It's a very tough challenge and the way to do that is to draw with volume, to draw as if you're sculpting, to draw around the form, to think about what's going on the other side even though you can't see it from that angle you're looking at.",
+        "next": "and when I talk about dynamic proportions, but they'll be so great, there'll be a great sense of of a dynamic energy in your work.",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 337,
+        "score": 3.4,
+        "raw_score": 3.4,
+        "probabilities": {
+          "0": 0.09,
+          "1": 0.05,
+          "2": 0.04,
+          "3": 0.08,
+          "4": 0.66,
+          "5": 0.08
+        },
+        "top_two": "level 4 0.66, level 0 0.09",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "it's going to be uncomfortable at first, especially if you've been doing the other approach to kind of reorganize your thoughts and then, you know, redevelop a new way of representing and organizing the same information you've been looking at.",
+        "prev": "You're..",
+        "next": "So, try to treat it with some levity, have fun.",
+        "pattern": "Encouragement and wrap-up the editor tightened"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 271,
+        "score": 3.4,
+        "raw_score": 3.4,
+        "probabilities": {
+          "0": 0.25,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.05,
+          "4": 0.16,
+          "5": 0.52
+        },
+        "top_two": "level 5 0.52, level 0 0.25",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Dermot!",
+        "prev": "Somewhere out there.",
+        "next": "Look at this!",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 29,
+        "score": 3.37,
+        "raw_score": 3.37,
+        "probabilities": {
+          "0": 0.04,
+          "1": 0.0,
+          "2": 0.05,
+          "3": 0.42,
+          "4": 0.45,
+          "5": 0.04
+        },
+        "top_two": "level 4 0.45, level 3 0.42",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "So, you can see the difference there.",
+        "prev": "hooking everything together, right?",
+        "next": "So, I'm just trying to connect all the parts, right?",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 46,
+        "score": 3.37,
+        "raw_score": 3.37,
+        "probabilities": {
+          "0": 0.06,
+          "1": 0.03,
+          "2": 0.02,
+          "3": 0.35,
+          "4": 0.44,
+          "5": 0.1
+        },
+        "top_two": "level 4 0.44, level 3 0.35",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "So, you're..",
+        "prev": "sometimes I like to include these 3 points, sometimes helps me see the early on even that quality of rotation, right?",
+        "next": "if you're always thinking about that center and the distance to one side and the distance to the other, it does solve the rotation.",
+        "pattern": "Half a sentence the transcript split"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 744,
+        "score": 3.37,
+        "raw_score": 3.37,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.02,
+          "2": 0.02,
+          "3": 0.33,
+          "4": 0.49,
+          "5": 0.07
+        },
+        "top_two": "level 4 0.49, level 3 0.33",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "That would be..",
+        "prev": "We'll do one more.",
+        "next": "Sita.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 107,
+        "score": 3.35,
+        "raw_score": 3.35,
+        "probabilities": {
+          "0": 0.04,
+          "1": 0.01,
+          "2": 0.02,
+          "3": 0.41,
+          "4": 0.5,
+          "5": 0.02
+        },
+        "top_two": "level 4 0.50, level 3 0.41",
+        "human_state": "removed",
+        "model_state": "partial",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "So, I could just drop that for now.",
+        "prev": "So, that's the only thing I'm noticing here is my, my leg got a little bit long on one side.",
+        "next": "Here would be one of the, though, with the fallbacks or the kind of the negative aspects of this approach that I'm so used to in the other is you have to be a little bit more wary of, you know, like where I'm lining things up.",
+        "pattern": "Operating the drawing or the screen"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1112,
+        "score": 3.35,
+        "raw_score": 3.35,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.01,
+          "2": 0.03,
+          "3": 0.31,
+          "4": 0.54,
+          "5": 0.04
+        },
+        "top_two": "level 4 0.54, level 3 0.31",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "I noticed that with Yves, uh, who did a piano, that some of you did pianos too.",
+        "prev": "Yeah, there, there's something.",
+        "next": "Piano is a great challenge.",
+        "pattern": "Producer talk and studio logistics"
+      },
+      {
+        "episode": "edges-7.01-intro",
+        "id": 27,
+        "score": 3.34,
+        "raw_score": 3.34,
+        "probabilities": {
+          "0": 0.19,
+          "1": 0.02,
+          "2": 0.01,
+          "3": 0.07,
+          "4": 0.47,
+          "5": 0.24
+        },
+        "top_two": "level 4 0.47, level 5 0.24",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "68",
+        "retake_real": 0.9,
+        "text": "You can usually spot an amateur by looking at their edges.",
+        "prev": "Um, uh, like, you know, so, I mean, hmm, mm-hmm...",
+        "next": "You'll find random sharp edges everywhere or overly smudged tones that hide uncertainty and mistakes instead..",
+        "pattern": "Teaching line the picture already makes"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 335,
+        "score": 3.34,
+        "raw_score": 3.34,
+        "probabilities": {
+          "0": 0.08,
+          "1": 0.03,
+          "2": 0.09,
+          "3": 0.16,
+          "4": 0.58,
+          "5": 0.06
+        },
+        "top_two": "level 4 0.58, level 3 0.16",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Don't be too hard on yourself.",
+        "prev": "So, when you're doing these, make sure to, you know, have some patience, have some grace.",
+        "next": "You're..",
+        "pattern": "Encouragement and wrap-up the editor tightened"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 565,
+        "score": 3.34,
+        "raw_score": 3.34,
+        "probabilities": {
+          "0": 0.08,
+          "1": 0.03,
+          "2": 0.03,
+          "3": 0.24,
+          "4": 0.56,
+          "5": 0.06
+        },
+        "top_two": "level 4 0.56, level 3 0.24",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Is that what that dotted line's doing?",
+        "prev": "\"Yeah, it doesn't look like that.\" Oh, yeah, yeah, yeah.",
+        "next": "I'm going to go into that mode.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1052,
+        "score": 3.34,
+        "raw_score": 3.34,
+        "probabilities": {
+          "0": 0.11,
+          "1": 0.01,
+          "2": 0.01,
+          "3": 0.26,
+          "4": 0.53,
+          "5": 0.08
+        },
+        "top_two": "level 4 0.53, level 3 0.26",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "And if you take a few moments to imagine with each box that You could arrange..",
+        "prev": "These are what this was about.",
+        "next": "I wanna get back to my red.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 562,
+        "score": 3.33,
+        "raw_score": 3.33,
+        "probabilities": {
+          "0": 0.09,
+          "1": 0.01,
+          "2": 0.04,
+          "3": 0.25,
+          "4": 0.55,
+          "5": 0.06
+        },
+        "top_two": "level 4 0.55, level 3 0.25",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": "38",
+        "retake_real": 0.4,
+        "text": "and, you know.\" In other words, this could be the top plane.",
+        "prev": "\"This could be the top plane and the..",
+        "next": "\"Yeah, because these look like they're coming together.\" But it wouldn't be dotted lines that way.",
+        "pattern": "unlabelled"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 1111,
+        "score": 3.33,
+        "raw_score": 3.33,
+        "probabilities": {
+          "0": 0.07,
+          "1": 0.01,
+          "2": 0.03,
+          "3": 0.34,
+          "4": 0.51,
+          "5": 0.04
+        },
+        "top_two": "level 4 0.51, level 3 0.34",
+        "human_state": "removed",
+        "model_state": "full",
+        "cut_retake": false,
+        "retake_group": null,
+        "retake_real": null,
+        "text": "Yeah, there, there's something.",
+        "prev": "I'm just saying, like, if there was something.",
+        "next": "I noticed that with Yves, uh, who did a piano, that some of you did pianos too.",
+        "pattern": "Producer talk and studio logistics"
+      }
+    ],
+    "n_jev_removed_editor_kept": 215,
+    "n_jev_kept_editor_removed": 228,
+    "jev_removed_editor_kept_patterns": [
+      {
+        "pattern": "unlabelled",
+        "note": "in the list but not in the hand grouping; the decision file has moved since it was written",
+        "n": 21,
+        "members": [
+          {
+            "episode": "hampton-5.4-assignment-demo",
+            "id": 54,
+            "score": 0.15,
+            "text": "its modification early on."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 989,
+            "score": 0.65,
+            "text": "using atmospheric perspective on some of these planes."
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 21,
+            "score": 0.73,
+            "text": "Remember as I went over in the demo as well?"
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 4,
+            "score": 0.96,
+            "text": "Let's talk about your assignment."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 157,
+            "score": 1.01,
+            "text": "you'd have to.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 181,
+            "score": 1.01,
+            "text": "And I do want to say something about using the Zolli app, which is great, but there is something about extremizing this."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 253,
+            "score": 1.04,
+            "text": "edges are influenced by things like the light source, the composition, our preferences and style, but understanding their connection to form, that's the foundation."
+          },
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 205,
+            "score": 1.09,
+            "text": "And then foot."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 511,
+            "score": 1.09,
+            "text": "It will include angled planes."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 922,
+            "score": 1.09,
+            "text": "Very clean and professional looking and it looks like you more than paid your dues."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 274,
+            "score": 1.12,
+            "text": "Look at it in terms of volumes and building blocks and almost like you're carving it out of wood."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 623,
+            "score": 1.19,
+            "text": "Hmm?"
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 29,
+            "score": 1.21,
+            "text": "oh, like, you know, or overly smudged tones that hide uncertainty and mistakes instead of communicating form."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 616,
+            "score": 1.27,
+            "text": "Could this be made to look like a cube and not a compressed wafer?"
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 617,
+            "score": 1.27,
+            "text": "Yes."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 624,
+            "score": 1.27,
+            "text": "You know, so, I mean, hmm, um, uh, like, you know, so, I mean, hmm, mm-hmm."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 615,
+            "score": 1.35,
+            "text": "I will use as an example Carlos Javier Risotto."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 209,
+            "score": 1.37,
+            "text": "Like, how are.."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 255,
+            "score": 1.37,
+            "text": "they indicate how rounded or sudden a transition is between two planes."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 841,
+            "score": 1.38,
+            "text": "Or \"ease up.\" As it is, you are impressing me with your work ethic, but I'd much rather see you grow in your skill."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 784,
+            "score": 1.41,
+            "text": "\"Oh dear, oh dear, spent a year over at another website fighting cubes and close to 1,000 attempts later, I decided to take an entire year off from drawing.\" Whew."
+          }
+        ]
+      },
+      {
+        "pattern": "Half a sentence the transcript split",
+        "note": "The transcript breaks one spoken sentence into two rows and the second row trails off in `..`. Jev reads the fragment on its own, calls it an abandoned false start, and drops it. The editor kept the whole spoken sentence, so both rows are in the cut.",
+        "n": 6,
+        "members": [
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 156,
+            "score": 0.77,
+            "text": "You have to kind of.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 176,
+            "score": 0.99,
+            "text": "If the.."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 361,
+            "score": 0.77,
+            "text": "um, see how edges behave differently under various lighting conditions."
+          },
+          {
+            "episode": "hampton-5.4-assignment-demo",
+            "id": 77,
+            "score": 1.12,
+            "text": "Maybe we could even.."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 28,
+            "score": 1.26,
+            "text": "You'll find random sharp edges everywhere or overly smudged tones that hide uncertainty and mistakes instead.."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 78,
+            "score": 0.91,
+            "text": "It doesn't.."
+          }
+        ]
+      },
+      {
+        "pattern": "Retake pair, the wrong side cut",
+        "note": "Two attempts at one line. Jev found the pair but crowned the other take, so the one the editor actually used got cut as the loser.",
+        "n": 4,
+        "members": [
+          {
+            "episode": "edges-7.01-intro",
+            "id": 203,
+            "score": 1.08,
+            "text": "\"They're all soft edges with a different flavor!\" Hmm..."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 384,
+            "score": 0.87,
+            "text": "So let's get going."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 210,
+            "score": 0.86,
+            "text": "all shapes have edges."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 102,
+            "score": 1.38,
+            "text": "But lost edges don't always mean that it's super blurry between the two shapes."
+          }
+        ]
+      },
+      {
+        "pattern": "Producer talk and student names in a critique",
+        "note": "In a critique the teacher reads a name off the screen or says what the producer just put up. The prompt's level 0 names exactly that as a cut, and the editor keeps it, because it is how the critique moves.",
+        "n": 4,
+        "members": [
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 603,
+            "score": 0.45,
+            "text": "Jayoshi points out the principle behind overdoing it."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 908,
+            "score": 1.11,
+            "text": "What commitment."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 941,
+            "score": 0.92,
+            "text": "Anthony Hernandez."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 988,
+            "score": 0.72,
+            "text": "There's Sandra Susser"
+          }
+        ]
+      },
+      {
+        "pattern": "Ordinary connective teaching talk",
+        "note": "Level 3 in the prompt's own words: fine, keeps the flow, nothing memorable. Jev put it at 1 or below. These are the demo lessons, where the editor keeps almost everything.",
+        "n": 2,
+        "members": [
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 5,
+            "score": 0.74,
+            "text": "And now we'll try that with a little bit more directness in terms of looking at a reference and seeing if we could practice that from that picture."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 273,
+            "score": 0.9,
+            "text": "As opposed to just kind of drawing it for what it is and getting a little bit more of a kind of a, uh, worried about like the silhouette and almost again, instead of looking at patterns, look at it in terms of forms, right?"
+          }
+        ]
+      },
+      {
+        "pattern": "Thinking aloud, all ums",
+        "note": "A run of pure filler the editor kept anyway, because the pause is part of the demo's rhythm.",
+        "n": 2,
+        "members": [
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 104,
+            "score": 1.22,
+            "text": "so, I mean, hmm, mm-hmm."
+          },
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 103,
+            "score": 1.21,
+            "text": "Um, uh, like, you know,"
+          }
+        ]
+      },
+      {
+        "pattern": "Scripted lesson line read as filler",
+        "note": "The written intro asks a question or names a list, one short sentence at a time. Jev scores a short sentence with no content of its own as throat-clearing; in a script it is the lesson.",
+        "n": 1,
+        "members": [
+          {
+            "episode": "edges-7.01-intro",
+            "id": 82,
+            "score": 0.37,
+            "text": "Sharp, firm, soft, and lost."
+          }
+        ]
+      },
+      {
+        "pattern": "A joke the editor kept",
+        "note": "Self-deprecating aside. The prompt asks for it at level 4 and Jev scored it at 1.",
+        "n": 0,
+        "members": []
+      }
+    ],
+    "jev_kept_editor_removed_patterns": [
+      {
+        "pattern": "unlabelled",
+        "note": "in the list but not in the hand grouping; the decision file has moved since it was written",
+        "n": 17,
+        "members": [
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 140,
+            "score": 4.1,
+            "text": "Alright."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 252,
+            "score": 3.8,
+            "text": "edges are influenced by things.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1018,
+            "score": 3.79,
+            "text": "But if you're going to sleep at night and seeing these things and you can make the jump from seeing these things and why you're doing it, it may be a good thing that they're.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1019,
+            "score": 3.78,
+            "text": "they're going into your brain."
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 66,
+            "score": 3.76,
+            "text": "Um, going back and adjusting this angle here."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1017,
+            "score": 3.75,
+            "text": "The problem with this, as some of you I think have mentioned, is Charlie has mentioned it, uh, in editing this course is that you start to go to sleep at night and see these things."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1016,
+            "score": 3.74,
+            "text": "Max Long."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 254,
+            "score": 3.72,
+            "text": "They indicate how round.."
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 276,
+            "score": 3.52,
+            "text": "and the object receiving the cast shadow."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 54,
+            "score": 3.46,
+            "text": "and not putting myself through college but working at my dad's law firm during the day and I would, um, you know, draw and, uh, study anatomy in 9 different classes."
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 184,
+            "score": 3.44,
+            "text": "\u2014just"
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 271,
+            "score": 3.4,
+            "text": "Dermot!"
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 29,
+            "score": 3.37,
+            "text": "So, you can see the difference there."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 744,
+            "score": 3.37,
+            "text": "That would be.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 565,
+            "score": 3.34,
+            "text": "Is that what that dotted line's doing?"
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1052,
+            "score": 3.34,
+            "text": "And if you take a few moments to imagine with each box that You could arrange.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 562,
+            "score": 3.33,
+            "text": "and, you know.\" In other words, this could be the top plane."
+          }
+        ]
+      },
+      {
+        "pattern": "Teaching line the picture already makes",
+        "note": "Real content, said clearly, and the editor still cut it: the drawing on screen says the same thing, or the point was already made a sentence earlier. Jev has no way to see the picture and grades the words.",
+        "n": 9,
+        "members": [
+          {
+            "episode": "edges-7.01-intro",
+            "id": 228,
+            "score": 3.95,
+            "text": "This highlight is sharp here, firm here, and soft here as it slowly fades away."
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 178,
+            "score": 3.79,
+            "text": "Um, once again, making sure there's room for all the teeth even though it's completely grid-based."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 287,
+            "score": 3.61,
+            "text": "If you're starting to think about kind of what's going on on the other side, even though I don't see it.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 400,
+            "score": 3.57,
+            "text": "You've got your absolute reference."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 285,
+            "score": 3.4,
+            "text": "This is the way of conceptual thinking that you need that will really help you communicate volume and structure, weight, and even your posing, and even the energy in your work will really have a sense of dynamic, um, proportions and have a sense of.."
+          },
+          {
+            "episode": "hampton-5.4-assignment-demo",
+            "id": 150,
+            "score": 3.55,
+            "text": "So maybe I'll just extend that a little bit lower."
+          },
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 30,
+            "score": 3.44,
+            "text": "So, I'm just trying to connect all the parts, right?"
+          },
+          {
+            "episode": "edges-7.01-intro",
+            "id": 27,
+            "score": 3.34,
+            "text": "You can usually spot an amateur by looking at their edges."
+          },
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 11,
+            "score": 3.47,
+            "text": "we only have one, which is chimpanzee."
+          }
+        ]
+      },
+      {
+        "pattern": "Encouragement and wrap-up the editor tightened",
+        "note": "The pep talk at the end of a lesson. Warm, well said, and the editor keeps one line of it and drops the rest.",
+        "n": 4,
+        "members": [
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1113,
+            "score": 3.58,
+            "text": "Piano is a great challenge."
+          },
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 335,
+            "score": 3.34,
+            "text": "Don't be too hard on yourself."
+          },
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 337,
+            "score": 3.4,
+            "text": "it's going to be uncomfortable at first, especially if you've been doing the other approach to kind of reorganize your thoughts and then, you know, redevelop a new way of representing and organizing the same information you've been looking at."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 343,
+            "score": 3.51,
+            "text": "I don't know how I can make that point more emphatically and you hardly need a teacher's feedback for this."
+          }
+        ]
+      },
+      {
+        "pattern": "Producer talk and studio logistics",
+        "note": "Two people arranging what happens next, or spelling a name out loud. Jev graded it 3 or above because it is fluent and on topic.",
+        "n": 3,
+        "members": [
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 957,
+            "score": 3.53,
+            "text": "F-M-I-N-K-E-E."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1111,
+            "score": 3.33,
+            "text": "Yeah, there, there's something."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 1112,
+            "score": 3.35,
+            "text": "I noticed that with Yves, uh, who did a piano, that some of you did pianos too."
+          }
+        ]
+      },
+      {
+        "pattern": "Half a sentence the transcript split",
+        "note": "The mirror of the same problem: the editor cut the whole spoken sentence, so the trailing fragment goes too, and Jev kept the fragment because the words it can see read as setup.",
+        "n": 3,
+        "members": [
+          {
+            "episode": "colman-02.04-skeleton-demo",
+            "id": 10,
+            "score": 3.61,
+            "text": "Skeleton that we provided is.."
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 590,
+            "score": 3.45,
+            "text": "that looks right enough."
+          },
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 46,
+            "score": 3.37,
+            "text": "So, you're.."
+          }
+        ]
+      },
+      {
+        "pattern": "Short connective dropped for pacing",
+        "note": "`Right?`, `All right?`, `Okay.` Jev scores the tag high because it reads as ordinary teaching talk; the editor cuts it to keep the cut moving.",
+        "n": 2,
+        "members": [
+          {
+            "episode": "colman-03.03-muscles-crit",
+            "id": 222,
+            "score": 3.87,
+            "text": "Right?"
+          },
+          {
+            "episode": "perspective-14e-boxes-critique",
+            "id": 139,
+            "score": 3.96,
+            "text": "Okay."
+          }
+        ]
+      },
+      {
+        "pattern": "Near-duplicate line, the loser kept",
+        "note": "The next sentence says the same thing better and the retake detector never flagged the pair, so nothing cut it.",
+        "n": 1,
+        "members": [
+          {
+            "episode": "edges-7.01-intro",
+            "id": 261,
+            "score": 3.76,
+            "text": "A firm edge."
+          }
+        ]
+      },
+      {
+        "pattern": "Operating the drawing or the screen",
+        "note": "Level 0 in the prompt. Jev gave it 3.15.",
+        "n": 1,
+        "members": [
+          {
+            "episode": "hampton-5.2-shape-demo",
+            "id": 107,
+            "score": 3.35,
+            "text": "So, I could just drop that for now."
+          }
+        ]
+      },
+      {
+        "pattern": "Tangent the editor cut short",
+        "note": "The teacher loses the thread and the editor takes the detour out.",
+        "n": 0,
+        "members": []
+      }
+    ]
+  },
+  "trims": {
+    "emitted": {
+      "colman-02.04-skeleton-demo": 9,
+      "hampton-5.4-assignment-demo": 5,
+      "colman-03.03-muscles-crit": 16,
+      "edges-7.01-intro": 8,
+      "hampton-5.2-shape-demo": 22,
+      "perspective-14e-boxes-critique": 29
+    },
+    "emitted_total": 89,
+    "branch_counts": {
+      "exact": 108,
+      "subset": 0,
+      "overlap": 29,
+      "disjoint": 37,
+      "model_empty": 0,
+      "human_empty": 0
+    },
+    "pair_counts": {
+      "full/full": 834,
+      "full/partial": 114,
+      "full/removed": 169,
+      "partial/full": 168,
+      "partial/partial": 174,
+      "partial/removed": 46,
+      "removed/full": 200,
+      "removed/partial": 28,
+      "removed/removed": 1010
+    },
+    "model_partials_scored": 316,
+    "jev_trims_scored": 34,
+    "jev_trim_branches": {
+      "editor kept it whole (0.7)": 17,
+      "exact": 4,
+      "editor removed it (0.0)": 11,
+      "disjoint": 2
+    },
+    "layer_only_branches": {
+      "disjoint": 35,
+      "overlap": 29,
+      "editor removed it (0.0)": 17,
+      "exact": 104,
+      "editor kept it whole (0.7)": 97
+    },
+    "examples": [
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 77,
+        "branch": "exact",
+        "jev_trim": true,
+        "score": 3.91,
+        "text": "But when does searching get caught up on details?\" \"In the class demo, I was going a little bit further because I wanted to show you as I was speaking through the approaches and my thought process.\" Right?",
+        "spans": "[{But when does searching get caught up on]} details?\" [{\"In the class demo, I was going a little bit further because I wanted to show you as I was speaking through the approaches and my thought process.\"]} Right?"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 83,
+        "branch": "disjoint",
+        "jev_trim": true,
+        "score": 3.19,
+        "text": "This is a common error that I'm seeing, you know?",
+        "spans": "[{This is a common error that I'm seeing,] you} know?"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 33,
+        "branch": "editor kept it whole (0.7)",
+        "jev_trim": true,
+        "score": 2.83,
+        "text": "And just..",
+        "spans": "{And [just\u2014]}"
+      },
+      {
+        "episode": "hampton-5.4-assignment-demo",
+        "id": 227,
+        "branch": "editor removed it (0.0)",
+        "jev_trim": true,
+        "score": 2.66,
+        "text": "So, part..",
+        "spans": "So, [part\u2014]"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 93,
+        "branch": "exact",
+        "jev_trim": true,
+        "score": 3.85,
+        "text": "I always wanna see you draw through the form because just..",
+        "spans": "[{I always wanna see you draw through the form]} because just\u2014"
+      },
+      {
+        "episode": "perspective-14e-boxes-critique",
+        "id": 50,
+        "branch": "disjoint",
+        "jev_trim": true,
+        "score": 2.83,
+        "text": "Um, and moving away from instrumental perspective and toward the kind of freehand skills that we've seen some of our guest artists like Peter Han and Rembert showcase for us.",
+        "spans": "Um, and [moving away from instrumental perspective {and toward the kind of freehand skills that we've seen some of our guest artists like Peter Han and Rembert showcase for us.]}"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 41,
+        "branch": "editor kept it whole (0.7)",
+        "jev_trim": true,
+        "score": 3.15,
+        "text": "Dealing with that tube form we discussed that..",
+        "spans": "[{Dealing with that tube form we discussed] that\u2014}"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 123,
+        "branch": "editor removed it (0.0)",
+        "jev_trim": true,
+        "score": 3.01,
+        "text": "And I really..",
+        "spans": "And [I] really\u2014"
+      },
+      {
+        "episode": "colman-02.04-skeleton-demo",
+        "id": 127,
+        "branch": "exact",
+        "jev_trim": true,
+        "score": 2.85,
+        "text": "Now, um, for the assignment, I would..",
+        "spans": "[{Now,]} um, [{for the assignment,]} I would\u2014"
+      },
+      {
+        "episode": "hampton-5.4-assignment-demo",
+        "id": 78,
+        "branch": "editor kept it whole (0.7)",
+        "jev_trim": true,
+        "score": 3.48,
+        "text": "yeah, I don't think on her specifically, but you could broaden the hip or, or change the shape in any way that you see fit.",
+        "spans": "{yeah, [I don't think on her specifically, but you could broaden the hip or, or change the shape in any way that you see fit.]}"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 2,
+        "branch": "editor removed it (0.0)",
+        "jev_trim": true,
+        "score": 2.77,
+        "text": "So Um, yeah, so we're gonna demo these two guys and then we'll do the assign.",
+        "spans": "So Um, yeah, so [we're gonna demo these two guys and then we'll do the assign.]"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 281,
+        "branch": "exact",
+        "jev_trim": true,
+        "score": 3.93,
+        "text": "So, just like you're chiseling in on a piece of wood, you know, whittling away or sculpting, you're kind of..",
+        "spans": "[{So, just like you're chiseling in on a piece of wood, you know, whittling away or sculpting,]} you're kind of\u2014"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 90,
+        "branch": "editor kept it whole (0.7)",
+        "jev_trim": true,
+        "score": 3.29,
+        "text": "So, everything's kinda locking together, right?",
+        "spans": "[{So, everything's kinda locking together,] right?}"
+      },
+      {
+        "episode": "hampton-5.2-shape-demo",
+        "id": 39,
+        "branch": "editor removed it (0.0)",
+        "jev_trim": true,
+        "score": 3.32,
+        "text": "So, that's..",
+        "spans": "So, [that's\u2014]"
+      },
+      {
+        "episode": "colman-03.03-muscles-crit",
+        "id": 154,
+        "branch": "editor kept it whole (0.7)",
+        "jev_trim": true,
+        "score": 3.37,
+        "text": "So, as you create your..",
+        "spans": "{So, [as you create your\u2014]}"
+      }
+    ],
+    "notrim_pooled_sentence_points": 0.829748450601531
+  },
+  "veto": [
+    {
+      "label": "none",
+      "fixed": {
+        "sentence_points": 0.831425446591323,
+        "word_score": 0.7651701910284532,
+        "grade": 0.8646461925200175
+      },
+      "veto": null,
+      "reproduces_the_run": false,
+      "threshold": 2.5,
+      "losers_cut": 304,
+      "losers_cut_editor_kept": 55,
+      "losers_cut_editor_removed": 249,
+      "sentence_points": 0.831425446591323,
+      "word_score": 0.7651701910284532,
+      "grade": 0.8646461925200175,
+      "kept_ratio": 0.9287084045685906,
+      "confusion": {
+        "both_removed": 1029,
+        "jev_removed_editor_kept": 233,
+        "jev_removed_editor_full": 184,
+        "both_keep": 1272,
+        "jev_kept_editor_removed": 209,
+        "jev_removed_editor_partial": 49,
+        "n": 2743
+      },
+      "accuracy": 0.8388625592417062
+    },
+    {
+      "label": "0.2",
+      "fixed": {
+        "sentence_points": 0.8317900109369302,
+        "word_score": 0.767976799390954,
+        "grade": 0.8674843666263133
+      },
+      "veto": 0.2,
+      "reproduces_the_run": false,
+      "threshold": 2.5,
+      "losers_cut": 279,
+      "losers_cut_editor_kept": 48,
+      "losers_cut_editor_removed": 231,
+      "sentence_points": 0.8317900109369302,
+      "word_score": 0.767976799390954,
+      "grade": 0.8674843666263133,
+      "kept_ratio": 0.9345394031189667,
+      "confusion": {
+        "both_removed": 1026,
+        "jev_removed_editor_kept": 228,
+        "jev_removed_editor_full": 180,
+        "both_keep": 1277,
+        "jev_kept_editor_removed": 212,
+        "jev_removed_editor_partial": 48,
+        "n": 2743
+      },
+      "accuracy": 0.8395916879329202
+    },
+    {
+      "label": "0.3",
+      "fixed": {
+        "sentence_points": 0.8317900109369302,
+        "word_score": 0.7680650486874607,
+        "grade": 0.867378306924714
+      },
+      "veto": 0.3,
+      "reproduces_the_run": false,
+      "threshold": 2.5,
+      "losers_cut": 250,
+      "losers_cut_editor_kept": 36,
+      "losers_cut_editor_removed": 214,
+      "sentence_points": 0.8317900109369302,
+      "word_score": 0.7680650486874607,
+      "grade": 0.867378306924714,
+      "kept_ratio": 0.9376011648995989,
+      "confusion": {
+        "both_removed": 1022,
+        "jev_removed_editor_kept": 223,
+        "jev_removed_editor_full": 176,
+        "both_keep": 1282,
+        "jev_kept_editor_removed": 216,
+        "jev_removed_editor_partial": 47,
+        "n": 2743
+      },
+      "accuracy": 0.8399562522785271
+    },
+    {
+      "label": "0.4",
+      "fixed": {
+        "sentence_points": 0.8306963179001091,
+        "word_score": 0.7682000989019031,
+        "grade": 0.8674738597649451
+      },
+      "veto": 0.4,
+      "reproduces_the_run": false,
+      "threshold": 2.5,
+      "losers_cut": 228,
+      "losers_cut_editor_kept": 32,
+      "losers_cut_editor_removed": 196,
+      "sentence_points": 0.8306963179001091,
+      "word_score": 0.7682000989019031,
+      "grade": 0.8674738597649451,
+      "kept_ratio": 0.9390962927330286,
+      "confusion": {
+        "both_removed": 1016,
+        "jev_removed_editor_kept": 220,
+        "jev_removed_editor_full": 173,
+        "both_keep": 1285,
+        "jev_kept_editor_removed": 222,
+        "jev_removed_editor_partial": 47,
+        "n": 2743
+      },
+      "accuracy": 0.8388625592417062
+    },
+    {
+      "label": "0.5 (production Jev)",
+      "fixed": {
+        "sentence_points": 0.8299671892088951,
+        "word_score": 0.7677512570029025,
+        "grade": 0.8671674545631667
+      },
+      "veto": 0.5,
+      "reproduces_the_run": true,
+      "threshold": 2.5,
+      "losers_cut": 189,
+      "losers_cut_editor_kept": 22,
+      "losers_cut_editor_removed": 167,
+      "sentence_points": 0.8299671892088951,
+      "word_score": 0.7677512570029025,
+      "grade": 0.8671674545631667,
+      "kept_ratio": 0.9439392068021816,
+      "confusion": {
+        "both_removed": 1010,
+        "jev_removed_editor_kept": 215,
+        "jev_removed_editor_full": 169,
+        "both_keep": 1290,
+        "jev_kept_editor_removed": 228,
+        "jev_removed_editor_partial": 46,
+        "n": 2743
+      },
+      "accuracy": 0.8384979948960991
+    },
+    {
+      "label": "module flags",
+      "fixed": {
+        "sentence_points": 0.830696317900109,
+        "word_score": 0.7651807046009624,
+        "grade": 0.8643926306017575
+      },
+      "veto": "production is_retake flags",
+      "reproduces_the_run": false,
+      "threshold": 2.5,
+      "losers_cut": 304,
+      "losers_cut_editor_kept": 57,
+      "losers_cut_editor_removed": 247,
+      "sentence_points": 0.830696317900109,
+      "word_score": 0.7651807046009624,
+      "grade": 0.8643926306017575,
+      "kept_ratio": 0.927726820643165,
+      "confusion": {
+        "both_removed": 1030,
+        "jev_removed_editor_kept": 235,
+        "jev_removed_editor_full": 187,
+        "both_keep": 1270,
+        "jev_kept_editor_removed": 208,
+        "jev_removed_editor_partial": 48,
+        "n": 2743
+      },
+      "accuracy": 0.8384979948960991
+    }
+  ],
+  "veto_fixed_threshold": 2.5,
+  "levels": {
+    "means": {
+      "kept": {
+        "0": 0.13604651162790726,
+        "1": 0.027528239202658025,
+        "2": 0.027136212624584974,
+        "3": 0.2857275747508309,
+        "4": 0.43526910299003346,
+        "5": 0.08800664451827246
+      },
+      "removed": {
+        "0": 0.40920032310177734,
+        "1": 0.07350565428109887,
+        "2": 0.05508077544426558,
+        "3": 0.23236672051696267,
+        "4": 0.19006462035541236,
+        "5": 0.03957189014539591
+      }
+    },
+    "counts": {
+      "kept": 1505,
+      "removed": 1238
+    },
+    "quartiles": [
+      {
+        "quartile": "Q1",
+        "confidence_range": [
+          0.25,
+          0.43
+        ],
+        "n": 732,
+        "accuracy": 0.7609289617486339
+      },
+      {
+        "quartile": "Q2",
+        "confidence_range": [
+          0.43,
+          0.51
+        ],
+        "n": 679,
+        "accuracy": 0.833578792341679
+      },
+      {
+        "quartile": "Q3",
+        "confidence_range": [
+          0.51,
+          0.62
+        ],
+        "n": 655,
+        "accuracy": 0.8717557251908397
+      },
+      {
+        "quartile": "Q4",
+        "confidence_range": [
+          0.62,
+          0.97
+        ],
+        "n": 677,
+        "accuracy": 0.8951255539143279
+      }
+    ],
+    "n_without_probabilities": 0
+  },
+  "markdown_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-misses.md",
+  "json_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-v3-misses.json"
+}
