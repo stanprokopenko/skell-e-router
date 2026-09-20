@@ -1,0 +1,1743 @@
+{
+  "generated_utc": "2026-09-20T23:03:31+00:00",
+  "script": "scripts/jev_real/roughcut_jev_report.py",
+  "inputs": {
+    "decisions": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-fitwindow-decisions.jsonl",
+    "requests": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-fitwindow-requests.jsonl",
+    "timing": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-fitwindow-timing.json"
+  },
+  "summary_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-fitwindow-summary.json",
+  "notes_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-fitwindow-notes.md",
+  "episodes": [
+    "perspective-13d-critique",
+    "greco-2.2-thumbnailing"
+  ],
+  "layered_episodes": [
+    "perspective-13d-critique",
+    "greco-2.2-thumbnailing"
+  ],
+  "run": {
+    "input_name": "roughcut-jev-fitwindow",
+    "model": "jev-1.13.0",
+    "prompt_version": "v3",
+    "concurrency": 8,
+    "t_trim": 0.5,
+    "aborted": null,
+    "sentences": 3140,
+    "requests": 207,
+    "errors": 53,
+    "retries": 48,
+    "input_tokens": 7595626,
+    "cost_usd": 0.319016,
+    "wall_clock_s": 35.906,
+    "missing_score": 0.0,
+    "missing_answers_per_arm": 0,
+    "rebuild_check": {
+      "checked": 3140,
+      "mismatches": 0,
+      "examples": []
+    },
+    "run_warnings": [
+      "perspective-13d-critique sentence 325: no answer (block 13)",
+      "perspective-13d-critique sentence 326: no answer (block 13)",
+      "perspective-13d-critique sentence 327: no answer (block 13)",
+      "perspective-13d-critique sentence 328: no answer (block 13)",
+      "perspective-13d-critique sentence 329: no answer (block 13)",
+      "perspective-13d-critique sentence 330: no answer (block 13)",
+      "perspective-13d-critique sentence 331: no answer (block 13)",
+      "perspective-13d-critique sentence 332: no answer (block 13)",
+      "perspective-13d-critique sentence 333: no answer (block 13)",
+      "perspective-13d-critique sentence 334: no answer (block 13)",
+      "perspective-13d-critique sentence 335: no answer (block 13)",
+      "perspective-13d-critique sentence 336: no answer (block 13)",
+      "perspective-13d-critique sentence 337: no answer (block 13)",
+      "perspective-13d-critique sentence 338: no answer (block 13)",
+      "perspective-13d-critique sentence 339: no answer (block 13)",
+      "perspective-13d-critique sentence 340: no answer (block 13)",
+      "perspective-13d-critique sentence 341: no answer (block 13)",
+      "perspective-13d-critique sentence 342: no answer (block 13)",
+      "perspective-13d-critique sentence 343: no answer (block 13)",
+      "perspective-13d-critique sentence 344: no answer (block 13)"
+    ],
+    "n_run_warnings": 100
+  },
+  "t_trim_sweep": [
+    0.3
+  ],
+  "sweep_note": "",
+  "trims_by_arm": {
+    "jev_a@t0.3": {
+      "perspective-13d-critique": 40,
+      "greco-2.2-thumbnailing": 58
+    },
+    "jev_b_moduleretakes": {
+      "perspective-13d-critique": 0,
+      "greco-2.2-thumbnailing": 0
+    },
+    "jev_b_notrim": {
+      "perspective-13d-critique": 0,
+      "greco-2.2-thumbnailing": 0
+    },
+    "jev_noul@t0.3": {
+      "perspective-13d-critique": 40,
+      "greco-2.2-thumbnailing": 58
+    },
+    "jev_mix@t0.3": {
+      "perspective-13d-critique": 40,
+      "greco-2.2-thumbnailing": 58
+    }
+  },
+  "cut_p": {
+    "correlation": {
+      "per_episode": {
+        "perspective-13d-critique": {
+          "n": 1752,
+          "n_unusable": 0,
+          "r": -0.7848671626393617,
+          "mean_cut_p": 0.40987442922374484,
+          "mean_score": 2.2305650684931453
+        },
+        "greco-2.2-thumbnailing": {
+          "n": 1388,
+          "n_unusable": 0,
+          "r": -0.8388051133718731,
+          "mean_cut_p": 0.38268731988472593,
+          "mean_score": 2.6184221902017315
+        }
+      },
+      "pooled": {
+        "n": 3140,
+        "r": -0.8030281915278132,
+        "mean_cut_p": 0.3978566878980912,
+        "mean_score": 2.402012738853495
+      }
+    },
+    "agreement": {
+      "layer": "layered",
+      "episodes": [
+        "perspective-13d-critique",
+        "greco-2.2-thumbnailing"
+      ],
+      "arms": [
+        {
+          "key": "jev_a@t0.3",
+          "label": "jev_a (t_trim 0.3)",
+          "threshold": 2.7,
+          "pooled": {
+            "both_removed": 1654,
+            "both_keep": 757,
+            "jev_removed_editor_kept": 220,
+            "jev_removed_editor_full": 162,
+            "jev_kept_editor_removed": 509,
+            "jev_removed_editor_partial": 58,
+            "n": 3140,
+            "agreement": 0.7678343949044586
+          },
+          "per_episode": {
+            "perspective-13d-critique": {
+              "both_removed": 975,
+              "both_keep": 430,
+              "jev_removed_editor_kept": 181,
+              "jev_removed_editor_full": 139,
+              "jev_kept_editor_removed": 166,
+              "jev_removed_editor_partial": 42,
+              "n": 1752
+            },
+            "greco-2.2-thumbnailing": {
+              "both_removed": 679,
+              "jev_kept_editor_removed": 343,
+              "both_keep": 327,
+              "jev_removed_editor_kept": 39,
+              "jev_removed_editor_full": 23,
+              "jev_removed_editor_partial": 16,
+              "n": 1388
+            }
+          },
+          "kept_ratio": 1.1686964999834748,
+          "sentence_points": 0.7626114649681528
+        },
+        {
+          "key": "jev_noul@t0.3",
+          "label": "jev_noul (t_trim 0.3)",
+          "threshold": 3.2,
+          "pooled": {
+            "both_removed": 1657,
+            "jev_kept_editor_removed": 506,
+            "both_keep": 746,
+            "jev_removed_editor_kept": 231,
+            "jev_removed_editor_full": 176,
+            "jev_removed_editor_partial": 55,
+            "n": 3140,
+            "agreement": 0.7652866242038217
+          },
+          "per_episode": {
+            "perspective-13d-critique": {
+              "both_removed": 954,
+              "jev_kept_editor_removed": 187,
+              "both_keep": 430,
+              "jev_removed_editor_kept": 181,
+              "jev_removed_editor_full": 146,
+              "jev_removed_editor_partial": 35,
+              "n": 1752
+            },
+            "greco-2.2-thumbnailing": {
+              "both_removed": 703,
+              "jev_kept_editor_removed": 319,
+              "both_keep": 316,
+              "jev_removed_editor_kept": 50,
+              "jev_removed_editor_full": 30,
+              "jev_removed_editor_partial": 20,
+              "n": 1388
+            }
+          },
+          "kept_ratio": 1.1618220577056548,
+          "sentence_points": 0.7603503184713376
+        },
+        {
+          "key": "jev_mix@t0.3",
+          "label": "jev_mix (t_trim 0.3)",
+          "threshold": 2.8,
+          "pooled": {
+            "both_removed": 1554,
+            "jev_kept_editor_removed": 609,
+            "both_keep": 823,
+            "jev_removed_editor_kept": 154,
+            "jev_removed_editor_full": 115,
+            "jev_removed_editor_partial": 39,
+            "n": 3140,
+            "agreement": 0.7570063694267516
+          },
+          "per_episode": {
+            "perspective-13d-critique": {
+              "both_removed": 925,
+              "jev_kept_editor_removed": 216,
+              "both_keep": 480,
+              "jev_removed_editor_kept": 131,
+              "jev_removed_editor_full": 102,
+              "jev_removed_editor_partial": 29,
+              "n": 1752
+            },
+            "greco-2.2-thumbnailing": {
+              "both_removed": 629,
+              "jev_kept_editor_removed": 393,
+              "both_keep": 343,
+              "jev_removed_editor_kept": 23,
+              "jev_removed_editor_full": 13,
+              "jev_removed_editor_partial": 10,
+              "n": 1388
+            }
+          },
+          "kept_ratio": 1.2856859569686354,
+          "sentence_points": 0.7479617834394904
+        }
+      ]
+    }
+  },
+  "arms": [
+    {
+      "arm": "jev_a",
+      "t_trim": 0.3,
+      "key": "jev_a@t0.3",
+      "label": "jev_a (t_trim 0.3)",
+      "missing_answers": 0,
+      "trims": {
+        "perspective-13d-critique": 40,
+        "greco-2.2-thumbnailing": 58
+      },
+      "plain": {
+        "result": {
+          "threshold": 2.7,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.7,
+              "2": 2.9,
+              "3": 3.0,
+              "4": 2.7,
+              "5": 3.1,
+              "6": 3.2
+            },
+            "kept_frames": {
+              "1": 153717,
+              "2": 137104,
+              "3": 124175,
+              "4": 153717,
+              "5": 112557,
+              "6": 97783
+            },
+            "achieved_ratios": {
+              "1": 1.2700945235813201,
+              "2": 1.1328287668969164,
+              "3": 1.0260022474138215,
+              "4": 1.2700945235813201,
+              "5": 0.9300079320487821,
+              "6": 0.8079370063125888
+            },
+            "neutral_threshold": 2.7
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.7,
+              "sentence_points": 0.7864155251141566,
+              "sentence_points_raw": 0.7864155251141566,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 9,
+              "pair_counts": {
+                "full/full": 361,
+                "full/partial": 4,
+                "full/removed": 139,
+                "partial/full": 64,
+                "partial/partial": 1,
+                "partial/removed": 42,
+                "removed/full": 166,
+                "removed/partial": 4,
+                "removed/removed": 971
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 1,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7904999025823708,
+              "word_count": 14481,
+              "grade": 0.8059642827525185,
+              "frame_match": 0.7586769171647229,
+              "dialogue_frames": 146489,
+              "kept_frames": 75164,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9799355957394105,
+              "n_partial_decisions": 40,
+              "removal_frames": 0,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.7,
+              "sentence_points": 0.6935878962536007,
+              "sentence_points_raw": 0.6935878962536007,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 14,
+              "pair_counts": {
+                "full/full": 243,
+                "full/partial": 3,
+                "full/removed": 23,
+                "partial/full": 80,
+                "partial/partial": 1,
+                "partial/removed": 16,
+                "removed/full": 334,
+                "removed/partial": 10,
+                "removed/removed": 678
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 1,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7017303861685067,
+              "word_count": 16279,
+              "grade": 0.7201646678117666,
+              "frame_match": 0.6906756136950161,
+              "dialogue_frames": 121855,
+              "kept_frames": 78553,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.772205301748449,
+              "n_partial_decisions": 57,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.7,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7453821656050955,
+            "sentence_points_raw": 0.7453821656050955,
+            "word_score": 0.7435207427091167,
+            "grade": 0.7670026809331921,
+            "frame_match": 0.7277975278946027,
+            "kept_ratio": 1.2700945235813201
+          }
+        },
+        "seconds_per_episode": 17.953
+      },
+      "layered": {
+        "result": {
+          "threshold": 2.7,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.6,
+              "2": 2.7,
+              "3": 2.9,
+              "4": 2.7,
+              "5": 3.0,
+              "6": 3.1
+            },
+            "kept_frames": {
+              "1": 149775,
+              "2": 141445,
+              "3": 126017,
+              "4": 141445,
+              "5": 113911,
+              "6": 103348
+            },
+            "achieved_ratios": {
+              "1": 1.237523548269822,
+              "2": 1.1686964999834748,
+              "3": 1.041221866014476,
+              "4": 1.1686964999834748,
+              "5": 0.941195425851869,
+              "6": 0.8539181015963249
+            },
+            "neutral_threshold": 2.7
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.7,
+              "sentence_points": 0.8047374429223753,
+              "sentence_points_raw": 0.8047374429223753,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 54,
+              "pair_counts": {
+                "full/full": 358,
+                "full/partial": 7,
+                "full/removed": 139,
+                "partial/full": 36,
+                "partial/partial": 29,
+                "partial/removed": 42,
+                "removed/full": 148,
+                "removed/partial": 18,
+                "removed/removed": 975
+              },
+              "partial_branch_counts": {
+                "exact": 15,
+                "subset": 0,
+                "overlap": 6,
+                "disjoint": 8,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7936759198183908,
+              "word_count": 14481,
+              "grade": 0.8288240622360437,
+              "frame_match": 0.7801954725111162,
+              "dialogue_frames": 146489,
+              "kept_frames": 69451,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9054535024705683,
+              "n_partial_decisions": 40,
+              "removal_frames": 61634,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.7,
+              "sentence_points": 0.7094380403458203,
+              "sentence_points_raw": 0.7094380403458203,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 83,
+              "pair_counts": {
+                "full/full": 225,
+                "full/partial": 21,
+                "full/removed": 23,
+                "partial/full": 59,
+                "partial/partial": 22,
+                "partial/removed": 16,
+                "removed/full": 303,
+                "removed/partial": 40,
+                "removed/removed": 679
+              },
+              "partial_branch_counts": {
+                "exact": 15,
+                "subset": 1,
+                "overlap": 3,
+                "disjoint": 3,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7031068147190729,
+              "word_count": 16279,
+              "grade": 0.7330427653768563,
+              "frame_match": 0.7030263833683174,
+              "dialogue_frames": 121855,
+              "kept_frames": 71994,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.6242301184433163,
+              "n_partial_decisions": 57,
+              "removal_frames": 21012,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.7,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7626114649681528,
+            "sentence_points_raw": 0.7626114649681528,
+            "word_score": 0.7457443703414144,
+            "grade": 0.785329779044408,
+            "frame_match": 0.7451529921221537,
+            "kept_ratio": 1.1686964999834748
+          }
+        },
+        "seconds_per_episode": 17.953
+      }
+    },
+    {
+      "arm": "jev_b_moduleretakes",
+      "t_trim": null,
+      "key": "jev_b_moduleretakes",
+      "label": "jev_b_moduleretakes",
+      "missing_answers": 0,
+      "trims": {
+        "perspective-13d-critique": 0,
+        "greco-2.2-thumbnailing": 0
+      },
+      "plain": {
+        "result": {
+          "threshold": 2.7,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.7,
+              "2": 2.9,
+              "3": 2.9,
+              "4": 2.7,
+              "5": 3.1,
+              "6": 3.2
+            },
+            "kept_frames": {
+              "1": 151857,
+              "2": 135487,
+              "3": 135487,
+              "4": 151857,
+              "5": 111438,
+              "6": 96695
+            },
+            "achieved_ratios": {
+              "1": 1.2547261790660011,
+              "2": 1.1194682222295667,
+              "3": 1.1194682222295667,
+              "4": 1.2547261790660011,
+              "5": 0.9207621376871468,
+              "6": 0.7989473510262088
+            },
+            "neutral_threshold": 2.7
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.7,
+              "sentence_points": 0.2944063926940652,
+              "sentence_points_raw": 0.7944063926940652,
+              "sentence_points_penalty": true,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 362,
+                "full/partial": 0,
+                "full/removed": 142,
+                "partial/full": 62,
+                "partial/partial": 0,
+                "partial/removed": 45,
+                "removed/full": 154,
+                "removed/partial": 0,
+                "removed/removed": 987
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7920847046334036,
+              "word_count": 14481,
+              "grade": 0.8078214610266315,
+              "frame_match": 0.7604251314687333,
+              "dialogue_frames": 146489,
+              "kept_frames": 73312,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9557905166681877,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.7,
+              "sentence_points": 0.20014409221901863,
+              "sentence_points_raw": 0.7001440922190186,
+              "sentence_points_penalty": true,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 244,
+                "full/partial": 0,
+                "full/removed": 25,
+                "partial/full": 82,
+                "partial/partial": 0,
+                "partial/removed": 15,
+                "removed/full": 333,
+                "removed/partial": 0,
+                "removed/removed": 689
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7032628036264554,
+              "word_count": 16279,
+              "grade": 0.7217158388387875,
+              "frame_match": 0.6921632679065022,
+              "dialogue_frames": 121855,
+              "kept_frames": 78545,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.7720248166948676,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.7,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.25273885350318476,
+            "sentence_points_raw": 0.7527388535031848,
+            "word_score": 0.7450778214574573,
+            "grade": 0.7687209013282604,
+            "frame_match": 0.7294274218706962,
+            "kept_ratio": 1.2547261790660011
+          }
+        },
+        "seconds_per_episode": 17.953
+      },
+      "layered": {
+        "result": {
+          "threshold": 2.6,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.5,
+              "2": 2.7,
+              "3": 2.8,
+              "4": 2.6,
+              "5": 3.0,
+              "6": 3.1
+            },
+            "kept_frames": {
+              "1": 154584,
+              "2": 139674,
+              "3": 132177,
+              "4": 147694,
+              "5": 112574,
+              "6": 102332
+            },
+            "achieved_ratios": {
+              "1": 1.277258155137654,
+              "2": 1.1540635224906632,
+              "3": 1.092119179032951,
+              "4": 1.2203291800244571,
+              "5": 0.9301483954126318,
+              "6": 0.8455233499686023
+            },
+            "neutral_threshold": 2.6
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.6,
+              "sentence_points": 0.8095319634703205,
+              "sentence_points_raw": 0.8095319634703205,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 49,
+              "pair_counts": {
+                "full/full": 387,
+                "full/partial": 3,
+                "full/removed": 114,
+                "partial/full": 41,
+                "partial/partial": 27,
+                "partial/removed": 39,
+                "removed/full": 163,
+                "removed/partial": 19,
+                "removed/removed": 959
+              },
+              "partial_branch_counts": {
+                "exact": 14,
+                "subset": 0,
+                "overlap": 6,
+                "disjoint": 7,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.8022097633350838,
+              "word_count": 14481,
+              "grade": 0.8375006392307559,
+              "frame_match": 0.7883629792192415,
+              "dialogue_frames": 146489,
+              "kept_frames": 72666,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9473684210526315,
+              "n_partial_decisions": 0,
+              "removal_frames": 61634,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.6,
+              "sentence_points": 0.6938040345821315,
+              "sentence_points_raw": 0.6938040345821315,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 74,
+              "pair_counts": {
+                "full/full": 231,
+                "full/partial": 18,
+                "full/removed": 20,
+                "partial/full": 62,
+                "partial/partial": 23,
+                "partial/removed": 12,
+                "removed/full": 338,
+                "removed/partial": 33,
+                "removed/removed": 651
+              },
+              "partial_branch_counts": {
+                "exact": 17,
+                "subset": 0,
+                "overlap": 3,
+                "disjoint": 3,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6961778352664254,
+              "word_count": 16279,
+              "grade": 0.7272621440642313,
+              "frame_match": 0.6974824649409288,
+              "dialogue_frames": 121855,
+              "kept_frames": 75028,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.6926790750141003,
+              "n_partial_decisions": 0,
+              "removal_frames": 21012,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.6,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.758375796178344,
+            "sentence_points_raw": 0.758375796178344,
+            "word_score": 0.7460948817671484,
+            "grade": 0.7874413428480648,
+            "frame_match": 0.7470941412076453,
+            "kept_ratio": 1.2203291800244571
+          }
+        },
+        "seconds_per_episode": 17.953
+      }
+    },
+    {
+      "arm": "jev_b_notrim",
+      "t_trim": null,
+      "key": "jev_b_notrim",
+      "label": "jev_b_notrim",
+      "missing_answers": 0,
+      "trims": {
+        "perspective-13d-critique": 0,
+        "greco-2.2-thumbnailing": 0
+      },
+      "plain": {
+        "result": {
+          "threshold": 2.7,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.7,
+              "2": 2.9,
+              "3": 3.0,
+              "4": 2.7,
+              "5": 3.1,
+              "6": 3.2
+            },
+            "kept_frames": {
+              "1": 154167,
+              "2": 137429,
+              "3": 124396,
+              "4": 154167,
+              "5": 112746,
+              "6": 97909
+            },
+            "achieved_ratios": {
+              "1": 1.2738126714479294,
+              "2": 1.1355140959116898,
+              "3": 1.0278282711438675,
+              "4": 1.2738126714479294,
+              "5": 0.931569554152758,
+              "6": 0.8089780877152395
+            },
+            "neutral_threshold": 2.7
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.7,
+              "sentence_points": 0.28698630136986414,
+              "sentence_points_raw": 0.7869863013698641,
+              "sentence_points_penalty": true,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 365,
+                "full/partial": 0,
+                "full/removed": 139,
+                "partial/full": 65,
+                "partial/partial": 0,
+                "partial/removed": 42,
+                "removed/full": 170,
+                "removed/partial": 0,
+                "removed/removed": 971
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7903344617191892,
+              "word_count": 14481,
+              "grade": 0.8057334518223535,
+              "frame_match": 0.758459629497972,
+              "dialogue_frames": 146489,
+              "kept_frames": 75355,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9824257199848767,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.7,
+              "sentence_points": 0.1936599423631108,
+              "sentence_points_raw": 0.6936599423631108,
+              "sentence_points_penalty": true,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 246,
+                "full/partial": 0,
+                "full/removed": 23,
+                "partial/full": 81,
+                "partial/partial": 0,
+                "partial/removed": 16,
+                "removed/full": 344,
+                "removed/partial": 0,
+                "removed/removed": 678
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7013281931559027,
+              "word_count": 16279,
+              "grade": 0.7193364705173957,
+              "frame_match": 0.6898813291374464,
+              "dialogue_frames": 121855,
+              "kept_frames": 78812,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.77804850535815,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.7,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.24573248407643303,
+            "sentence_points_raw": 0.7457324840764331,
+            "word_score": 0.7432300063894838,
+            "grade": 0.7665005859601928,
+            "frame_match": 0.7273182259620932,
+            "kept_ratio": 1.2738126714479294
+          }
+        },
+        "seconds_per_episode": 17.953
+      },
+      "layered": {
+        "result": {
+          "threshold": 2.7,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.6,
+              "2": 2.7,
+              "3": 2.9,
+              "4": 2.7,
+              "5": 3.0,
+              "6": 3.1
+            },
+            "kept_frames": {
+              "1": 150132,
+              "2": 141800,
+              "3": 126273,
+              "4": 141800,
+              "5": 114096,
+              "6": 103505
+            },
+            "achieved_ratios": {
+              "1": 1.2404732789106654,
+              "2": 1.171629705522689,
+              "3": 1.043337079023036,
+              "4": 1.171629705522689,
+              "5": 0.9427239977525862,
+              "6": 0.8552153220742308
+            },
+            "neutral_threshold": 2.7
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.7,
+              "sentence_points": 0.8053082191780832,
+              "sentence_points_raw": 0.8053082191780832,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 46,
+              "pair_counts": {
+                "full/full": 362,
+                "full/partial": 3,
+                "full/removed": 139,
+                "partial/full": 37,
+                "partial/partial": 28,
+                "partial/removed": 42,
+                "removed/full": 151,
+                "removed/partial": 15,
+                "removed/removed": 975
+              },
+              "partial_branch_counts": {
+                "exact": 15,
+                "subset": 0,
+                "overlap": 6,
+                "disjoint": 7,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7935809250978417,
+              "word_count": 14481,
+              "grade": 0.8289323476123098,
+              "frame_match": 0.7802974045907352,
+              "dialogue_frames": 146489,
+              "kept_frames": 69593,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9073047990300249,
+              "n_partial_decisions": 0,
+              "removal_frames": 61634,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.7,
+              "sentence_points": 0.7106628242074918,
+              "sentence_points_raw": 0.7106628242074918,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 70,
+              "pair_counts": {
+                "full/full": 228,
+                "full/partial": 18,
+                "full/removed": 23,
+                "partial/full": 59,
+                "partial/partial": 22,
+                "partial/removed": 16,
+                "removed/full": 313,
+                "removed/partial": 30,
+                "removed/removed": 679
+              },
+              "partial_branch_counts": {
+                "exact": 16,
+                "subset": 0,
+                "overlap": 3,
+                "disjoint": 3,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7027544762277349,
+              "word_count": 16279,
+              "grade": 0.7324193549635145,
+              "frame_match": 0.7024285001492933,
+              "dialogue_frames": 121855,
+              "kept_frames": 72207,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.6290355329949238,
+              "n_partial_decisions": 0,
+              "removal_frames": 21012,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.7,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7634713375796179,
+            "sentence_points_raw": 0.7634713375796179,
+            "word_score": 0.7455131825374884,
+            "grade": 0.785105801390971,
+            "frame_match": 0.7449371381017811,
+            "kept_ratio": 1.171629705522689
+          }
+        },
+        "seconds_per_episode": 17.953
+      }
+    },
+    {
+      "arm": "jev_noul",
+      "t_trim": 0.3,
+      "key": "jev_noul@t0.3",
+      "label": "jev_noul (t_trim 0.3)",
+      "missing_answers": 0,
+      "trims": {
+        "perspective-13d-critique": 40,
+        "greco-2.2-thumbnailing": 58
+      },
+      "plain": {
+        "result": {
+          "threshold": 3.2,
+          "operating_points": {
+            "thresholds": {
+              "1": 3.2,
+              "2": 3.3,
+              "3": 3.3,
+              "4": 3.2,
+              "5": 3.4,
+              "6": 3.5
+            },
+            "kept_frames": {
+              "1": 152784,
+              "2": 136155,
+              "3": 136155,
+              "4": 152784,
+              "5": 111686,
+              "6": 105139
+            },
+            "achieved_ratios": {
+              "1": 1.2623855636712167,
+              "2": 1.124987606173778,
+              "3": 1.124987606173778,
+              "4": 1.2623855636712167,
+              "5": 0.9228112502891893,
+              "6": 0.8687163301054301
+            },
+            "neutral_threshold": 3.2
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 3.2,
+              "sentence_points": 0.7703767123287681,
+              "sentence_points_raw": 0.7703767123287681,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 11,
+              "pair_counts": {
+                "full/full": 353,
+                "full/partial": 5,
+                "full/removed": 146,
+                "partial/full": 70,
+                "partial/partial": 2,
+                "partial/removed": 35,
+                "removed/full": 187,
+                "removed/partial": 4,
+                "removed/removed": 950
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 2,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7675556324740391,
+              "word_count": 14481,
+              "grade": 0.7906972892274544,
+              "frame_match": 0.7443056654481923,
+              "dialogue_frames": 146489,
+              "kept_frames": 76786,
+              "human_kept_frames": 76703,
+              "kept_ratio": 1.001082095876302,
+              "n_partial_decisions": 40,
+              "removal_frames": 0,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 3.2,
+              "sentence_points": 0.7036743515850129,
+              "sentence_points_raw": 0.7036743515850129,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 11,
+              "pair_counts": {
+                "full/full": 236,
+                "full/partial": 3,
+                "full/removed": 30,
+                "partial/full": 76,
+                "partial/partial": 1,
+                "partial/removed": 20,
+                "removed/full": 316,
+                "removed/partial": 7,
+                "removed/removed": 699
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 1,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6955727793498042,
+              "word_count": 16279,
+              "grade": 0.7122434384677041,
+              "frame_match": 0.6830787401146264,
+              "dialogue_frames": 121855,
+              "kept_frames": 75998,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.7145628877608574,
+              "n_partial_decisions": 57,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 3.2,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7408917197452228,
+            "sentence_points_raw": 0.7408917197452228,
+            "word_score": 0.7294604157637199,
+            "grade": 0.7550713986380267,
+            "frame_match": 0.7165025210271444,
+            "kept_ratio": 1.2623855636712167
+          }
+        },
+        "seconds_per_episode": 17.953
+      },
+      "layered": {
+        "result": {
+          "threshold": 3.2,
+          "operating_points": {
+            "thresholds": {
+              "1": 3.1,
+              "2": 3.2,
+              "3": 3.3,
+              "4": 3.2,
+              "5": 3.4,
+              "6": 3.4
+            },
+            "kept_frames": {
+              "1": 151821,
+              "2": 140613,
+              "3": 125297,
+              "4": 140613,
+              "5": 102833,
+              "6": 102833
+            },
+            "achieved_ratios": {
+              "1": 1.2544287272366725,
+              "2": 1.1618220577056548,
+              "3": 1.035272829427901,
+              "4": 1.1618220577056548,
+              "5": 0.8496628879267607,
+              "6": 0.8496628879267607
+            },
+            "neutral_threshold": 3.2
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 3.2,
+              "sentence_points": 0.7908105022831059,
+              "sentence_points_raw": 0.7908105022831059,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 63,
+              "pair_counts": {
+                "full/full": 351,
+                "full/partial": 7,
+                "full/removed": 146,
+                "partial/full": 42,
+                "partial/partial": 30,
+                "partial/removed": 35,
+                "removed/full": 161,
+                "removed/partial": 26,
+                "removed/removed": 954
+              },
+              "partial_branch_counts": {
+                "exact": 18,
+                "subset": 0,
+                "overlap": 4,
+                "disjoint": 8,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7712739117405525,
+              "word_count": 14481,
+              "grade": 0.8142852211246668,
+              "frame_match": 0.766509651204176,
+              "dialogue_frames": 146489,
+              "kept_frames": 71134,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.9273952778900434,
+              "n_partial_decisions": 40,
+              "removal_frames": 61634,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 3.2,
+              "sentence_points": 0.7219020172910653,
+              "sentence_points_raw": 0.7219020172910653,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 80,
+              "pair_counts": {
+                "full/full": 219,
+                "full/partial": 20,
+                "full/removed": 30,
+                "partial/full": 55,
+                "partial/partial": 22,
+                "partial/removed": 20,
+                "removed/full": 281,
+                "removed/partial": 38,
+                "removed/removed": 703
+              },
+              "partial_branch_counts": {
+                "exact": 15,
+                "subset": 1,
+                "overlap": 3,
+                "disjoint": 3,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6972630435274483,
+              "word_count": 16279,
+              "grade": 0.7258287818729161,
+              "frame_match": 0.696107795569628,
+              "dialogue_frames": 121855,
+              "kept_frames": 69479,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.5674901297236323,
+              "n_partial_decisions": 57,
+              "removal_frames": 21012,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 3.2,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7603503184713376,
+            "sentence_points_raw": 0.7603503184713376,
+            "word_score": 0.7321054161735459,
+            "grade": 0.7741171554886843,
+            "frame_match": 0.7345401712890378,
+            "kept_ratio": 1.1618220577056548
+          }
+        },
+        "seconds_per_episode": 17.953
+      }
+    },
+    {
+      "arm": "jev_mix",
+      "t_trim": 0.3,
+      "key": "jev_mix@t0.3",
+      "label": "jev_mix (t_trim 0.3)",
+      "missing_answers": 0,
+      "trims": {
+        "perspective-13d-critique": 40,
+        "greco-2.2-thumbnailing": 58
+      },
+      "plain": {
+        "result": {
+          "threshold": 3.1,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.9,
+              "2": 3.0,
+              "3": 3.1,
+              "4": 3.1,
+              "5": 3.3,
+              "6": 3.3
+            },
+            "kept_frames": {
+              "1": 156324,
+              "2": 144304,
+              "3": 131031,
+              "4": 131031,
+              "5": 105615,
+              "6": 105615
+            },
+            "achieved_ratios": {
+              "1": 1.2916349935552103,
+              "2": 1.1923191327626665,
+              "3": 1.0826502957993192,
+              "4": 1.0826502957993192,
+              "5": 0.8726493042932214,
+              "6": 0.8726493042932214
+            },
+            "neutral_threshold": 3.1
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 3.1,
+              "sentence_points": 0.7954337899543392,
+              "sentence_points_raw": 0.7954337899543392,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 7,
+              "pair_counts": {
+                "full/full": 306,
+                "full/partial": 4,
+                "full/removed": 194,
+                "partial/full": 54,
+                "partial/partial": 0,
+                "partial/removed": 53,
+                "removed/full": 96,
+                "removed/partial": 3,
+                "removed/removed": 1042
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7698067605428426,
+              "word_count": 14481,
+              "grade": 0.7936628655363583,
+              "frame_match": 0.7470972460924017,
+              "dialogue_frames": 146489,
+              "kept_frames": 62574,
+              "human_kept_frames": 76703,
+              "kept_ratio": 0.8157959923340677,
+              "n_partial_decisions": 40,
+              "removal_frames": 0,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 3.1,
+              "sentence_points": 0.7497838616714683,
+              "sentence_points_raw": 0.7497838616714683,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 6,
+              "pair_counts": {
+                "full/full": 221,
+                "full/partial": 3,
+                "full/removed": 45,
+                "partial/full": 70,
+                "partial/partial": 1,
+                "partial/removed": 26,
+                "removed/full": 242,
+                "removed/partial": 2,
+                "removed/removed": 778
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 1,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.7111034382065458,
+              "word_count": 16279,
+              "grade": 0.732676972196689,
+              "frame_match": 0.702675568560969,
+              "dialogue_frames": 121855,
+              "kept_frames": 68457,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.5444331641285955,
+              "n_partial_decisions": 57,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 3.1,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7752547770700637,
+            "sentence_points_raw": 0.7752547770700637,
+            "word_score": 0.7387394203506262,
+            "grade": 0.7659691737343974,
+            "frame_match": 0.7269253640469945,
+            "kept_ratio": 1.0826502957993192
+          }
+        },
+        "seconds_per_episode": 17.953
+      },
+      "layered": {
+        "result": {
+          "threshold": 2.8,
+          "operating_points": {
+            "thresholds": {
+              "1": 2.8,
+              "2": 2.9,
+              "3": 3.0,
+              "4": 2.8,
+              "5": 3.2,
+              "6": 3.3
+            },
+            "kept_frames": {
+              "1": 155604,
+              "2": 143544,
+              "3": 132675,
+              "4": 155604,
+              "5": 110215,
+              "6": 97149
+            },
+            "achieved_ratios": {
+              "1": 1.2856859569686354,
+              "2": 1.186039594143504,
+              "3": 1.0962339293386654,
+              "4": 1.2856859569686354,
+              "5": 0.9106570380407839,
+              "6": 0.802698549096077
+            },
+            "neutral_threshold": 2.8
+          },
+          "episodes": {
+            "perspective-13d-critique": {
+              "episode": "perspective-13d-critique",
+              "threshold": 2.8,
+              "sentence_points": 0.7985730593607314,
+              "sentence_points_raw": 0.7985730593607314,
+              "sentence_points_penalty": false,
+              "n_sentences": 1752,
+              "n_partial_human": 107,
+              "n_partial_model": 67,
+              "pair_counts": {
+                "full/full": 395,
+                "full/partial": 7,
+                "full/removed": 102,
+                "partial/full": 47,
+                "partial/partial": 31,
+                "partial/removed": 29,
+                "removed/full": 187,
+                "removed/partial": 29,
+                "removed/removed": 925
+              },
+              "partial_branch_counts": {
+                "exact": 16,
+                "subset": 0,
+                "overlap": 7,
+                "disjoint": 8,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.8015191837190734,
+              "word_count": 14481,
+              "grade": 0.8384961114990036,
+              "frame_match": 0.7893000453495393,
+              "dialogue_frames": 146489,
+              "kept_frames": 78752,
+              "human_kept_frames": 76703,
+              "kept_ratio": 1.026713427114976,
+              "n_partial_decisions": 40,
+              "removal_frames": 61634,
+              "warnings": []
+            },
+            "greco-2.2-thumbnailing": {
+              "episode": "greco-2.2-thumbnailing",
+              "threshold": 2.8,
+              "sentence_points": 0.6840778097982698,
+              "sentence_points_raw": 0.6840778097982698,
+              "sentence_points_penalty": false,
+              "n_sentences": 1388,
+              "n_partial_human": 97,
+              "n_partial_model": 92,
+              "pair_counts": {
+                "full/full": 235,
+                "full/partial": 21,
+                "full/removed": 13,
+                "partial/full": 62,
+                "partial/partial": 25,
+                "partial/removed": 10,
+                "removed/full": 347,
+                "removed/partial": 46,
+                "removed/removed": 629
+              },
+              "partial_branch_counts": {
+                "exact": 18,
+                "subset": 1,
+                "overlap": 3,
+                "disjoint": 3,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6997858154549234,
+              "word_count": 16279,
+              "grade": 0.7275823471564974,
+              "frame_match": 0.6977895564675514,
+              "dialogue_frames": 121855,
+              "kept_frames": 76852,
+              "human_kept_frames": 44325,
+              "kept_ratio": 1.7338296672306825,
+              "n_partial_decisions": 57,
+              "removal_frames": 21012,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 2.8,
+            "episodes": 2,
+            "sentence_count": 3140,
+            "word_count": 30760,
+            "dialogue_frames": 268344,
+            "sentence_points": 0.7479617834394904,
+            "sentence_points_raw": 0.7479617834394904,
+            "word_score": 0.7476792129137386,
+            "grade": 0.7881301754096701,
+            "frame_match": 0.7477451358948295,
+            "kept_ratio": 1.2856859569686354
+          }
+        },
+        "seconds_per_episode": 17.953
+      }
+    }
+  ],
+  "latency": {
+    "perspective-13d-critique": {
+      "pass_wall_clock_s": {
+        "retake": 0.695,
+        "sentence": 18.049,
+        "trim_pick": null
+      },
+      "wall_clock_s": 18.744,
+      "requests": 115,
+      "input_tokens": 4239027,
+      "output_tokens": 430336,
+      "cost_usd": 0.178039,
+      "retries": 24,
+      "errors": 27,
+      "windowed_requests": 98,
+      "sentences": 1752
+    },
+    "greco-2.2-thumbnailing": {
+      "pass_wall_clock_s": {
+        "retake": 0.42,
+        "sentence": 16.742,
+        "trim_pick": null
+      },
+      "wall_clock_s": 17.162,
+      "requests": 92,
+      "input_tokens": 3356599,
+      "output_tokens": 444145,
+      "cost_usd": 0.140977,
+      "retries": 24,
+      "errors": 26,
+      "windowed_requests": 82,
+      "sentences": 1388
+    }
+  },
+  "latency_totals": {
+    "pass_wall_clock_s": {
+      "retake": 1.115,
+      "sentence": 34.791,
+      "trim_pick": 0.0
+    },
+    "wall_clock_s": 35.906,
+    "requests": 207,
+    "input_tokens": 7595626,
+    "cost_usd": 0.319016,
+    "retries": 48,
+    "errors": 53
+  },
+  "retakes": {
+    "perspective-13d-critique": {
+      "groups": 101,
+      "group_members": 258,
+      "not_real": 47,
+      "module_fallback": 0,
+      "losers_cut_jev": 71,
+      "losers_cut_module": 157,
+      "agree": 66,
+      "jev_only_cut": {
+        "n": 5,
+        "editor_kept": 1,
+        "editor_cut": 4,
+        "full": 1,
+        "partial": 0,
+        "removed": 4
+      },
+      "module_only_cut": {
+        "n": 91,
+        "editor_kept": 10,
+        "editor_cut": 81,
+        "full": 5,
+        "partial": 5,
+        "removed": 81
+      }
+    },
+    "greco-2.2-thumbnailing": {
+      "groups": 59,
+      "group_members": 145,
+      "not_real": 30,
+      "module_fallback": 0,
+      "losers_cut_jev": 44,
+      "losers_cut_module": 86,
+      "agree": 42,
+      "jev_only_cut": {
+        "n": 2,
+        "editor_kept": 1,
+        "editor_cut": 1,
+        "full": 0,
+        "partial": 1,
+        "removed": 1
+      },
+      "module_only_cut": {
+        "n": 44,
+        "editor_kept": 2,
+        "editor_cut": 42,
+        "full": 2,
+        "partial": 0,
+        "removed": 42
+      }
+    }
+  },
+  "pair_counts_note": "The full/partial/removed cross-tab is not in this table: `score_episode` returns `n_partial_human` and `n_partial_model` but drops the `pair_counts` block that `sentence_scoring` computes, so there is no public way to read it without reaching into the scoring module's internals.",
+  "ladder": {
+    "source": "D:\\solar-sailer\\benchmarks\\roughcut\\results\\2026-09-11-model-plus-deterministic.json",
+    "restricted": false,
+    "covered_episodes": [
+      "perspective-13d-critique"
+    ],
+    "uncovered": [
+      "greco-2.2-thumbnailing"
+    ],
+    "rows": [
+      {
+        "key": "luna-chapters-rules5",
+        "label": "best Luna chapters",
+        "episodes": 18,
+        "sentence_points_plain": 0.799575086659958,
+        "word_score_plain": 0.7944163046152312,
+        "grade_plain": 0.8834495417503192,
+        "sentence_points_layered": 0.8370569160237066,
+        "word_score_layered": 0.8035000980229268,
+        "grade_layered": 0.9354877161587233
+      },
+      {
+        "key": "opus5-cc-agentic",
+        "label": "shipped Opus agentic",
+        "episodes": 18,
+        "sentence_points_plain": 0.8344738901934479,
+        "word_score_plain": 0.8083768686618407,
+        "grade_plain": 0.9036699508049926,
+        "sentence_points_layered": 0.8647321927764742,
+        "word_score_layered": 0.8143955326818431,
+        "grade_layered": 0.9501870992229065
+      },
+      {
+        "key": "luna-single-call",
+        "label": "Luna single call",
+        "episodes": 18,
+        "sentence_points_plain": 0.18607849714860772,
+        "word_score_plain": 0.6123341543740326,
+        "grade_plain": 0.6942610677609339,
+        "sentence_points_layered": 0.6535949904953599,
+        "word_score_layered": 0.6462908034234487,
+        "grade_layered": 0.806674737984132
+      },
+      {
+        "key": "deterministic-baseline",
+        "label": "deterministic baseline (um removal + retakes + delete silence)",
+        "episodes": 18,
+        "sentence_points_plain": 0.6372246449737228,
+        "word_score_plain": 0.6407133958355006,
+        "grade_plain": 0.7992329281285057,
+        "sentence_points_layered": 0.6372246449737228,
+        "word_score_layered": 0.6407133958355006,
+        "grade_layered": 0.7992329281285057
+      }
+    ],
+    "best_jev": {
+      "key": "jev_mix@t0.3",
+      "label": "jev_mix (t_trim 0.3)",
+      "sentence_points": 0.7752547770700637,
+      "word_score": 0.7387394203506262,
+      "seconds_per_episode": 17.953,
+      "sentence_points_layered": 0.7479617834394904,
+      "word_score_layered": 0.7476792129137386,
+      "placement": "above Luna single call, deterministic baseline (um removal + retakes + delete silence)",
+      "placement_layered": "above Luna single call, deterministic baseline (um removal + retakes + delete silence)"
+    }
+  },
+  "warnings": [
+    "roughcut-jev-fitwindow-decisions.jsonl has no rows for jev_b; the run wrote jev_a, jev_b_moduleretakes, jev_b_notrim only (a run without `--trim-pick` writes no jev_b). Those arms are left out of every table below."
+  ]
+}

@@ -1,0 +1,374 @@
+{
+  "generated_utc": "2026-09-20T22:59:05.657993+00:00",
+  "model": "jev-1.13.0",
+  "prompt_version": "v3",
+  "arms": [
+    "jev_a",
+    "jev_b_moduleretakes",
+    "jev_b_notrim"
+  ],
+  "trim_pick": false,
+  "concurrency": 8,
+  "t_trim": 0.5,
+  "block": 25,
+  "context_tokens": 24000,
+  "request_token_cap": 46000,
+  "budget_cap_usd": 0.5,
+  "aborted": null,
+  "episodes": {
+    "perspective-13d-critique": {
+      "sentences": 1752,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\perspective-13d-critique.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 108
+      },
+      "split_chains": {
+        "rows": 299,
+        "chains": 138,
+        "longest": 3
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.695,
+          "requests": 17,
+          "input_tokens": 54147,
+          "output_tokens": 5674,
+          "cost_usd": 0.002274,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "est_over_actual_median": 0.7454,
+          "latency": {
+            "n": 17,
+            "total_s": 4.424089299980551,
+            "median_s": 0.2492865999811329,
+            "p95_s": 0.3868542000418529,
+            "max_s": 0.3868542000418529
+          },
+          "groups": 101,
+          "losers_cut": 71
+        },
+        "sentence": {
+          "wall_clock_s": 18.049,
+          "requests": 93,
+          "input_tokens": 4076731,
+          "output_tokens": 417335,
+          "cost_usd": 0.171223,
+          "errors": 24,
+          "failed_blocks": 2,
+          "windowed_requests": 93,
+          "est_over_actual_median": 0.7741,
+          "latency": {
+            "n": 93,
+            "total_s": 103.72446309996303,
+            "median_s": 0.7948282000143081,
+            "p95_s": 3.492692200001329,
+            "max_s": 4.073385900002904
+          },
+          "block_size": 25,
+          "window_sentences_min": 967,
+          "window_sentences_median": 1250,
+          "window_sentences_max": 1643,
+          "whole_transcript_requests": 0,
+          "est_input_tokens_max": 46000,
+          "over_request_cap": 0
+        }
+      },
+      "episode_wall_clock_s": 18.744,
+      "cost_usd": 0.173497,
+      "trims": {
+        "jev_a": 57,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    },
+    "greco-2.2-thumbnailing": {
+      "sentences": 1388,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\greco-2.2-thumbnailing.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 65
+      },
+      "split_chains": {
+        "rows": 282,
+        "chains": 132,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.42,
+          "requests": 10,
+          "input_tokens": 32624,
+          "output_tokens": 3265,
+          "cost_usd": 0.00137,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "est_over_actual_median": 0.7636,
+          "latency": {
+            "n": 10,
+            "total_s": 2.22074620006606,
+            "median_s": 0.22957170000881888,
+            "p95_s": 0.2679945999989286,
+            "max_s": 0.2679945999989286
+          },
+          "groups": 59,
+          "losers_cut": 44
+        },
+        "sentence": {
+          "wall_clock_s": 16.742,
+          "requests": 77,
+          "input_tokens": 3210965,
+          "output_tokens": 429634,
+          "cost_usd": 0.134861,
+          "errors": 23,
+          "failed_blocks": 2,
+          "windowed_requests": 77,
+          "est_over_actual_median": 0.7727,
+          "latency": {
+            "n": 77,
+            "total_s": 101.33784359984566,
+            "median_s": 0.8103593999985605,
+            "p95_s": 3.8798341999645345,
+            "max_s": 4.351649300020654
+          },
+          "block_size": 25,
+          "window_sentences_min": 606,
+          "window_sentences_median": 848,
+          "window_sentences_max": 1219,
+          "whole_transcript_requests": 0,
+          "est_input_tokens_max": 46000,
+          "over_request_cap": 0
+        }
+      },
+      "episode_wall_clock_s": 17.162,
+      "cost_usd": 0.136231,
+      "trims": {
+        "jev_a": 76,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    }
+  },
+  "totals": {
+    "wall_clock_s": 37.005,
+    "requests": 197,
+    "errors": 47,
+    "failed_blocks": 4,
+    "input_tokens": 7374467,
+    "output_tokens": 855908,
+    "cost_usd": 0.309728,
+    "decisions": 9420,
+    "est_over_actual_median": 0.7696,
+    "est_over_actual_sentence_median": 0.7738
+  },
+  "pass_wall_clock_s": {
+    "retake": 1.115,
+    "sentence": 34.791,
+    "trim_pick": 0
+  },
+  "warnings": [
+    "perspective-13d-critique sentence 325: no answer (block 13)",
+    "perspective-13d-critique sentence 326: no answer (block 13)",
+    "perspective-13d-critique sentence 327: no answer (block 13)",
+    "perspective-13d-critique sentence 328: no answer (block 13)",
+    "perspective-13d-critique sentence 329: no answer (block 13)",
+    "perspective-13d-critique sentence 330: no answer (block 13)",
+    "perspective-13d-critique sentence 331: no answer (block 13)",
+    "perspective-13d-critique sentence 332: no answer (block 13)",
+    "perspective-13d-critique sentence 333: no answer (block 13)",
+    "perspective-13d-critique sentence 334: no answer (block 13)",
+    "perspective-13d-critique sentence 335: no answer (block 13)",
+    "perspective-13d-critique sentence 336: no answer (block 13)",
+    "perspective-13d-critique sentence 337: no answer (block 13)",
+    "perspective-13d-critique sentence 338: no answer (block 13)",
+    "perspective-13d-critique sentence 339: no answer (block 13)",
+    "perspective-13d-critique sentence 340: no answer (block 13)",
+    "perspective-13d-critique sentence 341: no answer (block 13)",
+    "perspective-13d-critique sentence 342: no answer (block 13)",
+    "perspective-13d-critique sentence 343: no answer (block 13)",
+    "perspective-13d-critique sentence 344: no answer (block 13)",
+    "perspective-13d-critique sentence 345: no answer (block 13)",
+    "perspective-13d-critique sentence 346: no answer (block 13)",
+    "perspective-13d-critique sentence 347: no answer (block 13)",
+    "perspective-13d-critique sentence 348: no answer (block 13)",
+    "perspective-13d-critique sentence 349: no answer (block 13)",
+    "perspective-13d-critique sentence 650: no answer (block 26)",
+    "perspective-13d-critique sentence 651: no answer (block 26)",
+    "perspective-13d-critique sentence 652: no answer (block 26)",
+    "perspective-13d-critique sentence 653: no answer (block 26)",
+    "perspective-13d-critique sentence 654: no answer (block 26)",
+    "perspective-13d-critique sentence 655: no answer (block 26)",
+    "perspective-13d-critique sentence 656: no answer (block 26)",
+    "perspective-13d-critique sentence 657: no answer (block 26)",
+    "perspective-13d-critique sentence 658: no answer (block 26)",
+    "perspective-13d-critique sentence 659: no answer (block 26)",
+    "perspective-13d-critique sentence 660: no answer (block 26)",
+    "perspective-13d-critique sentence 661: no answer (block 26)",
+    "perspective-13d-critique sentence 662: no answer (block 26)",
+    "perspective-13d-critique sentence 663: no answer (block 26)",
+    "perspective-13d-critique sentence 664: no answer (block 26)",
+    "perspective-13d-critique sentence 665: no answer (block 26)",
+    "perspective-13d-critique sentence 666: no answer (block 26)",
+    "perspective-13d-critique sentence 667: no answer (block 26)",
+    "perspective-13d-critique sentence 668: no answer (block 26)",
+    "perspective-13d-critique sentence 669: no answer (block 26)",
+    "perspective-13d-critique sentence 670: no answer (block 26)",
+    "perspective-13d-critique sentence 671: no answer (block 26)",
+    "perspective-13d-critique sentence 672: no answer (block 26)",
+    "perspective-13d-critique sentence 673: no answer (block 26)",
+    "perspective-13d-critique sentence 674: no answer (block 26)",
+    "greco-2.2-thumbnailing sentence 1050: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1051: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1052: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1053: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1054: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1055: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1056: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1057: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1058: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1059: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1060: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1061: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1062: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1063: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1064: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1065: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1066: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1067: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1068: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1069: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1070: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1071: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1072: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1073: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1074: no answer (block 42)",
+    "greco-2.2-thumbnailing sentence 1350: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1351: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1352: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1353: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1354: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1355: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1356: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1357: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1358: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1359: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1360: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1361: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1362: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1363: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1364: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1365: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1366: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1367: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1368: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1369: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1370: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1371: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1372: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1373: no answer (block 54)",
+    "greco-2.2-thumbnailing sentence 1374: no answer (block 54)"
+  ],
+  "n_warnings": 100,
+  "repairs": [
+    {
+      "repaired_utc": "2026-09-20T23:00:14.540398+00:00",
+      "extra_wall_clock_s": 9.664,
+      "requests": 9,
+      "errors": 6,
+      "cost_usd": 0.007167,
+      "decision_rows_rewritten": 300,
+      "episodes": [
+        {
+          "episode": "greco-2.2-thumbnailing",
+          "resent_blocks": {
+            "sentence": [
+              42,
+              54
+            ]
+          },
+          "new_pick_blocks": [],
+          "requests": 5,
+          "errors": 3,
+          "cost_usd": 0.004746,
+          "sentences_repaired": 50,
+          "still_defaulted": 0
+        },
+        {
+          "episode": "perspective-13d-critique",
+          "resent_blocks": {
+            "sentence": [
+              13,
+              26
+            ]
+          },
+          "new_pick_blocks": [],
+          "requests": 4,
+          "errors": 3,
+          "cost_usd": 0.00242,
+          "sentences_repaired": 25,
+          "still_defaulted": 25
+        }
+      ],
+      "warnings": [
+        "perspective-13d-critique sentence 650: no answer (block 26)",
+        "perspective-13d-critique sentence 651: no answer (block 26)",
+        "perspective-13d-critique sentence 652: no answer (block 26)",
+        "perspective-13d-critique sentence 653: no answer (block 26)",
+        "perspective-13d-critique sentence 654: no answer (block 26)",
+        "perspective-13d-critique sentence 655: no answer (block 26)",
+        "perspective-13d-critique sentence 656: no answer (block 26)",
+        "perspective-13d-critique sentence 657: no answer (block 26)",
+        "perspective-13d-critique sentence 658: no answer (block 26)",
+        "perspective-13d-critique sentence 659: no answer (block 26)",
+        "perspective-13d-critique sentence 660: no answer (block 26)",
+        "perspective-13d-critique sentence 661: no answer (block 26)",
+        "perspective-13d-critique sentence 662: no answer (block 26)",
+        "perspective-13d-critique sentence 663: no answer (block 26)",
+        "perspective-13d-critique sentence 664: no answer (block 26)",
+        "perspective-13d-critique sentence 665: no answer (block 26)",
+        "perspective-13d-critique sentence 666: no answer (block 26)",
+        "perspective-13d-critique sentence 667: no answer (block 26)",
+        "perspective-13d-critique sentence 668: no answer (block 26)",
+        "perspective-13d-critique sentence 669: no answer (block 26)",
+        "perspective-13d-critique sentence 670: no answer (block 26)",
+        "perspective-13d-critique sentence 671: no answer (block 26)",
+        "perspective-13d-critique sentence 672: no answer (block 26)",
+        "perspective-13d-critique sentence 673: no answer (block 26)",
+        "perspective-13d-critique sentence 674: no answer (block 26)"
+      ],
+      "n_warnings": 25
+    },
+    {
+      "repaired_utc": "2026-09-20T23:00:28.894381+00:00",
+      "extra_wall_clock_s": 1.221,
+      "requests": 1,
+      "errors": 0,
+      "cost_usd": 0.002122,
+      "decision_rows_rewritten": 75,
+      "episodes": [
+        {
+          "episode": "perspective-13d-critique",
+          "resent_blocks": {
+            "sentence": [
+              26
+            ]
+          },
+          "new_pick_blocks": [],
+          "requests": 1,
+          "errors": 0,
+          "cost_usd": 0.002122,
+          "sentences_repaired": 25,
+          "still_defaulted": 0
+        }
+      ],
+      "warnings": [],
+      "n_warnings": 0
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "generated_utc": "2026-09-20T23:01:10.669494+00:00",
+  "model": "jev-1.13.0",
+  "prompt_version": "v3",
+  "arms": [
+    "jev_a",
+    "jev_b_moduleretakes",
+    "jev_b_notrim"
+  ],
+  "trim_pick": false,
+  "concurrency": 8,
+  "t_trim": 0.5,
+  "block": 25,
+  "context_tokens": 24000,
+  "request_token_cap": 46000,
+  "budget_cap_usd": 0.3,
+  "aborted": null,
+  "episodes": {
+    "flanders-03-thematic-crit": {
+      "sentences": 1309,
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\removals\\flanders-03-thematic-crit.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 135
+      },
+      "split_chains": {
+        "rows": 300,
+        "chains": 139,
+        "longest": 4
+      },
+      "trim_pick": false,
+      "passes": {
+        "retake": {
+          "wall_clock_s": 0.28,
+          "requests": 6,
+          "input_tokens": 20108,
+          "output_tokens": 2165,
+          "cost_usd": 0.000845,
+          "errors": 0,
+          "failed_blocks": 0,
+          "windowed_requests": 0,
+          "est_over_actual_median": 0.7556,
+          "latency": {
+            "n": 6,
+            "total_s": 1.3650418000179343,
+            "median_s": 0.2181840000266675,
+            "p95_s": 0.2791676999768242,
+            "max_s": 0.2791676999768242
+          },
+          "groups": 31,
+          "losers_cut": 84
+        },
+        "sentence": {
+          "wall_clock_s": 12.702,
+          "requests": 64,
+          "input_tokens": 3103615,
+          "output_tokens": 350891,
+          "cost_usd": 0.130352,
+          "errors": 11,
+          "failed_blocks": 0,
+          "windowed_requests": 62,
+          "est_over_actual_median": 0.7833,
+          "latency": {
+            "n": 64,
+            "total_s": 66.05713330005528,
+            "median_s": 0.8056148000177927,
+            "p95_s": 2.141185000014957,
+            "max_s": 3.649252199975308
+          },
+          "block_size": 25,
+          "window_sentences_min": 826,
+          "window_sentences_median": 1026,
+          "window_sentences_max": 1225,
+          "whole_transcript_requests": 2,
+          "est_input_tokens_max": 45999,
+          "over_request_cap": 0
+        }
+      },
+      "episode_wall_clock_s": 12.982,
+      "cost_usd": 0.131197,
+      "trims": {
+        "jev_a": 60,
+        "jev_b_moduleretakes": 0,
+        "jev_b_notrim": 0
+      }
+    }
+  },
+  "totals": {
+    "wall_clock_s": 13.367,
+    "requests": 70,
+    "errors": 11,
+    "failed_blocks": 0,
+    "input_tokens": 3123723,
+    "output_tokens": 353056,
+    "cost_usd": 0.131196,
+    "decisions": 3927,
+    "est_over_actual_median": 0.7772,
+    "est_over_actual_sentence_median": 0.7833
+  },
+  "pass_wall_clock_s": {
+    "retake": 0.28,
+    "sentence": 12.702,
+    "trim_pick": 0
+  },
+  "warnings": [],
+  "n_warnings": 0
+}

@@ -1,0 +1,1253 @@
+{
+  "generated_utc": "2026-09-20T23:04:28+00:00",
+  "script": "scripts/jev_real/roughcut_jev_report.py",
+  "inputs": {
+    "decisions": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-block50-flanders-decisions.jsonl",
+    "requests": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-block50-flanders-requests.jsonl",
+    "timing": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-block50-flanders-timing.json"
+  },
+  "summary_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-block50-flanders-summary.json",
+  "notes_path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\docs\\jev-real\\roughcut-jev-block50-flanders-notes.md",
+  "episodes": [
+    "flanders-03-thematic-crit"
+  ],
+  "layered_episodes": [
+    "flanders-03-thematic-crit"
+  ],
+  "run": {
+    "input_name": "roughcut-jev-block50-flanders",
+    "model": "jev-1.13.0",
+    "prompt_version": "v3",
+    "concurrency": 8,
+    "t_trim": 0.5,
+    "aborted": null,
+    "sentences": 1309,
+    "requests": 80,
+    "errors": 70,
+    "retries": 47,
+    "input_tokens": 246059,
+    "cost_usd": 0.010334,
+    "wall_clock_s": 19.354,
+    "missing_score": 0.0,
+    "missing_answers_per_arm": 1150,
+    "rebuild_check": {
+      "checked": 1309,
+      "mismatches": 0,
+      "examples": []
+    },
+    "run_warnings": [
+      "flanders-03-thematic-crit sentence 100: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 101: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 102: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 103: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 104: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 105: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 106: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 107: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 108: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 109: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 110: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 111: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 112: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 113: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 114: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 115: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 116: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 117: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 118: no answer (block 2)",
+      "flanders-03-thematic-crit sentence 119: no answer (block 2)"
+    ],
+    "n_run_warnings": 1150
+  },
+  "t_trim_sweep": [
+    0.3
+  ],
+  "sweep_note": "",
+  "trims_by_arm": {
+    "jev_a@t0.3": {
+      "flanders-03-thematic-crit": 9
+    },
+    "jev_b_moduleretakes": {
+      "flanders-03-thematic-crit": 0
+    },
+    "jev_b_notrim": {
+      "flanders-03-thematic-crit": 0
+    },
+    "jev_noul@t0.3": {
+      "flanders-03-thematic-crit": 9
+    },
+    "jev_mix@t0.3": {
+      "flanders-03-thematic-crit": 9
+    }
+  },
+  "cut_p": {
+    "correlation": {
+      "per_episode": {
+        "flanders-03-thematic-crit": {
+          "n": 159,
+          "n_unusable": 1150,
+          "r": -0.7775118214854148,
+          "mean_cut_p": 0.5051572327044023,
+          "mean_score": 1.835031446540881
+        }
+      },
+      "pooled": {
+        "n": 159,
+        "r": -0.7775118214854148,
+        "mean_cut_p": 0.5051572327044023,
+        "mean_score": 1.835031446540881
+      }
+    },
+    "agreement": {
+      "layer": "layered",
+      "episodes": [
+        "flanders-03-thematic-crit"
+      ],
+      "arms": [
+        {
+          "key": "jev_a@t0.3",
+          "label": "jev_a (t_trim 0.3)",
+          "threshold": 0.0,
+          "pooled": {
+            "jev_kept_editor_removed": 345,
+            "both_removed": 87,
+            "jev_removed_editor_kept": 25,
+            "jev_removed_editor_full": 20,
+            "jev_removed_editor_partial": 5,
+            "both_keep": 852,
+            "n": 1309,
+            "agreement": 0.7173414820473644
+          },
+          "per_episode": {
+            "flanders-03-thematic-crit": {
+              "jev_kept_editor_removed": 345,
+              "both_removed": 87,
+              "jev_removed_editor_kept": 25,
+              "jev_removed_editor_full": 20,
+              "jev_removed_editor_partial": 5,
+              "both_keep": 852,
+              "n": 1309
+            }
+          },
+          "kept_ratio": 1.0208203587695839,
+          "sentence_points": 0.6872421695951128
+        },
+        {
+          "key": "jev_noul@t0.3",
+          "label": "jev_noul (t_trim 0.3)",
+          "threshold": 0.0,
+          "pooled": {
+            "jev_kept_editor_removed": 345,
+            "both_removed": 87,
+            "jev_removed_editor_kept": 25,
+            "jev_removed_editor_full": 20,
+            "jev_removed_editor_partial": 5,
+            "both_keep": 852,
+            "n": 1309,
+            "agreement": 0.7173414820473644
+          },
+          "per_episode": {
+            "flanders-03-thematic-crit": {
+              "jev_kept_editor_removed": 345,
+              "both_removed": 87,
+              "jev_removed_editor_kept": 25,
+              "jev_removed_editor_full": 20,
+              "jev_removed_editor_partial": 5,
+              "both_keep": 852,
+              "n": 1309
+            }
+          },
+          "kept_ratio": 1.0208203587695839,
+          "sentence_points": 0.6872421695951128
+        },
+        {
+          "key": "jev_mix@t0.3",
+          "label": "jev_mix (t_trim 0.3)",
+          "threshold": 0.0,
+          "pooled": {
+            "jev_kept_editor_removed": 345,
+            "both_removed": 87,
+            "jev_removed_editor_kept": 25,
+            "jev_removed_editor_full": 20,
+            "jev_removed_editor_partial": 5,
+            "both_keep": 852,
+            "n": 1309,
+            "agreement": 0.7173414820473644
+          },
+          "per_episode": {
+            "flanders-03-thematic-crit": {
+              "jev_kept_editor_removed": 345,
+              "both_removed": 87,
+              "jev_removed_editor_kept": 25,
+              "jev_removed_editor_full": 20,
+              "jev_removed_editor_partial": 5,
+              "both_keep": 852,
+              "n": 1309
+            }
+          },
+          "kept_ratio": 1.0208203587695839,
+          "sentence_points": 0.6872421695951128
+        }
+      ]
+    }
+  },
+  "arms": [
+    {
+      "arm": "jev_a",
+      "t_trim": 0.3,
+      "key": "jev_a@t0.3",
+      "label": "jev_a (t_trim 0.3)",
+      "missing_answers": 1150,
+      "trims": {
+        "flanders-03-thematic-crit": 9
+      },
+      "plain": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 98061,
+              "2": 98061,
+              "3": 98061,
+              "4": 98061,
+              "5": 98061,
+              "6": 98061
+            },
+            "achieved_ratios": {
+              "1": 1.1974575960728284,
+              "2": 1.1974575960728284,
+              "3": 1.1974575960728284,
+              "4": 1.1974575960728284,
+              "5": 1.1974575960728284,
+              "6": 1.1974575960728284
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6411764705882339,
+              "sentence_points_raw": 0.6411764705882339,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 9,
+              "pair_counts": {
+                "full/full": 714,
+                "full/partial": 3,
+                "full/removed": 15,
+                "partial/full": 140,
+                "partial/partial": 1,
+                "partial/removed": 4,
+                "removed/full": 362,
+                "removed/partial": 5,
+                "removed/removed": 65
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 1,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6445522928852083,
+              "word_count": 12364,
+              "grade": 0.6761657791553499,
+              "frame_match": 0.6155915658691136,
+              "dialogue_frames": 103146,
+              "kept_frames": 98061,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.1974575960728284,
+              "n_partial_decisions": 9,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6411764705882339,
+            "sentence_points_raw": 0.6411764705882339,
+            "word_score": 0.6445522928852083,
+            "grade": 0.6761657791553499,
+            "frame_match": 0.6155915658691136,
+            "kept_ratio": 1.1974575960728284
+          }
+        },
+        "seconds_per_episode": 19.354
+      },
+      "layered": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 83596,
+              "2": 83596,
+              "3": 83596,
+              "4": 83596,
+              "5": 83596,
+              "6": 83596
+            },
+            "achieved_ratios": {
+              "1": 1.0208203587695839,
+              "2": 1.0208203587695839,
+              "3": 1.0208203587695839,
+              "4": 1.0208203587695839,
+              "5": 1.0208203587695839,
+              "6": 1.0208203587695839
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6872421695951128,
+              "sentence_points_raw": 0.6872421695951128,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 309,
+              "pair_counts": {
+                "full/full": 564,
+                "full/partial": 148,
+                "full/removed": 20,
+                "partial/full": 56,
+                "partial/partial": 84,
+                "partial/removed": 5,
+                "removed/full": 268,
+                "removed/partial": 77,
+                "removed/removed": 87
+              },
+              "partial_branch_counts": {
+                "exact": 47,
+                "subset": 0,
+                "overlap": 11,
+                "disjoint": 26,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6629142207006372,
+              "word_count": 12364,
+              "grade": 0.7461839797408771,
+              "frame_match": 0.6793371961073447,
+              "dialogue_frames": 103146,
+              "kept_frames": 83596,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.0208203587695839,
+              "n_partial_decisions": 9,
+              "removal_frames": 47212,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6872421695951128,
+            "sentence_points_raw": 0.6872421695951128,
+            "word_score": 0.6629142207006373,
+            "grade": 0.7461839797408771,
+            "frame_match": 0.6793371961073447,
+            "kept_ratio": 1.0208203587695839
+          }
+        },
+        "seconds_per_episode": 19.354
+      }
+    },
+    {
+      "arm": "jev_b_moduleretakes",
+      "t_trim": null,
+      "key": "jev_b_moduleretakes",
+      "label": "jev_b_moduleretakes",
+      "missing_answers": 1150,
+      "trims": {
+        "flanders-03-thematic-crit": 0
+      },
+      "plain": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 97729,
+              "2": 97729,
+              "3": 97729,
+              "4": 97729,
+              "5": 97729,
+              "6": 97729
+            },
+            "achieved_ratios": {
+              "1": 1.1934034265059652,
+              "2": 1.1934034265059652,
+              "3": 1.1934034265059652,
+              "4": 1.1934034265059652,
+              "5": 1.1934034265059652,
+              "6": 1.1934034265059652
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.14247517188693515,
+              "sentence_points_raw": 0.6424751718869351,
+              "sentence_points_penalty": true,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 711,
+                "full/partial": 0,
+                "full/removed": 21,
+                "partial/full": 142,
+                "partial/partial": 0,
+                "partial/removed": 3,
+                "removed/full": 360,
+                "removed/partial": 0,
+                "removed/removed": 72
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.663198822243535,
+              "word_count": 12364,
+              "grade": 0.6901900212648683,
+              "frame_match": 0.6283594482826695,
+              "dialogue_frames": 103146,
+              "kept_frames": 97729,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.1934034265059652,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.14247517188693515,
+            "sentence_points_raw": 0.6424751718869351,
+            "word_score": 0.6631988222435349,
+            "grade": 0.6901900212648683,
+            "frame_match": 0.6283594482826695,
+            "kept_ratio": 1.1934034265059652
+          }
+        },
+        "seconds_per_episode": 19.354
+      },
+      "layered": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 83213,
+              "2": 83213,
+              "3": 83213,
+              "4": 83213,
+              "5": 83213,
+              "6": 83213
+            },
+            "achieved_ratios": {
+              "1": 1.0161434101427507,
+              "2": 1.0161434101427507,
+              "3": 1.0161434101427507,
+              "4": 1.0161434101427507,
+              "5": 1.0161434101427507,
+              "6": 1.0161434101427507
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6872421695951128,
+              "sentence_points_raw": 0.6872421695951128,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 300,
+              "pair_counts": {
+                "full/full": 560,
+                "full/partial": 146,
+                "full/removed": 26,
+                "partial/full": 58,
+                "partial/partial": 83,
+                "partial/removed": 4,
+                "removed/full": 267,
+                "removed/partial": 71,
+                "removed/removed": 94
+              },
+              "partial_branch_counts": {
+                "exact": 46,
+                "subset": 0,
+                "overlap": 11,
+                "disjoint": 26,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6797693971716783,
+              "word_count": 12364,
+              "grade": 0.7580866406743898,
+              "frame_match": 0.6901735588869328,
+              "dialogue_frames": 103146,
+              "kept_frames": 83213,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.0161434101427507,
+              "n_partial_decisions": 0,
+              "removal_frames": 47212,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6872421695951128,
+            "sentence_points_raw": 0.6872421695951128,
+            "word_score": 0.6797693971716783,
+            "grade": 0.7580866406743898,
+            "frame_match": 0.6901735588869328,
+            "kept_ratio": 1.0161434101427507
+          }
+        },
+        "seconds_per_episode": 19.354
+      }
+    },
+    {
+      "arm": "jev_b_notrim",
+      "t_trim": null,
+      "key": "jev_b_notrim",
+      "label": "jev_b_notrim",
+      "missing_answers": 1150,
+      "trims": {
+        "flanders-03-thematic-crit": 0
+      },
+      "plain": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 98235,
+              "2": 98235,
+              "3": 98235,
+              "4": 98235,
+              "5": 98235,
+              "6": 98235
+            },
+            "achieved_ratios": {
+              "1": 1.1995823716891967,
+              "2": 1.1995823716891967,
+              "3": 1.1995823716891967,
+              "4": 1.1995823716891967,
+              "5": 1.1995823716891967,
+              "6": 1.1995823716891967
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.14171122994652263,
+              "sentence_points_raw": 0.6417112299465226,
+              "sentence_points_penalty": true,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 0,
+              "pair_counts": {
+                "full/full": 717,
+                "full/partial": 0,
+                "full/removed": 15,
+                "partial/full": 141,
+                "partial/partial": 0,
+                "partial/removed": 4,
+                "removed/full": 367,
+                "removed/partial": 0,
+                "removed/removed": 65
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 0,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6443355908827302,
+              "word_count": 12364,
+              "grade": 0.6758772268789578,
+              "frame_match": 0.6153288635065639,
+              "dialogue_frames": 103146,
+              "kept_frames": 98235,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.1995823716891967,
+              "n_partial_decisions": 0,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.14171122994652263,
+            "sentence_points_raw": 0.6417112299465226,
+            "word_score": 0.6443355908827302,
+            "grade": 0.6758772268789578,
+            "frame_match": 0.6153288635065639,
+            "kept_ratio": 1.1995823716891967
+          }
+        },
+        "seconds_per_episode": 19.354
+      },
+      "layered": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 83705,
+              "2": 83705,
+              "3": 83705,
+              "4": 83705,
+              "5": 83705,
+              "6": 83705
+            },
+            "achieved_ratios": {
+              "1": 1.0221513963683433,
+              "2": 1.0221513963683433,
+              "3": 1.0221513963683433,
+              "4": 1.0221513963683433,
+              "5": 1.0221513963683433,
+              "6": 1.0221513963683433
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6877005347593601,
+              "sentence_points_raw": 0.6877005347593601,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 302,
+              "pair_counts": {
+                "full/full": 566,
+                "full/partial": 146,
+                "full/removed": 20,
+                "partial/full": 56,
+                "partial/partial": 84,
+                "partial/removed": 5,
+                "removed/full": 273,
+                "removed/partial": 72,
+                "removed/removed": 87
+              },
+              "partial_branch_counts": {
+                "exact": 47,
+                "subset": 0,
+                "overlap": 11,
+                "disjoint": 26,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6625264525871017,
+              "word_count": 12364,
+              "grade": 0.7456215344006498,
+              "frame_match": 0.678825137351371,
+              "dialogue_frames": 103146,
+              "kept_frames": 83705,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.0221513963683433,
+              "n_partial_decisions": 0,
+              "removal_frames": 47212,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6877005347593601,
+            "sentence_points_raw": 0.6877005347593601,
+            "word_score": 0.6625264525871017,
+            "grade": 0.7456215344006498,
+            "frame_match": 0.678825137351371,
+            "kept_ratio": 1.0221513963683433
+          }
+        },
+        "seconds_per_episode": 19.354
+      }
+    },
+    {
+      "arm": "jev_noul",
+      "t_trim": 0.3,
+      "key": "jev_noul@t0.3",
+      "label": "jev_noul (t_trim 0.3)",
+      "missing_answers": 1150,
+      "trims": {
+        "flanders-03-thematic-crit": 9
+      },
+      "plain": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 98061,
+              "2": 98061,
+              "3": 98061,
+              "4": 98061,
+              "5": 98061,
+              "6": 98061
+            },
+            "achieved_ratios": {
+              "1": 1.1974575960728284,
+              "2": 1.1974575960728284,
+              "3": 1.1974575960728284,
+              "4": 1.1974575960728284,
+              "5": 1.1974575960728284,
+              "6": 1.1974575960728284
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6411764705882339,
+              "sentence_points_raw": 0.6411764705882339,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 9,
+              "pair_counts": {
+                "full/full": 714,
+                "full/partial": 3,
+                "full/removed": 15,
+                "partial/full": 140,
+                "partial/partial": 1,
+                "partial/removed": 4,
+                "removed/full": 362,
+                "removed/partial": 5,
+                "removed/removed": 65
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 1,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6445522928852083,
+              "word_count": 12364,
+              "grade": 0.6761657791553499,
+              "frame_match": 0.6155915658691136,
+              "dialogue_frames": 103146,
+              "kept_frames": 98061,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.1974575960728284,
+              "n_partial_decisions": 9,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6411764705882339,
+            "sentence_points_raw": 0.6411764705882339,
+            "word_score": 0.6445522928852083,
+            "grade": 0.6761657791553499,
+            "frame_match": 0.6155915658691136,
+            "kept_ratio": 1.1974575960728284
+          }
+        },
+        "seconds_per_episode": 19.354
+      },
+      "layered": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 83596,
+              "2": 83596,
+              "3": 83596,
+              "4": 83596,
+              "5": 83596,
+              "6": 83596
+            },
+            "achieved_ratios": {
+              "1": 1.0208203587695839,
+              "2": 1.0208203587695839,
+              "3": 1.0208203587695839,
+              "4": 1.0208203587695839,
+              "5": 1.0208203587695839,
+              "6": 1.0208203587695839
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6872421695951128,
+              "sentence_points_raw": 0.6872421695951128,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 309,
+              "pair_counts": {
+                "full/full": 564,
+                "full/partial": 148,
+                "full/removed": 20,
+                "partial/full": 56,
+                "partial/partial": 84,
+                "partial/removed": 5,
+                "removed/full": 268,
+                "removed/partial": 77,
+                "removed/removed": 87
+              },
+              "partial_branch_counts": {
+                "exact": 47,
+                "subset": 0,
+                "overlap": 11,
+                "disjoint": 26,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6629142207006372,
+              "word_count": 12364,
+              "grade": 0.7461839797408771,
+              "frame_match": 0.6793371961073447,
+              "dialogue_frames": 103146,
+              "kept_frames": 83596,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.0208203587695839,
+              "n_partial_decisions": 9,
+              "removal_frames": 47212,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6872421695951128,
+            "sentence_points_raw": 0.6872421695951128,
+            "word_score": 0.6629142207006373,
+            "grade": 0.7461839797408771,
+            "frame_match": 0.6793371961073447,
+            "kept_ratio": 1.0208203587695839
+          }
+        },
+        "seconds_per_episode": 19.354
+      }
+    },
+    {
+      "arm": "jev_mix",
+      "t_trim": 0.3,
+      "key": "jev_mix@t0.3",
+      "label": "jev_mix (t_trim 0.3)",
+      "missing_answers": 1150,
+      "trims": {
+        "flanders-03-thematic-crit": 9
+      },
+      "plain": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 98061,
+              "2": 98061,
+              "3": 98061,
+              "4": 98061,
+              "5": 98061,
+              "6": 98061
+            },
+            "achieved_ratios": {
+              "1": 1.1974575960728284,
+              "2": 1.1974575960728284,
+              "3": 1.1974575960728284,
+              "4": 1.1974575960728284,
+              "5": 1.1974575960728284,
+              "6": 1.1974575960728284
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6411764705882339,
+              "sentence_points_raw": 0.6411764705882339,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 9,
+              "pair_counts": {
+                "full/full": 714,
+                "full/partial": 3,
+                "full/removed": 15,
+                "partial/full": 140,
+                "partial/partial": 1,
+                "partial/removed": 4,
+                "removed/full": 362,
+                "removed/partial": 5,
+                "removed/removed": 65
+              },
+              "partial_branch_counts": {
+                "exact": 0,
+                "subset": 0,
+                "overlap": 0,
+                "disjoint": 1,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6445522928852083,
+              "word_count": 12364,
+              "grade": 0.6761657791553499,
+              "frame_match": 0.6155915658691136,
+              "dialogue_frames": 103146,
+              "kept_frames": 98061,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.1974575960728284,
+              "n_partial_decisions": 9,
+              "removal_frames": 0,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6411764705882339,
+            "sentence_points_raw": 0.6411764705882339,
+            "word_score": 0.6445522928852083,
+            "grade": 0.6761657791553499,
+            "frame_match": 0.6155915658691136,
+            "kept_ratio": 1.1974575960728284
+          }
+        },
+        "seconds_per_episode": 19.354
+      },
+      "layered": {
+        "result": {
+          "threshold": 0.0,
+          "operating_points": {
+            "thresholds": {
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0
+            },
+            "kept_frames": {
+              "1": 83596,
+              "2": 83596,
+              "3": 83596,
+              "4": 83596,
+              "5": 83596,
+              "6": 83596
+            },
+            "achieved_ratios": {
+              "1": 1.0208203587695839,
+              "2": 1.0208203587695839,
+              "3": 1.0208203587695839,
+              "4": 1.0208203587695839,
+              "5": 1.0208203587695839,
+              "6": 1.0208203587695839
+            },
+            "neutral_threshold": 0.0
+          },
+          "episodes": {
+            "flanders-03-thematic-crit": {
+              "episode": "flanders-03-thematic-crit",
+              "threshold": 0.0,
+              "sentence_points": 0.6872421695951128,
+              "sentence_points_raw": 0.6872421695951128,
+              "sentence_points_penalty": false,
+              "n_sentences": 1309,
+              "n_partial_human": 145,
+              "n_partial_model": 309,
+              "pair_counts": {
+                "full/full": 564,
+                "full/partial": 148,
+                "full/removed": 20,
+                "partial/full": 56,
+                "partial/partial": 84,
+                "partial/removed": 5,
+                "removed/full": 268,
+                "removed/partial": 77,
+                "removed/removed": 87
+              },
+              "partial_branch_counts": {
+                "exact": 47,
+                "subset": 0,
+                "overlap": 11,
+                "disjoint": 26,
+                "model_empty": 0,
+                "human_empty": 0
+              },
+              "word_score": 0.6629142207006372,
+              "word_count": 12364,
+              "grade": 0.7461839797408771,
+              "frame_match": 0.6793371961073447,
+              "dialogue_frames": 103146,
+              "kept_frames": 83596,
+              "human_kept_frames": 81891,
+              "kept_ratio": 1.0208203587695839,
+              "n_partial_decisions": 9,
+              "removal_frames": 47212,
+              "warnings": []
+            }
+          },
+          "pooled": {
+            "threshold": 0.0,
+            "episodes": 1,
+            "sentence_count": 1309,
+            "word_count": 12364,
+            "dialogue_frames": 103146,
+            "sentence_points": 0.6872421695951128,
+            "sentence_points_raw": 0.6872421695951128,
+            "word_score": 0.6629142207006373,
+            "grade": 0.7461839797408771,
+            "frame_match": 0.6793371961073447,
+            "kept_ratio": 1.0208203587695839
+          }
+        },
+        "seconds_per_episode": 19.354
+      }
+    }
+  ],
+  "latency": {
+    "flanders-03-thematic-crit": {
+      "pass_wall_clock_s": {
+        "retake": 0.249,
+        "sentence": 19.105,
+        "trim_pick": null
+      },
+      "wall_clock_s": 19.354,
+      "requests": 80,
+      "input_tokens": 246059,
+      "output_tokens": 30343,
+      "cost_usd": 0.010334,
+      "retries": 47,
+      "errors": 70,
+      "windowed_requests": 72,
+      "sentences": 1309
+    }
+  },
+  "latency_totals": {
+    "pass_wall_clock_s": {
+      "retake": 0.249,
+      "sentence": 19.105,
+      "trim_pick": 0.0
+    },
+    "wall_clock_s": 19.354,
+    "requests": 80,
+    "input_tokens": 246059,
+    "cost_usd": 0.010334,
+    "retries": 47,
+    "errors": 70
+  },
+  "retakes": {
+    "flanders-03-thematic-crit": {
+      "groups": 31,
+      "group_members": 127,
+      "not_real": 7,
+      "module_fallback": 0,
+      "losers_cut_jev": 84,
+      "losers_cut_module": 96,
+      "agree": 80,
+      "jev_only_cut": {
+        "n": 4,
+        "editor_kept": 4,
+        "editor_cut": 0,
+        "full": 2,
+        "partial": 2,
+        "removed": 0
+      },
+      "module_only_cut": {
+        "n": 16,
+        "editor_kept": 9,
+        "editor_cut": 7,
+        "full": 8,
+        "partial": 1,
+        "removed": 7
+      }
+    }
+  },
+  "pair_counts_note": "The full/partial/removed cross-tab is not in this table: `score_episode` returns `n_partial_human` and `n_partial_model` but drops the `pair_counts` block that `sentence_scoring` computes, so there is no public way to read it without reaching into the scoring module's internals.",
+  "ladder": {
+    "source": "D:\\solar-sailer\\benchmarks\\roughcut\\results\\2026-09-11-model-plus-deterministic.json",
+    "restricted": true,
+    "covered_episodes": [
+      "flanders-03-thematic-crit"
+    ],
+    "uncovered": [],
+    "rows": [
+      {
+        "key": "luna-chapters-rules5",
+        "label": "best Luna chapters",
+        "episodes": 1,
+        "sentence_points_plain": 0.7573720397249819,
+        "word_score_plain": 0.8062513943435774,
+        "grade_plain": 0.8506607457181863,
+        "sentence_points_layered": 0.7700534759358325,
+        "word_score_layered": 0.8072015602316458,
+        "grade_layered": 0.8638433307342488
+      },
+      {
+        "key": "opus5-cc-agentic",
+        "label": "shipped Opus agentic",
+        "episodes": 1,
+        "sentence_points_plain": 0.7636363636363652,
+        "word_score_plain": 0.8127786410410702,
+        "grade_plain": 0.8616295432603612,
+        "sentence_points_layered": 0.7805194805194846,
+        "word_score_layered": 0.8135924965914832,
+        "grade_layered": 0.873041454837783
+      },
+      {
+        "key": "luna-single-call",
+        "label": "Luna single call",
+        "episodes": 1,
+        "sentence_points_plain": 0.14247517188693515,
+        "word_score_plain": 0.6631988222435349,
+        "grade_plain": 0.6901900212648683,
+        "sentence_points_layered": 0.6872421695951128,
+        "word_score_layered": 0.6797693971716783,
+        "grade_layered": 0.7580866406743898
+      },
+      {
+        "key": "deterministic-baseline",
+        "label": "deterministic baseline (um removal + retakes + delete silence)",
+        "episodes": 1,
+        "sentence_points_plain": 0.6796027501909874,
+        "word_score_plain": 0.6764568943003804,
+        "grade_plain": 0.7529412931947267,
+        "sentence_points_layered": 0.6796027501909874,
+        "word_score_layered": 0.6764568943003804,
+        "grade_layered": 0.7529412931947267
+      }
+    ],
+    "best_jev": {
+      "key": "jev_a@t0.3",
+      "label": "jev_a (t_trim 0.3)",
+      "sentence_points": 0.6411764705882339,
+      "word_score": 0.6445522928852083,
+      "seconds_per_episode": 19.354,
+      "sentence_points_layered": 0.6872421695951128,
+      "word_score_layered": 0.6629142207006373,
+      "placement": "above Luna single call",
+      "placement_layered": "above deterministic baseline (um removal + retakes + delete silence)"
+    }
+  },
+  "warnings": [
+    "roughcut-jev-block50-flanders-decisions.jsonl has no rows for jev_b; the run wrote jev_a, jev_b_moduleretakes, jev_b_notrim only (a run without `--trim-pick` writes no jev_b). Those arms are left out of every table below."
+  ]
+}

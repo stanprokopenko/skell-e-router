@@ -14,10 +14,13 @@ step 0  removals cache (``docs/jev-real/removals/<episode>.json``, built by the
 step 1  retake pass: one ``take_k`` choice and one ``real_k`` noul per retake
         group, 6 groups per request.
 step 2  sentence pass: ``score_k`` (0-5), ``cut_k`` (a noul, only in prompt
-        versions that define one), ``first_k`` and ``last_k`` word
-        choices, 25 target sentences per request, state carries the rules and
-        the whole transcript (windowed to +/-200 sentences when the render is
-        over 24,000 estimated tokens or the provider rejects the context).
+        versions that define one), ``first_k`` and ``last_k`` word choices,
+        ``--block`` target sentences per request (25 by default). The state
+        carries the rules and as much transcript as fits: the whole transcript
+        when it fits ``--context-tokens`` and the provider's request ceiling,
+        otherwise the largest symmetric window of sentences around the block
+        that does. Every job also carries a half-size window as its fallback,
+        sent when the provider rejects the payload.
 step 3  trim pick pass, only with ``--trim-pick``: for sentences where
         ``first_k``/``last_k`` put less than ``--t-trim`` on ``whole``, a
         ``pick_k`` choice over candidate versions, 10 items per request.
@@ -41,6 +44,7 @@ written. No network calls without ``--run``.
 """
 
 import argparse
+import bisect
 import concurrent.futures as futures
 import importlib.util
 import json
@@ -131,11 +135,21 @@ FIT_EPISODES = [
 ]
 
 GROUPS_PER_REQUEST = 6
-TARGETS_PER_REQUEST = 25
+TARGETS_PER_REQUEST = 25       # --block default: target sentences per request
 ITEMS_PER_REQUEST = 10
 CONTEXT_SENTENCES = 5          # before/after a retake group or a pick item
-WINDOW_SENTENCES = 200         # either side of a target block when windowed
-TOKEN_CAP = 24_000             # rendered transcript + rules, 4 chars per token
+#: ``--context-tokens`` default: estimated tokens one sentence-pass state may
+#: use, rules and targets and transcript together. The provider caps the state
+#: plus the longest question at 32,000 tokens.
+DEFAULT_CONTEXT_TOKENS = 22_000
+#: Estimated-token ceiling for a whole sentence-pass request, state plus
+#: questions. The provider caps a request at 64,000 tokens
+#: (``model_config.ClassificationModel.max_input_tokens``). In the held-out run
+#: every sentence-pass request estimated over 49,176 tokens came back a
+#: deterministic 400 (``category: invalid_request``), no request under that
+#: estimate did, and the largest accepted request measured 64,127 real input
+#: tokens. 46,000 leaves room for the estimate running ~22% under the real count.
+REQUEST_TOKEN_CAP = 40_000
 CHARS_PER_TOKEN = 4
 PAUSE_S = 0.5
 LONG_PAUSE_S = 1.5
@@ -398,6 +412,10 @@ def _request(job, budget, attempt):
            "provider_model": None, "input_tokens": None, "output_tokens": None,
            "cost": None, "elapsed_s": None, "attempt": attempt, "error": None,
            "prompt_version": PROMPT.version, "window_used": bool(job.get("window_used")),
+           "window_sentences": job.get("window_sentences"),
+           "window_radius": job.get("window_radius"),
+           "block_size": job.get("block_size"),
+           "est_over_actual": None,
            "est_input_tokens": round(est_tokens(job["state"]) + est_tokens(job["questions"]))}
     if budget.blocked():
         row["error"] = "BUDGET_STOP: cap reached before this request was sent"
@@ -412,12 +430,25 @@ def _request(job, budget, attempt):
         answers = response.answers
         row.update(provider_model=response.model, input_tokens=response.input_tokens,
                    output_tokens=response.output_tokens, cost=response.cost)
+        # The window is fitted on a 4-chars-per-token estimate. Recording it
+        # against the provider's own count on every answered request is what
+        # lets a later run correct the estimate instead of guessing at it.
+        if response.input_tokens:
+            row["est_over_actual"] = round(
+                row["est_input_tokens"] / response.input_tokens, 4)
         budget.add(response.cost)
     except Exception as exc:
         row["error"] = f"{type(exc).__name__}: {exc}"[:400]
         row["error_details"] = str(getattr(exc, "details", None))[:300]
     row["elapsed_s"] = time.perf_counter() - started
     return row, answers
+
+
+def median_ratio(rows):
+    """Median ``est_over_actual`` over the rows that carry one, or None."""
+    ratios = sorted(r["est_over_actual"] for r in rows
+                    if r.get("est_over_actual") is not None)
+    return round(ratios[len(ratios) // 2], 4) if ratios else None
 
 
 def _is_context_error(row):
@@ -481,6 +512,7 @@ def run_pass(pass_name, episode_name, jobs, concurrency, budget, repair=False):
         "failed_blocks": sum(1 for j in jobs
                              if answers_by_block.get(j["block"]) is None),
         "windowed_requests": sum(1 for r in request_rows if r["window_used"]),
+        "est_over_actual_median": median_ratio(request_rows),
         "latency": latency_summary([r["elapsed_s"] for r in request_rows]),
     }
     return request_rows, answers_by_block, timing
@@ -601,15 +633,61 @@ def _trim_criteria(words, whole_description, from_start):
     return criteria
 
 
-def sentence_jobs(data, drop_ids, force_window=False):
-    """One job per block of 25 target sentences, with a windowed fallback job."""
+def fit_window(kept_index, kept_lines, first_idx, last_idx, budget):
+    """The largest symmetric window around a target block that fits ``budget``.
+
+    ``budget`` is estimated tokens for the rendered transcript alone, and the
+    window is measured in corpus sentences either side of the block, counting
+    the ones a retake cut already removed. Returns
+    ``(lines, radius, whole_transcript)``; ``radius`` is None when the whole
+    transcript fits, which is the case this replaces the old fixed 200 with:
+    nothing changes for an episode that fits.
+
+    Binary search, because the rendered cost only grows with the radius. The
+    block's own lines go in even when they alone are over budget: a target whose
+    own text is missing from the transcript is worse than an oversized request.
+    """
+    if est_tokens(kept_lines) <= budget:
+        return list(kept_lines), None, True
+
+    def slice_for(radius):
+        lo = bisect.bisect_left(kept_index, first_idx - radius)
+        hi = bisect.bisect_right(kept_index, last_idx + radius)
+        return lo, hi
+
+    fits, over = 0, max(first_idx, (kept_index[-1] if kept_index else 0) - last_idx) + 1
+    while over - fits > 1:
+        middle = (fits + over) // 2
+        lo, hi = slice_for(middle)
+        if est_tokens(kept_lines[lo:hi]) <= budget:
+            fits = middle
+        else:
+            over = middle
+    lo, hi = slice_for(fits)
+    return kept_lines[lo:hi], fits, False
+
+
+def sentence_jobs(data, drop_ids, block_size=TARGETS_PER_REQUEST,
+                  context_tokens=DEFAULT_CONTEXT_TOKENS):
+    """One job per block of ``block_size`` target sentences, plus a fallback job.
+
+    Each job carries the largest transcript window around its own block that
+    fits both budgets: ``context_tokens`` for the state (rules, targets and
+    transcript), and ``REQUEST_TOKEN_CAP`` for the whole request once the
+    questions are counted. The second budget is what keeps a long episode off
+    the provider's deterministic 400, and it is why the window shrinks as
+    ``block_size`` grows: the trim questions list every word of every target, so
+    they take the room the transcript would have had.
+
+    ``window_job`` re-fits at half the rendered cost and is sent when a block
+    comes back a context error, including the jobs that already window.
+    """
     kept_order = [sid for sid in data["order"] if sid not in drop_ids]
-    full_lines = [sentence_line(data, sid) for sid in kept_order]
-    over_cap = est_tokens(full_lines) + est_tokens(RULES) > TOKEN_CAP
-    windowed = force_window or over_cap
+    kept_lines = [sentence_line(data, sid) for sid in kept_order]
+    kept_index = [data["index_of"][sid] for sid in kept_order]
 
     jobs = []
-    for block, target_ids in enumerate(blocks(data["order"], TARGETS_PER_REQUEST)):
+    for block, target_ids in enumerate(blocks(data["order"], block_size)):
         questions, targets = {}, []
         for k, sid in enumerate(target_ids):
             targets.append(_target(data, sid))
@@ -641,26 +719,47 @@ def sentence_jobs(data, drop_ids, force_window=False):
                         words, PROMPT.WHOLE_LAST_DESCRIPTION, False),
                 }
 
-        def make(window):
-            if window:
-                lo = max(0, data["index_of"][target_ids[0]] - WINDOW_SENTENCES)
-                hi = min(len(data["order"]),
-                         data["index_of"][target_ids[-1]] + WINDOW_SENTENCES + 1)
-                keep = set(data["order"][lo:hi])
-                lines = [line for sid, line in zip(kept_order, full_lines)
-                         if sid in keep]
-            else:
-                lines = full_lines
+        first_idx, last_idx = (data["index_of"][target_ids[0]],
+                               data["index_of"][target_ids[-1]])
+        # Everything the request carries whatever the window is, measured the
+        # way the request row measures it so the two agree to the token.
+        fixed = est_tokens({"rules": RULES, "transcript": [], "targets": targets})
+        budget = min(context_tokens - fixed,
+                     REQUEST_TOKEN_CAP - fixed - est_tokens(questions))
+
+        def make(line_budget):
+            lines, radius, whole = fit_window(kept_index, kept_lines,
+                                              first_idx, last_idx, line_budget)
             return {"pass": "sentence", "episode": data["name"], "block": block,
-                    "ids": list(target_ids), "window_used": window,
+                    "ids": list(target_ids), "window_used": not whole,
+                    "window_sentences": len(lines), "window_radius": radius,
+                    "block_size": block_size,
                     "state": {"rules": RULES, "transcript": lines, "targets": targets},
                     "questions": questions, "target_ids": list(target_ids)}
 
-        job = make(windowed)
-        if not windowed:
-            job["window_job"] = make(True)
+        job = make(budget)
+        job["window_job"] = make(
+            min(budget, est_tokens(job["state"]["transcript"])) / 2)
         jobs.append(job)
     return jobs
+
+
+def window_stats(jobs):
+    """What the fitted window did to one episode's sentence jobs, for the record."""
+    sentences = sorted(job["window_sentences"] for job in jobs)
+    totals = [round(est_tokens(job["state"]) + est_tokens(job["questions"]))
+              for job in jobs]
+    if not jobs:
+        return {}
+    return {
+        "block_size": jobs[0]["block_size"],
+        "window_sentences_min": sentences[0],
+        "window_sentences_median": sentences[len(sentences) // 2],
+        "window_sentences_max": sentences[-1],
+        "whole_transcript_requests": sum(1 for j in jobs if not j["window_used"]),
+        "est_input_tokens_max": max(totals),
+        "over_request_cap": sum(1 for t in totals if t > REQUEST_TOKEN_CAP),
+    }
 
 
 def sentence_results(data, jobs, answers_by_block):
@@ -952,7 +1051,8 @@ def repair_episode(data, gap_passes, args, budget, previous_rows, pick_block_off
 
     results = {}
     if gap_passes.get("sentence"):
-        jobs = [j for j in sentence_jobs(data, losers)
+        jobs = [j for j in sentence_jobs(data, losers, args.block,
+                                         args.context_tokens)
                 if j["block"] in gap_passes["sentence"]]
         rows, answers, _timing = run_pass("sentence", data["name"], jobs,
                                           args.concurrency, budget, repair=True)
@@ -1067,7 +1167,8 @@ def run_repair(args, parser, paths):
 # plan
 # ---------------------------------------------------------------------------
 
-def estimate(episode_names, t_trim, trim_pick=True):
+def estimate(episode_names, t_trim, trim_pick=True, block_size=TARGETS_PER_REQUEST,
+             context_tokens=DEFAULT_CONTEXT_TOKENS):
     """Requests, input tokens and spend per pass per episode, no calls.
 
     Passes 1 and 2 are built for real, so their numbers are the exact payloads.
@@ -1082,16 +1183,20 @@ def estimate(episode_names, t_trim, trim_pick=True):
         chains[name] = chain_counts(data["chains"])
         module_losers = {s["id"] for s in data["sentences"] if s.get("is_retake")}
         episode_rows = []
-        for pass_name, jobs in (("retake", retake_jobs(data)),
-                                ("sentence", sentence_jobs(data, module_losers))):
+        for pass_name, jobs in (
+                ("retake", retake_jobs(data)),
+                ("sentence", sentence_jobs(data, module_losers, block_size,
+                                           context_tokens))):
             tokens = sum(est_tokens(j["state"]) + est_tokens(j["questions"])
                          for j in jobs)
-            episode_rows.append(
-                {"episode": name, "pass": pass_name, "requests": len(jobs),
-                 "sentences": len(data["order"]),
-                 "windowed": sum(1 for j in jobs if j.get("window_used")),
-                 "est_input_tokens": round(tokens),
-                 "est_cost_usd": round(tokens * JEV_INPUT_PER_MILLION / 1e6, 4)})
+            row = {"episode": name, "pass": pass_name, "requests": len(jobs),
+                   "sentences": len(data["order"]),
+                   "windowed": sum(1 for j in jobs if j.get("window_used")),
+                   "est_input_tokens": round(tokens),
+                   "est_cost_usd": round(tokens * JEV_INPUT_PER_MILLION / 1e6, 4)}
+            if pass_name == "sentence":
+                row.update(window_stats(jobs))
+            episode_rows.append(row)
         if trim_pick:
             n_items = math.ceil(len(data["order"]) * assumed_trim_rate)
             n_pick = math.ceil(n_items / ITEMS_PER_REQUEST)
@@ -1134,11 +1239,11 @@ def run_episode(data, args, budget, request_rows, warnings):
     warnings.extend(warn)
     timing["passes"]["retake"]["losers_cut"] = len(losers)
 
-    jobs2 = sentence_jobs(data, losers)
+    jobs2 = sentence_jobs(data, losers, args.block, args.context_tokens)
     rows, answers2, t2 = run_pass("sentence", data["name"], jobs2, args.concurrency,
                                   budget)
     request_rows.extend(rows)
-    timing["passes"]["sentence"] = t2
+    timing["passes"]["sentence"] = dict(t2, **window_stats(jobs2))
     results, warn = sentence_results(data, jobs2, answers2)
     warnings.extend(warn)
 
@@ -1183,6 +1288,18 @@ def main():
                         help="run pass 3, the trim pick, and write the jev_b arm "
                              "(off by default: it is the slowest pass and variant A "
                              "already carries a trim)")
+    parser.add_argument("--block", type=int, default=TARGETS_PER_REQUEST,
+                        help=f"target sentences per sentence-pass request "
+                             f"(default: {TARGETS_PER_REQUEST}); the trim "
+                             f"questions grow with it, so a larger block leaves "
+                             f"less room for the transcript window")
+    parser.add_argument("--context-tokens", type=int,
+                        default=DEFAULT_CONTEXT_TOKENS,
+                        help=f"estimated-token budget for one sentence-pass "
+                             f"state, rules and targets and transcript together "
+                             f"(default: {DEFAULT_CONTEXT_TOKENS}); the window is "
+                             f"the largest that fits it and the "
+                             f"{REQUEST_TOKEN_CAP}-token whole-request ceiling")
     parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
                         help="in-flight requests per pass (each pass runs its own "
                              "pool, so passes never overlap)")
@@ -1203,7 +1320,8 @@ def main():
                           (requests_path, decisions_path, timing_path))
 
     if not args.run:
-        plan, totals, chains = estimate(args.episodes, args.t_trim, args.trim_pick)
+        plan, totals, chains = estimate(args.episodes, args.t_trim, args.trim_pick,
+                                        args.block, args.context_tokens)
         matches, _ = check_rules_match()
         print(json.dumps({
             "mode": "plan", "model": JEV_MODEL, "prompt_version": PROMPT.version,
@@ -1211,6 +1329,8 @@ def main():
             "episodes": args.episodes, "arms": arms_for(args.trim_pick),
             "passes": passes_for(args.trim_pick), "split_chains": chains,
             "concurrency": args.concurrency, "t_trim": args.t_trim,
+            "block": args.block, "context_tokens": args.context_tokens,
+            "request_token_cap": REQUEST_TOKEN_CAP,
             "budget_cap_usd": args.budget,
             "input_price_per_million_usd": JEV_INPUT_PER_MILLION,
             "plan": plan, "totals": totals,
@@ -1255,6 +1375,8 @@ def main():
         "model": JEV_MODEL, "prompt_version": PROMPT.version,
         "arms": arms_for(args.trim_pick), "trim_pick": bool(args.trim_pick),
         "concurrency": args.concurrency, "t_trim": args.t_trim,
+        "block": args.block, "context_tokens": args.context_tokens,
+        "request_token_cap": REQUEST_TOKEN_CAP,
         "budget_cap_usd": args.budget, "aborted": aborted,
         "episodes": timings,
         "totals": {
@@ -1268,6 +1390,9 @@ def main():
             "output_tokens": sum(r["output_tokens"] or 0 for r in request_rows),
             "cost_usd": round(sum(r["cost"] or 0.0 for r in request_rows), 6),
             "decisions": len(decision_rows),
+            "est_over_actual_median": median_ratio(request_rows),
+            "est_over_actual_sentence_median": median_ratio(
+                [r for r in request_rows if r["pass"] == "sentence"]),
         },
         "pass_wall_clock_s": {
             p: round(sum(t["passes"][p]["wall_clock_s"] for t in timings.values()
