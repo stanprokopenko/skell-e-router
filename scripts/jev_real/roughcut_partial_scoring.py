@@ -344,6 +344,48 @@ def score_episode(name, decisions, threshold, removals=None):
     return row
 
 
+def episode_report(name, decisions, threshold_map, levels=(NEUTRAL_LEVEL,),
+                   removals=None, gate_threshold=None):
+    """The harness's whole report for one episode: the ceiling and every level.
+
+    ``score_episode`` keeps the dozen numbers a sweep needs and throws the rest
+    of ``replay.score_sentences``'s report away. Writing a result JSON in the
+    harness's own shape needs all of it: the ``ceiling`` block, the media name
+    and offset, and per level the frame, word and sentence-points sub-reports.
+    The annotation and the removal layering are ``score_episode``'s; only the
+    return value is wider.
+
+    ``threshold_map`` is ``{level: threshold}`` and must cover every entry in
+    ``levels``. ``gate_threshold`` is the threshold the removal layer is gated
+    at, which matters only when ``removals`` is given; it defaults to the
+    Neutral entry, or the lowest threshold in the map when Neutral is absent.
+
+    The report carries the same ``n_partial_decisions``, ``removal_frames``,
+    ``sentences_trimmed_by_removals``, ``sentences_cut_by_removals`` and
+    ``warnings`` extras ``score_episode`` returns.
+    """
+    data = load_episode(name)
+    warnings = []
+    sentences, n_partial = _annotate(data, decisions, warnings)
+    removed = removal_frames(removals)
+    if gate_threshold is None:
+        gate_threshold = threshold_map.get(NEUTRAL_LEVEL, min(threshold_map.values()))
+    n_trimmed, n_emptied = _apply_removals(sentences, gate_threshold, removed)
+    report = replay.score_sentences(
+        None, sentences, threshold_map, levels=list(levels),
+        field="roughcut_score", precomputed=data["preflight"],
+    )
+    report.update({
+        "episode": name,
+        "n_partial_decisions": n_partial,
+        "removal_frames": sum(end - start for start, end in removed),
+        "sentences_trimmed_by_removals": n_trimmed,
+        "sentences_cut_by_removals": n_emptied,
+        "warnings": warnings,
+    })
+    return report
+
+
 def sentence_states_for(name, decisions, threshold, removals=None):
     """``(human_states, model_states)`` behind one ``score_episode`` call.
 
