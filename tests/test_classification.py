@@ -91,6 +91,18 @@ def test_unknown_usage_is_not_zero(usage, expected, transport):
     assert (result.input_tokens, result.output_tokens, result.cost) == expected
 
 
+@pytest.mark.parametrize("usage,expected", [
+    ({"input_tokens": 1000, "output_tokens": 40}, 0.000042 + 0.00002),
+    ({"input_tokens": 1000}, None)])
+def test_output_rate_is_billed_when_a_model_charges_for_it(usage, expected, transport, monkeypatch):
+    monkeypatch.setattr(resolve_classification_alias("jev"), "output_cost_per_million", 0.5)
+    data = deepcopy(ANSWER)
+    data["usage"] = usage
+    transport.return_value = http_response(data)
+    result = classify("jev", "text", QUESTIONS)
+    assert result.cost == (pytest.approx(expected) if expected is not None else None)
+
+
 @pytest.mark.parametrize("timeout", [False, 0, -1, "3", float("nan"), float("inf")])
 def test_bad_timeout(timeout, transport):
     with pytest.raises(RouterError) as caught:

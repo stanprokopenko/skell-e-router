@@ -201,8 +201,16 @@ def _parse(data, questions, model):
         raise ValueError("Invalid token count")
     return ClassificationResponse(
         answers=answers, model=data["model"], input_tokens=counts[0], output_tokens=counts[1],
-        cost=None if counts[0] is None else counts[0] * model.input_cost_per_million / 1_000_000,
+        cost=_cost(counts, model),
     )
+
+
+def _cost(counts, model):
+    """USD from both token rates; None when a billed count is unreported."""
+    billed = list(zip(counts, (model.input_cost_per_million, model.output_cost_per_million)))
+    if all(c is None for c, _ in billed) or any(c is None and rate for c, rate in billed):
+        return None
+    return sum((c or 0) * rate for c, rate in billed) / 1_000_000
 
 
 def classify(model: str, state: str | dict | list, questions: dict, *,

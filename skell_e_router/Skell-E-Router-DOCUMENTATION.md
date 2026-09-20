@@ -296,7 +296,7 @@ Set `TYPESAFE_API_KEY` or supply `config={"typesafe_api_key": key}`. Supplying a
 | `answers` | Native answer map, including probabilities and confidence when applicable |
 | `model` | Provider-reported model identifier |
 | `input_tokens`, `output_tokens` | Reported counts, or None if absent |
-| `cost` | Estimated USD at $0.042 per million input tokens and free output, or None without input usage |
+| `cost` | Estimated USD from the model's per-million input and output rates (Jev: $0.042 input, $0 output), or None when a billed token count is unreported |
 | `duration_seconds` | Wall-clock duration including retries |
 
 Choice answers contain `choice`, `probabilities` and `confidence`. Score answers contain a probability-weighted `score`, `legend`, `probabilities` and `confidence`. Noul answers contain a value named `noul` between zero and one. Confidence is not a guarantee of correctness. Malformed responses raise a controlled provider error instead of returning an invented label. Reported usage covers the successful response; failed attempts may incur additional provider charges.
