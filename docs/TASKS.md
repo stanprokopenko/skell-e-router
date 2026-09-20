@@ -8,6 +8,8 @@
 - [ ] Follow-up: add the contact-form bot pattern (fake name, unrelated email, one Latin word) as a spam example in the Jev spam criteria and rerun the 120-ticket set; optionally have a human pass over docs/jev-real/spam-labels.json.
 - [ ] Follow-up (handed off): design a Jev-based rough cut with Stan. Brief in docs/handoffs/2026-09-19-jev-roughcut-brainstorm.md; orchestrator asked to dispatch a Fable 5.1 lead.
 - [ ] Follow-up (skell-e-web, reported to orchestrator): backend/benchmarks/routing/routing-labels.jsonl still holds one customer email address in a text_head; redact it there.
+- [x] Made the router the only sanctioned Jev path on 2026-09-20: verified `classify()` live against the solar-sailer probe's scoring (answers matched recorded results within model jitter), rewrote the typesafe-ai and skell-e-router skills to ban direct `typesafe_sdk` use, and synced skills to all agent accounts. Migration mapping in [jev-router-migration-target.md](jev-router-migration-target.md).
+- [ ] Follow-up (for a migration lead): move remaining direct `typesafe_sdk` call sites (solar-sailer `benchmarks/jev-chapter-split-probe/`) onto `classify()` per [jev-router-migration-target.md](jev-router-migration-target.md).
 
 ## Provider error credential disclosure
 

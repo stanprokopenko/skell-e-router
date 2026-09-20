@@ -83,3 +83,7 @@ skell_e_router/examples/output/
 
 # Local scratch data for benchmarks (customer text never committed)
 scripts/temp/
+
+# Agent working dirs
+.worktrees/
+.agent-scratch/
