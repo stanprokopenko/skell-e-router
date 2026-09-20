@@ -334,10 +334,19 @@ def human_states(episode):
 
 
 def retake_stats(by_arm, episodes):
-    """Per-episode retake-pass counts and the editor's verdict on disagreements."""
+    """Per-episode retake-pass counts and the editor's verdict on disagreements.
+
+    Reads any arm that carries Jev's own retake cut: jev_b when the trim-pick
+    pass ran, jev_a otherwise. Both stamp ``cut_retake`` from the same step 1
+    decision, so the counts are identical either way. Returns nothing when the
+    file has neither that arm or the module-flag arm.
+    """
+    jev_arm = next((a for a in ("jev_b", "jev_a", "jev_b_notrim") if a in by_arm), None)
+    if jev_arm is None or "jev_b_moduleretakes" not in by_arm:
+        return {}
     stats = {}
     for episode in episodes:
-        jev_rows = by_arm["jev_b"][episode]
+        jev_rows = by_arm[jev_arm][episode]
         module_rows = by_arm["jev_b_moduleretakes"][episode]
         states = human_states(episode)
 
@@ -716,8 +725,9 @@ def main():
     parser.add_argument("--t-trim", nargs="+", type=float, default=DEFAULT_T_TRIM,
                         help="variant A trim-trigger thresholds to sweep "
                              f"(default: {' '.join(str(t) for t in DEFAULT_T_TRIM)})")
-    parser.add_argument("--arms", nargs="+", default=BASE_ARMS, choices=BASE_ARMS,
-                        help="subset of arms to report")
+    parser.add_argument("--arms", nargs="+", default=None, choices=BASE_ARMS,
+                        help="subset of arms to report (default: every arm the "
+                             "decisions file contains)")
     parser.add_argument("--no-modules", action="store_true",
                         help="skip the layered (um removal + delete silence) scoring")
     parser.add_argument("--missing-score", type=float, default=0.0,
@@ -735,10 +745,26 @@ def main():
     by_arm, episodes = index_decisions(decision_rows)
     warnings = []
 
-    for arm in args.arms:
-        if arm not in by_arm:
-            raise SystemExit(f"{args.in_name}-decisions.jsonl has no rows for arm "
-                             f"{arm!r} (found: {sorted(by_arm)})")
+    present = [arm for arm in BASE_ARMS if arm in by_arm]
+    if not present:
+        raise SystemExit(f"{args.in_name}-decisions.jsonl has no rows for any known "
+                         f"arm (found: {sorted(by_arm)}, expected some of "
+                         f"{BASE_ARMS})")
+    if args.arms is None:
+        args.arms = present
+        absent = [arm for arm in BASE_ARMS if arm not in by_arm]
+        if absent:
+            warnings.append(
+                f"{args.in_name}-decisions.jsonl has no rows for {', '.join(absent)}; "
+                f"the run wrote {', '.join(present)} only (a run without "
+                f"`--trim-pick` writes no jev_b). Those arms are left out of every "
+                f"table below.")
+    else:
+        asked_absent = [arm for arm in args.arms if arm not in by_arm]
+        if asked_absent:
+            raise SystemExit(
+                f"{args.in_name}-decisions.jsonl has no rows for arm(s) "
+                f"{asked_absent} (found: {sorted(by_arm)})")
 
     words = {episode: word_ids_by_sentence(episode) for episode in episodes}
     mismatches = check_rebuild(by_arm, episodes, words)

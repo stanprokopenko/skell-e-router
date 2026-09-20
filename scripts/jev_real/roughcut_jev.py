@@ -17,13 +17,17 @@ step 2  sentence pass: ``score_k`` (0-5), ``first_k`` and ``last_k`` word
         choices, 25 target sentences per request, state carries the rules and
         the whole transcript (windowed to +/-200 sentences when the render is
         over 24,000 estimated tokens or the provider rejects the context).
-step 3  trim pick pass: for sentences where ``first_k``/``last_k`` put less than
-        ``--t-trim`` on ``whole``, a ``pick_k`` choice over candidate versions,
-        10 items per request.
+step 3  trim pick pass, only with ``--trim-pick``: for sentences where
+        ``first_k``/``last_k`` put less than ``--t-trim`` on ``whole``, a
+        ``pick_k`` choice over candidate versions, 10 items per request.
 
-Arms written to the decisions file: jev_a, jev_b, jev_b_moduleretakes,
-jev_b_notrim. The ``_mod`` arms (um removal and delete silence layered on) are a
-scoring-time option, not separate decisions.
+Arms written to the decisions file: jev_a, jev_b_moduleretakes, jev_b_notrim,
+plus jev_b when pass 3 ran. The ``_mod`` arms (um removal and delete silence
+layered on) are a scoring-time option, not separate decisions.
+
+``--prompt-version`` picks the prompt set from
+``scripts/jev_real/roughcut_jev_prompts.py``; it lands on every request and
+decision row, so two runs are never confused for each other.
 
 ``--repair NAME`` re-sends only the blocks that have no answer in NAME's request
 log, appends the new request rows with ``repair: true`` and rewrites NAME's
@@ -62,12 +66,19 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(BENCH_DIR))
 
 from roughcut_jev_prompts import (  # noqa: E402
-    CUT_VERSION_DESCRIPTION, FIRST_INSTRUCTIONS, LAST_INSTRUCTIONS,
-    PICK_INSTRUCTIONS, PROMPT_VERSION, REAL_INSTRUCTIONS, RULES,
-    SCORE_INSTRUCTIONS, SCORE_LEVELS, TAKE_INSTRUCTIONS,
-    WHOLE_FIRST_DESCRIPTION, WHOLE_LAST_DESCRIPTION, WHOLE_VERSION_DESCRIPTION,
-    check_rules_match,
+    PROMPT_VERSION, PROMPT_VERSIONS, RULES, check_rules_match, prompts_for,
 )
+
+#: The prompt bundle every pass reads. ``--prompt-version`` swaps it through
+#: ``set_prompt_version`` before any job is built, so the strings a run sends
+#: and the ``prompt_version`` it stamps on each row can never disagree.
+PROMPT = prompts_for(PROMPT_VERSION)
+
+
+def set_prompt_version(version):
+    global PROMPT
+    PROMPT = prompts_for(version)
+    return PROMPT
 
 
 def _load_runner():
@@ -134,11 +145,22 @@ MAX_CHOICE_OPTIONS = 255
 
 PASSES = ["retake", "sentence", "trim_pick"]
 ARMS = ["jev_a", "jev_b", "jev_b_moduleretakes", "jev_b_notrim"]
+#: The arm that only exists when pass 3 ran: without a ``pick_k`` answer its
+#: rows would be a copy of ``jev_b_notrim`` under a name that promises trims.
+TRIM_PICK_ARMS = ["jev_b"]
 RETAKE_FIELDS = ("retake_group", "retake_real", "retake_take_probs",
                  "retake_choice", "retake_winner", "retake_source")
 REMOVALS_KEYS = ("umm_word_ids", "um_word_ids", "removed_word_ids", "word_ids",
                  "umm", "ids")
 CONTEXT_ERROR_MARKS = ("context", "too long", "too large", "token", "422")
+
+
+def arms_for(trim_pick):
+    return ARMS if trim_pick else [a for a in ARMS if a not in TRIM_PICK_ARMS]
+
+
+def passes_for(trim_pick):
+    return PASSES if trim_pick else [p for p in PASSES if p != "trim_pick"]
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +241,8 @@ def load_episode_data(episode_name, removals_dir_used=True):
         "tokens": tokens_by_sentence,
         "words": kept_words,
         "rendered": rendered,
+        "chains": split_sentence_chains(
+            order, rendered, {s["id"]: s["text"] for s in sentences}),
         "retake_groups": retakes.get("groups", {}),
         "removals": removals_meta,
     }
@@ -251,6 +275,62 @@ def _render_tokens(words, removed):
             prev_end = end
         removed_span = 0.0
     return out
+
+
+SPLIT_MARK = ".."
+#: Stripped off the front of a row before asking whether it starts lowercase.
+SPLIT_LEAD_CHARS = " \t\"'‘’“”-–—"
+
+
+def _continues_previous(text):
+    """True when the row opens with a lowercase letter, quotes and dashes aside."""
+    stripped = text.lstrip(SPLIT_LEAD_CHARS)
+    return bool(stripped) and stripped[0].isalpha() and stripped[0].islower()
+
+
+def split_sentence_chains(order, rendered, texts):
+    """Rows that are pieces of one spoken sentence.
+
+    Row *i* joins row *i+1* when *i* ends in ``..`` (how the transcriber marks a
+    split or a trail-off) and *i+1* opens with a lowercase letter, so the second
+    row reads as the rest of the first rather than a new sentence. Chains run as
+    far as those joins go.
+
+    The ``..`` is read off ``texts``, the corpus sentence text, because the word
+    segments the rendering is built from spell the same mark as an em dash. The
+    ``spoken_sentence`` it hands back is the rendered text, um-stripped and
+    pause-marked like every other line Jev sees.
+
+    Returns ``{sid: {"spoken_sentence": ..., "piece": "n of m"}}`` for every row
+    in a chain of two or more, and nothing for a row that stands alone. v1 lost
+    11 of its 40 worst drops to exactly this: a fragment read on its own looks
+    like an abandoned false start.
+    """
+    joined = [texts[a].rstrip().endswith(SPLIT_MARK)
+              and _continues_previous(texts[b])
+              for a, b in zip(order, order[1:])]
+    flags, start = {}, 0
+    while start < len(order):
+        end = start
+        while end < len(joined) and joined[end]:
+            end += 1
+        if end > start:
+            chain = order[start:end + 1]
+            spoken = " ".join(rendered[sid] for sid in chain)
+            for position, sid in enumerate(chain, 1):
+                flags[sid] = {"spoken_sentence": spoken,
+                              "piece": f"{position} of {len(chain)}"}
+        start = end + 1
+    return flags
+
+
+def chain_counts(chains):
+    """``{chains, rows, longest}`` for the timing file."""
+    lengths = {flags["piece"].split(" of ")[1] for flags in chains.values()}
+    sizes = [int(n) for n in lengths]
+    return {"rows": len(chains),
+            "chains": sum(1 for f in chains.values() if f["piece"].startswith("1 of ")),
+            "longest": max(sizes) if sizes else 0}
 
 
 def sentence_line(data, sid):
@@ -310,7 +390,7 @@ def _request(job, budget, attempt):
            "ids": job["ids"], "n_questions": len(job["questions"]),
            "provider_model": None, "input_tokens": None, "output_tokens": None,
            "cost": None, "elapsed_s": None, "attempt": attempt, "error": None,
-           "prompt_version": PROMPT_VERSION, "window_used": bool(job.get("window_used")),
+           "prompt_version": PROMPT.version, "window_used": bool(job.get("window_used")),
            "est_input_tokens": round(est_tokens(job["state"]) + est_tokens(job["questions"]))}
     if budget.blocked():
         row["error"] = "BUDGET_STOP: cap reached before this request was sent"
@@ -430,13 +510,13 @@ def retake_jobs(data):
             }
             questions[f"take_{k}"] = {
                 "type": "choice",
-                "instructions": TAKE_INSTRUCTIONS.format(k=k),
+                "instructions": PROMPT.TAKE_INSTRUCTIONS.format(k=k),
                 "criteria": {key: _describe(data["rendered"][sid])
                              for key, sid in zip(keys, members)},
             }
             questions[f"real_{k}"] = {
                 "type": "noul",
-                "instructions": REAL_INSTRUCTIONS.format(k=k),
+                "instructions": PROMPT.REAL_INSTRUCTIONS.format(k=k),
             }
             mapping[k] = (gid, members, keys)
             covered.extend(members)
@@ -490,7 +570,17 @@ def retake_decisions(data, jobs, answers_by_block):
 # ---------------------------------------------------------------------------
 
 def _target(data, sid):
-    return {"id": sid, "words": [dict(t) for t in data["tokens"][sid]]}
+    """One ``targets[k]`` entry, with the split-sentence flags when they apply.
+
+    ``spoken_sentence`` and ``piece`` are only present on a row the transcript
+    split, which is what the v2 score instructions key off. The transcript
+    rendering stays plain ``id = text`` lines: flagging it too would mean
+    re-shaping every line of a state that is re-sent once per 25 sentences, for
+    a cue the target already carries.
+    """
+    target = {"id": sid, "words": [dict(t) for t in data["tokens"][sid]]}
+    target.update(data["chains"].get(sid, {}))
+    return target
 
 
 def _trim_criteria(words, whole_description, from_start):
@@ -518,20 +608,22 @@ def sentence_jobs(data, drop_ids, force_window=False):
             targets.append(_target(data, sid))
             questions[f"score_{k}"] = {
                 "type": "score",
-                "instructions": SCORE_INSTRUCTIONS.format(k=k),
-                "criteria": list(SCORE_LEVELS),
+                "instructions": PROMPT.SCORE_INSTRUCTIONS.format(k=k),
+                "criteria": list(PROMPT.SCORE_LEVELS),
             }
             words = data["words"][sid]
             if len(words) >= 2:
                 questions[f"first_{k}"] = {
                     "type": "choice",
-                    "instructions": FIRST_INSTRUCTIONS.format(k=k),
-                    "criteria": _trim_criteria(words, WHOLE_FIRST_DESCRIPTION, True),
+                    "instructions": PROMPT.FIRST_INSTRUCTIONS.format(k=k),
+                    "criteria": _trim_criteria(
+                        words, PROMPT.WHOLE_FIRST_DESCRIPTION, True),
                 }
                 questions[f"last_{k}"] = {
                     "type": "choice",
-                    "instructions": LAST_INSTRUCTIONS.format(k=k),
-                    "criteria": _trim_criteria(words, WHOLE_LAST_DESCRIPTION, False),
+                    "instructions": PROMPT.LAST_INSTRUCTIONS.format(k=k),
+                    "criteria": _trim_criteria(
+                        words, PROMPT.WHOLE_LAST_DESCRIPTION, False),
                 }
 
         def make(window):
@@ -651,7 +743,7 @@ def pick_jobs(data, results, t_trim):
             rendered = {key: _span_text(data, sid, *span)
                         for key, span in versions.items()}
             rendered["whole"] = _describe(data["rendered"][sid])
-            rendered["cut"] = CUT_VERSION_DESCRIPTION
+            rendered["cut"] = PROMPT.CUT_VERSION_DESCRIPTION
             state["items"][str(k)] = {
                 "before": context_lines(data, sid, before=True),
                 "sentence": sentence_line(data, sid),
@@ -659,10 +751,10 @@ def pick_jobs(data, results, t_trim):
                 "versions": rendered,
             }
             criteria = {key: _describe(text) for key, text in rendered.items()}
-            criteria["whole"] = WHOLE_VERSION_DESCRIPTION + ": " + criteria["whole"]
+            criteria["whole"] = PROMPT.WHOLE_VERSION_DESCRIPTION + ": " + criteria["whole"]
             questions[f"pick_{k}"] = {
                 "type": "choice",
-                "instructions": PICK_INSTRUCTIONS.format(k=k),
+                "instructions": PROMPT.PICK_INSTRUCTIONS.format(k=k),
                 "criteria": criteria,
             }
             mapping[k] = (sid, versions)
@@ -709,8 +801,14 @@ def variant_a_keep_words(data, sid, result):
     return [[ids[lo], ids[hi]]]
 
 
-def build_decisions(data, retake_info, results, picks, only_ids=None):
-    """Four rows per sentence; ``only_ids`` limits it to the repaired sentences."""
+def build_decisions(data, retake_info, results, picks, only_ids=None, arms=None):
+    """One row per sentence per arm; ``only_ids`` limits it to repaired sentences.
+
+    ``arms`` defaults to every arm. With the trim-pick pass off the caller passes
+    ``arms_for(False)``, which drops ``jev_b``: no ``pick_k`` answer exists, so
+    its rows would carry no trims at all.
+    """
+    arms = list(ARMS if arms is None else arms)
     rows = []
     for sid in data["order"]:
         if only_ids is not None and sid not in only_ids:
@@ -738,7 +836,8 @@ def build_decisions(data, retake_info, results, picks, only_ids=None):
             "retake_winner": retake.get("retake_winner"),
             "retake_source": retake.get("retake_source"),
             "defaulted": result.get("defaulted", True),
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": PROMPT.version,
+            "trim_pick_pass": "jev_b" in arms,
         }
 
         keep_a = variant_a_keep_words(data, sid, result)
@@ -751,7 +850,8 @@ def build_decisions(data, retake_info, results, picks, only_ids=None):
             "jev_b_moduleretakes": (score_b, keep_b, cut_module),
             "jev_b_notrim": (score_b, None, cut_jev),
         }
-        for arm, (arm_score, keep_words, cut_retake) in per_arm.items():
+        for arm in arms:
+            arm_score, keep_words, cut_retake = per_arm[arm]
             rows.append({"arm": arm, "episode": data["name"], "id": sid,
                          "score": arm_score, "keep_words": keep_words,
                          "cut_retake": cut_retake, **source})
@@ -840,7 +940,7 @@ def repair_episode(data, gap_passes, args, budget, previous_rows, pick_block_off
         warnings.extend(warn)
 
     picks = {}
-    pick_batch = pick_jobs(data, results, args.t_trim)
+    pick_batch = pick_jobs(data, results, args.t_trim) if args.trim_pick else []
     for offset, job in enumerate(pick_batch):
         job["block"] = pick_block_offset + offset
     if pick_batch:
@@ -858,7 +958,8 @@ def repair_episode(data, gap_passes, args, budget, previous_rows, pick_block_off
             f"the log does not store); re-run the episode to recover them")
 
     replacements = build_decisions(data, retake_info, results, picks,
-                                   only_ids=set(results))
+                                   only_ids=set(results),
+                                   arms=arms_for(args.trim_pick))
     report = {
         "episode": data["name"],
         "resent_blocks": {p: sorted(gap_passes.get(p, ())) for p in PASSES
@@ -945,44 +1046,53 @@ def run_repair(args, parser, paths):
 # plan
 # ---------------------------------------------------------------------------
 
-def estimate(episode_names, t_trim):
+def estimate(episode_names, t_trim, trim_pick=True):
     """Requests, input tokens and spend per pass per episode, no calls.
 
     Passes 1 and 2 are built for real, so their numbers are the exact payloads.
-    Pass 3 depends on answers that do not exist yet, so it assumes a trim rate.
+    Pass 3 depends on answers that do not exist yet, so it assumes a trim rate;
+    with ``trim_pick`` off it is left out of the plan entirely.
     """
     assumed_trim_rate = 0.3
     plan, totals = [], {"requests": 0, "est_input_tokens": 0.0, "est_cost_usd": 0.0}
+    chains = {}
     for name in episode_names:
         data = load_episode_data(name)
+        chains[name] = chain_counts(data["chains"])
         module_losers = {s["id"] for s in data["sentences"] if s.get("is_retake")}
-        rows = [("retake", retake_jobs(data)),
-                ("sentence", sentence_jobs(data, module_losers))]
-        for pass_name, jobs in rows:
+        episode_rows = []
+        for pass_name, jobs in (("retake", retake_jobs(data)),
+                                ("sentence", sentence_jobs(data, module_losers))):
             tokens = sum(est_tokens(j["state"]) + est_tokens(j["questions"])
                          for j in jobs)
-            plan.append({"episode": name, "pass": pass_name, "requests": len(jobs),
-                         "sentences": len(data["order"]),
-                         "windowed": sum(1 for j in jobs if j.get("window_used")),
-                         "est_input_tokens": round(tokens),
-                         "est_cost_usd": round(tokens * JEV_INPUT_PER_MILLION / 1e6, 4)})
-        n_items = math.ceil(len(data["order"]) * assumed_trim_rate)
-        n_pick = math.ceil(n_items / ITEMS_PER_REQUEST)
-        chars = sum(len(data["rendered"][s]) for s in data["order"]) / max(
-            1, len(data["order"]))
-        pick_tokens = n_pick * (ITEMS_PER_REQUEST * (12 * chars + 600) / CHARS_PER_TOKEN)
-        plan.append({"episode": name, "pass": "trim_pick", "requests": n_pick,
-                     "sentences": len(data["order"]),
-                     "assumed_trim_rate": assumed_trim_rate,
-                     "est_input_tokens": round(pick_tokens),
-                     "est_cost_usd": round(pick_tokens * JEV_INPUT_PER_MILLION / 1e6, 4)})
-        for row in plan[-3:]:
+            episode_rows.append(
+                {"episode": name, "pass": pass_name, "requests": len(jobs),
+                 "sentences": len(data["order"]),
+                 "windowed": sum(1 for j in jobs if j.get("window_used")),
+                 "est_input_tokens": round(tokens),
+                 "est_cost_usd": round(tokens * JEV_INPUT_PER_MILLION / 1e6, 4)})
+        if trim_pick:
+            n_items = math.ceil(len(data["order"]) * assumed_trim_rate)
+            n_pick = math.ceil(n_items / ITEMS_PER_REQUEST)
+            chars = sum(len(data["rendered"][s]) for s in data["order"]) / max(
+                1, len(data["order"]))
+            pick_tokens = n_pick * (
+                ITEMS_PER_REQUEST * (12 * chars + 600) / CHARS_PER_TOKEN)
+            episode_rows.append(
+                {"episode": name, "pass": "trim_pick", "requests": n_pick,
+                 "sentences": len(data["order"]),
+                 "assumed_trim_rate": assumed_trim_rate,
+                 "est_input_tokens": round(pick_tokens),
+                 "est_cost_usd": round(
+                     pick_tokens * JEV_INPUT_PER_MILLION / 1e6, 4)})
+        for row in episode_rows:
             totals["requests"] += row["requests"]
             totals["est_input_tokens"] += row["est_input_tokens"]
             totals["est_cost_usd"] += row["est_cost_usd"]
+        plan.extend(episode_rows)
     totals["est_cost_usd"] = round(totals["est_cost_usd"], 4)
     totals["est_input_tokens"] = round(totals["est_input_tokens"])
-    return plan, totals
+    return plan, totals, chains
 
 
 # ---------------------------------------------------------------------------
@@ -991,7 +1101,8 @@ def estimate(episode_names, t_trim):
 
 def run_episode(data, args, budget, request_rows, warnings):
     timing = {"sentences": len(data["order"]), "removals": data["removals"],
-              "passes": {}}
+              "split_chains": chain_counts(data["chains"]),
+              "trim_pick": bool(args.trim_pick), "passes": {}}
 
     jobs1 = retake_jobs(data)
     rows, answers1, t1 = run_pass("retake", data["name"], jobs1, args.concurrency,
@@ -1010,22 +1121,25 @@ def run_episode(data, args, budget, request_rows, warnings):
     results, warn = sentence_results(data, jobs2, answers2)
     warnings.extend(warn)
 
-    jobs3 = pick_jobs(data, results, args.t_trim)
-    rows, answers3, t3 = run_pass("trim_pick", data["name"], jobs3, args.concurrency,
-                                  budget)
-    request_rows.extend(rows)
-    timing["passes"]["trim_pick"] = dict(t3, items=sum(len(j["mapping"])
-                                                       for j in jobs3))
-    picks, warn = pick_results(data, jobs3, answers3)
-    warnings.extend(warn)
+    picks = {}
+    if args.trim_pick:
+        jobs3 = pick_jobs(data, results, args.t_trim)
+        rows, answers3, t3 = run_pass("trim_pick", data["name"], jobs3,
+                                      args.concurrency, budget)
+        request_rows.extend(rows)
+        timing["passes"]["trim_pick"] = dict(t3, items=sum(len(j["mapping"])
+                                                           for j in jobs3))
+        picks, warn = pick_results(data, jobs3, answers3)
+        warnings.extend(warn)
 
-    decisions = build_decisions(data, retake_info, results, picks)
+    arms = arms_for(args.trim_pick)
+    decisions = build_decisions(data, retake_info, results, picks, arms=arms)
     timing["episode_wall_clock_s"] = round(
         sum(p["wall_clock_s"] for p in timing["passes"].values()), 3)
     timing["cost_usd"] = round(sum(p["cost_usd"] for p in timing["passes"].values()), 6)
     timing["trims"] = {
         arm: sum(1 for d in decisions if d["arm"] == arm and d["keep_words"])
-        for arm in ARMS}
+        for arm in arms}
     return decisions, timing
 
 
@@ -1040,6 +1154,14 @@ def main():
                         help="hard spend cap in USD")
     parser.add_argument("--t-trim", type=float, default=DEFAULT_T_TRIM,
                         help="P(whole) below which a sentence goes to the pick pass")
+    parser.add_argument("--prompt-version", default=PROMPT_VERSION,
+                        choices=PROMPT_VERSIONS,
+                        help=f"prompt set to send (default: {PROMPT_VERSION}); "
+                             f"recorded on every request and decision row")
+    parser.add_argument("--trim-pick", action="store_true",
+                        help="run pass 3, the trim pick, and write the jev_b arm "
+                             "(off by default: it is the slowest pass and variant A "
+                             "already carries a trim)")
     parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
                         help="in-flight requests per pass (each pass runs its own "
                              "pool, so passes never overlap)")
@@ -1048,6 +1170,7 @@ def main():
                              "log; appends request rows with repair: true and "
                              "rewrites IN_NAME's decisions file in place")
     args = parser.parse_args()
+    set_prompt_version(args.prompt_version)
 
     out_name = args.repair or args.out
     requests_path = OUT_DIR / f"{out_name}-requests.jsonl"
@@ -1059,12 +1182,13 @@ def main():
                           (requests_path, decisions_path, timing_path))
 
     if not args.run:
-        plan, totals = estimate(args.episodes, args.t_trim)
+        plan, totals, chains = estimate(args.episodes, args.t_trim, args.trim_pick)
         matches, _ = check_rules_match()
         print(json.dumps({
-            "mode": "plan", "model": JEV_MODEL, "prompt_version": PROMPT_VERSION,
+            "mode": "plan", "model": JEV_MODEL, "prompt_version": PROMPT.version,
             "rules_match_source_prompt": matches,
-            "episodes": args.episodes, "arms": ARMS,
+            "episodes": args.episodes, "arms": arms_for(args.trim_pick),
+            "passes": passes_for(args.trim_pick), "split_chains": chains,
             "concurrency": args.concurrency, "t_trim": args.t_trim,
             "budget_cap_usd": args.budget,
             "input_price_per_million_usd": JEV_INPUT_PER_MILLION,
@@ -1092,7 +1216,7 @@ def main():
         decision_rows.extend(decisions)
         timings[name] = timing
         per_pass = ", ".join(f"{p} {timing['passes'][p]['wall_clock_s']:.2f}s"
-                             for p in PASSES)
+                             for p in PASSES if p in timing["passes"])
         print(f"{name}: {timing['episode_wall_clock_s']}s ({per_pass}), "
               f"${timing['cost_usd']:.4f}, "
               f"{sum(p['requests'] for p in timing['passes'].values())} requests, "
@@ -1107,7 +1231,8 @@ def main():
 
     summary = {
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "model": JEV_MODEL, "prompt_version": PROMPT_VERSION,
+        "model": JEV_MODEL, "prompt_version": PROMPT.version,
+        "arms": arms_for(args.trim_pick), "trim_pick": bool(args.trim_pick),
         "concurrency": args.concurrency, "t_trim": args.t_trim,
         "budget_cap_usd": args.budget, "aborted": aborted,
         "episodes": timings,
@@ -1116,14 +1241,16 @@ def main():
             "requests": len(request_rows),
             "errors": sum(1 for r in request_rows if r["error"]),
             "failed_blocks": sum(t["passes"][p]["failed_blocks"]
-                                 for t in timings.values() for p in PASSES),
+                                 for t in timings.values() for p in PASSES
+                                 if p in t["passes"]),
             "input_tokens": sum(r["input_tokens"] or 0 for r in request_rows),
             "output_tokens": sum(r["output_tokens"] or 0 for r in request_rows),
             "cost_usd": round(sum(r["cost"] or 0.0 for r in request_rows), 6),
             "decisions": len(decision_rows),
         },
         "pass_wall_clock_s": {
-            p: round(sum(t["passes"][p]["wall_clock_s"] for t in timings.values()), 3)
+            p: round(sum(t["passes"][p]["wall_clock_s"] for t in timings.values()
+                         if p in t["passes"]), 3)
             for p in PASSES},
         "warnings": warnings[:200],
         "n_warnings": len(warnings),
