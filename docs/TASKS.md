@@ -42,3 +42,7 @@
 
 - MiniMax-M3 (4×) and Kimi-K2.6 (1×) time out on the largest ~30k-token clipping prompts via DeepInfra (see benchmark run 20260722_030307_4e84ca). Re-run those pairs if DeepInfra latency improves.
 - Kimi-K3 (Moonshot first-party) also failed 2 of those clipping prompts (`clipper_v30`/`v31`, run 20260723_013149_c03f00) after ~90 min of retries at reasoning high; the ones that succeeded took 20–90 min each. Re-run those two if Moonshot capacity improves, or try reasoning low for that prompt family.
+
+## Dev environment
+
+- [ ] `python -m pytest` on Stan's PC dies at startup because the global `logfire` pydantic plugin imports a missing `opentelemetry.sdk`; run tests with `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` until the global env is repaired or the plugin is pinned out in pytest config.
