@@ -30,9 +30,12 @@ Credentials: `TYPESAFE_API_KEY` env var or `config={"typesafe_api_key": key}`. O
 
 2026-09-20: the first chunk of solar-sailer's `benchmarks/jev-chapter-split-probe/score_sentences.py` (5 target sentences, identical state and score/noul questions) was re-run live through `classify("jev", ...)`. Answers matched the probe's recorded `results.jsonl` values within normal model jitter (scores within ±0.08, nouls within ±0.03), with score, probabilities, confidence, legend, and noul all present. One transient `RouterError: PROVIDER_ERROR` occurred on the very first call and did not reproduce; batch callers should treat a failed request as retryable at their level.
 
-## Known direct-SDK call sites to migrate
+## Known direct call sites (machine-wide search, 2026-09-20)
 
-- `solar-sailer/benchmarks/jev-chapter-split-probe/score_sentences.py` (and that probe's README usage notes)
-- Any other hits for `typesafe_sdk` or `api.typesafe.ai` outside skell-e-router; re-run the search at migration time before starting.
+Searched all of `Documents/GitHub` for `typesafe_sdk` and `api.typesafe.ai`:
 
-Experiment code that already went through the router (`docs/jev-real/` benchmarks in this repo) needs no migration.
+- `solar-sailer/benchmarks/jev-chapter-split-probe/score_sentences.py` — experiment code using `typesafe_sdk`; straight mapping per the table above.
+- `claude-orchestrator/relay/src/jev.js` — production repo-routing hint in the relay, raw HTTP from Node, added at Stan's direction 2026-09-19. The relay has no Python runtime, so `classify()` is not a drop-in; migrating it means a Python shim or an HTTP service around the router. Do not migrate mechanically; ask Stan whether the relay stays a sanctioned exception.
+- Everything else was prose (briefs, digests) or skell-e-router's own implementation.
+
+Re-run the search at migration time before starting. Experiment code that already went through the router (`docs/jev-real/` benchmarks in this repo) needs no migration.
