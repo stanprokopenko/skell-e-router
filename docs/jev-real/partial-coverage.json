@@ -1,0 +1,1715 @@
+{
+  "date": "2026-09-19",
+  "script": "scripts/jev_real/partial_coverage.py",
+  "source": "D:\\solar-sailer\\benchmarks\\roughcut",
+  "rules": {
+    "gap030": "gap >= 0.30s",
+    "gap050": "gap >= 0.50s",
+    "gap080": "gap >= 0.80s",
+    "filler": "filler-adjacent (dropped side)",
+    "punct": "punctuation on the previous word",
+    "trailoff": "trail-off marker",
+    "combined": "combined (gap >= 0.30s OR filler OR punctuation OR trail-off)"
+  },
+  "pooled": {
+    "n_episodes": 19,
+    "n_sentences": 10331,
+    "n_partial": 1460,
+    "partial_share": 0.14132223405285063,
+    "n_boundaries": 2224,
+    "boundaries_per_partial": 1.5232876712328767,
+    "dropped_median": 1.0,
+    "dropped_mean": 2.7376712328767123,
+    "dropped_p90": 6,
+    "dropped_max": 81,
+    "dropped_share_median": 0.13333333333333333,
+    "dropped_share_mean": 0.19406904593670485,
+    "shapes": [
+      [
+        "tail_only",
+        540
+      ],
+      [
+        "head_only",
+        444
+      ],
+      [
+        "middle_cut",
+        293
+      ],
+      [
+        "multi_run",
+        110
+      ],
+      [
+        "head_and_tail",
+        73
+      ]
+    ],
+    "coverage": {
+      "rules": {
+        "gap030": {
+          "sentences_all_boundaries": 472,
+          "sentence_share": 0.3232876712328767,
+          "boundaries": 1012,
+          "boundary_share": 0.4550359712230216
+        },
+        "gap050": {
+          "sentences_all_boundaries": 289,
+          "sentence_share": 0.19794520547945205,
+          "boundaries": 675,
+          "boundary_share": 0.3035071942446043
+        },
+        "gap080": {
+          "sentences_all_boundaries": 165,
+          "sentence_share": 0.11301369863013698,
+          "boundaries": 391,
+          "boundary_share": 0.1758093525179856
+        },
+        "filler": {
+          "sentences_all_boundaries": 488,
+          "sentence_share": 0.33424657534246577,
+          "boundaries": 952,
+          "boundary_share": 0.42805755395683454
+        },
+        "punct": {
+          "sentences_all_boundaries": 538,
+          "sentence_share": 0.3684931506849315,
+          "boundaries": 1091,
+          "boundary_share": 0.49055755395683454
+        },
+        "trailoff": {
+          "sentences_all_boundaries": 0,
+          "sentence_share": 0.0,
+          "boundaries": 0,
+          "boundary_share": 0.0
+        },
+        "combined": {
+          "sentences_all_boundaries": 817,
+          "sentence_share": 0.5595890410958904,
+          "boundaries": 1496,
+          "boundary_share": 0.6726618705035972
+        }
+      },
+      "combined_any_boundary": {
+        "sentences": 1012,
+        "share": 0.6931506849315069
+      }
+    },
+    "unexplained": {
+      "n_unexplained": 728,
+      "gap_buckets": [
+        [
+          "gap 0.02-0.10s",
+          259
+        ],
+        [
+          "words touch, gap under 0.02s",
+          217
+        ],
+        [
+          "gap 0.10-0.20s",
+          171
+        ],
+        [
+          "gap 0.20-0.30s",
+          81
+        ]
+      ],
+      "dropped_side_words": [
+        [
+          "and",
+          40
+        ],
+        [
+          "the",
+          36
+        ],
+        [
+          "it",
+          31
+        ],
+        [
+          "here",
+          23
+        ],
+        [
+          "that",
+          20
+        ],
+        [
+          "i",
+          19
+        ],
+        [
+          "a",
+          17
+        ],
+        [
+          "you",
+          13
+        ],
+        [
+          "it's",
+          13
+        ],
+        [
+          "but",
+          12
+        ],
+        [
+          "this",
+          12
+        ],
+        [
+          "i'm",
+          11
+        ],
+        [
+          "to",
+          11
+        ],
+        [
+          "there",
+          10
+        ],
+        [
+          "out",
+          10
+        ]
+      ],
+      "dropped_side": {
+        "next": 463,
+        "prev": 265
+      }
+    },
+    "trailoff_words": 1548,
+    "trailoff_internal": 0,
+    "split": {
+      "sentences": 9417,
+      "word_boundaries": 96474,
+      "total": 24843,
+      "median": 2.0,
+      "p90": 7,
+      "max": 63,
+      "mean": 2.638101306148455,
+      "rate": 0.2575097953852852,
+      "zero_sentences": 2486,
+      "zero_share": 0.2639906551980461,
+      "touching_boundaries": 35011,
+      "touching_share": 0.3629060679561333
+    }
+  },
+  "episodes": [
+    {
+      "episode": "anatomy-30b-hamstring-crit",
+      "n_sentences": 951,
+      "n_partial": 150,
+      "partial_share": 0.15772870662460567,
+      "n_boundaries": 184,
+      "shapes": {
+        "tail_only": 52,
+        "head_only": 69,
+        "middle_cut": 24,
+        "multi_run": 3,
+        "head_and_tail": 2
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 73,
+            "sentence_share": 0.4866666666666667,
+            "boundaries": 105,
+            "boundary_share": 0.5706521739130435
+          },
+          "gap050": {
+            "sentences_all_boundaries": 59,
+            "sentence_share": 0.3933333333333333,
+            "boundaries": 87,
+            "boundary_share": 0.47282608695652173
+          },
+          "gap080": {
+            "sentences_all_boundaries": 41,
+            "sentence_share": 0.2733333333333333,
+            "boundaries": 63,
+            "boundary_share": 0.3423913043478261
+          },
+          "filler": {
+            "sentences_all_boundaries": 82,
+            "sentence_share": 0.5466666666666666,
+            "boundaries": 108,
+            "boundary_share": 0.5869565217391305
+          },
+          "punct": {
+            "sentences_all_boundaries": 84,
+            "sentence_share": 0.56,
+            "boundaries": 115,
+            "boundary_share": 0.625
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 106,
+            "sentence_share": 0.7066666666666667,
+            "boundaries": 140,
+            "boundary_share": 0.7608695652173914
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 113,
+          "share": 0.7533333333333333
+        }
+      },
+      "split": {
+        "sentences": 852,
+        "total": 2867,
+        "median": 2.0,
+        "p90": 8,
+        "max": 25,
+        "mean": 3.365023474178404
+      }
+    },
+    {
+      "episode": "colman-02.04-skeleton-demo",
+      "n_sentences": 194,
+      "n_partial": 91,
+      "partial_share": 0.4690721649484536,
+      "n_boundaries": 198,
+      "shapes": {
+        "tail_only": 25,
+        "multi_run": 23,
+        "head_only": 25,
+        "head_and_tail": 5,
+        "middle_cut": 13
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.21978021978021978,
+            "boundaries": 95,
+            "boundary_share": 0.4797979797979798
+          },
+          "gap050": {
+            "sentences_all_boundaries": 11,
+            "sentence_share": 0.12087912087912088,
+            "boundaries": 60,
+            "boundary_share": 0.30303030303030304
+          },
+          "gap080": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.06593406593406594,
+            "boundaries": 26,
+            "boundary_share": 0.13131313131313133
+          },
+          "filler": {
+            "sentences_all_boundaries": 36,
+            "sentence_share": 0.3956043956043956,
+            "boundaries": 127,
+            "boundary_share": 0.6414141414141414
+          },
+          "punct": {
+            "sentences_all_boundaries": 33,
+            "sentence_share": 0.3626373626373626,
+            "boundaries": 129,
+            "boundary_share": 0.6515151515151515
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 49,
+            "sentence_share": 0.5384615384615384,
+            "boundaries": 150,
+            "boundary_share": 0.7575757575757576
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 68,
+          "share": 0.7472527472527473
+        }
+      },
+      "split": {
+        "sentences": 180,
+        "total": 737,
+        "median": 3.0,
+        "p90": 10,
+        "max": 22,
+        "mean": 4.094444444444444
+      }
+    },
+    {
+      "episode": "colman-03.03-muscles-crit",
+      "n_sentences": 303,
+      "n_partial": 70,
+      "partial_share": 0.23102310231023102,
+      "n_boundaries": 99,
+      "shapes": {
+        "head_and_tail": 6,
+        "head_only": 22,
+        "middle_cut": 9,
+        "tail_only": 29,
+        "multi_run": 4
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 21,
+            "sentence_share": 0.3,
+            "boundaries": 41,
+            "boundary_share": 0.41414141414141414
+          },
+          "gap050": {
+            "sentences_all_boundaries": 8,
+            "sentence_share": 0.11428571428571428,
+            "boundaries": 20,
+            "boundary_share": 0.20202020202020202
+          },
+          "gap080": {
+            "sentences_all_boundaries": 5,
+            "sentence_share": 0.07142857142857142,
+            "boundaries": 11,
+            "boundary_share": 0.1111111111111111
+          },
+          "filler": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.2857142857142857,
+            "boundaries": 31,
+            "boundary_share": 0.31313131313131315
+          },
+          "punct": {
+            "sentences_all_boundaries": 26,
+            "sentence_share": 0.37142857142857144,
+            "boundaries": 41,
+            "boundary_share": 0.41414141414141414
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 37,
+            "sentence_share": 0.5285714285714286,
+            "boundaries": 62,
+            "boundary_share": 0.6262626262626263
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 46,
+          "share": 0.6571428571428571
+        }
+      },
+      "split": {
+        "sentences": 291,
+        "total": 1033,
+        "median": 2.0,
+        "p90": 9,
+        "max": 34,
+        "mean": 3.549828178694158
+      }
+    },
+    {
+      "episode": "colman-04.03-life-crit",
+      "n_sentences": 495,
+      "n_partial": 110,
+      "partial_share": 0.2222222222222222,
+      "n_boundaries": 167,
+      "shapes": {
+        "head_and_tail": 10,
+        "head_only": 28,
+        "tail_only": 37,
+        "multi_run": 7,
+        "middle_cut": 28
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 36,
+            "sentence_share": 0.32727272727272727,
+            "boundaries": 76,
+            "boundary_share": 0.4550898203592814
+          },
+          "gap050": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.18181818181818182,
+            "boundaries": 53,
+            "boundary_share": 0.31736526946107785
+          },
+          "gap080": {
+            "sentences_all_boundaries": 12,
+            "sentence_share": 0.10909090909090909,
+            "boundaries": 36,
+            "boundary_share": 0.2155688622754491
+          },
+          "filler": {
+            "sentences_all_boundaries": 41,
+            "sentence_share": 0.37272727272727274,
+            "boundaries": 79,
+            "boundary_share": 0.47305389221556887
+          },
+          "punct": {
+            "sentences_all_boundaries": 47,
+            "sentence_share": 0.42727272727272725,
+            "boundaries": 96,
+            "boundary_share": 0.5748502994011976
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 68,
+            "sentence_share": 0.6181818181818182,
+            "boundaries": 121,
+            "boundary_share": 0.7245508982035929
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 81,
+          "share": 0.7363636363636363
+        }
+      },
+      "split": {
+        "sentences": 480,
+        "total": 1600,
+        "median": 2.0,
+        "p90": 8,
+        "max": 29,
+        "mean": 3.3333333333333335
+      }
+    },
+    {
+      "episode": "colman-05.02-master-studies-crit",
+      "n_sentences": 381,
+      "n_partial": 149,
+      "partial_share": 0.3910761154855643,
+      "n_boundaries": 254,
+      "shapes": {
+        "tail_only": 52,
+        "head_only": 38,
+        "multi_run": 16,
+        "head_and_tail": 14,
+        "middle_cut": 29
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 37,
+            "sentence_share": 0.2483221476510067,
+            "boundaries": 118,
+            "boundary_share": 0.4645669291338583
+          },
+          "gap050": {
+            "sentences_all_boundaries": 15,
+            "sentence_share": 0.10067114093959731,
+            "boundaries": 66,
+            "boundary_share": 0.25984251968503935
+          },
+          "gap080": {
+            "sentences_all_boundaries": 5,
+            "sentence_share": 0.03355704697986577,
+            "boundaries": 33,
+            "boundary_share": 0.12992125984251968
+          },
+          "filler": {
+            "sentences_all_boundaries": 70,
+            "sentence_share": 0.4697986577181208,
+            "boundaries": 151,
+            "boundary_share": 0.594488188976378
+          },
+          "punct": {
+            "sentences_all_boundaries": 80,
+            "sentence_share": 0.5369127516778524,
+            "boundaries": 166,
+            "boundary_share": 0.6535433070866141
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 102,
+            "sentence_share": 0.6845637583892618,
+            "boundaries": 201,
+            "boundary_share": 0.7913385826771654
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 125,
+          "share": 0.8389261744966443
+        }
+      },
+      "split": {
+        "sentences": 356,
+        "total": 1420,
+        "median": 2.0,
+        "p90": 11,
+        "max": 23,
+        "mean": 3.9887640449438204
+      }
+    },
+    {
+      "episode": "colman-06.06-species-crit",
+      "n_sentences": 373,
+      "n_partial": 159,
+      "partial_share": 0.4262734584450402,
+      "n_boundaries": 253,
+      "shapes": {
+        "tail_only": 66,
+        "multi_run": 15,
+        "head_and_tail": 13,
+        "head_only": 37,
+        "middle_cut": 28
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 40,
+            "sentence_share": 0.25157232704402516,
+            "boundaries": 106,
+            "boundary_share": 0.4189723320158103
+          },
+          "gap050": {
+            "sentences_all_boundaries": 14,
+            "sentence_share": 0.0880503144654088,
+            "boundaries": 58,
+            "boundary_share": 0.22924901185770752
+          },
+          "gap080": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.03773584905660377,
+            "boundaries": 33,
+            "boundary_share": 0.13043478260869565
+          },
+          "filler": {
+            "sentences_all_boundaries": 56,
+            "sentence_share": 0.3522012578616352,
+            "boundaries": 114,
+            "boundary_share": 0.4505928853754941
+          },
+          "punct": {
+            "sentences_all_boundaries": 52,
+            "sentence_share": 0.3270440251572327,
+            "boundaries": 118,
+            "boundary_share": 0.466403162055336
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 83,
+            "sentence_share": 0.5220125786163522,
+            "boundaries": 169,
+            "boundary_share": 0.6679841897233202
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 107,
+          "share": 0.6729559748427673
+        }
+      },
+      "split": {
+        "sentences": 363,
+        "total": 1237,
+        "median": 2.0,
+        "p90": 7,
+        "max": 63,
+        "mean": 3.4077134986225897
+      }
+    },
+    {
+      "episode": "edges-7.01-intro",
+      "n_sentences": 389,
+      "n_partial": 15,
+      "partial_share": 0.038560411311053984,
+      "n_boundaries": 15,
+      "shapes": {
+        "tail_only": 7,
+        "head_only": 8
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 8,
+            "sentence_share": 0.5333333333333333,
+            "boundaries": 8,
+            "boundary_share": 0.5333333333333333
+          },
+          "gap050": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.4,
+            "boundaries": 6,
+            "boundary_share": 0.4
+          },
+          "gap080": {
+            "sentences_all_boundaries": 3,
+            "sentence_share": 0.2,
+            "boundaries": 3,
+            "boundary_share": 0.2
+          },
+          "filler": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.4,
+            "boundaries": 6,
+            "boundary_share": 0.4
+          },
+          "punct": {
+            "sentences_all_boundaries": 8,
+            "sentence_share": 0.5333333333333333,
+            "boundaries": 8,
+            "boundary_share": 0.5333333333333333
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 12,
+            "sentence_share": 0.8,
+            "boundaries": 12,
+            "boundary_share": 0.8
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 12,
+          "share": 0.8
+        }
+      },
+      "split": {
+        "sentences": 340,
+        "total": 416,
+        "median": 1.0,
+        "p90": 3,
+        "max": 10,
+        "mean": 1.223529411764706
+      }
+    },
+    {
+      "episode": "flanders-03-thematic-crit",
+      "n_sentences": 1309,
+      "n_partial": 145,
+      "partial_share": 0.11077158135981666,
+      "n_boundaries": 194,
+      "shapes": {
+        "tail_only": 68,
+        "middle_cut": 29,
+        "head_only": 38,
+        "multi_run": 6,
+        "head_and_tail": 4
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 62,
+            "sentence_share": 0.42758620689655175,
+            "boundaries": 101,
+            "boundary_share": 0.520618556701031
+          },
+          "gap050": {
+            "sentences_all_boundaries": 36,
+            "sentence_share": 0.2482758620689655,
+            "boundaries": 64,
+            "boundary_share": 0.32989690721649484
+          },
+          "gap080": {
+            "sentences_all_boundaries": 24,
+            "sentence_share": 0.16551724137931034,
+            "boundaries": 48,
+            "boundary_share": 0.24742268041237114
+          },
+          "filler": {
+            "sentences_all_boundaries": 45,
+            "sentence_share": 0.3103448275862069,
+            "boundaries": 79,
+            "boundary_share": 0.4072164948453608
+          },
+          "punct": {
+            "sentences_all_boundaries": 50,
+            "sentence_share": 0.3448275862068966,
+            "boundaries": 89,
+            "boundary_share": 0.4587628865979381
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 83,
+            "sentence_share": 0.5724137931034483,
+            "boundaries": 130,
+            "boundary_share": 0.6701030927835051
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 97,
+          "share": 0.6689655172413793
+        }
+      },
+      "split": {
+        "sentences": 1218,
+        "total": 3477,
+        "median": 2.0,
+        "p90": 7,
+        "max": 28,
+        "mean": 2.854679802955665
+      }
+    },
+    {
+      "episode": "greco-2.2-thumbnailing",
+      "n_sentences": 1388,
+      "n_partial": 97,
+      "partial_share": 0.06988472622478387,
+      "n_boundaries": 150,
+      "shapes": {
+        "tail_only": 24,
+        "middle_cut": 34,
+        "multi_run": 4,
+        "head_only": 32,
+        "head_and_tail": 3
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 28,
+            "sentence_share": 0.28865979381443296,
+            "boundaries": 62,
+            "boundary_share": 0.41333333333333333
+          },
+          "gap050": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.20618556701030927,
+            "boundaries": 43,
+            "boundary_share": 0.2866666666666667
+          },
+          "gap080": {
+            "sentences_all_boundaries": 9,
+            "sentence_share": 0.09278350515463918,
+            "boundaries": 19,
+            "boundary_share": 0.12666666666666668
+          },
+          "filler": {
+            "sentences_all_boundaries": 25,
+            "sentence_share": 0.25773195876288657,
+            "boundaries": 40,
+            "boundary_share": 0.26666666666666666
+          },
+          "punct": {
+            "sentences_all_boundaries": 22,
+            "sentence_share": 0.2268041237113402,
+            "boundaries": 47,
+            "boundary_share": 0.31333333333333335
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 47,
+            "sentence_share": 0.4845360824742268,
+            "boundaries": 87,
+            "boundary_share": 0.58
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 65,
+          "share": 0.6701030927835051
+        }
+      },
+      "split": {
+        "sentences": 1239,
+        "total": 3282,
+        "median": 2.0,
+        "p90": 7,
+        "max": 22,
+        "mean": 2.648910411622276
+      }
+    },
+    {
+      "episode": "hampton-5.2-shape-demo",
+      "n_sentences": 411,
+      "n_partial": 77,
+      "partial_share": 0.1873479318734793,
+      "n_boundaries": 105,
+      "shapes": {
+        "middle_cut": 15,
+        "head_only": 11,
+        "tail_only": 47,
+        "head_and_tail": 1,
+        "multi_run": 3
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 13,
+            "sentence_share": 0.16883116883116883,
+            "boundaries": 33,
+            "boundary_share": 0.3142857142857143
+          },
+          "gap050": {
+            "sentences_all_boundaries": 4,
+            "sentence_share": 0.05194805194805195,
+            "boundaries": 21,
+            "boundary_share": 0.2
+          },
+          "gap080": {
+            "sentences_all_boundaries": 1,
+            "sentence_share": 0.012987012987012988,
+            "boundaries": 8,
+            "boundary_share": 0.0761904761904762
+          },
+          "filler": {
+            "sentences_all_boundaries": 11,
+            "sentence_share": 0.14285714285714285,
+            "boundaries": 21,
+            "boundary_share": 0.2
+          },
+          "punct": {
+            "sentences_all_boundaries": 11,
+            "sentence_share": 0.14285714285714285,
+            "boundaries": 32,
+            "boundary_share": 0.3047619047619048
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 26,
+            "sentence_share": 0.33766233766233766,
+            "boundaries": 51,
+            "boundary_share": 0.4857142857142857
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 39,
+          "share": 0.5064935064935064
+        }
+      },
+      "split": {
+        "sentences": 378,
+        "total": 1259,
+        "median": 2.0,
+        "p90": 7,
+        "max": 24,
+        "mean": 3.3306878306878307
+      }
+    },
+    {
+      "episode": "hampton-5.4-assignment-demo",
+      "n_sentences": 300,
+      "n_partial": 77,
+      "partial_share": 0.25666666666666665,
+      "n_boundaries": 116,
+      "shapes": {
+        "tail_only": 49,
+        "head_and_tail": 9,
+        "multi_run": 8,
+        "head_only": 5,
+        "middle_cut": 6
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 15,
+            "sentence_share": 0.19480519480519481,
+            "boundaries": 33,
+            "boundary_share": 0.28448275862068967
+          },
+          "gap050": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.07792207792207792,
+            "boundaries": 15,
+            "boundary_share": 0.12931034482758622
+          },
+          "gap080": {
+            "sentences_all_boundaries": 4,
+            "sentence_share": 0.05194805194805195,
+            "boundaries": 11,
+            "boundary_share": 0.09482758620689655
+          },
+          "filler": {
+            "sentences_all_boundaries": 2,
+            "sentence_share": 0.025974025974025976,
+            "boundaries": 8,
+            "boundary_share": 0.06896551724137931
+          },
+          "punct": {
+            "sentences_all_boundaries": 5,
+            "sentence_share": 0.06493506493506493,
+            "boundaries": 17,
+            "boundary_share": 0.14655172413793102
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 18,
+            "sentence_share": 0.23376623376623376,
+            "boundaries": 41,
+            "boundary_share": 0.35344827586206895
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 33,
+          "share": 0.42857142857142855
+        }
+      },
+      "split": {
+        "sentences": 273,
+        "total": 656,
+        "median": 2.0,
+        "p90": 6,
+        "max": 14,
+        "mean": 2.402930402930403
+      }
+    },
+    {
+      "episode": "hampton-5.5-crit1",
+      "n_sentences": 181,
+      "n_partial": 28,
+      "partial_share": 0.15469613259668508,
+      "n_boundaries": 50,
+      "shapes": {
+        "tail_only": 5,
+        "multi_run": 4,
+        "head_only": 10,
+        "middle_cut": 9
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 10,
+            "sentence_share": 0.35714285714285715,
+            "boundaries": 26,
+            "boundary_share": 0.52
+          },
+          "gap050": {
+            "sentences_all_boundaries": 4,
+            "sentence_share": 0.14285714285714285,
+            "boundaries": 18,
+            "boundary_share": 0.36
+          },
+          "gap080": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 9,
+            "boundary_share": 0.18
+          },
+          "filler": {
+            "sentences_all_boundaries": 14,
+            "sentence_share": 0.5,
+            "boundaries": 29,
+            "boundary_share": 0.58
+          },
+          "punct": {
+            "sentences_all_boundaries": 13,
+            "sentence_share": 0.4642857142857143,
+            "boundaries": 29,
+            "boundary_share": 0.58
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 15,
+            "sentence_share": 0.5357142857142857,
+            "boundaries": 36,
+            "boundary_share": 0.72
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 22,
+          "share": 0.7857142857142857
+        }
+      },
+      "split": {
+        "sentences": 181,
+        "total": 537,
+        "median": 2.0,
+        "p90": 7,
+        "max": 18,
+        "mean": 2.9668508287292816
+      }
+    },
+    {
+      "episode": "hampton-5.5-crit2",
+      "n_sentences": 127,
+      "n_partial": 18,
+      "partial_share": 0.14173228346456693,
+      "n_boundaries": 32,
+      "shapes": {
+        "middle_cut": 10,
+        "head_only": 2,
+        "tail_only": 5,
+        "multi_run": 1
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 5,
+            "sentence_share": 0.2777777777777778,
+            "boundaries": 19,
+            "boundary_share": 0.59375
+          },
+          "gap050": {
+            "sentences_all_boundaries": 4,
+            "sentence_share": 0.2222222222222222,
+            "boundaries": 13,
+            "boundary_share": 0.40625
+          },
+          "gap080": {
+            "sentences_all_boundaries": 1,
+            "sentence_share": 0.05555555555555555,
+            "boundaries": 5,
+            "boundary_share": 0.15625
+          },
+          "filler": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.3333333333333333,
+            "boundaries": 13,
+            "boundary_share": 0.40625
+          },
+          "punct": {
+            "sentences_all_boundaries": 7,
+            "sentence_share": 0.3888888888888889,
+            "boundaries": 18,
+            "boundary_share": 0.5625
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 9,
+            "sentence_share": 0.5,
+            "boundaries": 23,
+            "boundary_share": 0.71875
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 15,
+          "share": 0.8333333333333334
+        }
+      },
+      "split": {
+        "sentences": 126,
+        "total": 354,
+        "median": 2.0,
+        "p90": 7,
+        "max": 13,
+        "mean": 2.8095238095238093
+      }
+    },
+    {
+      "episode": "hampton-5.5-crit3",
+      "n_sentences": 137,
+      "n_partial": 27,
+      "partial_share": 0.19708029197080293,
+      "n_boundaries": 50,
+      "shapes": {
+        "middle_cut": 12,
+        "head_only": 12,
+        "tail_only": 1,
+        "head_and_tail": 1,
+        "multi_run": 1
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 3,
+            "sentence_share": 0.1111111111111111,
+            "boundaries": 17,
+            "boundary_share": 0.34
+          },
+          "gap050": {
+            "sentences_all_boundaries": 1,
+            "sentence_share": 0.037037037037037035,
+            "boundaries": 15,
+            "boundary_share": 0.3
+          },
+          "gap080": {
+            "sentences_all_boundaries": 1,
+            "sentence_share": 0.037037037037037035,
+            "boundaries": 4,
+            "boundary_share": 0.08
+          },
+          "filler": {
+            "sentences_all_boundaries": 10,
+            "sentence_share": 0.37037037037037035,
+            "boundaries": 23,
+            "boundary_share": 0.46
+          },
+          "punct": {
+            "sentences_all_boundaries": 13,
+            "sentence_share": 0.48148148148148145,
+            "boundaries": 32,
+            "boundary_share": 0.64
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 17,
+            "sentence_share": 0.6296296296296297,
+            "boundaries": 38,
+            "boundary_share": 0.76
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 23,
+          "share": 0.8518518518518519
+        }
+      },
+      "split": {
+        "sentences": 133,
+        "total": 462,
+        "median": 3.0,
+        "p90": 8,
+        "max": 18,
+        "mean": 3.473684210526316
+      }
+    },
+    {
+      "episode": "hampton-5.5-crit4",
+      "n_sentences": 156,
+      "n_partial": 27,
+      "partial_share": 0.17307692307692307,
+      "n_boundaries": 55,
+      "shapes": {
+        "middle_cut": 8,
+        "head_only": 9,
+        "multi_run": 4,
+        "tail_only": 6
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 3,
+            "sentence_share": 0.1111111111111111,
+            "boundaries": 20,
+            "boundary_share": 0.36363636363636365
+          },
+          "gap050": {
+            "sentences_all_boundaries": 2,
+            "sentence_share": 0.07407407407407407,
+            "boundaries": 15,
+            "boundary_share": 0.2727272727272727
+          },
+          "gap080": {
+            "sentences_all_boundaries": 2,
+            "sentence_share": 0.07407407407407407,
+            "boundaries": 7,
+            "boundary_share": 0.12727272727272726
+          },
+          "filler": {
+            "sentences_all_boundaries": 10,
+            "sentence_share": 0.37037037037037035,
+            "boundaries": 25,
+            "boundary_share": 0.45454545454545453
+          },
+          "punct": {
+            "sentences_all_boundaries": 10,
+            "sentence_share": 0.37037037037037035,
+            "boundaries": 28,
+            "boundary_share": 0.509090909090909
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 15,
+            "sentence_share": 0.5555555555555556,
+            "boundaries": 39,
+            "boundary_share": 0.7090909090909091
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 20,
+          "share": 0.7407407407407407
+        }
+      },
+      "split": {
+        "sentences": 155,
+        "total": 483,
+        "median": 2.0,
+        "p90": 8,
+        "max": 16,
+        "mean": 3.1161290322580646
+      }
+    },
+    {
+      "episode": "hampton-5.5-crit5",
+      "n_sentences": 295,
+      "n_partial": 44,
+      "partial_share": 0.14915254237288136,
+      "n_boundaries": 61,
+      "shapes": {
+        "head_only": 21,
+        "middle_cut": 15,
+        "tail_only": 8
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 13,
+            "sentence_share": 0.29545454545454547,
+            "boundaries": 23,
+            "boundary_share": 0.3770491803278688
+          },
+          "gap050": {
+            "sentences_all_boundaries": 12,
+            "sentence_share": 0.2727272727272727,
+            "boundaries": 19,
+            "boundary_share": 0.3114754098360656
+          },
+          "gap080": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.13636363636363635,
+            "boundaries": 12,
+            "boundary_share": 0.19672131147540983
+          },
+          "filler": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.45454545454545453,
+            "boundaries": 33,
+            "boundary_share": 0.5409836065573771
+          },
+          "punct": {
+            "sentences_all_boundaries": 20,
+            "sentence_share": 0.45454545454545453,
+            "boundaries": 33,
+            "boundary_share": 0.5409836065573771
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 27,
+            "sentence_share": 0.6136363636363636,
+            "boundaries": 40,
+            "boundary_share": 0.6557377049180327
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 28,
+          "share": 0.6363636363636364
+        }
+      },
+      "split": {
+        "sentences": 285,
+        "total": 705,
+        "median": 2.0,
+        "p90": 7,
+        "max": 13,
+        "mean": 2.473684210526316
+      }
+    },
+    {
+      "episode": "hampton-7-conclusion",
+      "n_sentences": 43,
+      "n_partial": 11,
+      "partial_share": 0.2558139534883721,
+      "n_boundaries": 17,
+      "shapes": {
+        "head_only": 4,
+        "tail_only": 4,
+        "multi_run": 3
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 7,
+            "sentence_share": 0.6363636363636364,
+            "boundaries": 12,
+            "boundary_share": 0.7058823529411765
+          },
+          "gap050": {
+            "sentences_all_boundaries": 3,
+            "sentence_share": 0.2727272727272727,
+            "boundaries": 5,
+            "boundary_share": 0.29411764705882354
+          },
+          "gap080": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 1,
+            "boundary_share": 0.058823529411764705
+          },
+          "filler": {
+            "sentences_all_boundaries": 5,
+            "sentence_share": 0.45454545454545453,
+            "boundaries": 9,
+            "boundary_share": 0.5294117647058824
+          },
+          "punct": {
+            "sentences_all_boundaries": 6,
+            "sentence_share": 0.5454545454545454,
+            "boundaries": 9,
+            "boundary_share": 0.5294117647058824
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 8,
+            "sentence_share": 0.7272727272727273,
+            "boundaries": 14,
+            "boundary_share": 0.8235294117647058
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 10,
+          "share": 0.9090909090909091
+        }
+      },
+      "split": {
+        "sentences": 41,
+        "total": 163,
+        "median": 3.0,
+        "p90": 9,
+        "max": 25,
+        "mean": 3.975609756097561
+      }
+    },
+    {
+      "episode": "perspective-13d-critique",
+      "n_sentences": 1752,
+      "n_partial": 107,
+      "partial_share": 0.06107305936073059,
+      "n_boundaries": 154,
+      "shapes": {
+        "tail_only": 35,
+        "head_only": 45,
+        "multi_run": 8,
+        "middle_cut": 15,
+        "head_and_tail": 4
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 49,
+            "sentence_share": 0.45794392523364486,
+            "boundaries": 81,
+            "boundary_share": 0.525974025974026
+          },
+          "gap050": {
+            "sentences_all_boundaries": 41,
+            "sentence_share": 0.38317757009345793,
+            "boundaries": 67,
+            "boundary_share": 0.43506493506493504
+          },
+          "gap080": {
+            "sentences_all_boundaries": 27,
+            "sentence_share": 0.2523364485981308,
+            "boundaries": 47,
+            "boundary_share": 0.3051948051948052
+          },
+          "filler": {
+            "sentences_all_boundaries": 22,
+            "sentence_share": 0.205607476635514,
+            "boundaries": 47,
+            "boundary_share": 0.3051948051948052
+          },
+          "punct": {
+            "sentences_all_boundaries": 36,
+            "sentence_share": 0.3364485981308411,
+            "boundaries": 66,
+            "boundary_share": 0.42857142857142855
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 62,
+            "sentence_share": 0.5794392523364486,
+            "boundaries": 102,
+            "boundary_share": 0.6623376623376623
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 72,
+          "share": 0.6728971962616822
+        }
+      },
+      "split": {
+        "sentences": 1524,
+        "total": 2518,
+        "median": 1.0,
+        "p90": 4,
+        "max": 20,
+        "mean": 1.652230971128609
+      }
+    },
+    {
+      "episode": "perspective-14e-boxes-critique",
+      "n_sentences": 1146,
+      "n_partial": 58,
+      "partial_share": 0.0506108202443281,
+      "n_boundaries": 70,
+      "shapes": {
+        "tail_only": 20,
+        "head_only": 28,
+        "middle_cut": 9,
+        "head_and_tail": 1
+      },
+      "coverage": {
+        "rules": {
+          "gap030": {
+            "sentences_all_boundaries": 29,
+            "sentence_share": 0.5,
+            "boundaries": 36,
+            "boundary_share": 0.5142857142857142
+          },
+          "gap050": {
+            "sentences_all_boundaries": 23,
+            "sentence_share": 0.39655172413793105,
+            "boundaries": 30,
+            "boundary_share": 0.42857142857142855
+          },
+          "gap080": {
+            "sentences_all_boundaries": 12,
+            "sentence_share": 0.20689655172413793,
+            "boundaries": 15,
+            "boundary_share": 0.21428571428571427
+          },
+          "filler": {
+            "sentences_all_boundaries": 7,
+            "sentence_share": 0.1206896551724138,
+            "boundaries": 9,
+            "boundary_share": 0.12857142857142856
+          },
+          "punct": {
+            "sentences_all_boundaries": 15,
+            "sentence_share": 0.25862068965517243,
+            "boundaries": 18,
+            "boundary_share": 0.2571428571428571
+          },
+          "trailoff": {
+            "sentences_all_boundaries": 0,
+            "sentence_share": 0.0,
+            "boundaries": 0,
+            "boundary_share": 0.0
+          },
+          "combined": {
+            "sentences_all_boundaries": 33,
+            "sentence_share": 0.5689655172413793,
+            "boundaries": 40,
+            "boundary_share": 0.5714285714285714
+          }
+        },
+        "combined_any_boundary": {
+          "sentences": 36,
+          "share": 0.6206896551724138
+        }
+      },
+      "split": {
+        "sentences": 1002,
+        "total": 1637,
+        "median": 1.0,
+        "p90": 4,
+        "max": 19,
+        "mean": 1.6337325349301397
+      }
+    }
+  ],
+  "examples": [
+    {
+      "episode": "anatomy-30b-hamstring-crit",
+      "sentence_id": 334,
+      "shape": "middle_cut",
+      "n_words": 36,
+      "n_dropped": 2,
+      "gaps": [
+        2.0,
+        0.08,
+        0.4,
+        1.44
+      ],
+      "render": "[Um, but when you're talking about just the leg, think of it as curve, lesser curve,] and [then here lesser curve and then stronger curve, straight, straight to,] to [give it some structure at the bottom.]"
+    },
+    {
+      "episode": "colman-02.04-skeleton-demo",
+      "sentence_id": 82,
+      "shape": "multi_run",
+      "n_words": 22,
+      "n_dropped": 5,
+      "gaps": [
+        0.16,
+        0.4,
+        0.16,
+        0.24,
+        0.32,
+        0.48,
+        0.72,
+        0.08
+      ],
+      "render": "Uh, [but I'm more about,] uh, [looking] for, [for,] uh, [your assignments that show a clear understanding of what you're looking] at."
+    },
+    {
+      "episode": "colman-03.03-muscles-crit",
+      "sentence_id": 184,
+      "shape": "multi_run",
+      "n_words": 21,
+      "n_dropped": 5,
+      "gaps": [
+        0.0,
+        0.24,
+        0.4,
+        0.08
+      ],
+      "render": "Here's [one that I actually thought that was pretty] strong., that it [was definitely on the path to greatness, per] se."
+    },
+    {
+      "episode": "colman-04.03-life-crit",
+      "sentence_id": 57,
+      "shape": "multi_run",
+      "n_words": 32,
+      "n_dropped": 18,
+      "gaps": [
+        0.0,
+        1.76,
+        0.16,
+        0.24
+      ],
+      "render": "And, you know, it already works in life so, uh, in front of you, [so you have to make some decisions] as [to make it work on your page] and its own—"
+    },
+    {
+      "episode": "colman-05.02-master-studies-crit",
+      "sentence_id": 68,
+      "shape": "multi_run",
+      "n_words": 33,
+      "n_dropped": 8,
+      "gaps": [
+        2.16,
+        0.48,
+        0.08,
+        0.0,
+        0.32,
+        0.56,
+        0.8
+      ],
+      "render": "[I think that was a great,] uh, [attempt, um, but I wanted to talk about] some of [the overall basic] more, um, [visible physical structure of these, uh, professional references,] um, to really—"
+    },
+    {
+      "episode": "colman-06.06-species-crit",
+      "sentence_id": 371,
+      "shape": "middle_cut",
+      "n_words": 132,
+      "n_dropped": 81,
+      "gaps": [
+        0.32,
+        0.48,
+        0.64,
+        0.16,
+        0.08,
+        1.04,
+        0.48,
+        0.16
+      ],
+      "render": "[land well and have a sense of believability and being earnest is] taking those [taking the, the source material that you're working from and,] um, you know, [putting it through a little bit of your filter as] you try to kind of actually start to build the parts in relation to one another, interweaving the different ecologies as well as finding patterns and rhythms to, um, to, uh, [combine the different physical traits to create something new and fresh] to make your creature become more and more believable, more alive and dynamic, not only in its movements and poses, but dynamic in, in the, in the relation of the parts to one another to make it really, um, something original, something appealing, something alive, [something believable, and ultimately a very dynamic creature.]"
+    },
+    {
+      "episode": "edges-7.01-intro",
+      "sentence_id": 122,
+      "shape": "head_only",
+      "n_words": 11,
+      "n_dropped": 2,
+      "gaps": [
+        0.096
+      ],
+      "render": "It's about [using matching values so one form merges with another.]"
+    },
+    {
+      "episode": "flanders-03-thematic-crit",
+      "sentence_id": 250,
+      "shape": "multi_run",
+      "n_words": 18,
+      "n_dropped": 7,
+      "gaps": [
+        0.16,
+        0.08,
+        0.44,
+        0.4
+      ],
+      "render": "The [answer to the follow-up] question: [\"My questions aim towards deadline and efficiency] and how far you should—"
+    },
+    {
+      "episode": "greco-2.2-thumbnailing",
+      "sentence_id": 453,
+      "shape": "multi_run",
+      "n_words": 23,
+      "n_dropped": 4,
+      "gaps": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "render": "it [kind of gives me a thought] of [how they might kind of] be [folding different pieces of fabric and cloth around] them."
+    },
+    {
+      "episode": "hampton-5.2-shape-demo",
+      "sentence_id": 8,
+      "shape": "middle_cut",
+      "n_words": 13,
+      "n_dropped": 2,
+      "gaps": [
+        0.24,
+        0.56,
+        0.64,
+        0.64
+      ],
+      "render": "[So, I have] a [front three-quarter, back three-quarter, and then,] uh, [another view.]"
+    }
+  ],
+  "skipped": []
+}
