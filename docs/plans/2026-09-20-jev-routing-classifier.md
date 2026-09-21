@@ -1,5 +1,7 @@
 # Jev chat routing classifier implementation plan
 
+> **Status: implemented in skell-e-web and live since 2026-09-21** (Tasks 1 to 11 done; shadow skipped on Stan's call). Kept for the Task 11 audit recipe and as the record of what shipped.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the LLM classifier inside skell-e-web's chat routing step with TypeSafe's Jev model, escalating to gpt-5.6-luna whenever Jev's confidence is below 0.2, behind a three-position switch (off, shadow, on) so it can be trialled live with zero behaviour change first.
