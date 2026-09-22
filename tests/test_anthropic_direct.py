@@ -268,6 +268,30 @@ class TestBuildCreateParams:
         params, _ = self._call(model, {"tool_choice": {"type": "function", "function": {"name": "f"}}})
         assert params["tool_choice"] == {"type": "tool", "name": "f"}
 
+    @pytest.mark.parametrize("effort", ["low", "medium", "high", "xhigh", "max"])
+    def test_opus_5_5_effort_and_sampling(self, effort):
+        from skell_e_router.model_config import MODEL_CONFIG
+        params, _ = self._call(MODEL_CONFIG["claude-opus-5-5"], {
+            "reasoning_effort": effort, "temperature": 0.5, "top_p": 0.5, "top_k": 3,
+        })
+        assert params["thinking"] == {"type": "adaptive"}
+        assert params["output_config"] == {"effort": effort}
+        assert not {"temperature", "top_p", "top_k"} & params.keys()
+
+    def test_opus_5_5_preserves_provider_defaults(self):
+        from skell_e_router.model_config import MODEL_CONFIG
+        params, _ = self._call(MODEL_CONFIG["claude-opus-5-5"], {})
+        assert params == {"max_tokens": 128000}
+
+    @pytest.mark.parametrize("choice, expected", [
+        ("auto", "auto"), ("none", "none"), ("required", "auto"),
+        ({"type": "function", "function": {"name": "f"}}, "auto"),
+    ])
+    def test_opus_5_5_tool_choice(self, choice, expected):
+        from skell_e_router.model_config import MODEL_CONFIG
+        params, _ = self._call(MODEL_CONFIG["claude-opus-5-5"], {"tool_choice": choice})
+        assert params["tool_choice"] == {"type": expected}
+
     def test_max_tokens_default_is_the_published_cap(self):
         from skell_e_router.model_config import AIModel, MODEL_CONFIG
         model = AIModel(name="anthropic/x", provider="anthropic", supports_thinking=False,
@@ -600,6 +624,16 @@ class TestBuildResponse:
         ai_resp = _build_response(resp, "anthropic/claude-opus-5", 1.0)
         # 1M uncached * $5 + 1M cache reads * $0.50 = 5.50
         assert ai_resp.cost == pytest.approx(5.50)
+
+    def test_cost_calculation_opus_5_5_cache_rates(self):
+        resp = make_anthropic_response(prompt_tokens=1_000_000, completion_tokens=100_000)
+        resp.usage.cache_read_input_tokens = 2_000_000
+        resp.usage.cache_creation_input_tokens = 100_000
+        from skell_e_router.anthropic_direct import _build_response
+        ai_resp = _build_response(resp, "anthropic/claude-opus-5-5", 1.0)
+        # $4 uncached + $0.40 cache reads + $0.50 cache writes + $2 output.
+        assert ai_resp.cost == pytest.approx(6.90)
+        assert ai_resp.prompt_tokens == 3_100_000
 
     def test_no_cost_for_unknown_model(self):
         resp = make_anthropic_response(prompt_tokens=100, completion_tokens=100)

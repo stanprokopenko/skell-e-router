@@ -329,6 +329,19 @@ MODEL_CONFIG = {
 
     # ANTHROPIC
 
+    # Opus 5.5: adaptive thinking always on; default effort medium. No sampling
+    # params or thinking budgets. Forced tool choices fall back to auto.
+    # 1M context, 128k max output. $4/$20 per 1M; cache reads $0.20 per 1M.
+    "claude-opus-5-5": AIModel(
+        name="anthropic/claude-opus-5-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        accepted_tool_choices={"auto", "none"},
+        use_direct_sdk=True,
+        max_output_tokens=128000,
+    ),
     # Fable 5.1: released 2026-09-01. Same API surface as Fable 5 (adaptive thinking
     # always on, no temperature/top_p/top_k, effort low..max) with one breaking change:
     # forced tool use returns 400 — tool_choice "any" or a named tool is coerced to

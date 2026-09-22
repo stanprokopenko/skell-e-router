@@ -281,6 +281,10 @@ response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enable
 
 `gpt-6-astra` automatically uses LiteLLM's Responses API bridge. OpenAI requires the Responses API when Astra combines reasoning with function tools; callers keep using the same `ask_ai` messages, tools, and rich-response interface. The router also uses its official $10/$50 token rates instead of LiteLLM's stale launch-day cost entry.
 
+`claude-opus-5-5` uses Anthropic directly, with a 1M token context and a 128,000 token output limit. Set `reasoning_effort` to `low`, `medium`, `high`, `xhigh`, or `max`. Anthropic defaults to `medium` when omitted. Input costs $4 per million tokens, output $20, and cache reads $0.20.
+
+Opus 5.5 always uses adaptive thinking. Do not send `budget_tokens` or a `thinking` dictionary with type `enabled`, type `disabled`, or a token budget. Raw thinking dictionaries pass through, and Anthropic rejects these settings. The router drops `temperature`, `top_p`, and `top_k` and converts forced tool choices to `auto`, so tool execution is never guaranteed. See Anthropic's [Opus 5.5 overview](https://platform.claude.com/docs/en/models/opus-5-5/overview) and [effort reference](https://platform.claude.com/docs/en/build-with-claude/effort).
+
 ### Anthropic Betas
 
 Pass beta feature flags to Claude models:

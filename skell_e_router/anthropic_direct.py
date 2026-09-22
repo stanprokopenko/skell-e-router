@@ -40,6 +40,7 @@ NONSTREAM_MAX_TOKENS = 21_333
 # Known pricing per 1M tokens (USD) for direct-SDK models.
 # Optional "cache_read" key overrides the standard 0.1x-of-input cache-read rate.
 _PRICING = {
+    "claude-opus-5-5": {"input": 4.00, "output": 20.00, "cache_read": 0.20},
     "claude-fable-5-1": {"input": 10.00, "output": 50.00, "cache_read": 0.25},  # cache reads 0.025x, not the standard 0.1x
     "claude-opus-5": {"input": 5.00, "output": 25.00},
     "claude-fable-5": {"input": 10.00, "output": 50.00},

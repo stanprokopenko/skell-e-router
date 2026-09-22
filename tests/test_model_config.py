@@ -102,7 +102,7 @@ class TestModelConfig:
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
-        "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
+        "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
         "kimi-k3",
@@ -177,7 +177,7 @@ class TestModelConfig:
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
 
-    @pytest.mark.parametrize("alias", ["claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5"])
+    @pytest.mark.parametrize("alias", ["claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5"])
     def test_fable_5_and_opus_4_8_config(self, alias):
         """Opus 5, Fable 5, Opus 4.8, Sonnet 5: adaptive thinking only, no sampling params, effort up to max."""
         model = MODEL_CONFIG[alias]
@@ -190,10 +190,11 @@ class TestModelConfig:
         assert "budget_tokens" not in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh", "max"}
 
-    def test_fable_5_1_forced_tool_use_coerced(self):
+    @pytest.mark.parametrize("alias", ["claude-opus-5-5", "claude-fable-5-1"])
+    def test_forced_tool_use_restricted(self, alias):
         """Fable 5.1 rejects forced tool use (tool_choice "any"/named -> 400);
         only "auto" and "none" pass through, everything else coerces to "auto"."""
-        model = MODEL_CONFIG["claude-fable-5-1"]
+        model = MODEL_CONFIG[alias]
         assert model.accepted_tool_choices == {"auto", "none"}
         # Fable 5 has no such restriction — must stay unrestricted
         assert MODEL_CONFIG["claude-fable-5"].accepted_tool_choices is None
