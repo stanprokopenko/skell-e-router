@@ -65,9 +65,12 @@ for name in ("anthropic", "requests", "openai", "litellm", "google-genai", "tena
     except metadata.PackageNotFoundError:
         result["sdk_distributions"][name] = {"version": None}
 
+# Since 3.31.1 the source carries no version literal; __version__ derives from
+# distribution metadata, so absence of a literal means code matches metadata.
+literal_version = result.get("source_version")
 checks = {
     "package_found": spec is not None,
-    "code_matches_metadata": result.get("source_version") == result["distribution_version"],
+    "code_matches_metadata": literal_version is None or literal_version == result["distribution_version"],
 }
 if args.expected_site:
     checks["expected_package_path"] = bool(spec and spec.origin) and (
@@ -75,7 +78,9 @@ if args.expected_site:
     checks["expected_metadata_path"] = (
         Path(result.get("distribution_root", ".")).resolve() == args.expected_site.resolve())
 if args.expected_version:
-    checks["expected_version"] = result.get("source_version") == args.expected_version
+    checks["expected_version"] = (
+        literal_version if literal_version is not None else result["distribution_version"]
+    ) == args.expected_version
 if args.expected_parent:
     checks["expected_parent"] = result["parent_pid"] == args.expected_parent
 result["checks"] = checks

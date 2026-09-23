@@ -88,8 +88,12 @@ def child(args):
     dist = metadata.distribution("skell-e-router")
     assert Path(dist.locate_file("")).resolve() == args.expected_site, "Unexpected metadata path"
     tree = ast.parse(expected.read_text(encoding="utf-8-sig"))
-    version = next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
-                   and any(isinstance(t, ast.Name) and t.id == "__version__" for t in n.targets))
+    # Since 3.31.1 the source has no version literal (__version__ derives from
+    # distribution metadata); an absent literal therefore matches by construction.
+    literals = [ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
+                and isinstance(n.value, ast.Constant)
+                and any(isinstance(t, ast.Name) and t.id == "__version__" for t in n.targets)]
+    version = literals[0] if literals else dist.version
     assert version == dist.version == args.expected_version, "Router code/metadata version mismatch"
     sdk_origins = {name: PathFinder.find_spec(name, sys.path).origin
                    for name in ("anthropic", "requests", "openai", "litellm")}
