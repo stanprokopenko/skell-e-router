@@ -2,13 +2,15 @@
 
 Developer record of Stan's request to make sure every local consumer has the latest skell-e-router.
 
+This is the completed 3.31.0 rollout snapshot. At session close, a separate session had pushed 3.31.1 at `af56956` to fix version reporting. The consumer versions below describe this audit, not a verification of the later release's rollout.
+
 ## Release identity
 
 The supported distribution channel is GitHub main, as documented in the [installation instructions](https://github.com/stanprokopenko/skell-e-router#install). PyPI's project JSON endpoint returned HTTP 404. GitHub has no release entries or tags. Fetched main and the local checkout both pointed to `9f93abbaf2ce141f208ea13b83d2bb7cf4fed57d`, whose project metadata is 3.31.0 and whose changes add Claude Opus 5.5. There were no newer source commits at audit time.
 
 The default interpreter is `C:/Users/Stan/AppData/Local/Programs/Python/Python311/python.exe`. Its installed distribution is already 3.31.0+solar1, from Solar Sailer's locked wheel with SHA256 `5478ce1592931bd4642a714b226f00476abe1a8ecb4bbf64c9978ebc32ad0bce`. The wheel's source manifest identifies the same upstream commit. Preserved the Solar patch.
 
-Upstream `skell_e_router/__init__.py` contains an outdated `__version__ = "3.30.1"` literal. This also appears in the installed package. The distribution metadata, source identity, and Opus 5.5 model configuration establish the actual release. A follow-up in TASKS tracks removing this duplicate version definition.
+Upstream 3.31.0 `skell_e_router/__init__.py` contains an outdated `__version__ = "3.30.1"` literal. This also appeared in the installed package during verification. The distribution metadata, source identity, and Opus 5.5 model configuration establish the actual release. TASKS records the later fix in 3.31.1.
 
 ## Current consumers
 
