@@ -93,6 +93,32 @@ MODEL_CONFIG = {
         use_responses_api=True,
         authoritative_pricing=True,
     ),
+    # GPT-6 Sol (high-end) and Luna (cheap/fast) launched September 2026. 1,050,000 context, 128,000 max output.
+    # Reasoning effort supports none/low/medium/high/xhigh/max (default medium); sampling params are rejected.
+    # Chat Completions allows function calling only at effort none, so both route through the Responses API.
+    # Standard pricing below; prompts over 272K input tokens bill at 2x input/cache and 1.5x output.
+    # https://developers.openai.com/api/docs/models/gpt-6-sol
+    # https://developers.openai.com/api/docs/models/gpt-6-luna
+    "gpt-6-sol": AIModel(
+        name="openai/gpt-6-sol",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh", "max"},
+        pricing={"input": 2.00, "cached_input": 0.20, "output": 10.00},
+        use_responses_api=True,
+        authoritative_pricing=True,
+    ),
+    "gpt-6-luna": AIModel(
+        name="openai/gpt-6-luna",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
+        accepted_reasoning_efforts={"none", "low", "medium", "high", "xhigh", "max"},
+        pricing={"input": 0.10, "cached_input": 0.01, "output": 0.50},
+        use_responses_api=True,
+        authoritative_pricing=True,
+    ),
     # gpt-5.6 family (Sol=flagship, Terra=mid, Luna=cheap/fast), preview launched July 2026.
     # 1M context, 128K max output. Same effort vocabulary as 5.5 (none/low/medium/high/xhigh).
     # temperature is rejected (only default 1 supported), same as 5.5.

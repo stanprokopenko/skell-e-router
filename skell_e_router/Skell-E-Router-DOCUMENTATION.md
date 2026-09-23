@@ -196,6 +196,8 @@ The router adds `max_completion_tokens` to LiteLLM's `allowed_openai_params` so 
 
 `gpt-6-astra` automatically uses LiteLLM's Responses API bridge. OpenAI requires the Responses API for Astra tool calling. The bridge converts the router's existing chat-shaped messages and function tools to Responses input items, then converts the result back to the normal `AIResponse` contract. Callers do not need endpoint-specific code. Router-level pricing is authoritative for Astra because LiteLLM's launch-day cost entry is stale; `AIResponse.cost` uses the official $10 input and $50 output rates per million tokens.
 
+`gpt-6-sol` and `gpt-6-luna` use the same bridge, because OpenAI allows function calling on Chat Completions only at `reasoning_effort="none"`. Both accept `none` through `max`. Their router pricing is authoritative too: Sol $2/$10 and Luna $0.10/$0.50 per million input/output tokens.
+
 By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
 
 ### Basic Usage (Backwards Compatible)

@@ -1321,8 +1321,9 @@ class TestComputeResponseCost:
 
 class TestAskAi:
 
+    @pytest.mark.parametrize("alias", ["gpt-6-astra", "gpt-6-sol", "gpt-6-luna"])
     @patch("skell_e_router.utils.litellm")
-    def test_gpt_6_astra_uses_responses_api_bridge(self, mock_litellm):
+    def test_gpt_6_uses_responses_api_bridge(self, mock_litellm, alias):
         mock_litellm.completion.return_value = make_litellm_response("tool result")
         mock_litellm.drop_params = True
         tools = [{
@@ -1336,7 +1337,7 @@ class TestAskAi:
 
         with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
             ask_ai(
-                "gpt-6-astra",
+                alias,
                 "Use the lookup tool",
                 reasoning_effort="low",
                 tools=tools,
@@ -1344,7 +1345,7 @@ class TestAskAi:
             )
 
         call_kwargs = mock_litellm.completion.call_args.kwargs
-        assert call_kwargs["model"] == "openai/responses/gpt-6-astra"
+        assert call_kwargs["model"] == f"openai/responses/{alias}"
         assert call_kwargs["reasoning_effort"] == "low"
         assert call_kwargs["tools"] == tools
         assert call_kwargs["tool_choice"] == "required"
