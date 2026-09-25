@@ -1,6 +1,6 @@
 # Retired-model sweep, September 25, 2026
 
-Developer record of the audit Stan asked for: "we need to make sure we remove all the deprecated models from our Skell-E router." Shipped as skell-e-router 3.33.0.
+Developer record of the audit Stan asked for: "we need to make sure we remove all the deprecated models from our Skell-E router." Shipped as skell-e-router 3.33.0, then 3.34.0 the same day (see the update at the end).
 
 ## Method
 
@@ -94,3 +94,7 @@ Docs, logs and result-file mentions, not listed above: benchmark about 780, clau
 - `python -m pytest tests`: 1033 passed, 17 subtests passed. Root `test_grounding.py` is a live-network test and was not part of this run.
 - Live probe of all 21 suspect ids plus two image generations, results in the scratch folder.
 - One blind review round on the diff before commit (Fable). It caught the gpt-oss provider tag, a placeholder beta header in the docs examples, and that full-name lookups like `xai/grok-4-0709` bypassed the warning. All three fixed.
+
+## Update, later on 2026-09-25
+
+Stan asked to remove the ten deprecated aliases outright from both the router and skell-e-web, and to make skell-e-web's super-fast default `gpt-6-luna`. Router 3.34.0 deletes the six xAI entries, the four Nemotron aliases and the whole `DEPRECATED_MODELS` mechanism (the dict, the full-name mirror and the warning in `resolve_model_alias()`), so all twenty ids in the two tables above now raise `INVALID_MODEL`. The skell-e-web side is being done by a separate lead in that repo, which already carries its own retired-id fallback map for saved settings; the `gpt-6-luna` instruction was passed to that lead through the orchestrator.

@@ -667,28 +667,6 @@ class TestResolveModelAlias:
         with pytest.raises(RouterError):
             resolve_model_alias("")
 
-    def test_deprecated_alias_warns_once(self, caplog):
-        import skell_e_router.utils as utils_mod
-        utils_mod._deprecation_warned.clear()
-        caplog.set_level("WARNING", logger="skell_e_router")
-
-        model = resolve_model_alias("nemotron-70b")
-        assert model is MODEL_CONFIG["nemotron-3-ultra"]
-        warnings = [r for r in caplog.records if r.name == "skell_e_router" and r.levelname == "WARNING"]
-        assert len(warnings) == 1
-        assert "nemotron-70b" in warnings[0].getMessage()
-        assert "deprecated" in warnings[0].getMessage()
-
-        caplog.clear()
-        resolve_model_alias("nemotron-70b")
-        assert not [r for r in caplog.records if r.name == "skell_e_router"]
-
-    def test_non_deprecated_alias_does_not_warn(self, caplog):
-        caplog.set_level("WARNING", logger="skell_e_router")
-        resolve_model_alias("gpt-5.5")
-        assert not [r for r in caplog.records if r.name == "skell_e_router"]
-
-
 # ---------------------------------------------------------------------------
 # _handle_model_specific_params
 # ---------------------------------------------------------------------------

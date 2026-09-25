@@ -1174,22 +1174,6 @@ The router has an internal retry up to 3 times before sending the response.
 
 ---
 
-## Deprecated Model Aliases
-
-Some aliases name a model the provider has retired but still answers, by silently serving a successor and billing at its rate. They stay registered so existing callers keep working, and `resolve_model_alias()` logs one warning per process on the `skell_e_router` logger the first time each is used. `DEPRECATED_MODELS` in `model_config.py` is the full list with the replacement to use.
-
-| Alias | What the provider actually serves | Use instead |
-|---|---|---|
-| `grok-4-1-fast-reasoning`, `grok-4-0709`, `grok-4-fast-reasoning` | xAI grok-4.3 | `grok-4.20` |
-| `grok-4-1-fast-non-reasoning`, `grok-4-fast-non-reasoning` | xAI grok-4.3 | `grok-4.20-non-reasoning` |
-| `grok-code-fast-1` | xAI grok-build-0.1 | `grok-4.20` |
-| `nemotron-super-49b`, `nemotron-70b`, `nemotron-nano-12b-vl` | DeepInfra Nemotron 3 Ultra | `nemotron-3-ultra` |
-| `nemotron-nano-9b` | DeepInfra Nemotron 3 Nano 30B | `nemotron-3-nano-30b` |
-
-The Nemotron aliases are the successor's registry entry, so `MODEL_CONFIG["nemotron-70b"]` reports Nemotron 3 Ultra's `supports_thinking` and `pricing`. The xAI aliases keep their own entries. Ids that providers reject outright (for example `claude-sonnet-4-20250514`, `gpt-5.3-chat`, `groq-compound`) are removed, not deprecated, and raise `INVALID_MODEL`. The audit behind this list is `docs/model-deprecation-audit-2026-09-25.md`.
-
----
-
 ## Groq Models
 
 Two OpenAI open-weight models run on Groq's inference servers. They are registered with `provider="groq"` and `groq/` upstream names, so they need `GROQ_API_KEY` (or `groq_api_key` in `config`).

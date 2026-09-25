@@ -31,7 +31,7 @@
 
 ## Retired-model sweep follow-ups (from 2026-09-25 audit)
 
-- [ ] **Delete the ten deprecated aliases in `DEPRECATED_MODELS`** (six xAI grok ids, four Nemotron ids) once skell-e-web repoints `SUPER_FAST_MODEL` and its chat model picker. They still answer today because the providers redirect them; the router logs a warning on use. Delete the alias/entry, the `DEPRECATED_MODELS` line and the tests in the same commit.
+- [x] **Delete the ten deprecated aliases** — done 2026-09-25 (v3.34.0) on Stan's call; the six xAI grok ids and four Nemotron ids are removed outright, and skell-e-web is being repointed in parallel (super-fast default becomes gpt-6-luna).
 - [ ] **Before 2026-10-23: drop `o1`** — OpenAI shuts it down that day; replacement gpt-5.6-sol. skell-e-web's picker and skell-e-scripter's model list still offer it.
 - [ ] **Before 2026-12-11: drop `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `o3`** — OpenAI shutdown date; replacements gpt-5.6-sol / terra / luna / sol. `gpt-5` is the default model in most router tests (tests/helpers.py and test_utils.py), so swap the test default first. skell-e-web, benchmark config.yaml and skell-e-web's filter_tickets_llm.py use them.
 - [ ] **Before 2027-05-07: drop `gemini-3.1-flash-lite`** — Google shutdown date; replacement gemini-3.5-flash-lite. skell-e-web's RAG subagent and routing-classifier fallback, solar-sailer's editor config and beverly-bica's OCR tool all pin it.

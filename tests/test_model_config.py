@@ -2,7 +2,7 @@
 
 import pytest
 from skell_e_router.model_config import (
-    AIModel, MODEL_CONFIG, DEPRECATED_MODELS,
+    AIModel, MODEL_CONFIG,
     EmbeddingModel, EMBEDDING_MODEL_CONFIG, resolve_embedding_alias,
 )
 from skell_e_router.utils import RouterError
@@ -108,13 +108,11 @@ class TestModelConfig:
         "kimi-k3",
         "glm-5.3-flash",
         "grok-4.6", "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
-        "grok-code-fast-1",
         "gpt-oss-120b", "gpt-oss-20b",
         "deepseek-v4.1-flash", "deepseek-v4-pro", "deepseek-v4-flash",
         "glm-5.2", "minimax-m3", "qwen3.8-max", "qwen3.5-397b",
         "nemotron-3-ultra",
-        "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
-        "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
+        "nemotron-3-super", "nemotron-3-nano-30b",
     ])
     def test_known_aliases_exist(self, alias):
         assert alias in MODEL_CONFIG
@@ -227,24 +225,12 @@ class TestModelConfig:
         "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022",
         "grok-4-0220",
         "groq-compound", "groq-compound-mini", "qwen3-32b", "kimi-k2-0905",
+        "grok-4-1-fast-reasoning", "grok-4-1-fast-non-reasoning", "grok-4-0709",
+        "grok-4-fast-reasoning", "grok-4-fast-non-reasoning", "grok-code-fast-1",
+        "nemotron-super-49b", "nemotron-70b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
     ])
     def test_retired_aliases_are_gone(self, alias):
         assert alias not in MODEL_CONFIG
-
-    @pytest.mark.parametrize("alias", sorted(DEPRECATED_MODELS))
-    def test_deprecated_aliases_still_resolve(self, alias):
-        assert alias in MODEL_CONFIG
-        assert isinstance(MODEL_CONFIG[alias], AIModel)
-
-    @pytest.mark.parametrize("alias,successor", [
-        ("nemotron-super-49b", "nemotron-3-ultra"),
-        ("nemotron-70b", "nemotron-3-ultra"),
-        ("nemotron-nano-12b-vl", "nemotron-3-ultra"),
-        ("nemotron-nano-9b", "nemotron-3-nano-30b"),
-    ])
-    def test_deprecated_nemotron_aliases_point_to_successor(self, alias, successor):
-        assert alias in DEPRECATED_MODELS
-        assert MODEL_CONFIG[alias] is MODEL_CONFIG[successor]
 
     def test_nano_banana_has_modalities(self):
         model = MODEL_CONFIG["nano-banana-3"]
@@ -480,7 +466,7 @@ class TestModelConfig:
         assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
 
     @pytest.mark.parametrize("alias", [
-        "nemotron-3-super", "nemotron-3-nano-30b", "nemotron-nano-9b",
+        "nemotron-3-super", "nemotron-3-nano-30b",
     ])
     def test_deepinfra_nemotron_models(self, alias):
         model = MODEL_CONFIG[alias]
@@ -636,7 +622,7 @@ class TestResolveEmbeddingAlias:
         assert "not-a-real-model" in exc.value.message
 
 
-class TestGroqHostedAndDeprecatedFullNames:
+class TestGroqHosted:
     @pytest.mark.parametrize("alias", ["gpt-oss-120b", "gpt-oss-20b"])
     def test_gpt_oss_is_groq_provider(self, alias):
         model = MODEL_CONFIG[alias]
@@ -644,12 +630,4 @@ class TestGroqHostedAndDeprecatedFullNames:
         assert model.is_groq is True
         assert model.name.startswith("groq/openai/")
 
-    def test_deprecated_xai_full_names_are_listed(self):
-        for alias in ("grok-4-0709", "grok-code-fast-1"):
-            full = MODEL_CONFIG[alias].name
-            assert full.startswith("xai/")
-            assert DEPRECATED_MODELS[full] == DEPRECATED_MODELS[alias]
 
-    def test_successor_full_names_are_not_deprecated(self):
-        assert MODEL_CONFIG["nemotron-3-ultra"].name not in DEPRECATED_MODELS
-        assert MODEL_CONFIG["nemotron-3-nano-30b"].name not in DEPRECATED_MODELS

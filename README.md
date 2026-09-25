@@ -201,8 +201,6 @@ Only the one you need is required — you don't need them all.
 
 > **Groq-hosted models** (`gpt-oss-120b`, `gpt-oss-20b`) use the `GROQ_API_KEY`.
 
-> **Deprecated aliases** (retired ids the provider still answers with a successor, like `grok-4-0709` or `nemotron-70b`) keep working but log a warning on first use. The list is `DEPRECATED_MODELS` in `model_config.py`.
-
 You can also pass keys directly so your code doesn't depend on environment variables:
 
 ```python

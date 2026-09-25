@@ -617,47 +617,6 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
     ),
-    # xAI retired the six ids below on 2026-05-15 and now silently serves grok-4.3 (the grok-4-1-fast /
-    # grok-4 / grok-4-fast ids) or grok-build-0.1 (grok-code-fast-1), billed at the served model's rate.
-    # They stay registered only because skell-e-web still calls them; each is listed in DEPRECATED_MODELS
-    # below and warns on use. Delete the entries and their DEPRECATED_MODELS lines once skell-e-web repoints.
-    # https://docs.x.ai/developers/migration/may-15-retirement.md
-    "grok-4-1-fast-reasoning": AIModel(
-        name="xai/grok-4-1-fast-reasoning",
-        provider="xai",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "grok-4-1-fast-non-reasoning": AIModel(
-        name="xai/grok-4-1-fast-non-reasoning",
-        provider="xai",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "grok-4-0709": AIModel(
-        name="xai/grok-4-0709",
-        provider="xai",
-        supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},   # NOTE: It's a reasoning model, but reasoning_effort is NOT SUPPORTED
-    ),
-    "grok-4-fast-reasoning": AIModel(
-        name="xai/grok-4-fast-reasoning",
-        provider="xai",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "grok-4-fast-non-reasoning": AIModel(
-        name="xai/grok-4-fast-non-reasoning",
-        provider="xai",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "grok-code-fast-1": AIModel(
-        name="xai/grok-code-fast-1",
-        provider="xai",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
 
 
     # DEEPINFRA (OPEN-WEIGHT & PARTNER MODELS)
@@ -770,42 +729,10 @@ MODEL_CONFIG["gemini-3-pro-preview"] = MODEL_CONFIG["gemini-3.1-pro-preview"]  #
 MODEL_CONFIG["gemini-3.1-flash-lite-preview"] = MODEL_CONFIG["gemini-3.1-flash-lite"]  # Renamed from preview on GA
 MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 
-# DeepInfra retired these Nemotron ids (Jun-Jul 2026) and forwards requests to the Nemotron 3 successors,
-# so the aliases resolve to the model DeepInfra actually serves (confirmed by live calls on 2026-09-25,
-# including the 12B vision id). Listed in DEPRECATED_MODELS; delete once
-# skell-e-web repoints. https://api.deepinfra.com/models/list
-MODEL_CONFIG["nemotron-super-49b"] = MODEL_CONFIG["nemotron-3-ultra"]
-MODEL_CONFIG["nemotron-70b"] = MODEL_CONFIG["nemotron-3-ultra"]
-MODEL_CONFIG["nemotron-nano-12b-vl"] = MODEL_CONFIG["nemotron-3-ultra"]
-MODEL_CONFIG["nemotron-nano-9b"] = MODEL_CONFIG["nemotron-3-nano-30b"]
-
-# Aliases the provider has retired but that still answer (the provider redirects them). They resolve
-# normally and resolve_model_alias() logs a warning naming the replacement. Value = message shown to
-# the caller. Remove an id from here, its alias/entry above, and any test the same day.
-DEPRECATED_MODELS: dict[str, str] = {
-    "grok-4-1-fast-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
-    "grok-4-1-fast-non-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20-non-reasoning",
-    "grok-4-0709": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
-    "grok-4-fast-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
-    "grok-4-fast-non-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20-non-reasoning",
-    "grok-code-fast-1": "xAI retired it on 2026-05-15 and serves grok-build-0.1 instead; use grok-4.20",
-    "nemotron-super-49b": "DeepInfra retired it on 2026-07-17 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
-    "nemotron-70b": "DeepInfra retired it on 2026-07-16 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
-    "nemotron-nano-12b-vl": "DeepInfra retired it on 2026-07-16 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
-    "nemotron-nano-9b": "DeepInfra retired it on 2026-06-11 and serves Nemotron 3 Nano 30B; use nemotron-3-nano-30b",
-}
-
 # Allow lookup by full name too
 for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)
     if config.name not in MODEL_CONFIG:
         MODEL_CONFIG[config.name] = config
-
-# Full-name lookups of a deprecated entry (e.g. "xai/grok-4-0709") warn too. Aliases that point at a
-# live successor keep the successor's full name clean.
-for _alias in list(DEPRECATED_MODELS):
-    _full = MODEL_CONFIG[_alias].name
-    if _full.endswith("/" + _alias):
-        DEPRECATED_MODELS[_full] = DEPRECATED_MODELS[_alias]
 
 
 # ============================================================

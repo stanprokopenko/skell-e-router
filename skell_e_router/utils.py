@@ -8,7 +8,7 @@ import base64
 import mimetypes
 from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
-from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG, DEPRECATED_MODELS
+from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG
 from .response import AIResponse, GeminiFileRef
 from .errors import provider_error, safe_iterator, SafeStream, _redact_keys
 from .gemini_direct import (
@@ -426,9 +426,6 @@ def _check_provider_key(ai_model: "AIModel", config: dict | None = None, verbosi
 
 
 # Resolves a model alias (or full name) to its AIModel object.
-_deprecation_warned: set[str] = set()
-
-
 def resolve_model_alias(model_alias: str) -> AIModel:
     if model_alias in CLASSIFICATION_MODEL_CONFIG:
         raise RouterError("INVALID_MODEL", "This model requires classify(), not ask_ai().")
@@ -437,11 +434,6 @@ def resolve_model_alias(model_alias: str) -> AIModel:
         raise RouterError(
             code="INVALID_MODEL",
             message=f"Invalid model alias '{model_alias}'."
-        )
-    if model_alias in DEPRECATED_MODELS and model_alias not in _deprecation_warned:
-        _deprecation_warned.add(model_alias)
-        logging.getLogger("skell_e_router").warning(
-            "Model alias '%s' is deprecated: %s.", model_alias, DEPRECATED_MODELS[model_alias]
         )
     return ai_model
 
