@@ -2,12 +2,13 @@ import litellm
 import os
 import io
 import json
+import logging
 import time
 import base64
 import mimetypes
 from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
-from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG
+from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG, DEPRECATED_MODELS
 from .response import AIResponse, GeminiFileRef
 from .errors import provider_error, safe_iterator, SafeStream, _redact_keys
 from .gemini_direct import (
@@ -425,6 +426,9 @@ def _check_provider_key(ai_model: "AIModel", config: dict | None = None, verbosi
 
 
 # Resolves a model alias (or full name) to its AIModel object.
+_deprecation_warned: set[str] = set()
+
+
 def resolve_model_alias(model_alias: str) -> AIModel:
     if model_alias in CLASSIFICATION_MODEL_CONFIG:
         raise RouterError("INVALID_MODEL", "This model requires classify(), not ask_ai().")
@@ -433,6 +437,11 @@ def resolve_model_alias(model_alias: str) -> AIModel:
         raise RouterError(
             code="INVALID_MODEL",
             message=f"Invalid model alias '{model_alias}'."
+        )
+    if model_alias in DEPRECATED_MODELS and model_alias not in _deprecation_warned:
+        _deprecation_warned.add(model_alias)
+        logging.getLogger("skell_e_router").warning(
+            "Model alias '%s' is deprecated: %s.", model_alias, DEPRECATED_MODELS[model_alias]
         )
     return ai_model
 
@@ -691,12 +700,6 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
                 kwargs.pop('reasoning_effort')
             # If not transformed, 'reasoning_effort' stays for final filtering.
     
-    # Groq Qwen3: remap standard reasoning_effort values to Groq's accepted values.
-    # low -> none (disable thinking), medium/high -> default (enable thinking).
-    if ai_model.is_groq and "reasoning_effort" in kwargs:
-        GROQ_EFFORT_REMAP = {"low": "none", "medium": "default", "high": "default"}
-        kwargs["reasoning_effort"] = GROQ_EFFORT_REMAP.get(kwargs["reasoning_effort"], kwargs["reasoning_effort"])
-
     # LiteLLM's parameter registry can lag new releases and aggregator models.
     # MODEL_CONFIG is the source of truth, so force declared reasoning effort through.
     uses_openai_api = ai_model.is_groq or ai_model.is_xai or ai_model.is_openrouter
@@ -708,40 +711,6 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         existing = kwargs.get("allowed_openai_params", [])
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]
-
-    # Groq Compound: ensure correct model-version header is sent to enable tools
-    if ai_model.is_groq and (ai_model.name.endswith("/compound") or ai_model.name.endswith("/compound-mini")):
-        groq_header_key = "Groq-Model-Version"
-        header_value = "latest"
-
-        # Prefer LiteLLM's extra_headers; fall back to headers
-        extra_headers = kwargs.get("extra_headers")
-        headers = kwargs.get("headers")
-
-        if isinstance(extra_headers, dict):
-            if groq_header_key not in extra_headers:
-                extra_headers[groq_header_key] = header_value
-            kwargs["extra_headers"] = extra_headers
-        elif isinstance(headers, dict):
-            if groq_header_key not in headers:
-                headers[groq_header_key] = header_value
-            kwargs["headers"] = headers
-        else:
-            # Create using the more common LiteLLM arg name
-            kwargs["extra_headers"] = {groq_header_key: header_value}
-
-        GROQ_COMPOUND_DEFAULT_TOOLS = [
-            "browser_automation",
-            "web_search",
-            "code_interpreter",
-            "visit_website",
-        ]
-
-        # If caller didn't specify tools, default to all Groq Compound tools
-        if "compound_custom" not in kwargs:
-            kwargs["compound_custom"] = {
-                "tools": {"enabled_tools": GROQ_COMPOUND_DEFAULT_TOOLS}
-            }
 
     # Gemini (LiteLLM path): sanitize tool parameter schemas. The Gemini API
     # rejects $defs/$ref/additionalProperties and requires `items` on arrays;

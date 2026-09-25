@@ -530,7 +530,7 @@ Each item in `response.images` is a dict with this structure:
 - The `nano-banana-3` model has `modalities` in its `supported_params`. The router auto-injects `modalities=["text", "image"]` to tell LiteLLM to request image output.
 - You can override this by passing `modalities=["text"]` if you only want text from this model.
 - When `rich_response=False` (the default), `ask_ai()` returns just the text content string. Images are only accessible via the `AIResponse` object with `rich_response=True`.
-- The model aliases `"nano-banana-3"` and `"gemini-3-pro-image"` both point to `gemini/gemini-3-pro-image-preview`.
+- The model aliases `"nano-banana-3"` and `"gemini-3-pro-image"` both point to `gemini/gemini-3-pro-image`.
 
 ---
 
@@ -634,7 +634,7 @@ Because Seedream and Gemini pick the container themselves, the requested `output
 | `seedream-4.5` | `ByteDance/Seedream-4.5` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.04 / image |
 | `seedream-4` | `ByteDance/Seedream-4` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.04 / image |
 | `seedream-5-pro` | `ByteDance/Seedream-5.0-Pro` | DeepInfra | `DEEPINFRA_API_KEY` | — | $0.0495 / image up to 2,359,296 px, $0.099 above |
-| `nano-banana-3`, `gemini-3-pro-image`, `nano-banana-pro` | `gemini-3-pro-image-preview` | Gemini | `GEMINI_API_KEY` | — | per-token, priced by the chat path |
+| `nano-banana-3`, `gemini-3-pro-image`, `nano-banana-pro` | `gemini-3-pro-image` | Gemini | `GEMINI_API_KEY` | — | per-token, priced by the chat path |
 
 `gpt-image-2.5-flare` is the fast variant and the target of the bare `gpt-image` alias. `gpt-image-2.5-sunburst` takes longer and follows detailed prompts more precisely. Text output tokens are not billed on GPT-Image, so cost is text input plus image input plus image output.
 
@@ -1132,8 +1132,8 @@ Pass beta feature flags via the `betas` parameter, which maps to the `anthropic-
 
 ```python
 response = ask_ai(
-    "claude-3-7-sonnet-20250219", "Write a long essay",
-    betas=["output-128k-2025-02-19"]
+    "claude-sonnet-4-6", "Write a long essay",
+    betas=["context-management-2025-06-27"]
 )
 ```
 
@@ -1148,10 +1148,6 @@ Cost is computed from hardcoded per-1M-token rates:
 | claude-opus-4-5 | $5.00 | $25.00 |
 | claude-haiku-4-5 | $1.00 | $5.00 |
 | claude-sonnet-4-5-20250929 | $3.00 | $15.00 |
-| claude-opus-4-1-20250805 | $15.00 | $75.00 |
-| claude-sonnet-4-20250514 | $3.00 | $15.00 |
-| claude-3-7-sonnet-20250219 | $3.00 | $15.00 |
-| claude-3-5-sonnet-20241022 | $3.00 | $15.00 |
 
 ### Limitations
 
@@ -1178,43 +1174,30 @@ The router has an internal retry up to 3 times before sending the response.
 
 ---
 
+## Deprecated Model Aliases
+
+Some aliases name a model the provider has retired but still answers, by silently serving a successor and billing at its rate. They stay registered so existing callers keep working, and `resolve_model_alias()` logs one warning per process on the `skell_e_router` logger the first time each is used. `DEPRECATED_MODELS` in `model_config.py` is the full list with the replacement to use.
+
+| Alias | What the provider actually serves | Use instead |
+|---|---|---|
+| `grok-4-1-fast-reasoning`, `grok-4-0709`, `grok-4-fast-reasoning` | xAI grok-4.3 | `grok-4.20` |
+| `grok-4-1-fast-non-reasoning`, `grok-4-fast-non-reasoning` | xAI grok-4.3 | `grok-4.20-non-reasoning` |
+| `grok-code-fast-1` | xAI grok-build-0.1 | `grok-4.20` |
+| `nemotron-super-49b`, `nemotron-70b`, `nemotron-nano-12b-vl` | DeepInfra Nemotron 3 Ultra | `nemotron-3-ultra` |
+| `nemotron-nano-9b` | DeepInfra Nemotron 3 Nano 30B | `nemotron-3-nano-30b` |
+
+The Nemotron aliases are the successor's registry entry, so `MODEL_CONFIG["nemotron-70b"]` reports Nemotron 3 Ultra's `supports_thinking` and `pricing`. The xAI aliases keep their own entries. Ids that providers reject outright (for example `claude-sonnet-4-20250514`, `gpt-5.3-chat`, `groq-compound`) are removed, not deprecated, and raise `INVALID_MODEL`. The audit behind this list is `docs/model-deprecation-audit-2026-09-25.md`.
+
+---
+
 ## Groq Models
 
-The router supports several models hosted on Groq's fast inference infrastructure.
-
-### Available Models
+Two OpenAI open-weight models run on Groq's inference servers. They are registered with `provider="groq"` and `groq/` upstream names, so they need `GROQ_API_KEY` (or `groq_api_key` in `config`).
 
 | Alias | Model | Thinking | Notes |
 |---|---|---|---|
-| `groq-compound` | `groq/groq/compound` | Yes | Agentic model with built-in tools (web search, code interpreter, etc.) |
-| `groq-compound-mini` | `groq/groq/compound-mini` | Yes | Lighter version of Compound |
-| `qwen3-32b` | `groq/qwen/qwen3-32b` | Yes | Qwen 3 32B with toggleable thinking mode |
-| `kimi-k2-0905` | `groq/moonshotai/kimi-k2-instruct-0905` | No | Moonshot Kimi K2, fast general-purpose model |
-
-### Disabling Thinking on Qwen3-32B
-
-Qwen3-32B runs in thinking mode by default (responses include `<think>` blocks). You can disable this with `reasoning_effort="none"`:
-
-```python
-from skell_e_router import ask_ai
-
-# Default — thinking enabled
-response = ask_ai("qwen3-32b", "Explain neural networks")
-
-# Thinking disabled — faster, no <think> block
-response = ask_ai("qwen3-32b", "Explain neural networks", reasoning_effort="none")
-```
-
-Accepted values for `reasoning_effort` on this model: `"none"`, `"default"`.
-
-**Note:** LiteLLM does not natively recognize `reasoning_effort` for Groq models. The router works around this by injecting `allowed_openai_params` to force the parameter through.
-
-### Groq Compound (temporary header)
-
-When routing to Groq Compound models, the router injects a request header `Groq-Model-Version: latest`. This selects the Compound profile that exposes built-in tools like `visit_website`.
-
-- This is a temporary shim for LiteLLM. Once LiteLLM forwards this header by default for Groq Compound, remove the injection in `skell_e_router/utils.py` in the `_handle_model_specific_params` function and the extra header params in `skell_e_router/model_config.py`.
-- If you prefer pinning to a specific profile, change the injected header value from `latest` to the desired version.
+| `gpt-oss-120b` | `groq/openai/gpt-oss-120b` | Yes | Accepts `reasoning_effort`, tools, streaming |
+| `gpt-oss-20b` | `groq/openai/gpt-oss-20b` | Yes | Smaller sibling, same parameters |
 
 ---
 

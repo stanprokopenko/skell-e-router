@@ -804,7 +804,7 @@ def make_ai_response(mime: str = "image/png", payload_b64: str = PNG_B64, count:
          "index": i, "type": "image_url"}
         for i in range(count)
     ]
-    response.model = "gemini-3-pro-image-preview"
+    response.model = "gemini-3-pro-image"
     response.prompt_tokens = 11
     response.completion_tokens = 1290
     response.total_tokens = 1301
@@ -885,7 +885,7 @@ class TestGemini:
         assert resp.total_tokens == 1301
         assert resp.cost == pytest.approx(0.134)
         assert resp.duration_seconds == pytest.approx(4.2)
-        assert resp.model == "gemini-3-pro-image-preview"
+        assert resp.model == "gemini-3-pro-image"
 
     def test_text_only_answer_raises_provider_error(self, fake_gemini_env):
         text_only = MagicMock()

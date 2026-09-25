@@ -66,7 +66,7 @@ class TestAIResponseCreation:
 
     def test_images_stored(self):
         imgs = [{"image_url": {"url": "data:image/png;base64,abc"}, "index": 0, "type": "image_url"}]
-        r = AIResponse(content="here is an image", model="gemini/gemini-3-pro-image-preview", images=imgs)
+        r = AIResponse(content="here is an image", model="gemini/gemini-3-pro-image", images=imgs)
         assert r.images == imgs
         assert len(r.images) == 1
 

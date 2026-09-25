@@ -2,7 +2,7 @@
 
 import pytest
 from skell_e_router.model_config import (
-    AIModel, MODEL_CONFIG,
+    AIModel, MODEL_CONFIG, DEPRECATED_MODELS,
     EmbeddingModel, EMBEDDING_MODEL_CONFIG, resolve_embedding_alias,
 )
 from skell_e_router.utils import RouterError
@@ -108,9 +108,8 @@ class TestModelConfig:
         "kimi-k3",
         "glm-5.3-flash",
         "grok-4.6", "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
-        "grok-4-0220", "grok-code-fast-1",
-        "groq-compound", "groq-compound-mini",
-        "qwen3-32b", "kimi-k2-0905",
+        "grok-code-fast-1",
+        "gpt-oss-120b", "gpt-oss-20b",
         "deepseek-v4.1-flash", "deepseek-v4-pro", "deepseek-v4-flash",
         "glm-5.2", "minimax-m3", "qwen3.8-max", "qwen3.5-397b",
         "nemotron-3-ultra",
@@ -222,26 +221,30 @@ class TestModelConfig:
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high"}
 
-    def test_groq_compound_models_have_compound_custom(self):
-        for alias in ("groq-compound", "groq-compound-mini"):
-            model = MODEL_CONFIG[alias]
-            assert "compound_custom" in model.supported_params
-            assert "extra_headers" in model.supported_params
+    @pytest.mark.parametrize("alias", [
+        "gpt-5.3-chat",
+        "claude-opus-4-1-20250805", "claude-sonnet-4-20250514",
+        "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022",
+        "grok-4-0220",
+        "groq-compound", "groq-compound-mini", "qwen3-32b", "kimi-k2-0905",
+    ])
+    def test_retired_aliases_are_gone(self, alias):
+        assert alias not in MODEL_CONFIG
 
-    def test_qwen3_32b_config(self):
-        model = MODEL_CONFIG["qwen3-32b"]
-        assert model.provider == "groq"
-        assert model.is_groq is True
-        assert model.supports_thinking is True
-        assert "reasoning_effort" in model.supported_params
-        assert model.accepted_reasoning_efforts == {"none", "default", "low", "medium", "high"}
+    @pytest.mark.parametrize("alias", sorted(DEPRECATED_MODELS))
+    def test_deprecated_aliases_still_resolve(self, alias):
+        assert alias in MODEL_CONFIG
+        assert isinstance(MODEL_CONFIG[alias], AIModel)
 
-    def test_kimi_k2_config(self):
-        model = MODEL_CONFIG["kimi-k2-0905"]
-        assert model.provider == "groq"
-        assert model.is_groq is True
-        assert model.supports_thinking is False
-        assert "reasoning_effort" not in model.supported_params
+    @pytest.mark.parametrize("alias,successor", [
+        ("nemotron-super-49b", "nemotron-3-ultra"),
+        ("nemotron-70b", "nemotron-3-ultra"),
+        ("nemotron-nano-12b-vl", "nemotron-3-ultra"),
+        ("nemotron-nano-9b", "nemotron-3-nano-30b"),
+    ])
+    def test_deprecated_nemotron_aliases_point_to_successor(self, alias, successor):
+        assert alias in DEPRECATED_MODELS
+        assert MODEL_CONFIG[alias] is MODEL_CONFIG[successor]
 
     def test_nano_banana_has_modalities(self):
         model = MODEL_CONFIG["nano-banana-3"]
@@ -253,9 +256,9 @@ class TestModelConfig:
         assert MODEL_CONFIG["nano-banana-3"] is MODEL_CONFIG["gemini-3-pro-image"]
 
     def test_nano_banana_full_name_lookup(self):
-        assert "gemini/gemini-3-pro-image-preview" in MODEL_CONFIG
-        model = MODEL_CONFIG["gemini/gemini-3-pro-image-preview"]
-        assert model.name == "gemini/gemini-3-pro-image-preview"
+        assert "gemini/gemini-3-pro-image" in MODEL_CONFIG
+        model = MODEL_CONFIG["gemini/gemini-3-pro-image"]
+        assert model.name == "gemini/gemini-3-pro-image"
 
     def test_gemini_3_8_flash_config(self):
         """gemini-3.8-flash: GA flash model, direct SDK, thinking_level low/medium/high only ("minimal" returns 400)."""
@@ -477,8 +480,7 @@ class TestModelConfig:
         assert model.accepted_reasoning_efforts == {"minimal", "low", "medium", "high"}
 
     @pytest.mark.parametrize("alias", [
-        "nemotron-3-super", "nemotron-super-49b", "nemotron-70b",
-        "nemotron-3-nano-30b", "nemotron-nano-12b-vl", "nemotron-nano-9b",
+        "nemotron-3-super", "nemotron-3-nano-30b", "nemotron-nano-9b",
     ])
     def test_deepinfra_nemotron_models(self, alias):
         model = MODEL_CONFIG[alias]
@@ -632,3 +634,22 @@ class TestResolveEmbeddingAlias:
             resolve_embedding_alias("not-a-real-model")
         assert exc.value.code == "INVALID_MODEL"
         assert "not-a-real-model" in exc.value.message
+
+
+class TestGroqHostedAndDeprecatedFullNames:
+    @pytest.mark.parametrize("alias", ["gpt-oss-120b", "gpt-oss-20b"])
+    def test_gpt_oss_is_groq_provider(self, alias):
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "groq"
+        assert model.is_groq is True
+        assert model.name.startswith("groq/openai/")
+
+    def test_deprecated_xai_full_names_are_listed(self):
+        for alias in ("grok-4-0709", "grok-code-fast-1"):
+            full = MODEL_CONFIG[alias].name
+            assert full.startswith("xai/")
+            assert DEPRECATED_MODELS[full] == DEPRECATED_MODELS[alias]
+
+    def test_successor_full_names_are_not_deprecated(self):
+        assert MODEL_CONFIG["nemotron-3-ultra"].name not in DEPRECATED_MODELS
+        assert MODEL_CONFIG["nemotron-3-nano-30b"].name not in DEPRECATED_MODELS

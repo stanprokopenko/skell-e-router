@@ -199,7 +199,9 @@ Only the one you need is required — you don't need them all.
 
 > **OpenRouter models** (`glm-5.3-flash`) use the `OPENROUTER_API_KEY`.
 
-> **Groq models** (`groq-compound`, `qwen3-32b`, `kimi-k2-0905`, etc.) use the `GROQ_API_KEY`.
+> **Groq-hosted models** (`gpt-oss-120b`, `gpt-oss-20b`) use the `GROQ_API_KEY`.
+
+> **Deprecated aliases** (retired ids the provider still answers with a successor, like `grok-4-0709` or `nemotron-70b`) keep working but log a warning on first use. The list is `DEPRECATED_MODELS` in `model_config.py`.
 
 You can also pass keys directly so your code doesn't depend on environment variables:
 
@@ -295,7 +297,7 @@ Pass beta feature flags to Claude models:
 
 ```python
 response = ask_ai(
-    "claude-3-7-sonnet-20250219", "Write a long essay",
-    betas=["output-128k-2025-02-19"]
+    "claude-sonnet-4-6", "Write a long essay",
+    betas=["context-management-2025-06-27"]
 )
 ```

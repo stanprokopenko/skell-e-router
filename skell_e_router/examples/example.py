@@ -26,7 +26,6 @@ if __name__ == "__main__":
             response_format={"type": "text"},
             candidate_count=1,
             reasoning_effort="low",
-            # compound_custom={"tools": {"enabled_tools": ["visit_website"]}},   # Used only for Groq's compound model.
             #budget_tokens=8000   # Budget conversion: <=1024=low, <=2048=medium, >2048=high
             # Use reasoning_effort because most models suport it and litellm maps it to thinking_config
             

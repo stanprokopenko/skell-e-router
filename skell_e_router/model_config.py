@@ -172,13 +172,6 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high", "xhigh"}
     ),
-    "gpt-5.3-chat": AIModel(
-        name="openai/gpt-5.3-chat-latest",
-        provider="openai",
-        supports_thinking=True,
-        supported_params={"reasoning_effort", "max_tokens", "stream", "max_completion_tokens"},
-        accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
-    ),
     "gpt-5.2": AIModel(
         name="openai/gpt-5.2",
         provider="openai",
@@ -186,6 +179,9 @@ MODEL_CONFIG = {
         supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
         accepted_reasoning_efforts={"minimal", "low", "medium", "high"}
     ),
+    # gpt-5 / gpt-5-mini / gpt-5-nano / o3 are deprecated by OpenAI, shutdown 2026-12-11
+    # (replacements gpt-5.6-sol / gpt-5.6-terra / gpt-5.6-luna / gpt-5.6-sol). o1 shuts down 2026-10-23.
+    # https://developers.openai.com/api/docs/deprecations
     "gpt-5": AIModel(
         name="openai/gpt-5",
         provider="openai",
@@ -233,15 +229,16 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"}
     ),
 
+    # OpenAI open-weight models served by Groq: provider is groq so the router checks GROQ_API_KEY.
     "gpt-oss-120b": AIModel(
         name="groq/openai/gpt-oss-120b",
-        provider="openai",
+        provider="groq",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
     ),
     "gpt-oss-20b": AIModel(
         name="groq/openai/gpt-oss-20b",
-        provider="openai",
+        provider="groq",
         supports_thinking=True,
         supported_params={"temperature", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice"}
     ),
@@ -318,6 +315,8 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
         accepted_reasoning_efforts={"low", "medium", "high"},
     ),
+    # Deprecated by Google, shutdown 2027-05-07; replacement gemini-3.5-flash-lite.
+    # https://ai.google.dev/gemini-api/docs/deprecations
     "gemini-3.1-flash-lite": AIModel(
         name="gemini/gemini-3.1-flash-lite",
         provider="gemini",
@@ -327,7 +326,7 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
     ),
     "nano-banana-3": AIModel(
-        name="gemini/gemini-3-pro-image-preview",
+        name="gemini/gemini-3-pro-image",
         provider="gemini",
         supports_thinking=False,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "candidate_count", "safety_settings", "modalities"},
@@ -481,35 +480,6 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
         max_output_tokens=64000,
     ),
-    "claude-opus-4-1-20250805": AIModel(
-        name="anthropic/claude-opus-4-1-20250805",
-        provider="anthropic",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
-        use_direct_sdk=True,
-    ),
-    "claude-sonnet-4-20250514": AIModel(
-        name="anthropic/claude-sonnet-4-20250514",
-        provider="anthropic",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
-        use_direct_sdk=True,
-    ),
-    "claude-3-7-sonnet-20250219": AIModel(
-        name="anthropic/claude-3-7-sonnet-20250219",
-        provider="anthropic",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
-        use_direct_sdk=True,
-        # betas param such as betas=["output-128k-2025-02-19"] for 128K output tokens (much longer responses)
-    ),
-    "claude-3-5-sonnet-20241022": AIModel(
-        name="anthropic/claude-3-5-sonnet-20241022",
-        provider="anthropic",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-        use_direct_sdk=True,
-    ),
 
     # META (MODEL API)
 
@@ -647,12 +617,11 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "tools", "tool_choice"},
     ),
-    "grok-4-0220": AIModel(
-        name="xai/grok-4-0220",
-        provider="xai",
-        supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
+    # xAI retired the six ids below on 2026-05-15 and now silently serves grok-4.3 (the grok-4-1-fast /
+    # grok-4 / grok-4-fast ids) or grok-build-0.1 (grok-code-fast-1), billed at the served model's rate.
+    # They stay registered only because skell-e-web still calls them; each is listed in DEPRECATED_MODELS
+    # below and warns on use. Delete the entries and their DEPRECATED_MODELS lines once skell-e-web repoints.
+    # https://docs.x.ai/developers/migration/may-15-retirement.md
     "grok-4-1-fast-reasoning": AIModel(
         name="xai/grok-4-1-fast-reasoning",
         provider="xai",
@@ -690,33 +659,6 @@ MODEL_CONFIG = {
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
     ),
 
-    # GROQ
-
-    "groq-compound": AIModel(
-        name="groq/groq/compound",
-        provider="groq",
-        supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice", "compound_custom", "extra_headers", "headers"}
-    ),
-    "groq-compound-mini": AIModel(
-        name="groq/groq/compound-mini",
-        provider="groq",
-        supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice", "compound_custom", "extra_headers", "headers"}
-    ),
-    "qwen3-32b": AIModel(
-        name="groq/qwen/qwen3-32b",
-        provider="groq",
-        supports_thinking=True,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
-        accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
-    ),
-    "kimi-k2-0905": AIModel(
-        name="groq/moonshotai/kimi-k2-instruct-0905",
-        provider="groq",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "max_completion_tokens", "stream", "tools", "tool_choice"},
-    ),
 
     # DEEPINFRA (OPEN-WEIGHT & PARTNER MODELS)
     # DeepInfra serves open-weight and partner models via an OpenAI-compatible API (DEEPINFRA_API_KEY).
@@ -814,32 +756,8 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
     ),
-    "nemotron-super-49b": AIModel(
-        name="deepinfra/nvidia/Llama-3.3-Nemotron-Super-49B-v1.5",
-        provider="deepinfra",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "nemotron-70b": AIModel(
-        name="deepinfra/nvidia/Llama-3.1-Nemotron-70B-Instruct",
-        provider="deepinfra",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
     "nemotron-3-nano-30b": AIModel(
         name="deepinfra/nvidia/Nemotron-3-Nano-30B-A3B",
-        provider="deepinfra",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "nemotron-nano-12b-vl": AIModel(
-        name="deepinfra/nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL",
-        provider="deepinfra",
-        supports_thinking=False,
-        supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
-    ),
-    "nemotron-nano-9b": AIModel(
-        name="deepinfra/nvidia/NVIDIA-Nemotron-Nano-9B-v2",
         provider="deepinfra",
         supports_thinking=False,
         supported_params={"temperature", "top_p", "stop", "max_tokens", "stream", "tools", "tool_choice"},
@@ -852,10 +770,42 @@ MODEL_CONFIG["gemini-3-pro-preview"] = MODEL_CONFIG["gemini-3.1-pro-preview"]  #
 MODEL_CONFIG["gemini-3.1-flash-lite-preview"] = MODEL_CONFIG["gemini-3.1-flash-lite"]  # Renamed from preview on GA
 MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]
 
+# DeepInfra retired these Nemotron ids (Jun-Jul 2026) and forwards requests to the Nemotron 3 successors,
+# so the aliases resolve to the model DeepInfra actually serves (confirmed by live calls on 2026-09-25,
+# including the 12B vision id). Listed in DEPRECATED_MODELS; delete once
+# skell-e-web repoints. https://api.deepinfra.com/models/list
+MODEL_CONFIG["nemotron-super-49b"] = MODEL_CONFIG["nemotron-3-ultra"]
+MODEL_CONFIG["nemotron-70b"] = MODEL_CONFIG["nemotron-3-ultra"]
+MODEL_CONFIG["nemotron-nano-12b-vl"] = MODEL_CONFIG["nemotron-3-ultra"]
+MODEL_CONFIG["nemotron-nano-9b"] = MODEL_CONFIG["nemotron-3-nano-30b"]
+
+# Aliases the provider has retired but that still answer (the provider redirects them). They resolve
+# normally and resolve_model_alias() logs a warning naming the replacement. Value = message shown to
+# the caller. Remove an id from here, its alias/entry above, and any test the same day.
+DEPRECATED_MODELS: dict[str, str] = {
+    "grok-4-1-fast-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
+    "grok-4-1-fast-non-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20-non-reasoning",
+    "grok-4-0709": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
+    "grok-4-fast-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20",
+    "grok-4-fast-non-reasoning": "xAI retired it on 2026-05-15 and serves grok-4.3 instead; use grok-4.20-non-reasoning",
+    "grok-code-fast-1": "xAI retired it on 2026-05-15 and serves grok-build-0.1 instead; use grok-4.20",
+    "nemotron-super-49b": "DeepInfra retired it on 2026-07-17 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
+    "nemotron-70b": "DeepInfra retired it on 2026-07-16 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
+    "nemotron-nano-12b-vl": "DeepInfra retired it on 2026-07-16 and serves Nemotron 3 Ultra; use nemotron-3-ultra",
+    "nemotron-nano-9b": "DeepInfra retired it on 2026-06-11 and serves Nemotron 3 Nano 30B; use nemotron-3-nano-30b",
+}
+
 # Allow lookup by full name too
 for config in list(MODEL_CONFIG.values()): # Iterate over a copy if modifying during iteration (though here it's safe)
     if config.name not in MODEL_CONFIG:
         MODEL_CONFIG[config.name] = config
+
+# Full-name lookups of a deprecated entry (e.g. "xai/grok-4-0709") warn too. Aliases that point at a
+# live successor keep the successor's full name clean.
+for _alias in list(DEPRECATED_MODELS):
+    _full = MODEL_CONFIG[_alias].name
+    if _full.endswith("/" + _alias):
+        DEPRECATED_MODELS[_full] = DEPRECATED_MODELS[_alias]
 
 
 # ============================================================
@@ -1152,7 +1102,7 @@ IMAGE_CONFIG: dict[str, ImageModel] = {
     # delegates to ask_ai(chat_alias, ..., rich_response=True) and unpacks the
     # data URLs. Gemini picks the resolution itself; size is never sent.
     "nano-banana-3": ImageModel(
-        name="gemini-3-pro-image-preview",
+        name="gemini-3-pro-image",
         provider="gemini",
         supported_sizes=("auto", "1024x1024"),
         supported_params=(),

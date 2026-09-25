@@ -24,10 +24,19 @@
 
 - [x] **Swap `kimi-k2.6` → Kimi K3** — done 2026-07-22 (v3.16.0): Moonshot's K3 API launched early (Jul 16), so `kimi-k3` now routes first-party via `api.moonshot.ai` (MOONSHOT_API_KEY, $3/$15 per 1M) and the `kimi-k2.6` DeepInfra stand-in was removed.
 - [ ] **Re-evaluate kimi-k3 hosting** once the K3 open weights land on DeepInfra (promised ~Jul 27, 2026) — DeepInfra may undercut Moonshot's $3/$15 first-party pricing, but check latency first (DeepInfra ran Kimi-K2.6 at ~3.5 min/answer).
-- [ ] **Remove or replace the dead Groq entries** `qwen3-32b` and `kimi-k2-0905` — Groq deprecated both (Jun 17 / Mar 23, 2026); calls fail on free/developer tiers. Removal needs Stan's sign-off. `qwen3.5-397b` (DeepInfra) and `kimi-k3` (Moonshot first-party) are the successors.
+- [x] **Remove or replace the dead Groq entries** — done 2026-09-25 (v3.33.0) as part of the retired-model sweep; `groq-compound`, `groq-compound-mini`, `qwen3-32b` and `kimi-k2-0905` are gone and the Groq-only request code with them. Audit in [model-deprecation-audit-2026-09-25.md](model-deprecation-audit-2026-09-25.md).
 - [ ] **Add Gemini 3.5 Pro when it goes GA** — still in limited Vertex preview as of Jul 21, 2026; Google shipped 3.6 Flash instead and teased Gemini 4.
 - [x] **Consider DeepSeek first-party API** — closed 2026-09-12 (v3.27.0). DeepSeek retired V4-Flash and repriced; for the new `deepseek-v4.1-flash`, DeepInfra ($0.20/$0.60 per 1M) is cheaper than first-party peak ($0.30/$1.20). No DEEPSEEK_API_KEY needed. Revisit only if DeepInfra lags a future DeepSeek release.
-- [ ] **Decide the fate of `deepseek-v4-flash`** — DeepSeek first-party retired the model on 2026-09-10 (requests now route to V4.1-Flash). DeepInfra still serves the original weights, so the alias keeps working; removal needs Stan's sign-off.
+- [ ] **Decide the fate of `deepseek-v4-flash`** — DeepSeek first-party retired the model on 2026-09-10 (requests now route to V4.1-Flash). DeepInfra still serves the original weights, so the alias keeps working; removal needs Stan's sign-off. Re-checked 2026-09-25: DeepInfra still lists it as active, so it stayed in the retired-model sweep.
+
+## Retired-model sweep follow-ups (from 2026-09-25 audit)
+
+- [ ] **Delete the ten deprecated aliases in `DEPRECATED_MODELS`** (six xAI grok ids, four Nemotron ids) once skell-e-web repoints `SUPER_FAST_MODEL` and its chat model picker. They still answer today because the providers redirect them; the router logs a warning on use. Delete the alias/entry, the `DEPRECATED_MODELS` line and the tests in the same commit.
+- [ ] **Before 2026-10-23: drop `o1`** — OpenAI shuts it down that day; replacement gpt-5.6-sol. skell-e-web's picker and skell-e-scripter's model list still offer it.
+- [ ] **Before 2026-12-11: drop `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `o3`** — OpenAI shutdown date; replacements gpt-5.6-sol / terra / luna / sol. `gpt-5` is the default model in most router tests (tests/helpers.py and test_utils.py), so swap the test default first. skell-e-web, benchmark config.yaml and skell-e-web's filter_tickets_llm.py use them.
+- [ ] **Before 2027-05-07: drop `gemini-3.1-flash-lite`** — Google shutdown date; replacement gemini-3.5-flash-lite. skell-e-web's RAG subagent and routing-classifier fallback, solar-sailer's editor config and beverly-bica's OCR tool all pin it.
+- [ ] **Watch `gemini-3-flash-preview`** — no date yet, but Google already names gemini-3.6-flash as its replacement.
+- [ ] **Watch the Anthropic 4.5 family** — earliest possible retirement dates are claude-sonnet-4-5 (2026-09-29), claude-haiku-4-5 (2026-10-15), claude-opus-4-5 (2026-11-24). Nothing announced; Anthropic gives 60 days' notice.
 
 ## OpenRouter / GLM 5.3 Flash follow-ups (from 2026-08-27 work)
 

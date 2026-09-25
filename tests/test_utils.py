@@ -667,6 +667,27 @@ class TestResolveModelAlias:
         with pytest.raises(RouterError):
             resolve_model_alias("")
 
+    def test_deprecated_alias_warns_once(self, caplog):
+        import skell_e_router.utils as utils_mod
+        utils_mod._deprecation_warned.clear()
+        caplog.set_level("WARNING", logger="skell_e_router")
+
+        model = resolve_model_alias("nemotron-70b")
+        assert model is MODEL_CONFIG["nemotron-3-ultra"]
+        warnings = [r for r in caplog.records if r.name == "skell_e_router" and r.levelname == "WARNING"]
+        assert len(warnings) == 1
+        assert "nemotron-70b" in warnings[0].getMessage()
+        assert "deprecated" in warnings[0].getMessage()
+
+        caplog.clear()
+        resolve_model_alias("nemotron-70b")
+        assert not [r for r in caplog.records if r.name == "skell_e_router"]
+
+    def test_non_deprecated_alias_does_not_warn(self, caplog):
+        caplog.set_level("WARNING", logger="skell_e_router")
+        resolve_model_alias("gpt-5.5")
+        assert not [r for r in caplog.records if r.name == "skell_e_router"]
+
 
 # ---------------------------------------------------------------------------
 # _handle_model_specific_params
@@ -827,30 +848,6 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert result["top_p"] == 0.99
 
-    # --- Groq compound headers ---
-
-    def test_groq_compound_adds_headers(self):
-        model = make_model(
-            provider="groq",
-            name="groq/groq/compound",
-            supported_params={"extra_headers", "compound_custom", "stream"},
-        )
-        kwargs = {}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result.get("extra_headers", {}).get("Groq-Model-Version") == "latest"
-        assert "compound_custom" in result
-
-    def test_groq_compound_preserves_existing_headers(self):
-        model = make_model(
-            provider="groq",
-            name="groq/groq/compound-mini",
-            supported_params={"extra_headers", "compound_custom", "stream"},
-        )
-        kwargs = {"extra_headers": {"Custom-Header": "val"}}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result["extra_headers"]["Custom-Header"] == "val"
-        assert result["extra_headers"]["Groq-Model-Version"] == "latest"
-
     # --- Modalities auto-injection for image generation models ---
 
     def test_auto_injects_modalities_for_image_model(self):
@@ -996,52 +993,7 @@ class TestHandleModelSpecificParams:
         result = _handle_model_specific_params(model, kwargs)
         assert "thinking" not in result
 
-    # --- Groq reasoning_effort remapping ---
-
-    def test_groq_reasoning_effort_low_remaps_to_none(self):
-        """Groq: low reasoning_effort maps to 'none' (disables thinking)."""
-        model = make_model(
-            provider="groq",
-            supported_params={"reasoning_effort", "temperature", "stream"},
-            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
-        )
-        kwargs = {"reasoning_effort": "low"}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result["reasoning_effort"] == "none"
-        assert "allowed_openai_params" in result
-
-    def test_groq_reasoning_effort_medium_remaps_to_default(self):
-        """Groq: medium reasoning_effort maps to 'default' (keeps thinking)."""
-        model = make_model(
-            provider="groq",
-            supported_params={"reasoning_effort", "temperature", "stream"},
-            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
-        )
-        kwargs = {"reasoning_effort": "medium"}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result["reasoning_effort"] == "default"
-
-    def test_groq_reasoning_effort_high_remaps_to_default(self):
-        """Groq: high reasoning_effort maps to 'default' (keeps thinking)."""
-        model = make_model(
-            provider="groq",
-            supported_params={"reasoning_effort", "temperature", "stream"},
-            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
-        )
-        kwargs = {"reasoning_effort": "high"}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result["reasoning_effort"] == "default"
-
-    def test_groq_reasoning_effort_none_passes_through(self):
-        """Groq: native 'none' value passes through unchanged."""
-        model = make_model(
-            provider="groq",
-            supported_params={"reasoning_effort", "temperature", "stream"},
-            accepted_reasoning_efforts={"none", "default", "low", "medium", "high"},
-        )
-        kwargs = {"reasoning_effort": "none"}
-        result = _handle_model_specific_params(model, kwargs)
-        assert result["reasoning_effort"] == "none"
+    # --- allowed_openai_params injection ---
 
     def test_groq_allowed_openai_params_injected(self):
         """Groq: allowed_openai_params is injected so LiteLLM forwards reasoning_effort."""
@@ -1520,7 +1472,7 @@ class TestAskAi:
         """When stream=True and rich_response=True, should return AIResponse."""
         mock_litellm.completion.return_value = iter(["chunk1", "chunk2"])
         mock_litellm.stream_chunk_builder.return_value = make_litellm_response(
-            "streamed rich", model="anthropic/claude-sonnet-4-20250514",
+            "streamed rich", model="anthropic/claude-sonnet-4-6",
             prompt_tokens=100, completion_tokens=200, total_tokens=300,
         )
         mock_litellm.completion_cost.return_value = 0.005
