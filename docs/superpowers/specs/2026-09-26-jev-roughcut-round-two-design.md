@@ -88,3 +88,30 @@ Done when: both feature files and the write-up exist, the fit-set numbers are le
 - Nothing under either solar-sailer checkout is written. Prompts read from there are read at run time.
 - Every request and answer to disk; result files refuse overwrite; every table carries seconds per episode; compare on the with-modules column.
 - Spend is reported per build and summed in the thread. Round-two cap for both builds together: $8 of the $20 standing budget.
+
+## Round two, second pass (approved by Stan 2026-09-26: "yes all 3")
+
+Results of the first pass, all with modules on the 18 ladder episodes: build A live Luna on the v3 margin bottom 25% 83.63 SP (ceiling 84.06), 50% 83.69; build B f1 combiner `q+code+v3` 82.91 (fit six leave-one-out 85.63 against the v3 control 82.86, held-out 13 81.17 against 76.74). Write-ups `docs/jev-real/roughcut-hybrid-luna.md` and `roughcut-jev-f1.md`. Three follow-ups.
+
+### Step 1: Luna keep rule, held out properly ($0)
+
+Build A stored Luna's 0-5 score next to its keep/cut decision. Keeping at score >= 2 instead of the decision field scored 84.05 at 25% and 84.61 at 50%, but that threshold was read off all 18. Redo it with the discipline: choose the rule (decision field, or score >= 1, 2, 3, 4) on the six fit episodes of the m046 and m080 runs, freeze it, report the 12 held-out and the 18 pooled with that rule, next to the decision-field numbers. Add the result to `roughcut-hybrid-luna.md` as a new section, and use the chosen rule as the default for step 2. Script: extend `roughcut_hybrid_luna.py` with an offline `--keep-rule` sweep that makes no calls.
+
+### Step 2: the stack, real run
+
+Selection from the f1 combiner instead of the v3 score: margin `abs(5 * p_keep - 3.00)` over the 18 ladder episodes (fit six from their leave-one-out predictions, held-out 12 from the frozen weights, exactly the `p_keep` the f1 write-up's route-2 section used), one global cutoff giving the bottom 25% pooled. The Jev side of the arm is the f1 combiner's keep/cut, not v3's. Luna call identical to build A (whole transcript, rules5, medium effort, groups of up to 40). Output files `roughcut-hybrid-f1luna-m25-*`. Report with the decision field and with the rule step 1 froze, next to the offline ceiling 84.81 and build A's 83.63, on the ladder, with seconds and dollars per episode. Cap $1.
+
+### Step 3: question list f2
+
+Bundle `f2` in `roughcut_jev_prompts.py`, run and fitted exactly as f1 (fit six, leave-one-episode-out, freeze, then held-out 13), with f1 kept as the comparison arm at its frozen weights. Drop the four questions with no signal alone (`funny`, `referenced_later`, `describes_screen`, `split_fragment`; `split_fragment` is covered by the code features). Keep the other fourteen unchanged. Add eight aimed at the largest remaining misses (teaching lines the editor cut because the drawing already shows it, encouragement and wrap-up the editor tightens, scripted lines Jev reads as filler):
+
+1. `play_by_play`: this narrates the instructor's own hand action as it happens ("I'm going to put a line here", "let me just darken this") without giving a reason a viewer could not see.
+2. `said_earlier`: the same point was already made earlier in this episode, anywhere, not only in the last few sentences.
+3. `wrap_up`: this closes a section or the episode ("so that's the arm", "alright, moving on") and adds nothing new.
+4. `praise_only`: this praises a student's work with no correction, reason or next step.
+5. `verbal_check`: this is a check on the listener ("right?", "you know?", "does that make sense?") or a hedge with no content of its own.
+6. `scripted`: this reads like a prepared or scripted lesson line rather than spontaneous talk.
+7. `sets_up_next`: this short line exists only to set up the sentence that follows, and the next sentence would land oddly without it.
+8. `student_address`: this names or addresses a specific student or their drawing in a critique.
+
+Feature sets to fit and report: `q2` (22 questions), `q2+code`, `q2+code+v3`, plus f1's chosen set through the same path as the control. Choose on leave-one-out, freeze, then held-out; ladder placement next to f1 (82.91) and v3 (80.47). Report each new question's AUC alone and whether the four dropped questions cost anything (refit f1's set without them on the fit six). Also hand route 2 the same offline number f1 did (combiner-margin bottom 25% with archived Luna). Cap $1.50.
