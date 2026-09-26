@@ -1,14 +1,15 @@
 """Build B of round two: the prompt-breakup feature pass, Jev only.
 
-Asks the ``f1`` bundle in ``scripts/jev_real/roughcut_jev_prompts.py`` (18
-yes/no questions per sentence) over the same ``{rules, transcript, targets}``
-state the v3 sentence pass sent, and writes one row per sentence with the 18
-probabilities of yes, the free code features, and the v3 answers joined by
-episode and sentence id. The combiner that weighs them is
-``scripts/jev_real/roughcut_jev_combine.py``; this script makes no decision.
+Asks one feature bundle from ``scripts/jev_real/roughcut_jev_prompts.py``
+(``--feature-version``: ``f1`` is 18 yes/no questions per sentence, ``f2`` is
+22) over the same ``{rules, transcript, targets}`` state the v3 sentence pass
+sent, and writes one row per sentence with the probabilities of yes, the free
+code features, and the v3 answers joined by episode and sentence id. The
+combiner that weighs them is ``scripts/jev_real/roughcut_jev_combine.py``;
+this script makes no decision.
 
 Spec: ``docs/superpowers/specs/2026-09-26-jev-roughcut-round-two-design.md``,
-"Build B".
+"Build B" and "Round two, second pass", "Step 3".
 
 State
 -----
@@ -29,7 +30,9 @@ Usage::
   python scripts/jev_real/roughcut_jev_features.py --out roughcut-jev-f1-fit
   python scripts/jev_real/roughcut_jev_features.py --out roughcut-jev-f1-fit --run
   python scripts/jev_real/roughcut_jev_features.py --out roughcut-jev-f1-heldout \\
-      --episodes <13 held-out> --run
+      --episodes heldout --run
+  python scripts/jev_real/roughcut_jev_features.py --feature-version f2 \\
+      --out roughcut-jev-f2-fit --run
 """
 
 import argparse

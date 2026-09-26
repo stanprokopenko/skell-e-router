@@ -1,0 +1,136 @@
+{
+  "generated_utc": "2026-09-26T14:46:48+00:00",
+  "model": "jev-1.13.0",
+  "feature_version": "f2",
+  "questions": [
+    "false_start",
+    "retake_loser",
+    "crew_talk",
+    "screen_ops",
+    "pre_lesson",
+    "off_topic",
+    "repeats_point",
+    "pure_filler",
+    "pep_talk",
+    "teaching_point",
+    "essential",
+    "transition",
+    "rambling",
+    "tangent",
+    "play_by_play",
+    "said_earlier",
+    "wrap_up",
+    "praise_only",
+    "verbal_check",
+    "scripted",
+    "sets_up_next",
+    "student_address"
+  ],
+  "code_features": [
+    "n_words",
+    "n_words_raw",
+    "pause_before",
+    "pause_after",
+    "duration_s",
+    "words_per_s",
+    "position",
+    "is_retake",
+    "retake_member",
+    "retake_winner",
+    "trail_off",
+    "lower_start",
+    "chain_piece",
+    "chain_len",
+    "um_detected",
+    "um_removed",
+    "asr_confidence",
+    "overlap_prev",
+    "overlap_next"
+  ],
+  "v3_fields": [
+    "score",
+    "cut_p",
+    "first_p_whole",
+    "last_p_whole",
+    "cut_retake",
+    "retake_real"
+  ],
+  "v3_sources": [
+    "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-decisions.jsonl",
+    "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-heldout-v3-decisions.jsonl"
+  ],
+  "concurrency": 8,
+  "block": 25,
+  "context_tokens": 22000,
+  "real_cap": 50000,
+  "token_model": {
+    "est_scale": 1.26,
+    "per_question": 30.0
+  },
+  "smoke": 1,
+  "budget_cap_usd": 0.05,
+  "aborted": null,
+  "episodes": {
+    "colman-02.04-skeleton-demo": {
+      "wall_clock_s": 0.392,
+      "requests": 2,
+      "input_tokens": 58863,
+      "output_tokens": 11213,
+      "cost_usd": 0.002472,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.9605,
+      "latency": {
+        "n": 2,
+        "total_s": 0.7106670999783091,
+        "median_s": 0.35533354998915456,
+        "p95_s": 0.3903660999785643,
+        "max_s": 0.3903660999785643
+      },
+      "sentences": 25,
+      "blocks": 1,
+      "parts_per_block": {
+        "0": 2
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 4.445,
+        "cost_usd": 0.014878
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\colman-02.04-skeleton-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 60
+      },
+      "episode_wall_clock_s": 0.392
+    }
+  },
+  "invocations": [
+    {
+      "recorded_utc": "2026-09-26T14:46:48+00:00",
+      "episodes": [
+        "colman-02.04-skeleton-demo"
+      ],
+      "wall_clock_s": 0.415,
+      "cost_usd": 0.002472
+    }
+  ],
+  "totals": {
+    "episodes": 1,
+    "wall_clock_s": 0.392,
+    "requests": 2,
+    "errors": 0,
+    "failed_parts": 0,
+    "input_tokens": 58863,
+    "output_tokens": 11213,
+    "cost_usd": 0.002472,
+    "sentences": 25,
+    "unanswered_cells": 0,
+    "est_over_actual_median": 0.9605
+  },
+  "warnings": [],
+  "n_warnings": 0
+}

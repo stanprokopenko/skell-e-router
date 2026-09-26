@@ -364,8 +364,71 @@ F1_QUESTIONS = [
      "elsewhere."),
 ]
 
+# f2 (round two, second pass, spec "Step 3"): the four f1 questions with no
+# signal alone are dropped (``split_fragment`` is covered by the code
+# features), the other fourteen are carried over by reference so they cannot
+# drift, and eight new questions aim at f1's largest remaining misses:
+# teaching lines the editor cut because the drawing already shows it,
+# encouragement and wrap-up the editor tightens, and scripted lines Jev reads
+# as filler.
+F2_DROPPED = ["funny", "referenced_later", "describes_screen", "split_fragment"]
+
+F2_NEW_QUESTIONS = [
+    ("play_by_play",
+     "Sentence `targets[{k}]` narrates the instructor's own hand action as it "
+     "happens ('I'm going to put a line here', 'let me just darken this') without "
+     "giving a reason a viewer could not see for themselves. The rules say: \"Assume "
+     "appropriate visuals will accompany the narration.\" A line that says why the "
+     "mark goes there, or what to avoid, is not play-by-play."),
+    ("said_earlier",
+     "The same point as sentence `targets[{k}]` was already made earlier in this "
+     "episode's `transcript`, anywhere before it and not only in the last few "
+     "sentences, and this row adds nothing to it. A callback that adds a reason, an "
+     "example or a correction is not a repeat."),
+    ("wrap_up",
+     "Sentence `targets[{k}]` closes a section or the episode ('so that's the arm', "
+     "'alright, moving on', 'that's it for today') and adds nothing new. A closing "
+     "line that states the takeaway of the section is content, not a wrap-up."),
+    ("praise_only",
+     "Sentence `targets[{k}]` praises a student's work ('nice job', 'this is looking "
+     "good') with no correction, reason or next step attached. A compliment that "
+     "names what was done well and why is a teaching point, not praise only."),
+    ("verbal_check",
+     "Sentence `targets[{k}]` is a check on the listener ('right?', 'you know?', "
+     "'does that make sense?') or a hedge ('I think', 'sort of', 'or whatever') with "
+     "no content of its own. A question the next sentence answers is a set-up line, "
+     "not a check."),
+    ("scripted",
+     "Sentence `targets[{k}]` reads like a prepared or scripted lesson line rather "
+     "than spontaneous talk: a clean, complete statement of the kind a written lesson "
+     "would open with ('So, how do you learn the rules?', 'There are four kinds of "
+     "edges.'). Scripted lines are content; the rules' cuts are for off-topic talk, "
+     "losing takes, filler and rambling."),
+    ("sets_up_next",
+     "Sentence `targets[{k}]` is a short line that exists only to set up the "
+     "sentence that follows it in `transcript`, such as a question the next line "
+     "answers or a lead-in like 'here's the thing', and the next sentence would land "
+     "oddly without it. The rules say: \"don't create a jump or gap in the train of "
+     "thought.\""),
+    ("student_address",
+     "Sentence `targets[{k}]` names or addresses a specific student or their drawing "
+     "in a critique ('Adam, your torso is too long', 'looking at Maria's piece'). "
+     "Naming the student while giving feedback is content; whether the feedback "
+     "itself is worth keeping is judged elsewhere."),
+]
+
+F2_QUESTIONS = [q for q in F1_QUESTIONS if q[0] not in F2_DROPPED] + F2_NEW_QUESTIONS
+
+#: ``Q_LABEL`` names the question block in the combiner's feature-set names
+#: (``q`` for f1, ``q2`` for f2). ``PARENT`` is the bundle a version was
+#: edited from, with the keys it dropped and the keys it added, so the
+#: combiner can report each change against the parent without guessing.
 FEATURE_PROMPTS = {
-    "f1": {"QUESTIONS": F1_QUESTIONS, "RULES": RULES},
+    "f1": {"QUESTIONS": F1_QUESTIONS, "RULES": RULES, "Q_LABEL": "q",
+           "PARENT": None, "DROPPED": [], "NEW": []},
+    "f2": {"QUESTIONS": F2_QUESTIONS, "RULES": RULES, "Q_LABEL": "q2",
+           "PARENT": "f1", "DROPPED": F2_DROPPED,
+           "NEW": [key for key, _text in F2_NEW_QUESTIONS]},
 }
 FEATURE_PROMPT_VERSION = "f1"
 FEATURE_PROMPT_VERSIONS = list(FEATURE_PROMPTS)
@@ -377,16 +440,31 @@ for _name, _bundle in FEATURE_PROMPTS.items():
     for _key, _text in _bundle["QUESTIONS"]:
         if "{k}" not in _text:
             raise AssertionError(f"feature bundle {_name}: {_key} never names targets[k]")
+    if _bundle["PARENT"] is not None:
+        _parent_keys = [key for key, _t in FEATURE_PROMPTS[_bundle["PARENT"]]["QUESTIONS"]]
+        _expected = [k for k in _parent_keys if k not in _bundle["DROPPED"]] + _bundle["NEW"]
+        if _keys != _expected:
+            raise AssertionError(f"feature bundle {_name} is not its parent minus DROPPED "
+                                 f"plus NEW: {_keys} != {_expected}")
+        for _key in _bundle["DROPPED"]:
+            if _key not in _parent_keys:
+                raise AssertionError(f"feature bundle {_name} drops {_key}, which "
+                                     f"{_bundle['PARENT']} never asked")
 
 
 def feature_prompts_for(version):
     """The question list for one feature bundle, as an attribute bag.
 
     ``questions`` is ``[(key, instructions_template)]`` in the spec's order;
-    every template names its sentence as ``targets[{k}]``.
+    every template names its sentence as ``targets[{k}]``. ``q_label`` is the
+    combiner's name for the question block, ``parent`` the bundle this one was
+    edited from (or ``None``), ``dropped`` and ``new`` the keys it removed and
+    added against that parent.
     """
     if version not in FEATURE_PROMPTS:
         raise KeyError(f"unknown feature bundle {version!r}; have {sorted(FEATURE_PROMPTS)}")
     bundle = FEATURE_PROMPTS[version]
     return SimpleNamespace(version=version, questions=list(bundle["QUESTIONS"]),
-                           rules=bundle["RULES"])
+                           rules=bundle["RULES"], q_label=bundle["Q_LABEL"],
+                           parent=bundle["PARENT"], dropped=list(bundle["DROPPED"]),
+                           new=list(bundle["NEW"]))
