@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-26T07:56:34+00:00",
+  "generated_utc": "2026-09-26T14:48:38+00:00",
   "script": "scripts/jev_real/roughcut_hybrid_luna.py",
   "model": "gpt-5.6-luna",
   "episodes": [
@@ -166,6 +166,12 @@
         }
       },
       "score_sweep": {
+        "1": {
+          "episodes": 18,
+          "sentence_points": 0.8344850721234494,
+          "word_score": 0.7663422244747122,
+          "grade": 0.9081124310788203
+        },
         "2": {
           "episodes": 18,
           "sentence_points": 0.8404674046740475,
@@ -183,6 +189,152 @@
           "sentence_points": 0.8086995415408706,
           "word_score": 0.7554778605885897,
           "grade": 0.8945142165296883
+        }
+      },
+      "keep_rule": {
+        "rules": {
+          "decision": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8691213999270869,
+              "word_score": 0.8030956248298495,
+              "grade": 0.9021803877612117
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8217096774193561,
+              "word_score": 0.7614595345604382,
+              "grade": 0.9173640561373031
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.836251817063626,
+              "word_score": 0.7734518839151501,
+              "grade": 0.9128180939513038
+            }
+          },
+          "score>=1": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8590958804228943,
+              "word_score": 0.792572361759748,
+              "grade": 0.8933791734419816
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8235967741935496,
+              "word_score": 0.7557308454706468,
+              "grade": 0.914408603476967
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8344850721234494,
+              "word_score": 0.7663422244747122,
+              "grade": 0.9081124310788203
+            }
+          },
+          "score>=2": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8692307692307689,
+              "word_score": 0.8017500057200948,
+              "grade": 0.9012774851337836
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8277419354838721,
+              "word_score": 0.7637074543290234,
+              "grade": 0.9200224713310016
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8404674046740475,
+              "word_score": 0.7746647647699002,
+              "grade": 0.9144102571862424
+            }
+          },
+          "score>=3": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8679547940211446,
+              "word_score": 0.8029970675399737,
+              "grade": 0.9020371546775854
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8198709677419368,
+              "word_score": 0.7600355228640323,
+              "grade": 0.9158979923137021
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8346192552834627,
+              "word_score": 0.7724096398677716,
+              "grade": 0.9117480832008765
+            }
+          },
+          "score>=4": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8459351075464818,
+              "word_score": 0.7875026863054114,
+              "grade": 0.8875546442899112
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.792225806451614,
+              "word_score": 0.7425222454681832,
+              "grade": 0.8974883494552836
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8086995415408706,
+              "word_score": 0.7554778605885897,
+              "grade": 0.8945142165296883
+            }
+          }
+        },
+        "chosen": "score>=2",
+        "chosen_on": "fit six",
+        "decision": {
+          "fit": {
+            "episodes": 6,
+            "sentence_points": 0.8691213999270869,
+            "word_score": 0.8030956248298495,
+            "grade": 0.9021803877612117
+          },
+          "heldout": {
+            "episodes": 12,
+            "sentence_points": 0.8217096774193561,
+            "word_score": 0.7614595345604382,
+            "grade": 0.9173640561373031
+          },
+          "all": {
+            "episodes": 18,
+            "sentence_points": 0.836251817063626,
+            "word_score": 0.7734518839151501,
+            "grade": 0.9128180939513038
+          }
+        },
+        "frozen": {
+          "fit": {
+            "episodes": 6,
+            "sentence_points": 0.8692307692307689,
+            "word_score": 0.8017500057200948,
+            "grade": 0.9012774851337836
+          },
+          "heldout": {
+            "episodes": 12,
+            "sentence_points": 0.8277419354838721,
+            "word_score": 0.7637074543290234,
+            "grade": 0.9200224713310016
+          },
+          "all": {
+            "episodes": 18,
+            "sentence_points": 0.8404674046740475,
+            "word_score": 0.7746647647699002,
+            "grade": 0.9144102571862424
+          }
         }
       },
       "opus_ceiling": {
@@ -3760,6 +3912,12 @@
         }
       },
       "score_sweep": {
+        "1": {
+          "episodes": 18,
+          "sentence_points": 0.8404897685340497,
+          "word_score": 0.7776655081450286,
+          "grade": 0.9194488898741267
+        },
         "2": {
           "episodes": 18,
           "sentence_points": 0.8460807335346089,
@@ -3777,6 +3935,152 @@
           "sentence_points": 0.759443139885945,
           "word_score": 0.7433136759720246,
           "grade": 0.8760716813775481
+        }
+      },
+      "keep_rule": {
+        "rules": {
+          "decision": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8730951512942033,
+              "word_score": 0.8179270841593319,
+              "grade": 0.912766947044136
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8209032258064527,
+              "word_score": 0.7716452183985798,
+              "grade": 0.9273135092337685
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8369115509336919,
+              "word_score": 0.7849756800101149,
+              "grade": 0.9229582954598374
+            }
+          },
+          "score>=1": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8736419978126136,
+              "word_score": 0.8065286353865723,
+              "grade": 0.906282476973959
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8258225806451623,
+              "word_score": 0.7659889553662781,
+              "grade": 0.9250754802404938
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8404897685340497,
+              "word_score": 0.7776655081450286,
+              "grade": 0.9194488898741267
+            }
+          },
+          "score>=2": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8803864382063433,
+              "word_score": 0.8178321421269544,
+              "grade": 0.9150473475625888
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8309032258064527,
+              "word_score": 0.7741112450939759,
+              "grade": 0.9312274733275694
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8460807335346089,
+              "word_score": 0.7867040766477602,
+              "grade": 0.9263831736451463
+            }
+          },
+          "score>=3": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.8638352169157855,
+              "word_score": 0.8150725621100127,
+              "grade": 0.9107190951564734
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.8174677419354849,
+              "word_score": 0.7711308598342327,
+              "grade": 0.9262236181871295
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.8316895896231697,
+              "word_score": 0.7837872894250539,
+              "grade": 0.9215815927118957
+            }
+          },
+          "score>=4": {
+            "fit": {
+              "episodes": 6,
+              "sentence_points": 0.7901203062340502,
+              "word_score": 0.7656137419510778,
+              "grade": 0.8617991853780305
+            },
+            "heldout": {
+              "episodes": 12,
+              "sentence_points": 0.7458709677419363,
+              "word_score": 0.7342922038635123,
+              "grade": 0.882170949956151
+            },
+            "all": {
+              "episodes": 18,
+              "sentence_points": 0.759443139885945,
+              "word_score": 0.7433136759720246,
+              "grade": 0.8760716813775481
+            }
+          }
+        },
+        "chosen": "score>=2",
+        "chosen_on": "fit six",
+        "decision": {
+          "fit": {
+            "episodes": 6,
+            "sentence_points": 0.8730951512942033,
+            "word_score": 0.8179270841593319,
+            "grade": 0.912766947044136
+          },
+          "heldout": {
+            "episodes": 12,
+            "sentence_points": 0.8209032258064527,
+            "word_score": 0.7716452183985798,
+            "grade": 0.9273135092337685
+          },
+          "all": {
+            "episodes": 18,
+            "sentence_points": 0.8369115509336919,
+            "word_score": 0.7849756800101149,
+            "grade": 0.9229582954598374
+          }
+        },
+        "frozen": {
+          "fit": {
+            "episodes": 6,
+            "sentence_points": 0.8803864382063433,
+            "word_score": 0.8178321421269544,
+            "grade": 0.9150473475625888
+          },
+          "heldout": {
+            "episodes": 12,
+            "sentence_points": 0.8309032258064527,
+            "word_score": 0.7741112450939759,
+            "grade": 0.9312274733275694
+          },
+          "all": {
+            "episodes": 18,
+            "sentence_points": 0.8460807335346089,
+            "word_score": 0.7867040766477602,
+            "grade": 0.9263831736451463
+          }
         }
       },
       "opus_ceiling": {
@@ -7305,6 +7609,22 @@
     "high_effort_required": false,
     "high_effort_ran": false
   },
+  "frozen_keep_rule": {
+    "rule": "score>=2",
+    "chosen_on": "fit six of m046",
+    "per_run_choice": {
+      "m046": "score>=2",
+      "m080": "score>=2"
+    },
+    "runs_agree": true
+  },
+  "keep_rules": [
+    "decision",
+    "score>=1",
+    "score>=2",
+    "score>=3",
+    "score>=4"
+  ],
   "smoke_spend_usd": 0.001434,
   "archived_thresholds": {
     "colman-02.04-skeleton-demo": 2.1,

@@ -18,6 +18,13 @@ Modes::
   python scripts/jev_real/roughcut_hybrid_luna.py --share 0.25 --run        # 18 episodes
   python scripts/jev_real/roughcut_hybrid_luna.py --share 0.25 --run --effort high --out roughcut-hybrid-luna-m046-high
   python scripts/jev_real/roughcut_hybrid_luna.py --report                  # write-up from the runs on disk
+  python scripts/jev_real/roughcut_hybrid_luna.py --keep-rule               # second pass step 1: keep rule on
+                                                                            # the fit six, then held out; no calls
+
+The keep-rule sweep (``KEEP_RULES``) scores the routed slice under Luna's
+``decision`` field and under ``score >= t`` for t in 1..4, chooses on the six
+fit episodes only and freezes that rule; ``--report`` adds the section and the
+f1-Luna stack (``roughcut_hybrid_f1luna.py``) reports under the frozen rule.
 
 A run writes ``docs/jev-real/<out>-decisions.jsonl``, ``-requests.jsonl`` and
 ``-timing.json`` and refuses to overwrite any of them. ``--resume`` finishes a
@@ -73,7 +80,11 @@ PRICE_IN, PRICE_CACHED, PRICE_OUT = 0.20, 0.02, 1.20
 #: per target at medium effort. The run compares it with the real counts.
 OUT_TOKENS_BASE, OUT_TOKENS_PER_TARGET = 1500, 45
 CHARS_PER_TOKEN = 4
-SCORE_SWEEP = (2, 3, 4)
+SCORE_SWEEP = (1, 2, 3, 4)
+#: Keep rules for the routed slice: Luna's decision field, or its score at a
+#: threshold. The second pass chooses one on the fit six and freezes it.
+KEEP_RULES = ["decision"] + [f"score>={t}" for t in SCORE_SWEEP]
+HEADLINE_RUN = "m046"                        # the run whose fit-six choice is frozen
 CEILING_25, CEILING_SLACK = 0.8406, 0.015   # the high-effort rerun trigger
 RUNS = ["m046", "m080", "m046-high"]        # write-up reads whichever exist
 SMOKE_NAME = "smoke-hybrid-luna"            # the one-group smoke request's files
@@ -371,9 +382,16 @@ def run_episode_jobs(jobs, rules, effort, budget, concurrency, writer):
 # decisions
 # ---------------------------------------------------------------------------
 
-def decision_rows(episode, inputs, routed, answers, jobs, meta, arm, effort):
-    """One row per sentence: Jev's decision, Luna's verdict, and the mix."""
+def decision_rows(episode, inputs, routed, answers, jobs, meta, arm, effort, confidence=None):
+    """One row per sentence: Jev's decision, Luna's verdict, and the mix.
+
+    ``confidence(raw_row)`` is the margin the selection ranked on; the default
+    is the v3 margin ``abs(score - 2.5)``. ``jev_keep`` is the Jev side's own
+    keep/cut at the scorer's threshold, so a reader never has to re-derive it
+    from ``jev_score`` (the stack's raw score is ``5 * p_keep`` on a 3.00 cut).
+    """
     base, raw = inputs["jev"][episode], inputs["jev_rows"][episode]
+    confidence = confidence or (lambda row: r2.confidence("margin", row))
     group_of = {sid: job["group"] for job in jobs for sid in job["ids"]}
     rows = []
     for sid in sorted(base):
@@ -383,7 +401,8 @@ def decision_rows(episode, inputs, routed, answers, jobs, meta, arm, effort):
         row = {"arm": arm, "episode": episode, "id": sid, "routed": is_routed,
                "asked": sid in group_of, "group": group_of.get(sid),
                "retake_vetoed": is_routed and sid in meta["vetoed_ids"],
-               "jev_score": raw[sid]["score"], "jev_margin": r2.confidence("margin", raw[sid]),
+               "jev_score": raw[sid]["score"], "jev_margin": confidence(raw[sid]),
+               "jev_keep": jev["score"] is not None and jev["score"] >= THRESHOLD,
                "jev_keep_words": jev["keep_words"], "cut_retake": jev["cut_retake"],
                "luna_score": None, "luna_decision": None, "luna_reason": None,
                "luna_answered": False, "score": jev["score"], "keep_words": jev["keep_words"],
@@ -409,12 +428,24 @@ def run(args, parser):
     rules = read_rules()
     routed, cutoff = routed_slice(inputs, args.share)
     name = args.out or out_name_for(cutoff, args.effort)
-    paths = run_paths(name)
     arm = f"{ARM_PREFIX}_{name.split(OUT_STEM + '-', 1)[-1].replace('-', '_')}"
+    return execute(args, parser, inputs, rules, routed, cutoff, name, arm)
+
+
+def execute(args, parser, inputs, rules, routed, cutoff, name, arm, confidence=None,
+            plan_extra=None):
+    """Plan, estimate and (with ``--run``) make the calls for one routed slice.
+
+    Shared with the f1-Luna stack (``roughcut_hybrid_f1luna.py``), which passes
+    its own ``inputs`` (combiner keep/cut in ``jev``, ``5 * p_keep`` rows in
+    ``jev_rows``), its own ``routed`` slice and ``confidence`` margin, plus
+    ``plan_extra`` fields copied into the plan and the timing summary.
+    """
+    paths = run_paths(name)
     episodes = args.episodes or inputs["episodes"]
     unknown = [e for e in episodes if e not in inputs["episodes"]]
     if unknown:
-        parser.error(f"not in the v3 run: {unknown}")
+        parser.error(f"not in the input run: {unknown}")
 
     jobs_by_episode, metas = {}, {}
     for episode in episodes:
@@ -436,7 +467,7 @@ def run(args, parser):
             "budget_cap_usd": args.budget,
             "per_episode": {e: {**metas[e], **per_episode_est[e]} for e in episodes},
             "totals": total_est,
-            "outputs": [str(p) for p in paths.values()]}
+            "outputs": [str(p) for p in paths.values()], **(plan_extra or {})}
     print(json.dumps(plan, indent=2), flush=True)
     if total_est["cost_usd"] > args.budget:
         print("Estimate exceeds the budget cap; stopping.", flush=True)
@@ -473,7 +504,7 @@ def run(args, parser):
             answers, timing = run_episode_jobs(jobs, rules, args.effort, budget,
                                                args.concurrency, writer)
             rows = decision_rows(episode, inputs, routed, answers, jobs, metas[episode],
-                                 arm, args.effort)
+                                 arm, args.effort, confidence)
             new_decisions.extend(rows)
             timings[episode] = {**metas[episode], **timing,
                                 "substituted": sum(1 for r in rows if r["luna_answered"]),
@@ -511,7 +542,7 @@ def run(args, parser):
             "cost_listed_usd": round(sum(t["cost_listed_usd"] for t in timings.values()), 6),
             "est_input_tokens": sum(t["est_input_tokens"] for t in timings.values()),
         },
-        "estimate": plan["totals"],
+        "estimate": plan["totals"], **(plan_extra or {}),
     }
     paths["decisions"].write_text(
         "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in all_decisions), encoding="utf-8")
@@ -524,9 +555,9 @@ def run(args, parser):
 # report
 # ---------------------------------------------------------------------------
 
-def load_hybrid_run(tag, episodes):
+def load_hybrid_run(tag, episodes, stem=OUT_STEM):
     """A finished run's decision set, routed slice and per-episode timing."""
-    paths = run_paths(f"{OUT_STEM}-{tag}")
+    paths = run_paths(f"{stem}-{tag}")
     if not all(p.exists() for p in paths.values()):
         return None
     rows = report_mod.read_jsonl(paths["decisions"])
@@ -554,7 +585,9 @@ def donor_from_rows(run, episodes, mode="decision", score_min=None):
             if not row["routed"]:
                 continue
             if not row["luna_answered"]:
-                keep = row["jev_score"] is not None and row["jev_score"] >= THRESHOLD
+                keep = row.get("jev_keep")
+                if keep is None:   # rows written before jev_keep existed (build A's runs)
+                    keep = row["jev_score"] is not None and row["jev_score"] >= THRESHOLD
                 decisions[sid] = {"score": 5.0 if keep else 0.0,
                                   "keep_words": row["jev_keep_words"],
                                   "cut_retake": row["cut_retake"]}
@@ -567,6 +600,78 @@ def donor_from_rows(run, episodes, mode="decision", score_min=None):
                               "cut_retake": row["cut_retake"]}
         out[episode] = {"decisions": decisions}
     return out
+
+
+def donor_key(tag, rule):
+    """Scorer donor name for a live run under one keep rule."""
+    return f"live:{tag}" if rule == "decision" else f"live:{tag}:{rule}"
+
+
+def register_live_donors(donors, run, episodes):
+    """Add a live run to ``donors`` under every keep rule in ``KEEP_RULES``."""
+    donors[donor_key(run["tag"], "decision")] = donor_from_rows(run, episodes)
+    for t in SCORE_SWEEP:
+        donors[donor_key(run["tag"], f"score>={t}")] = donor_from_rows(run, episodes, "score", t)
+
+
+def keep_rule_block(scorer, tag, routed, episodes):
+    """Every keep rule on one run's routed slice, split fit / held-out / all.
+
+    The choice reads the fit six only: best fit-six SENTENCE POINTS, ties to
+    the decision field, then to the lower score threshold. The held-out and
+    pooled numbers of the chosen rule are what the write-up reports as held out.
+    """
+    rules = {}
+    for rule in KEEP_RULES:
+        key = donor_key(tag, rule)
+        rules[rule] = r2.splits({e: scorer.episode(key, e, routed[e]) for e in episodes},
+                                episodes)
+    chosen = max(KEEP_RULES, key=lambda rule: (round(rules[rule]["fit"]["sentence_points"], 6),
+                                               -KEEP_RULES.index(rule)))
+    return {"rules": rules, "chosen": chosen, "chosen_on": "fit six",
+            "decision": rules["decision"], "frozen": rules[chosen]}
+
+
+def keep_rule_sweep(runs, inputs, scorer=None):
+    """``(per_run_blocks, frozen)``: the offline step 1 of the second pass, $0.
+
+    The frozen rule is the headline run's fit-six choice (``HEADLINE_RUN``, the
+    25% cutoff the stack reuses); the other runs' choices are recorded next to
+    it so a disagreement is visible. ``scorer`` must already carry the live
+    donors (``register_live_donors``); one is built when none is passed.
+    """
+    episodes, jev, removals = inputs["episodes"], inputs["jev"], inputs["removals"]
+    if scorer is None:
+        donors = {}
+        for run in runs:
+            register_live_donors(donors, run, episodes)
+        scorer = r2.Scorer(jev, donors, removals)
+    blocks = {run["tag"]: keep_rule_block(scorer, run["tag"], run["routed"], episodes)
+              for run in runs}
+    head = HEADLINE_RUN if HEADLINE_RUN in blocks else next(iter(blocks))
+    frozen = {"rule": blocks[head]["chosen"], "chosen_on": f"fit six of {head}",
+              "per_run_choice": {tag: b["chosen"] for tag, b in blocks.items()},
+              "runs_agree": len({b["chosen"] for b in blocks.values()}) == 1}
+    return blocks, frozen
+
+
+def keep_rule_mode():
+    """``--keep-rule``: print the sweep for the finished runs on disk. No calls."""
+    inputs = load_inputs()
+    runs = [r for r in (load_hybrid_run(tag, inputs["episodes"]) for tag in RUNS) if r]
+    if not runs:
+        raise SystemExit("no finished hybrid runs found under docs/jev-real")
+    blocks, frozen = keep_rule_sweep(runs, inputs)
+    out = {"frozen_keep_rule": frozen, "runs": {}}
+    for tag, block in blocks.items():
+        out["runs"][tag] = {
+            "chosen_on_fit_six": block["chosen"],
+            "fit_six": {rule: block["rules"][rule]["fit"]["sentence_points"] for rule in KEEP_RULES},
+            "heldout_12": {rule: block["rules"][rule]["heldout"]["sentence_points"] for rule in KEEP_RULES},
+            "all_18": {rule: block["rules"][rule]["all"]["sentence_points"] for rule in KEEP_RULES},
+        }
+    print(json.dumps(out, indent=2))
+    return 0
 
 
 def live_vs_archived(run, archived, episodes, human, removals):
@@ -627,10 +732,9 @@ def build_report():
             raise SystemExit(f"archived {key} decisions missing for {absent}")
         donors[key], donor_paths[key] = loaded, paths
     for run in runs:
-        donors[f"live:{run['tag']}"] = donor_from_rows(run, episodes)
-        for t in SCORE_SWEEP:
-            donors[f"live:{run['tag']}:score>={t}"] = donor_from_rows(run, episodes, "score", t)
+        register_live_donors(donors, run, episodes)
     scorer = r2.Scorer(jev, donors, removals)
+    keep_blocks, frozen_keep_rule = keep_rule_sweep(runs, inputs, scorer)
 
     jev_eps = {e: scorer.episode(None, e, set()) for e in episodes}
     jev_pooled = r2.splits(jev_eps, episodes)
@@ -705,6 +809,7 @@ def build_report():
             "requests": totals["requests"], "retries": totals["retries"],
             "errors": totals["errors"], "malformed": totals["malformed"],
             "pooled": pooled, "ceiling": ceiling, "score_sweep": sweep,
+            "keep_rule": keep_blocks[tag],
             "opus_ceiling": r2.splits(opus_ep, episodes)["all"],
             "placement": r2.placement(pooled["all"]["sentence_points"], ladder),
             "ceiling_placement": r2.placement(ceiling["all"]["sentence_points"], ladder),
@@ -765,6 +870,7 @@ def build_report():
         "jev_cost_per_episode": statistics.mean(jev_latency[e]["cost_usd"] for e in episodes),
         "jev_seconds_per_episode": report_mod.mean_seconds(jev_latency, episodes),
         "runs": results, "trigger": trigger,
+        "frozen_keep_rule": frozen_keep_rule, "keep_rules": KEEP_RULES,
         "smoke_spend_usd": smoke_spend,
         "archived_thresholds": {e: donors["luna"][e]["threshold"] for e in episodes},
         "total_spend_usd": round(sum(r["cost_usd"] for r in results), 6),
@@ -873,7 +979,47 @@ def write_markdown(path, s, json_path):
         best.append(f"{r['tag']} keeps at score >= {t_best} for {pct(r['score_sweep'][t_best]['sentence_points'])}, "
                     f"{(r['score_sweep'][t_best]['sentence_points'] - r['pooled']['all']['sentence_points']) * 100:+.2f} on the decision field and "
                     f"{(r['score_sweep'][t_best]['sentence_points'] - r['ceiling']['all']['sentence_points']) * 100:+.2f} on the archived ceiling")
-    add("Best score threshold per run: " + "; ".join(best) + ". Luna's own keep/cut decision is cut-heavier than the editor on this slice (keep rates in the next table), so keeping anything it scores 2 or more recovers part of that. The threshold is picked on the same 18 episodes it is reported on, so read it as the shape of the curve, not a held-out number; the decision-field SP above is the number this build set out to measure.")
+    add("Best score threshold per run: " + "; ".join(best) + ". Luna's own keep/cut decision is cut-heavier than the editor on this slice (keep rates in the next table), so keeping anything it scores 2 or more recovers part of that. The threshold is picked on the same 18 episodes it is reported on, so read it as the shape of the curve, not a held-out number; the decision-field SP above is the number this build set out to measure. The next section redoes the choice with the fit/held-out split.")
+    add()
+
+    add("## Keep rule, held out (second pass, step 1)")
+    add()
+    fk = s["frozen_keep_rule"]
+    add(f"Same runs, same stored answers, $0. Each keep rule (Luna's `decision` field, or keep when Luna's score clears 1, 2, 3 or 4) is scored on the six fit episodes first; the best fit-six SENTENCE POINTS is frozen (ties go to the decision field, then to the lower threshold), and only then are the 12 held-out episodes and the pooled 18 read under that rule. The fit-six column is where the choice was made and is not held out; the held-out 12 column is. Pooled 18 mixes the two. The chosen row of each run is marked with `*`. Seconds per episode are the run's Luna wall clock plus Jev's, as above; the rule changes nothing about the call.")
+    add()
+    for r in s["runs"]:
+        kb = r["keep_rule"]
+        rows = []
+        for rule in s["keep_rules"]:
+            sp = kb["rules"][rule]
+            rows.append([("* " if rule == kb["chosen"] else "") + rule,
+                         pct(sp["fit"]["sentence_points"]), pct(sp["heldout"]["sentence_points"]),
+                         pct(sp["all"]["sentence_points"]), pct(sp["all"]["word_score"]),
+                         pct(sp["all"]["grade"]),
+                         f"{(sp['heldout']['sentence_points'] - kb['decision']['heldout']['sentence_points']) * 100:+.2f}",
+                         f"{(sp['all']['sentence_points'] - kb['decision']['all']['sentence_points']) * 100:+.2f}",
+                         num(r["seconds_per_episode_mean"], 1)])
+        add(f"### {run_label(r)}")
+        add()
+        lines.extend(table(["keep rule", "SP fit 6 (chosen on)", "SP held-out 12", "SP all 18",
+                            "WORD all 18", "GRADE all 18", "held-out minus decision",
+                            "all 18 minus decision", "s/ep mean"], rows))
+        add()
+    summary_bits = []
+    for r in s["runs"]:
+        kb = r["keep_rule"]
+        ch, dec = kb["frozen"], kb["decision"]
+        fit_gap = (ch["fit"]["sentence_points"] - dec["fit"]["sentence_points"]) * 100
+        summary_bits.append(
+            f"{r['tag']} chooses `{kb['chosen']}` on the fit six ({pct(ch['fit']['sentence_points'])} against "
+            f"{pct(dec['fit']['sentence_points'])} for the decision field, a {fit_gap:+.2f} margin"
+            f"{', close to a tie on its own' if abs(fit_gap) < 0.1 else ''}); held out it gives "
+            f"{pct(ch['heldout']['sentence_points'])} against {pct(dec['heldout']['sentence_points'])}, pooled 18 "
+            f"{pct(ch['all']['sentence_points'])} against {pct(dec['all']['sentence_points'])}, ceiling on the slice "
+            f"{pct(r['ceiling']['all']['sentence_points'])}")
+    agree = ("both runs choose the same rule" if fk["runs_agree"]
+             else "the runs choose different rules: " + ", ".join(f"{t} {c}" for t, c in fk["per_run_choice"].items()))
+    add("Result: " + "; ".join(summary_bits) + f". Frozen rule for the second pass: `{fk['rule']}`, chosen on the {fk['chosen_on']} ({agree}). The f1-Luna stack (`roughcut-hybrid-f1luna.md`) reports its slice under the decision field and under this rule.")
     add()
 
     add("## Live Luna against archived Luna on the same sentences")
@@ -1012,7 +1158,12 @@ def main():
     parser.add_argument("--report", action="store_true",
                         help="write the markdown and JSON write-up from the runs on disk")
     parser.add_argument("--force", action="store_true", help="overwrite the write-up")
+    parser.add_argument("--keep-rule", action="store_true",
+                        help="offline: score every keep rule on the finished runs, choose on the "
+                             "fit six, print fit / held-out / pooled; no calls")
     args = parser.parse_args()
+    if args.keep_rule:
+        return keep_rule_mode()
     if args.report:
         return report(args, parser)
     return run(args, parser)

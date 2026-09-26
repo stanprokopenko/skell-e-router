@@ -1,6 +1,6 @@
 # Real Luna routing on Jev's unsure slice (developer-facing notes)
 
-Generated 2026-09-26T07:56:34+00:00 by `scripts/jev_real/roughcut_hybrid_luna.py` from the hybrid run files on disk, the stored Jev decisions, the archived donor ratings and the cached removal ranges. The report step itself makes no model calls; the runs it reads cost $0.9277 by the router's accounting ($0.9277 at list rates 0.20 in, 0.02 cached, 1.20 out per million), plus $0.0014 for the one-group smoke request in `smoke-hybrid-luna-*`. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.
+Generated 2026-09-26T14:48:38+00:00 by `scripts/jev_real/roughcut_hybrid_luna.py` from the hybrid run files on disk, the stored Jev decisions, the archived donor ratings and the cached removal ranges. The report step itself makes no model calls; the runs it reads cost $0.9277 by the router's accounting ($0.9277 at list rates 0.20 in, 0.02 cached, 1.20 out per million), plus $0.0014 for the one-group smoke request in `smoke-hybrid-luna-*`. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.
 
 Question: route 2 for real. Jev's `jev_a` v3 rows score all 8,943 sentences of the 18 ladder episodes; the sentences whose score sits closest to the 2.50 keep threshold (margin `abs(score - 2.5)` under a global cutoff) go to `gpt-5.6-luna`, which reads the whole episode transcript as Jev saw it under the rules5 system prompt and returns a score, a keep or cut decision and a reason for each routed sentence. On routed sentences Luna's decision replaces Jev's keep/cut (score 5 or 0), `keep_words` is dropped, Jev's retake veto stays; everything else is Jev's decision rebuilt at trim trigger 0.3 and keep threshold 2.50, the setting behind the published 80.47. The cutoffs were chosen from the offline sweep over all 18 episodes (`roughcut-route2-routing.md`), so the routed share is not held out; the model's decisions on the slice are. Ties at the cutoff are broken by episode order and sentence id the way the sweep broke them, so the slice is the one the ceiling was computed on.
 
@@ -31,12 +31,38 @@ How much of the ceiling survives the live call, as a share of the gain the archi
 
 Luna's 0-5 score is stored next to its decision, so the routed slice can also be cut at a score threshold instead of the decision field. `decision` is the number above; `score >= t` keeps a routed sentence when Luna's score clears t. Pooled 18, with modules.
 
-| run | SP decision | SP score >= 2 | SP score >= 3 | SP score >= 4 | SP ceiling | s/ep mean |
-|---|---:|---:|---:|---:|---:|---:|
-| m046 (25% routed, cutoff 0.46, medium effort) | 83.63 | 84.05 | 83.46 | 80.87 | 84.06 | 26.6 |
-| m080 (50% routed, cutoff 0.80, medium effort) | 83.69 | 84.61 | 83.17 | 75.94 | 84.27 | 32.2 |
+| run | SP decision | SP score >= 1 | SP score >= 2 | SP score >= 3 | SP score >= 4 | SP ceiling | s/ep mean |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| m046 (25% routed, cutoff 0.46, medium effort) | 83.63 | 83.45 | 84.05 | 83.46 | 80.87 | 84.06 | 26.6 |
+| m080 (50% routed, cutoff 0.80, medium effort) | 83.69 | 84.05 | 84.61 | 83.17 | 75.94 | 84.27 | 32.2 |
 
-Best score threshold per run: m046 keeps at score >= 2 for 84.05, +0.42 on the decision field and -0.01 on the archived ceiling; m080 keeps at score >= 2 for 84.61, +0.92 on the decision field and +0.34 on the archived ceiling. Luna's own keep/cut decision is cut-heavier than the editor on this slice (keep rates in the next table), so keeping anything it scores 2 or more recovers part of that. The threshold is picked on the same 18 episodes it is reported on, so read it as the shape of the curve, not a held-out number; the decision-field SP above is the number this build set out to measure.
+Best score threshold per run: m046 keeps at score >= 2 for 84.05, +0.42 on the decision field and -0.01 on the archived ceiling; m080 keeps at score >= 2 for 84.61, +0.92 on the decision field and +0.34 on the archived ceiling. Luna's own keep/cut decision is cut-heavier than the editor on this slice (keep rates in the next table), so keeping anything it scores 2 or more recovers part of that. The threshold is picked on the same 18 episodes it is reported on, so read it as the shape of the curve, not a held-out number; the decision-field SP above is the number this build set out to measure. The next section redoes the choice with the fit/held-out split.
+
+## Keep rule, held out (second pass, step 1)
+
+Same runs, same stored answers, $0. Each keep rule (Luna's `decision` field, or keep when Luna's score clears 1, 2, 3 or 4) is scored on the six fit episodes first; the best fit-six SENTENCE POINTS is frozen (ties go to the decision field, then to the lower threshold), and only then are the 12 held-out episodes and the pooled 18 read under that rule. The fit-six column is where the choice was made and is not held out; the held-out 12 column is. Pooled 18 mixes the two. The chosen row of each run is marked with `*`. Seconds per episode are the run's Luna wall clock plus Jev's, as above; the rule changes nothing about the call.
+
+### m046 (25% routed, cutoff 0.46, medium effort)
+
+| keep rule | SP fit 6 (chosen on) | SP held-out 12 | SP all 18 | WORD all 18 | GRADE all 18 | held-out minus decision | all 18 minus decision | s/ep mean |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| decision | 86.91 | 82.17 | 83.63 | 77.35 | 91.28 | +0.00 | +0.00 | 26.6 |
+| score>=1 | 85.91 | 82.36 | 83.45 | 76.63 | 90.81 | +0.19 | -0.18 | 26.6 |
+| * score>=2 | 86.92 | 82.77 | 84.05 | 77.47 | 91.44 | +0.60 | +0.42 | 26.6 |
+| score>=3 | 86.80 | 81.99 | 83.46 | 77.24 | 91.17 | -0.18 | -0.16 | 26.6 |
+| score>=4 | 84.59 | 79.22 | 80.87 | 75.55 | 89.45 | -2.95 | -2.76 | 26.6 |
+
+### m080 (50% routed, cutoff 0.80, medium effort)
+
+| keep rule | SP fit 6 (chosen on) | SP held-out 12 | SP all 18 | WORD all 18 | GRADE all 18 | held-out minus decision | all 18 minus decision | s/ep mean |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| decision | 87.31 | 82.09 | 83.69 | 78.50 | 92.30 | +0.00 | +0.00 | 32.2 |
+| score>=1 | 87.36 | 82.58 | 84.05 | 77.77 | 91.94 | +0.49 | +0.36 | 32.2 |
+| * score>=2 | 88.04 | 83.09 | 84.61 | 78.67 | 92.64 | +1.00 | +0.92 | 32.2 |
+| score>=3 | 86.38 | 81.75 | 83.17 | 78.38 | 92.16 | -0.34 | -0.52 | 32.2 |
+| score>=4 | 79.01 | 74.59 | 75.94 | 74.33 | 87.61 | -7.50 | -7.75 | 32.2 |
+
+Result: m046 chooses `score>=2` on the fit six (86.92 against 86.91 for the decision field, a +0.01 margin, close to a tie on its own); held out it gives 82.77 against 82.17, pooled 18 84.05 against 83.63, ceiling on the slice 84.06; m080 chooses `score>=2` on the fit six (88.04 against 87.31 for the decision field, a +0.73 margin); held out it gives 83.09 against 82.09, pooled 18 84.61 against 83.69, ceiling on the slice 84.27. Frozen rule for the second pass: `score>=2`, chosen on the fit six of m046 (both runs choose the same rule). The f1-Luna stack (`roughcut-hybrid-f1luna.md`) reports its slice under the decision field and under this rule.
 
 ## Live Luna against archived Luna on the same sentences
 

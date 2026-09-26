@@ -1,0 +1,92 @@
+{
+  "generated_utc": "2026-09-26T14:40:28+00:00",
+  "model": "gpt-5.6-luna",
+  "effort": "medium",
+  "share": 0.25,
+  "cutoff": 0.8791577276878177,
+  "arm": "hybrid_f1luna_smoke_hybrid_f1luna",
+  "out": "smoke-hybrid-f1luna",
+  "preamble_version": "hybrid-preamble-v1",
+  "rules": {
+    "path": "D:\\solar-sailer\\benchmarks\\roughcut\\prompts\\roughcut_system_partial_v5.md",
+    "md5": "afba04cbbfc9dd6555fa7a097e6c5206",
+    "est_tokens": 1520
+  },
+  "group_max": 40,
+  "group_span": 120,
+  "concurrency": 8,
+  "budget_cap_usd": 1.0,
+  "aborted": null,
+  "resumed": false,
+  "episodes": {
+    "colman-02.04-skeleton-demo": {
+      "sentences": 194,
+      "transcript_lines": 190,
+      "routed": 47,
+      "asked": 46,
+      "retake_vetoed": 1,
+      "vetoed_ids": [
+        62
+      ],
+      "groups": 2,
+      "wall_clock_s": 19.702,
+      "requests": 1,
+      "retries": 0,
+      "errors": 0,
+      "malformed": 0,
+      "unanswered_targets": 0,
+      "unanswered_ids": [],
+      "prompt_tokens": 5535,
+      "cached_tokens": 0,
+      "completion_tokens": 1651,
+      "reasoning_tokens": 1024,
+      "cost_usd": 0.003088,
+      "cost_listed_usd": 0.003088,
+      "latency": {
+        "n": 1,
+        "total_s": 19.701,
+        "median_s": 19.701,
+        "p95_s": 19.701,
+        "max_s": 19.701
+      },
+      "substituted": 26,
+      "est_input_tokens": 5668
+    }
+  },
+  "totals": {
+    "wall_clock_s": 19.703,
+    "episodes": 1,
+    "requests": 1,
+    "retries": 0,
+    "errors": 0,
+    "malformed": 0,
+    "unanswered_targets": 0,
+    "prompt_tokens": 5535,
+    "cached_tokens": 0,
+    "completion_tokens": 1651,
+    "reasoning_tokens": 1024,
+    "routed": 47,
+    "asked": 46,
+    "retake_vetoed": 1,
+    "substituted": 26,
+    "cost_usd": 0.003088,
+    "cost_listed_usd": 0.003088,
+    "est_input_tokens": 5668
+  },
+  "estimate": {
+    "requests": 1,
+    "targets": 26,
+    "input_tokens": 5668,
+    "output_tokens": 2670,
+    "cost_usd": 0.0043
+  },
+  "selection": "combiner margin abs(5 * p_keep - threshold), pooled, one cutoff",
+  "combiner": {
+    "set": "q+code+v3",
+    "C": 0.003,
+    "threshold": 3.0,
+    "weights": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-f1-weights.json"
+  },
+  "offline_ceiling": 0.8481493905848158,
+  "frozen_keep_rule": "score>=2"
+}
