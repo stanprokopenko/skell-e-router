@@ -1,0 +1,81 @@
+{
+  "generated_utc": "2026-09-26T07:35:12+00:00",
+  "model": "gpt-5.6-luna",
+  "effort": "medium",
+  "share": 0.25,
+  "cutoff": 0.45999999999999996,
+  "arm": "hybrid_luna_smoke_hybrid_luna",
+  "out": "smoke-hybrid-luna",
+  "preamble_version": "hybrid-preamble-v1",
+  "rules": {
+    "path": "D:\\solar-sailer\\benchmarks\\roughcut\\prompts\\roughcut_system_partial_v5.md",
+    "md5": "afba04cbbfc9dd6555fa7a097e6c5206",
+    "est_tokens": 1520
+  },
+  "group_max": 40,
+  "group_span": 120,
+  "concurrency": 8,
+  "budget_cap_usd": 0.1,
+  "aborted": null,
+  "resumed": false,
+  "episodes": {
+    "hampton-7-conclusion": {
+      "sentences": 43,
+      "transcript_lines": 42,
+      "routed": 10,
+      "asked": 10,
+      "retake_vetoed": 0,
+      "vetoed_ids": [],
+      "groups": 1,
+      "wall_clock_s": 9.351,
+      "requests": 1,
+      "retries": 0,
+      "errors": 0,
+      "malformed": 0,
+      "unanswered_targets": 0,
+      "unanswered_ids": [],
+      "prompt_tokens": 2580,
+      "cached_tokens": 0,
+      "completion_tokens": 765,
+      "reasoning_tokens": 512,
+      "cost_usd": 0.001434,
+      "cost_listed_usd": 0.001434,
+      "latency": {
+        "n": 1,
+        "total_s": 9.35,
+        "median_s": 9.35,
+        "p95_s": 9.35,
+        "max_s": 9.35
+      },
+      "substituted": 10,
+      "est_input_tokens": 2659
+    }
+  },
+  "totals": {
+    "wall_clock_s": 9.352,
+    "episodes": 1,
+    "requests": 1,
+    "retries": 0,
+    "errors": 0,
+    "malformed": 0,
+    "unanswered_targets": 0,
+    "prompt_tokens": 2580,
+    "cached_tokens": 0,
+    "completion_tokens": 765,
+    "reasoning_tokens": 512,
+    "routed": 10,
+    "asked": 10,
+    "retake_vetoed": 0,
+    "substituted": 10,
+    "cost_usd": 0.001434,
+    "cost_listed_usd": 0.001434,
+    "est_input_tokens": 2659
+  },
+  "estimate": {
+    "requests": 1,
+    "targets": 10,
+    "input_tokens": 2659,
+    "output_tokens": 1950,
+    "cost_usd": 0.0029
+  }
+}

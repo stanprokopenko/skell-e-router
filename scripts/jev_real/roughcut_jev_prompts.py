@@ -260,3 +260,133 @@ def prompts_for(version):
     if version not in PROMPTS:
         raise KeyError(f"unknown prompt version {version!r}; have {sorted(PROMPTS)}")
     return SimpleNamespace(version=version, **PROMPTS[version])
+
+
+# ---------------------------------------------------------------------------
+# feature bundles: the prompt-breakup questions of round two
+# (``docs/superpowers/specs/2026-09-26-jev-roughcut-round-two-design.md``,
+# "Build B"). One yes/no noul per target sentence per question, asked over the
+# same ``{rules, transcript, targets}`` state as the v3 sentence pass and sent
+# by ``scripts/jev_real/roughcut_jev_features.py``. The questions never see
+# each other's answers; a combiner fitted in code does the weighing. Edit the
+# list as a new version (``f2``), never in place.
+# ---------------------------------------------------------------------------
+
+F1_QUESTIONS = [
+    ("false_start",
+     "The speaker abandons sentence `targets[{k}]` part-way and restarts the same "
+     "thought right after it, so this row is the dropped attempt. The rules say: "
+     "\"A take is also 'repeated' when the speaker abandons an explanation ('I "
+     "didn't explain that well', 'let me say that again') and restarts it. The "
+     "earlier attempt is the losing take even if it was longer or fluent.\" A row "
+     "that merely ends in `..` and continues in the next row is not a false start."),
+    ("retake_loser",
+     "Sentence `targets[{k}]` is one attempt at a line that is said again nearby, "
+     "and it is not the best attempt. The rules say: \"If the speaker repeats a "
+     "line, they're attempting multiple takes. Keep the best take and cut the rest. "
+     "Default to the LAST take unless it's clearly worse.\""),
+    ("crew_talk",
+     "Sentence `targets[{k}]` is addressed to the editor, producer or crew rather "
+     "than to the students, such as 'is this recording?' or 'can you put that on "
+     "screen?'. The rules say such talk is off topic: \"talking to the editor or "
+     "producer about what to insert or show\" is cut."),
+    ("screen_ops",
+     "Sentence `targets[{k}]` is about operating the screen, the software or the "
+     "recording: opening a file, scrolling, fixing a window, finding a brush. The "
+     "rules say: \"Off topic includes the speaker operating the screen or software "
+     "(opening files, scrolling, fixing a window)\", and that is cut."),
+    ("pre_lesson",
+     "Sentence `targets[{k}]` is chatter from before the lesson has started, such "
+     "as settling in, checking the setup, or small talk. The rules say: \"any "
+     "conversation before the lesson starts, even when the lesson is mentioned\" "
+     "is cut."),
+    ("off_topic",
+     "Sentence `targets[{k}]` is off the topic of this lesson. The rules say: "
+     "\"Cut narration that is off topic or irrelevant to the lesson.\" A spoken "
+     "transition between students or sections is on topic."),
+    ("repeats_point",
+     "Sentence `targets[{k}]` repeats a point already made in the last few "
+     "sentences of `transcript` and adds nothing new to it. A restatement that adds "
+     "a reason, an example or a correction is not a repeat."),
+    ("pure_filler",
+     "Sentence `targets[{k}]` is filler with no lesson content at all: 'ok', "
+     "'alright', 'yeah', 'so', 'let's see', throat-clearing. A short line that sets "
+     "up the next one ('So, how do you learn the rules?') is not filler."),
+    ("pep_talk",
+     "Sentence `targets[{k}]` is encouragement, praise or a wrap-up with nothing "
+     "new in it: 'great job', 'keep practising', 'that's it for today'. A "
+     "compliment that names what was done well is teaching, not pep talk."),
+    ("funny",
+     "Sentence `targets[{k}]` is funny, or shows the instructor's personality or "
+     "unique perspective. The rules say: \"Keep entertaining and humorous "
+     "sentences, and content showcasing the speaker's personality or unique "
+     "perspective.\""),
+    ("teaching_point",
+     "Sentence `targets[{k}]` states a teaching point, gives a reason, or corrects "
+     "something in a student's work. It explains rather than only announcing, "
+     "narrating or reacting."),
+    ("essential",
+     "The lesson would lose something if sentence `targets[{k}]` were cut from the "
+     "final edit: a core idea, a key correction, the punchline of a joke, or a step "
+     "the student needs. Ordinary connective talk that keeps the flow is not "
+     "essential."),
+    ("referenced_later",
+     "A later sentence in `transcript` depends on sentence `targets[{k}]` having "
+     "been heard: it refers back to it, answers it, or continues its train of "
+     "thought. The rules say: \"Keep continuity intact: don't cut a sentence that "
+     "a later sentence refers back to, and don't create a jump or gap in the train "
+     "of thought.\""),
+    ("transition",
+     "Sentence `targets[{k}]` is a spoken transition between students, sections or "
+     "steps of the lesson, such as 'Let's move on to Adam' or 'Now the second "
+     "layer'. The rules say: \"The speaker's spoken transitions between pieces or "
+     "students ('Let's move on to Adam') are content and stay.\""),
+    ("describes_screen",
+     "Sentence `targets[{k}]` only describes what is visible on screen ('here is a "
+     "line', 'this part is darker') rather than explaining why or what to do about "
+     "it. The rules say: \"Assume appropriate visuals will accompany the "
+     "narration.\" A description that carries a reason or a correction is not only "
+     "descriptive."),
+    ("rambling",
+     "Sentence `targets[{k}]` is rambling or thinking aloud: it wanders, circles "
+     "or stalls without landing a point. The rules say: \"Cut distracting rambling "
+     "unless it's funny or entertaining.\""),
+    ("split_fragment",
+     "Sentence `targets[{k}]` is half of one spoken sentence that continues in the "
+     "next row or from the previous one, split by the transcriber rather than "
+     "abandoned by the speaker. A row ending in `..` followed by a row that starts "
+     "lowercase is the usual shape; `targets[{k}].spoken_sentence`, when present, "
+     "shows the whole spoken sentence."),
+    ("tangent",
+     "Sentence `targets[{k}]` is a tangent: it leaves the lesson for an aside, an "
+     "anecdote or a side topic and the lesson resumes after it. A funny or "
+     "entertaining aside is still a tangent here; whether it stays is judged "
+     "elsewhere."),
+]
+
+FEATURE_PROMPTS = {
+    "f1": {"QUESTIONS": F1_QUESTIONS, "RULES": RULES},
+}
+FEATURE_PROMPT_VERSION = "f1"
+FEATURE_PROMPT_VERSIONS = list(FEATURE_PROMPTS)
+
+for _name, _bundle in FEATURE_PROMPTS.items():
+    _keys = [key for key, _text in _bundle["QUESTIONS"]]
+    if len(_keys) != len(set(_keys)):
+        raise AssertionError(f"feature bundle {_name} repeats a question key")
+    for _key, _text in _bundle["QUESTIONS"]:
+        if "{k}" not in _text:
+            raise AssertionError(f"feature bundle {_name}: {_key} never names targets[k]")
+
+
+def feature_prompts_for(version):
+    """The question list for one feature bundle, as an attribute bag.
+
+    ``questions`` is ``[(key, instructions_template)]`` in the spec's order;
+    every template names its sentence as ``targets[{k}]``.
+    """
+    if version not in FEATURE_PROMPTS:
+        raise KeyError(f"unknown feature bundle {version!r}; have {sorted(FEATURE_PROMPTS)}")
+    bundle = FEATURE_PROMPTS[version]
+    return SimpleNamespace(version=version, questions=list(bundle["QUESTIONS"]),
+                           rules=bundle["RULES"])

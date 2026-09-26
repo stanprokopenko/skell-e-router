@@ -1,6 +1,6 @@
 # Route 2 routing ceiling (developer-facing notes)
 
-Generated 2026-09-26T07:03:23+00:00 by `scripts/jev_real/roughcut_route2_routing.py` from stored decisions, the archived donor ratings and the cached removal ranges. No model calls, no detector runs, $0. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.
+Generated 2026-09-26T07:36:04+00:00 by `scripts/jev_real/roughcut_route2_routing.py` from stored decisions, the archived donor ratings and the cached removal ranges. No model calls, no detector runs, $0. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.
 
 Question: Jev scores all 8,943 sentences of the 18 ladder episodes, the least confident slice goes to a bigger model, and that model's keep/cut and trims replace Jev's on the slice. The ceiling is estimated by swapping in the donor's archived per-sentence decision on the routed slice and rescoring. Jev sentences are the `jev_a` rows of `roughcut-jev-all18-v3` rebuilt at trim trigger 0.3 and scored at keep threshold 2.50, the setting behind the published 80.47. A donor sentence is kept when its archived score clears its own file's Neutral threshold, carries its own `keep_words`, and takes the retake flags the donor's published cut used (corpus flags plus any `retake_overrides`). The threshold is not recalibrated after mixing.
 

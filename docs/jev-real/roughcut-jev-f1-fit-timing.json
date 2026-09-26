@@ -1,0 +1,423 @@
+{
+  "generated_utc": "2026-09-26T07:35:32+00:00",
+  "model": "jev-1.13.0",
+  "feature_version": "f1",
+  "questions": [
+    "false_start",
+    "retake_loser",
+    "crew_talk",
+    "screen_ops",
+    "pre_lesson",
+    "off_topic",
+    "repeats_point",
+    "pure_filler",
+    "pep_talk",
+    "funny",
+    "teaching_point",
+    "essential",
+    "referenced_later",
+    "transition",
+    "describes_screen",
+    "rambling",
+    "split_fragment",
+    "tangent"
+  ],
+  "code_features": [
+    "n_words",
+    "n_words_raw",
+    "pause_before",
+    "pause_after",
+    "duration_s",
+    "words_per_s",
+    "position",
+    "is_retake",
+    "retake_member",
+    "retake_winner",
+    "trail_off",
+    "lower_start",
+    "chain_piece",
+    "chain_len",
+    "um_detected",
+    "um_removed",
+    "asr_confidence",
+    "overlap_prev",
+    "overlap_next"
+  ],
+  "v3_fields": [
+    "score",
+    "cut_p",
+    "first_p_whole",
+    "last_p_whole",
+    "cut_retake",
+    "retake_real"
+  ],
+  "v3_sources": [
+    "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-decisions.jsonl",
+    "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-heldout-v3-decisions.jsonl"
+  ],
+  "concurrency": 8,
+  "block": 25,
+  "context_tokens": 22000,
+  "real_cap": 50000,
+  "token_model": {
+    "est_scale": 1.26,
+    "per_question": 30.0
+  },
+  "smoke": null,
+  "budget_cap_usd": 1.0,
+  "aborted": null,
+  "episodes": {
+    "colman-02.04-skeleton-demo": {
+      "wall_clock_s": 0.789,
+      "requests": 16,
+      "input_tokens": 423472,
+      "output_tokens": 71374,
+      "cost_usd": 0.017786,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.8844,
+      "latency": {
+        "n": 16,
+        "total_s": 5.40248640003847,
+        "median_s": 0.35208219998457935,
+        "p95_s": 0.4334887000150047,
+        "max_s": 0.4334887000150047
+      },
+      "sentences": 194,
+      "blocks": 8,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 4.445,
+        "cost_usd": 0.014878
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\colman-02.04-skeleton-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 60
+      },
+      "episode_wall_clock_s": 0.789
+    },
+    "hampton-5.4-assignment-demo": {
+      "wall_clock_s": 1.127,
+      "requests": 24,
+      "input_tokens": 637982,
+      "output_tokens": 110436,
+      "cost_usd": 0.026795,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.9113,
+      "latency": {
+        "n": 24,
+        "total_s": 7.92477930005407,
+        "median_s": 0.33834055000625085,
+        "p95_s": 0.4190213000110816,
+        "max_s": 0.43411059997742996
+      },
+      "sentences": 300,
+      "blocks": 12,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 2.794,
+        "cost_usd": 0.021303
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\hampton-5.4-assignment-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 15
+      },
+      "episode_wall_clock_s": 1.127
+    },
+    "colman-03.03-muscles-crit": {
+      "wall_clock_s": 1.178,
+      "requests": 25,
+      "input_tokens": 730109,
+      "output_tokens": 111511,
+      "cost_usd": 0.030665,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.8968,
+      "latency": {
+        "n": 25,
+        "total_s": 8.672065400052816,
+        "median_s": 0.35344599999370985,
+        "p95_s": 0.411639700003434,
+        "max_s": 0.4161626000131946
+      },
+      "sentences": 303,
+      "blocks": 13,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 1
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 3.097,
+        "cost_usd": 0.025192
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\colman-03.03-muscles-crit.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 35
+      },
+      "episode_wall_clock_s": 1.178
+    },
+    "edges-7.01-intro": {
+      "wall_clock_s": 1.411,
+      "requests": 31,
+      "input_tokens": 776852,
+      "output_tokens": 143119,
+      "cost_usd": 0.032628,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.936,
+      "latency": {
+        "n": 31,
+        "total_s": 9.871961099997861,
+        "median_s": 0.33969550000620075,
+        "p95_s": 0.4404301999893505,
+        "max_s": 0.45137480000266805
+      },
+      "sentences": 389,
+      "blocks": 16,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 1
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 4.897,
+        "cost_usd": 0.0275
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\edges-7.01-intro.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 28
+      },
+      "episode_wall_clock_s": 1.411
+    },
+    "hampton-5.2-shape-demo": {
+      "wall_clock_s": 1.715,
+      "requests": 33,
+      "input_tokens": 1015962,
+      "output_tokens": 151197,
+      "cost_usd": 0.04267,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 0,
+      "est_over_actual_median": 0.8695,
+      "latency": {
+        "n": 33,
+        "total_s": 12.238558100070804,
+        "median_s": 0.35713200000463985,
+        "p95_s": 0.5452616999973543,
+        "max_s": 0.6188809000013862
+      },
+      "sentences": 411,
+      "blocks": 17,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 1
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 3.2,
+        "cost_usd": 0.03375
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\hampton-5.2-shape-demo.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 28
+      },
+      "episode_wall_clock_s": 1.715
+    },
+    "perspective-14e-boxes-critique": {
+      "wall_clock_s": 4.946,
+      "requests": 92,
+      "input_tokens": 3351246,
+      "output_tokens": 421838,
+      "cost_usd": 0.140752,
+      "errors": 0,
+      "failed_blocks": 0,
+      "windowed_requests": 92,
+      "est_over_actual_median": 0.859,
+      "latency": {
+        "n": 92,
+        "total_s": 38.027884199953405,
+        "median_s": 0.41074394999304786,
+        "p95_s": 0.4641962999885436,
+        "max_s": 0.6809223000018392
+      },
+      "sentences": 1146,
+      "blocks": 46,
+      "parts_per_block": {
+        "0": 2,
+        "1": 2,
+        "2": 2,
+        "3": 2,
+        "4": 2,
+        "5": 2,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 2,
+        "10": 2,
+        "11": 2,
+        "12": 2,
+        "13": 2,
+        "14": 2,
+        "15": 2,
+        "16": 2,
+        "17": 2,
+        "18": 2,
+        "19": 2,
+        "20": 2,
+        "21": 2,
+        "22": 2,
+        "23": 2,
+        "24": 2,
+        "25": 2,
+        "26": 2,
+        "27": 2,
+        "28": 2,
+        "29": 2,
+        "30": 2,
+        "31": 2,
+        "32": 2,
+        "33": 2,
+        "34": 2,
+        "35": 2,
+        "36": 2,
+        "37": 2,
+        "38": 2,
+        "39": 2,
+        "40": 2,
+        "41": 2,
+        "42": 2,
+        "43": 2,
+        "44": 2,
+        "45": 2
+      },
+      "unanswered_cells": 0,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 12.443,
+        "cost_usd": 0.105297
+      },
+      "removals": {
+        "path": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\removals\\perspective-14e-boxes-critique.json",
+        "loaded": true,
+        "key": "umm_word_ids",
+        "n_word_ids": 52
+      },
+      "episode_wall_clock_s": 4.946
+    }
+  },
+  "invocations": [
+    {
+      "recorded_utc": "2026-09-26T07:35:20+00:00",
+      "episodes": [
+        "colman-02.04-skeleton-demo",
+        "hampton-5.4-assignment-demo",
+        "colman-03.03-muscles-crit",
+        "edges-7.01-intro",
+        "hampton-5.2-shape-demo",
+        "perspective-14e-boxes-critique"
+      ],
+      "wall_clock_s": 11.398,
+      "cost_usd": 0.291296
+    }
+  ],
+  "totals": {
+    "episodes": 6,
+    "wall_clock_s": 11.166,
+    "requests": 221,
+    "errors": 0,
+    "failed_parts": 0,
+    "input_tokens": 6935623,
+    "output_tokens": 1009475,
+    "cost_usd": 0.291296,
+    "sentences": 2743,
+    "unanswered_cells": 0,
+    "est_over_actual_median": 0.8677
+  },
+  "warnings": [],
+  "n_warnings": 0
+}

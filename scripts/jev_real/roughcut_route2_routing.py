@@ -339,16 +339,25 @@ def slice_agreement(routed, episodes, human, jev_states, donor_states):
 # cost and latency
 # ---------------------------------------------------------------------------
 
-def windows_for(ids):
-    """Greedy windows over the routed ids in transcript order: ``[(lo, hi, n)]``."""
+def group_ids(ids, max_n, max_span):
+    """Greedy groups over ``ids`` in ascending order: ``[[sid, ...], ...]``.
+
+    A group takes the next id while it holds fewer than ``max_n`` ids and the
+    new id sits at most ``max_span`` ids past the group's first one.
+    """
     out = []
     for sid in sorted(ids):
-        if out and out[-1][2] < WINDOW_MAX and sid - out[-1][0] < WINDOW_SPAN_CAP:
-            lo, _hi, n = out[-1]
-            out[-1] = (lo, sid, n + 1)
+        if out and len(out[-1]) < max_n and sid - out[-1][0] <= max_span:
+            out[-1].append(sid)
         else:
-            out.append((sid, sid, 1))
+            out.append([sid])
     return out
+
+
+def windows_for(ids):
+    """Greedy windows over the routed ids in transcript order: ``[(lo, hi, n)]``."""
+    return [(g[0], g[-1], len(g))
+            for g in group_ids(ids, WINDOW_MAX, WINDOW_SPAN_CAP - 1)]
 
 
 def cost_block(routed, episodes, word_counts, out_tokens_per_sentence):
@@ -385,16 +394,36 @@ def cost_block(routed, episodes, word_counts, out_tokens_per_sentence):
 # build
 # ---------------------------------------------------------------------------
 
-def build():
-    decision_rows, requests, timing, run_paths = report_mod.load_run(IN_NAME)
+def load_jev(name=IN_NAME, arm=JEV_ARM, t_trim=T_TRIM):
+    """The Jev side of every routing estimate, rebuilt the way the report does.
+
+    Returns a dict: ``episodes`` (run order), ``jev_rows`` (the raw decision
+    rows per episode and sentence, what ``confidence`` reads), ``jev`` (the
+    ``{score, keep_words, cut_retake}`` decision set per episode at ``t_trim``),
+    ``n_missing`` (sentences with no score, given 0.0), ``removals`` (cached um
+    and silence ranges), plus the run's ``requests``, ``timing`` and
+    ``run_paths`` for latency and fingerprints.
+    """
+    decision_rows, requests, timing, run_paths = report_mod.load_run(name)
     by_arm, episodes = report_mod.index_decisions(decision_rows)
-    jev_rows = {e: dict(by_arm[JEV_ARM][e]) for e in episodes}
+    jev_rows = {e: dict(by_arm[arm][e]) for e in episodes}
     words = {e: report_mod.word_ids_by_sentence(e) for e in episodes}
-    jev, n_missing = report_mod.build_arm_decisions(by_arm, episodes, words, JEV_ARM,
-                                                    T_TRIM, 0.0)
+    jev, n_missing = report_mod.build_arm_decisions(by_arm, episodes, words, arm,
+                                                    t_trim, 0.0)
     removals, skipped = report_mod.load_removals(episodes)
     if skipped:
         raise SystemExit(f"no cached removals for {skipped}")
+    return {"episodes": episodes, "jev_rows": jev_rows, "jev": jev,
+            "n_missing": n_missing, "removals": removals, "requests": requests,
+            "timing": timing, "run_paths": run_paths}
+
+
+def build():
+    inputs = load_jev()
+    episodes, jev_rows, jev = inputs["episodes"], inputs["jev_rows"], inputs["jev"]
+    n_missing, removals = inputs["n_missing"], inputs["removals"]
+    requests, timing, run_paths = (inputs["requests"], inputs["timing"],
+                                   inputs["run_paths"])
 
     donors, donor_paths, missing = {}, {}, {}
     for key in DONORS:
