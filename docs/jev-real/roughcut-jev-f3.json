@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-27T04:54:31+00:00",
+  "generated_utc": "2026-09-27T05:43:28+00:00",
   "script": "scripts/jev_real/roughcut_jev_combine.py",
   "feature_version": "f3",
   "q_label": "q3",
@@ -104,6 +104,13 @@
     "decided_before_heldout": true
   },
   "weights_generated_utc": "2026-09-27T04:36:30+00:00",
+  "owner_choice": {
+    "by": "Stan",
+    "date": "2026-09-26",
+    "winner": "f3",
+    "reference": "f1",
+    "basis": "the held-out 12 and the 18-episode ladder, the episodes the fit never saw"
+  },
   "set_order": [
     "q3",
     "q3+code",
@@ -11420,12 +11427,12 @@
         "sentence_points": 0.8370569160237066
       },
       {
-        "label": "Jev f3 `q3+code+v3` combiner (this build)",
+        "label": "Jev f3 `q3+code+v3` combiner (this build, winning Jev-only run)",
         "sentence_points": 0.833724700883373,
         "mine": true
       },
       {
-        "label": "Jev f1 `q+code+v3` combiner (frozen)",
+        "label": "Jev f1 `q+code+v3` combiner (frozen, reference)",
         "sentence_points": 0.8290841999329089,
         "control": true
       },
@@ -11442,7 +11449,7 @@
         "sentence_points": 0.6372246449737228
       }
     ],
-    "placement": "below best Luna chapters, above Jev f1 `q+code+v3` combiner (frozen)",
+    "placement": "below best Luna chapters, above Jev f1 `q+code+v3` combiner (frozen, reference)",
     "mine_sp": 0.833724700883373,
     "control_sp": 0.8290841999329089,
     "jev_v3_sp": 0.8046516828804657,

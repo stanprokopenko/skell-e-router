@@ -121,6 +121,14 @@ FILL = {"v3_score": V3_THRESHOLD, "v3_cut_p": 0.5, "v3_first_p_whole": 1.0,
 KIND_TAG = {"spec": "", "diagnostic": " (diagnostic)", "control": " (control)",
             "ablation": " (ablation)"}
 
+#: The product owner's pick of the Jev-only combiner, made after the held-out
+#: numbers were read. It relabels rows; it never changes a number or the
+#: pre-registered win test, which the write-up keeps as frozen.
+OWNER_CHOICE = {
+    "f3": {"by": "Stan", "date": "2026-09-26", "winner": "f3", "reference": "f1",
+           "basis": "the held-out 12 and the 18-episode ladder, the episodes the fit never saw"},
+}
+
 
 def set_specs(bundle, control):
     """The feature sets to fit, in table order, each a dict with its columns.
@@ -861,8 +869,35 @@ def write_markdown(path, s):
                  f"threshold {ch['threshold']:.2f}) at {pct(ch['loo']['pooled']['sentence_points'])} SP leave-one-out.")
     L.append("")
 
+    owner = s.get("owner_choice") or {}
+    if owner.get("winner") == v and s.get("heldout"):
+        hl, wt = s["heldout"], s.get("win_test") or {}
+        L.append("## The winning Jev-only run")
+        L.append("")
+        text = (f"{owner['by']} chose `{v}` (`{chosen}`) as the winning Jev-only combiner on {owner['date']}, "
+                f"judged on {owner['basis']}: held-out "
+                f"{pct(hl['sets'][chosen]['frozen']['pooled']['sentence_points'])} SP")
+        if ctrl:
+            text += (f" against {pct(hl['sets'][ctrl['set']]['frozen']['pooled']['sentence_points'])} for "
+                     f"`{owner['reference']}`, ladder {pct(s['ladder']['mine_sp'])} against "
+                     f"{pct(s['ladder']['control_sp'])}")
+        text += (". The choice was made after the held-out numbers were read, so it is a judgment call, not a "
+                 "pre-registered test result.")
+        if wt and not wt.get("wins"):
+            text += (f" The pre-registered test below still reads as it was frozen: `{v}` lost it on the fit six by "
+                     f"{(wt['control_loo_sp'] - wt['chosen_loo_sp']) * 100:.2f} SP leave-one-out, and nothing in this "
+                     f"file was refitted or rechosen after the choice.")
+        text += (f" From here on, result tables label `{v}` as the winning Jev-only run and keep "
+                 f"`{owner['reference']}` as a row for reference.")
+        L.append(text)
+        L.append("")
+
     def tag(name):
-        return KIND_TAG[s["sets"][name]["kind"]] if name != chosen else " (chosen)"
+        if name == chosen:
+            return " (chosen, winning Jev-only run)" if owner.get("winner") == v else " (chosen)"
+        if ctrl and name == ctrl["set"] and owner.get("reference") == ctrl["version"]:
+            return " (control, reference)"
+        return KIND_TAG[s["sets"][name]["kind"]]
 
     wt = s.get("win_test")
     if wt:
@@ -881,6 +916,9 @@ def write_markdown(path, s):
                      f"`roughcut-hybrid-{v}luna.md`.")
         else:
             text += f"`{v}` does not win, so the Luna stack rerun is skipped; the held-out and ladder numbers below are reported anyway."
+            if owner.get("winner") == v:
+                text += (f" That outcome stands; {owner['by']}'s later choice of `{v}` as the winning Jev-only run, "
+                         f"on the held-out result, is recorded above and does not rewrite it.")
         L.append(text + f" Seconds per episode on the fit six: {num(s['seconds']['fit_mean'], 1)}.")
         L.append("")
 
@@ -1131,7 +1169,8 @@ def write_markdown(path, s):
             for name, block in r2["by_set"].items():
                 secs = s["seconds"]["control_ladder_mean"] if s["sets"][name]["kind"] == "control" else s["seconds"]["ladder_mean"]
                 for sh in block["shares"]:
-                    rows.append([f"`{name}`", f"{sh['share'] * 100:g}%", sh["routed"], num(sh["cutoff_margin"], 3),
+                    label = f"`{name}`" + (tag(name) if name in (chosen, (ctrl or {}).get("set")) else "")
+                    rows.append([label, f"{sh['share'] * 100:g}%", sh["routed"], num(sh["cutoff_margin"], 3),
                                  pct(sh["pooled"]["sentence_points"]), pct(sh["pooled"]["word_score"]),
                                  num(secs, 1)])
             rows.append(["v3 margin, archived Luna (route 2 write-up)", "25%", 2236, "0.46",
@@ -1251,6 +1290,8 @@ def main():
                         help="the spend cap the write-up reports against")
     parser.add_argument("--workers", type=int, default=8,
                         help="worker processes for the leave-one-out C grid (1 runs it in this process)")
+    parser.add_argument("--force", action="store_true",
+                        help="stage 2 only: overwrite an existing write-up (never the frozen weights)")
     parser.add_argument("--no-write", action="store_true",
                         help="compute and print everything, write no file (reproduction check)")
     args = parser.parse_args()
@@ -1266,8 +1307,8 @@ def main():
         if not weights_path.exists():
             parser.error(f"stage 2 needs the frozen weights at {weights_path}; run stage 1 first")
         existing = [str(p) for p in (md_path, json_path) if p.exists()]
-        if existing and not args.no_write:
-            parser.error(f"refusing to overwrite existing output(s): {existing}")
+        if existing and not args.no_write and not args.force:
+            parser.error(f"refusing to overwrite existing output(s): {existing}; pass --force")
     elif weights_path.exists() and not args.no_write:
         parser.error(f"refusing to overwrite frozen weights at {weights_path}")
 
@@ -1449,6 +1490,7 @@ def main():
         "fit_episodes": fit_order, "chosen_set": chosen, "c_grid": C_GRID,
         "joined_from": bundle.joined_from,
         "win_test": doc.get("win_test"), "weights_generated_utc": doc.get("generated_utc"),
+        "owner_choice": OWNER_CHOICE.get(bundle.version),
         "set_order": set_order, "sets": summary_sets,
         "v3_control": summary_sets["v3"],
         "jev_v3_fit": jev_fit_scored, "jev_v3_fit_notrim": jev_fit_notrim_scored,
@@ -1518,11 +1560,14 @@ def main():
         if control:
             control_dec = arm_decisions(rows_for(control["set"]), all_p[control["set"]])
             control_18 = score_fixed(control_dec, control["threshold"], removals)
-            ladder.append({"label": f"Jev {control['version']} `{control['chosen']}` combiner (frozen)",
+            owner = OWNER_CHOICE.get(bundle.version) or {}
+            ref = ", reference" if owner.get("reference") == control["version"] else ""
+            ladder.append({"label": f"Jev {control['version']} `{control['chosen']}` combiner (frozen{ref})",
                            "sentence_points": control_18["pooled"]["sentence_points"], "control": True})
         ladder.sort(key=lambda r: -r["sentence_points"])
         place = placement(mine_18["pooled"]["sentence_points"], ladder)
-        ladder.append({"label": f"Jev {bundle.version} `{chosen}` combiner (this build)",
+        win = ", winning Jev-only run" if (OWNER_CHOICE.get(bundle.version) or {}).get("winner") == bundle.version else ""
+        ladder.append({"label": f"Jev {bundle.version} `{chosen}` combiner (this build{win})",
                        "sentence_points": mine_18["pooled"]["sentence_points"], "mine": True})
         ladder.sort(key=lambda r: -r["sentence_points"])
         summary["ladder"] = {"episodes": ladder_eps, "rows": ladder, "placement": place,
