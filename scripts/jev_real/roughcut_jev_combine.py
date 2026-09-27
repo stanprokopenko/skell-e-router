@@ -52,6 +52,16 @@ Usage::
   python scripts/jev_real/roughcut_jev_combine.py --feature-version f2 \\
       --fit roughcut-jev-f2-fit --control-prefix roughcut-jev-f1 --cap 1.50 \\
       --out roughcut-jev-f2
+  python scripts/jev_real/roughcut_jev_join.py --feature-version f3
+  python scripts/jev_real/roughcut_jev_combine.py --feature-version f3 \\
+      --fit roughcut-jev-f3-fit --control-prefix roughcut-jev-f1 --cap 0 \\
+      --out roughcut-jev-f3
+
+f3 is a join bundle (``roughcut_jev_join.py`` builds its rows from the f1 and
+f2 runs, no Jev calls): its timing file has no requests file beside it, the
+write-up reports $0 new spend with the source runs' own seconds and dollars,
+and, as for every bundle with a control, stage 1 freezes the win test (chosen
+set leave-one-out above the parent's frozen chosen set) before held-out.
 """
 
 import argparse
@@ -234,6 +244,10 @@ def load_features(name):
     paths = {"features": OUT_DIR / f"{name}-features.jsonl",
              "requests": OUT_DIR / f"{name}-requests.jsonl",
              "timing": OUT_DIR / f"{name}-timing.json"}
+    timing_path = paths["timing"]
+    if timing_path.exists() and json.loads(timing_path.read_text(encoding="utf-8")).get("kind") == "join":
+        # A join bundle's rows (``roughcut_jev_join.py``) made no requests of their own.
+        del paths["requests"]
     missing = [str(p) for p in paths.values() if not p.exists()]
     if missing:
         raise SystemExit(f"missing feature run file(s): {missing}")
@@ -566,7 +580,22 @@ def placement(sp, ladder):
 # stage 1: fit
 # ---------------------------------------------------------------------------
 
-def fit_stage(fit_by_source, fit_order, specs, human, removals, log, c_by_set=None):
+def _sweep_point(rows, y_by_episode, names, C, fit_order, removals):
+    """One (feature set, C) grid point: out-of-fold predictions, then the calibrated score.
+
+    Module level so a process pool can run grid points side by side; the
+    arithmetic is the same whether it runs here or in the parent.
+    """
+    with pywarnings.catch_warnings():
+        pywarnings.simplefilter("ignore")
+        p = loo_predictions(rows, y_by_episode, names, C, fit_order)
+        scored = score_calibrated(arm_decisions(rows, p), removals)
+    return {"C": C, "threshold": scored["threshold"], "pooled": scored["pooled"],
+            "pooled_harness_sp": scored["pooled_harness_sp"],
+            "per_episode": scored["episodes"], "p": p}
+
+
+def fit_stage(fit_by_source, fit_order, specs, human, removals, log, c_by_set=None, workers=1):
     """Leave-one-episode-out per set over the C grid, then refit on all six.
 
     ``fit_by_source`` is ``{"main": rows_by_episode, "control": ...}``; every
@@ -579,19 +608,26 @@ def fit_stage(fit_by_source, fit_order, specs, human, removals, log, c_by_set=No
     y_by_episode = {e: np.array([human[e][r["id"]] for r in main_rows[e]])
                     for e in fit_order}
     sets = {}
+    jobs = [(spec, C) for spec in specs
+            for C in ([c_by_set[spec["name"]]] if c_by_set else C_GRID)]
+    args_for = lambda spec, C: (fit_by_source[spec["source"]], y_by_episode, spec["features"],  # noqa: E731
+                                C, fit_order, removals)
+    if workers > 1 and len(jobs) > 1:
+        from concurrent.futures import ProcessPoolExecutor
+        log(f"  {len(jobs)} grid points on {min(workers, len(jobs))} worker processes...")
+        with ProcessPoolExecutor(max_workers=min(workers, len(jobs))) as pool_:
+            futures = [pool_.submit(_sweep_point, *args_for(spec, C)) for spec, C in jobs]
+            points = [f.result() for f in futures]
+    else:
+        points = [_sweep_point(*args_for(spec, C)) for spec, C in jobs]
+    by_set = {}
+    for (spec, C), point in zip(jobs, points):
+        log(f"  {spec['name']} C={C:g}: LOO SP {point['pooled']['sentence_points'] * 100:.2f} "
+            f"at t={point['threshold']:.2f}")
+        by_set.setdefault(spec["name"], []).append(point)
     for spec in specs:
         rows, names = fit_by_source[spec["source"]], spec["features"]
-        sweep = []
-        grid = [c_by_set[spec["name"]]] if c_by_set else C_GRID
-        for C in grid:
-            p = loo_predictions(rows, y_by_episode, names, C, fit_order)
-            scored = score_calibrated(arm_decisions(rows, p), removals)
-            log(f"  {spec['name']} C={C:g}: LOO SP {scored['pooled']['sentence_points'] * 100:.2f} "
-                f"at t={scored['threshold']:.2f}")
-            sweep.append({"C": C, "threshold": scored["threshold"],
-                          "pooled": scored["pooled"],
-                          "pooled_harness_sp": scored["pooled_harness_sp"],
-                          "per_episode": scored["episodes"], "p": p})
+        sweep = by_set[spec["name"]]
         # Best LOO SP; ties go to the smaller C (more regularised).
         best = max(sweep, key=lambda s: (round(s["pooled"]["sentence_points"], 6), -s["C"]))
         X = np.vstack([matrix(rows[e], names) for e in fit_order])
@@ -608,6 +644,28 @@ def fit_stage(fit_by_source, fit_order, specs, human, removals, log, c_by_set=No
     return sets, chosen, y_by_episode
 
 
+def win_test(sets, chosen, control):
+    """Does this bundle's chosen set beat the parent's frozen chosen set, leave-one-out?
+
+    Decided at stage 1 and frozen in the weights file, so it is written down
+    before any held-out number exists. The bar is the parent's own frozen
+    leave-one-out SP (its weights file), not the refit in this run.
+    """
+    if not control:
+        return None
+    bar = control["weights"]["sets"][control["chosen"]]["loo_sentence_points"]
+    mine = sets[chosen]["best"]["pooled"]["sentence_points"]
+    return {"rule": f"chosen set leave-one-out SP on the fit six above {control['version']}'s "
+                    f"frozen chosen set `{control['chosen']}`",
+            "control_version": control["version"], "control_set": control["chosen"],
+            "control_loo_sp": bar, "chosen_set": chosen, "chosen_loo_sp": mine,
+            "per_set_loo_sp": {name: e["best"]["pooled"]["sentence_points"] for name, e in sets.items()
+                               if e["spec"]["kind"] == "spec"},
+            "wins": bool(mine > bar + 5e-5),
+            "decided_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "decided_before_heldout": True}
+
+
 def weights_doc(sets, chosen, bundle, fit_order, inputs, control):
     return {
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -618,6 +676,8 @@ def weights_doc(sets, chosen, bundle, fit_order, inputs, control):
         "chosen_set": chosen, "c_grid": C_GRID, "scale": SCALE,
         "control": ({"version": control["version"], "prefix": control["prefix"],
                      "chosen_set": control["chosen"]} if control else None),
+        "joined_from": bundle.joined_from,
+        "win_test": win_test(sets, chosen, control),
         "sets": {name: dict(entry["frozen"].to_json(),
                             threshold=entry["best"]["threshold"],
                             loo_sentence_points=entry["best"]["pooled"]["sentence_points"],
@@ -666,6 +726,24 @@ def table(header, rows):
     return report_mod.table(header, rows)
 
 
+def join_sources(fit_timing, held_timing):
+    """Per source bundle of a join: what its own runs cost on these episodes, and its write-up."""
+    out = {}
+    for timing_doc in (fit_timing, held_timing):
+        for src, info in ((timing_doc or {}).get("sources") or {}).items():
+            entry = out.setdefault(src, {"runs": [], "cost_usd": 0.0, "requests": 0})
+            entry["runs"].append(info["run"])
+            entry["cost_usd"] = round(entry["cost_usd"] + info["cost_usd"], 6)
+            entry["requests"] += info["requests"]
+    for src, entry in out.items():
+        writeup = OUT_DIR / f"roughcut-jev-{src}.json"
+        if writeup.exists():
+            doc = json.loads(writeup.read_text(encoding="utf-8"))
+            entry["writeup"] = f"roughcut-jev-{src}.md"
+            entry["writeup_total_usd"] = doc["spend"]["total_usd"]
+    return out
+
+
 def seconds_of(timing_by_episode, episode):
     """Wall clock and cost of the feature pass plus the v3 pass it joins."""
     entry = timing_by_episode.get(episode) or {}
@@ -677,6 +755,7 @@ def seconds_of(timing_by_episode, episode):
             "total_usd": (entry.get("cost_usd") or 0.0) + (v3.get("cost_usd") or 0.0),
             "requests": entry.get("requests"), "errors": entry.get("errors"),
             "unanswered": entry.get("unanswered_cells"),
+            "source_runs": entry.get("source_runs"),
             "parts_per_block": sorted({int(v) for v in
                                        (entry.get("parts_per_block") or {}).values()})}
 
@@ -715,7 +794,20 @@ def write_markdown(path, s):
              f"silence layered on. Fit-set numbers are leave-one-episode-out over the {fit_n} fit episodes with the keep "
              f"threshold calibrated on the pooled out-of-fold predictions. C and the feature set were chosen on those "
              f"numbers alone, then frozen.")
-    if ctrl:
+    joined = s.get("joined_from")
+    if ctrl and joined:
+        extra = [(src, keys) for src, keys in joined.items() if src != ctrl["version"]]
+        intro += (f" Bundle `{v}` is `{ctrl['version']}`'s {n_q - len(s['new'])} questions unchanged plus "
+                  + ", ".join(f"{', '.join(f'`{k}`' for k in keys)} from `{src}`" for src, keys in extra)
+                  + f". It asked nothing itself: its rows are the `{ctrl['version']}` feature rows with the "
+                  f"{len(s['new'])} added columns joined from the "
+                  + " and ".join(f"`{src}`" for src, _k in extra)
+                  + f" feature rows by episode and sentence id (`roughcut_jev_join.py`), which works because both "
+                  f"runs asked over the same state, blocks and sentences and each question is answered on its own. "
+                  f"No new Jev requests were made. `{ctrl['version']}`'s chosen set `{ctrl['chosen']}` runs through "
+                  f"the same fitting path as the control, from its own feature run, and its held-out and ladder rows "
+                  f"use its own frozen weights.")
+    elif ctrl:
         intro += (f" Bundle `{v}` is `{ctrl['version']}` with {len(s['dropped'])} questions dropped "
                   f"({', '.join(f'`{k}`' for k in s['dropped'])}), the other {n_q - len(s['new'])} unchanged, and "
                   f"{len(s['new'])} added ({', '.join(f'`{k}`' for k in s['new'])}). `{ctrl['version']}`'s chosen set "
@@ -750,8 +842,10 @@ def write_markdown(path, s):
         else:
             line += " next to"
         line += (f" jev_a v3's {pct(s['ladder']['jev_v3_sp'])} ({s['ladder']['placement']}). "
-                 f"Spend ${s['spend']['total_usd']:.2f} in Jev calls, {num(s['seconds']['ladder_mean'], 1)} s per "
-                 f"ladder episode with the v3 pass included.")
+                 + (f"Spend $0.00 in new Jev calls (the rows are a join of runs already paid for), "
+                    if joined else f"Spend ${s['spend']['total_usd']:.2f} in Jev calls, ")
+                 + f"{num(s['seconds']['ladder_mean'], 1)} s per ladder episode with the v3 pass included"
+                 + (" (the source passes summed)." if joined else "."))
         if s.get("route2") and not s["route2"].get("error"):
             r2 = s["route2"]["by_set"]
             line += (f" Routing the bottom 25% by combiner margin to archived Luna gives "
@@ -770,6 +864,26 @@ def write_markdown(path, s):
     def tag(name):
         return KIND_TAG[s["sets"][name]["kind"]] if name != chosen else " (chosen)"
 
+    wt = s.get("win_test")
+    if wt:
+        L.append("## Win test, decided before held-out")
+        L.append("")
+        per = ", ".join(f"`{n}` {pct(sp)}" for n, sp in wt["per_set_loo_sp"].items())
+        text = (f"The test: `{v}` wins if its chosen set scores above `{wt['control_version']}`'s frozen chosen set "
+                f"`{wt['control_set']}` ({pct(wt['control_loo_sp'])} SP) leave-one-out on the fit six. Stage 1 "
+                f"decided it and froze it in `{Path(s['weights_path']).name}` at {wt['decided_utc']} (weights file "
+                f"generated {s.get('weights_generated_utc')}), before the held-out rows were read; this write-up "
+                f"(generated {s['generated_utc']}) only reports it. Leave-one-out per eligible set: {per}. Chosen "
+                f"`{wt['chosen_set']}` at {pct(wt['chosen_loo_sp'])}, "
+                f"{(wt['chosen_loo_sp'] - wt['control_loo_sp']) * 100:+.2f} against the bar: ")
+        if wt["wins"]:
+            text += (f"`{v}` wins. The spec's follow-up, the Luna stack rerun on `{v}`'s margin slice, is in "
+                     f"`roughcut-hybrid-{v}luna.md`.")
+        else:
+            text += f"`{v}` does not win, so the Luna stack rerun is skipped; the held-out and ladder numbers below are reported anyway."
+        L.append(text + f" Seconds per episode on the fit six: {num(s['seconds']['fit_mean'], 1)}.")
+        L.append("")
+
     # fit-set table
     L.append("## Fit set, leave-one-episode-out")
     L.append("")
@@ -778,9 +892,17 @@ def write_markdown(path, s):
             f"there to show what the questions add over the free features and v3 together.")
     if ctrl:
         text += (f" `{ctrl['set']}` is `{ctrl['version']}`'s chosen set refitted through the same path from its own "
-                 f"feature run, the comparison arm; `{ctrl['set']} minus dropped` is that set without the "
-                 f"{len(s['dropped'])} questions `{v}` dropped, the ablation. Neither was eligible for selection.")
-    text += f" Seconds per episode are the {v} pass plus the v3 pass it joins (both at concurrency 8)."
+                 f"feature run, the comparison arm")
+        if ctrl.get("ablation_set"):
+            text += (f"; `{ctrl['set']} minus dropped` is that set without the {len(s['dropped'])} questions `{v}` "
+                     f"dropped, the ablation. Neither was eligible for selection.")
+        else:
+            text += ", not eligible for selection."
+    if joined:
+        text += (f" Seconds per episode are the {' and '.join(f'`{src}`' for src in joined)} feature passes whose "
+                 f"answers the `{v}` rows read, plus the v3 pass (all at concurrency 8).")
+    else:
+        text += f" Seconds per episode are the {v} pass plus the v3 pass it joins (both at concurrency 8)."
     L.append(text)
     L.append("")
     header = ["feature set", "features", "C", "threshold", "SENTENCE POINTS", "WORD SCORE", "GRADE",
@@ -885,7 +1007,8 @@ def write_markdown(path, s):
         if ctrl:
             text += (f" `{ctrl['version']}`'s row is built the same way from its own rows at its frozen threshold "
                      f"{ctrl['threshold']:.2f}.")
-        text += f" Seconds per episode: {num(s['seconds']['ladder_mean'], 1)} ({v} plus v3)."
+        text += (f" Seconds per episode: {num(s['seconds']['ladder_mean'], 1)} "
+                 + (f"({' and '.join(joined)} passes plus v3)." if joined else f"({v} plus v3)."))
         L.append(text)
         L.append("")
         header = ["arm", "SENTENCE POINTS", "s/episode"]
@@ -926,8 +1049,9 @@ def write_markdown(path, s):
     L.append("AUC of each probability of yes against the editor's keep (full or partial) versus removed, pooled over the "
              "fit six and, when present, the held-out episodes. 0.50 is no signal; a cut question reads below 0.50 and a "
              "keep question above. The v3 score and cut_p are listed on the same footing."
-             + (f" Questions marked new were added in `{v}`; the dropped `{ctrl['version']}` questions are listed "
-                f"below the table from `{ctrl['version']}`'s own rows." if ctrl else ""))
+             + (f" Questions marked new were added in `{v}`"
+                + (f"; the dropped `{ctrl['version']}` questions are listed below the table from "
+                   f"`{ctrl['version']}`'s own rows." if s["dropped"] else ".") if ctrl else ""))
     L.append("")
     header = ["question", "AUC fit", "AUC held-out", "abs(AUC - 0.5) fit", "signal"]
     rows = []
@@ -1018,6 +1142,11 @@ def write_markdown(path, s):
     # cost and time
     L.append("## Seconds and dollars per episode")
     L.append("")
+    if joined:
+        _join_cost_section(L, s, v, joined)
+        _tail_sections(L, s)
+        path.write_text("\n".join(L), encoding="utf-8")
+        return
     parts = s["request_shape"]["parts_per_block"]
     parts_text = (f"{parts[0]} request{'s' if parts[0] != 1 else ''} per 25-sentence block" if len(parts) == 1 else
                   f"{parts[0]} to {parts[-1]} requests per 25-sentence block")
@@ -1041,8 +1170,45 @@ def write_markdown(path, s):
              f"{sp['unanswered']}."
              + (f" The `{ctrl['version']}` control rows cost nothing new; they are `{ctrl['version']}`'s own run." if ctrl else ""))
     L.append("")
+    _tail_sections(L, s)
+    path.write_text("\n".join(L), encoding="utf-8")
 
-    # notes
+
+def _join_cost_section(L, s, v, joined):
+    """Seconds and dollars for a join bundle: $0 new, each source pass's own numbers alongside."""
+    sources = list(joined)
+    L.append(f"`{v}` made no Jev requests: the join reads the {' and '.join(f'`{src}`' for src in sources)} feature "
+             f"runs, so its new spend is $0 on every episode. The source columns are those runs' own measured "
+             f"seconds and router cost (concurrency 8, $0.042 per million input tokens), and the v3 columns the v3 "
+             f"run the rows join; total seconds is their sum.")
+    L.append("")
+    header = (["episode", "split", "sentences"] + [f"{src} s" for src in sources] + ["v3 s", "total s", f"{v} new $"]
+              + [f"{src} $" for src in sources] + ["v3 $"])
+    rows = []
+    for e in s["fit_episodes"] + (s.get("heldout_episodes") or []):
+        t = s["seconds"]["per_episode"][e]
+        src = t.get("source_runs") or {}
+        rows.append([e, "fit" if e in s["fit_episodes"] else "held-out", s["sentences_per_episode"].get(e)]
+                    + [num((src.get(x) or {}).get("wall_clock_s"), 2) for x in sources]
+                    + [num(t["v3_s"], 2), num(t["total_s"], 2), num(t["feat_usd"], 4)]
+                    + [num((src.get(x) or {}).get("cost_usd"), 4) for x in sources] + [num(t["v3_usd"], 4)])
+    L.extend(table(header, rows))
+    L.append("")
+    sp, js = s["spend"], s.get("join_sources") or {}
+    n_eps = len(s["fit_episodes"]) + len(s.get("heldout_episodes") or [])
+    parts = []
+    for src, info in js.items():
+        text = f"`{src}` ${info['cost_usd']:.4f} on these {n_eps} episodes"
+        if info.get("writeup"):
+            text += (f" (`{info['writeup']}`, section \"Seconds and dollars per episode\", "
+                     f"${info['writeup_total_usd']:.4f} in all with its smoke block)")
+        parts.append(text)
+    L.append(f"Spend on this build: ${sp['total_usd']:.2f}, no new Jev calls ({sp['requests']} requests, against the "
+             f"${sp['cap_usd']:.2f} cap). The answers were paid for in the source runs: {'; '.join(parts)}.")
+    L.append("")
+
+
+def _tail_sections(L, s):
     L.append("## Notes")
     L.append("")
     for note in s["notes"]:
@@ -1060,7 +1226,6 @@ def write_markdown(path, s):
     for label, fp in s["fingerprints"].items():
         L.append(f"- {label}: `{fp['path']}` md5 {fp['md5']}, {fp['bytes']} bytes, modified {fp['modified_utc']}")
     L.append("")
-    path.write_text("\n".join(L), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -1075,7 +1240,7 @@ def main():
                         help="smoke run basename, counted in the spend (default <out>-smoke)")
     parser.add_argument("--out", required=True, help="output basename under docs/jev-real")
     parser.add_argument("--feature-version", default="f1",
-                        help="prompt bundle the --fit and --heldout runs asked (f1, f2)")
+                        help="prompt bundle the --fit and --heldout runs asked (f1, f2, f3)")
     parser.add_argument("--control-prefix", default=None,
                         help="feature-run prefix of the parent bundle, e.g. roughcut-jev-f1: its "
                              "<prefix>-fit, <prefix>-heldout and <prefix>-weights.json feed the "
@@ -1084,6 +1249,8 @@ def main():
                         help="bundle version of --control-prefix (default: the bundle's parent)")
     parser.add_argument("--cap", type=float, default=3.00,
                         help="the spend cap the write-up reports against")
+    parser.add_argument("--workers", type=int, default=8,
+                        help="worker processes for the leave-one-out C grid (1 runs it in this process)")
     parser.add_argument("--no-write", action="store_true",
                         help="compute and print everything, write no file (reproduction check)")
     args = parser.parse_args()
@@ -1171,10 +1338,15 @@ def main():
     with pywarnings.catch_warnings():
         pywarnings.simplefilter("ignore")
         sets, chosen, y_fit = fit_stage(fit_by_source, fit_order, specs, human, removals, log,
-                                        c_by_set)
+                                        c_by_set, workers=args.workers)
     log(f"chosen set: {chosen} (C {sets[chosen]['best']['C']:g})")
 
     doc = weights_doc(sets, chosen, bundle, fit_order, inputs["fit"], control)
+    if doc["win_test"] and not args.heldout:
+        wt = doc["win_test"]
+        log(f"win test (stage 1, before any held-out number): {wt['chosen_set']} "
+            f"{wt['chosen_loo_sp'] * 100:.2f} LOO against {wt['control_version']} "
+            f"{wt['control_loo_sp'] * 100:.2f}: {'WINS' if wt['wins'] else 'does not win'}")
     if args.heldout:
         problems = check_frozen(frozen_doc, sets, chosen)
         if problems:
@@ -1275,6 +1447,8 @@ def main():
                      if k in ("version", "prefix", "chosen", "set", "ablation_set", "threshold",
                               "reproduces_frozen", "coef_drift")} if control else None),
         "fit_episodes": fit_order, "chosen_set": chosen, "c_grid": C_GRID,
+        "joined_from": bundle.joined_from,
+        "win_test": doc.get("win_test"), "weights_generated_utc": doc.get("generated_utc"),
         "set_order": set_order, "sets": summary_sets,
         "v3_control": summary_sets["v3"],
         "jev_v3_fit": jev_fit_scored, "jev_v3_fit_notrim": jev_fit_notrim_scored,
@@ -1435,11 +1609,24 @@ def main():
                  f"has no trims and a logistic squashing of the score; the keep threshold moves accordingly.")
     parts_text = (f"{parts_seen[0]} request{'s' if parts_seen[0] != 1 else ''}" if len(parts_seen) == 1 else
                   f"{parts_seen[0]} to {parts_seen[-1]} requests") if parts_seen else "one or more requests"
-    notes.append(f"The questions are TypeSafe nouls (probability of yes), one per target sentence per question, the "
-                 f"same primitive as v3's cut_k. Each block's {len(question_keys)} questions go out in {parts_text} "
-                 f"that all carry the full v3 state; the answers never see each other.")
+    joined = bundle.joined_from
+    if joined:
+        src_text = "; ".join(f"`{src}` supplies {len(keys)} ({', '.join(f'`{k}`' for k in keys) if len(keys) < 5 else 'all of its own ' + str(len(keys))})"
+                             for src, keys in joined.items())
+        notes.append(f"The questions are TypeSafe nouls (probability of yes), one per target sentence per question, the "
+                     f"same primitive as v3's cut_k. `{v}` asked nothing itself: its rows are a join of the "
+                     f"{' and '.join(f'`{src}`' for src in joined)} feature runs by episode and sentence id "
+                     f"(`roughcut_jev_join.py`), {src_text}. Both runs asked over the same state, blocks and "
+                     f"sentences and every question is answered on its own, so the joined columns are what a single "
+                     f"{len(question_keys)}-question run would have asked. The join asserts every sentence matches "
+                     f"(ids, text, code features, v3 join) and no cell is unanswered.")
+    else:
+        notes.append(f"The questions are TypeSafe nouls (probability of yes), one per target sentence per question, the "
+                     f"same primitive as v3's cut_k. Each block's {len(question_keys)} questions go out in {parts_text} "
+                     f"that all carry the full v3 state; the answers never see each other.")
     notes.append("Selection was among the spec's four sets only; `code+v3` is reported as a diagnostic and was not "
-                 "eligible" + (f", nor were the `{control['version']}` control and ablation sets." if control else "."))
+                 "eligible" + ((f", nor were the `{control['version']}` control and ablation sets." if control["ablation_set"]
+                                else f", nor was the `{control['version']}` control set.") if control else "."))
     if control:
         cs, ab = summary_sets[control["set"]], (summary_sets[control["ablation_set"]] if control["ablation_set"] else None)
         notes.append(f"Control: `{control['version']}`'s chosen set `{control['chosen']}` refitted through this "
@@ -1458,7 +1645,8 @@ def main():
         notes.append("Held-out numbers use the frozen weights and the frozen threshold. Nothing was refitted, "
                      "recalibrated or chosen after the held-out features were read; stage 2 refuses to run if "
                      "the stage 1 recomputation drifts from the frozen file."
-                     + (" The control and ablation sets were frozen at stage 1 in the same file." if control else ""))
+                     + ((" The control and ablation sets were frozen at stage 1 in the same file." if control["ablation_set"]
+                         else " The control set was frozen at stage 1 in the same file.") if control else ""))
         eligible = [sp["name"] for sp in specs if sp["kind"] == "spec"]
         hs = {n: summary["heldout"]["sets"][n]["frozen"]["pooled"]["sentence_points"] for n in eligible}
         best_held = max(hs, key=hs.get)
@@ -1473,7 +1661,14 @@ def main():
                          f"{pct(ctrl_h)} ({(mine_h - ctrl_h) * 100:+.2f}), ladder {pct(summary['ladder']['mine_sp'])} "
                          f"versus {pct(summary['ladder']['control_sp'])} "
                          f"({(summary['ladder']['mine_sp'] - summary['ladder']['control_sp']) * 100:+.2f}).")
+            wt = summary.get("win_test")
+            if wt and not wt["wins"] and mine_h > ctrl_h and summary["ladder"]["mine_sp"] > summary["ladder"]["control_sp"]:
+                notes.append(f"Held-out and ladder go the other way from the win test: `{v}` is ahead of "
+                             f"`{control['version']}` on both, after losing leave-one-out on the fit six by "
+                             f"{(wt['control_loo_sp'] - wt['chosen_loo_sp']) * 100:.2f}. The test stands as it was "
+                             f"frozen before these numbers existed, so the follow-up it gates was not run.")
         median_ratio = (held_timing.get("totals") or {}).get("est_over_actual_median")
+    if args.heldout and not joined:
         shape = (f"Request shape: the {len(question_keys)} questions go out as {parts_text} per block, all carrying "
                  f"the whole v3 state")
         if smoke_tokens:
@@ -1495,6 +1690,18 @@ def main():
                          f"The state and the questions are unchanged; only how many questions share a request.")
         notes.append(f"The smoke block (`{smoke_name}-*`, block 0 of colman-02.04-skeleton-demo) is kept on disk "
                      f"and counted in the spend; its answers were not used for fitting.")
+    if joined:
+        summary["join_sources"] = join_sources(fit_timing, held_timing if args.heldout else None)
+        parts = []
+        for src, info in summary["join_sources"].items():
+            where = (f" and ${info['writeup_total_usd']:.4f} in all with its smoke block, reported in "
+                     f"`{info['writeup']}` under \"Seconds and dollars per episode\"" if info.get("writeup") else "")
+            parts.append(f"the `{src}` run, ${info['cost_usd']:.4f} on these episodes{where}")
+        notes.append(f"Spend: no new Jev calls were made for `{v}`, so its spend is $0.00. The answers it reads were "
+                     f"paid for in {'; '.join(parts)}. Seconds per episode in the tables are the measured wall "
+                     f"clock of those source passes plus the v3 pass, the time it took to produce the answers on "
+                     f"disk; a single live `{v}` pass would ask {len(question_keys)} questions in one run, so it would "
+                     f"sit near one source pass, not their sum.")
     summary["notes"] = notes
     summary["warnings"] = warnings
 
@@ -1513,6 +1720,11 @@ def main():
         fingerprints[f"control {control['version']} weights"] = fingerprint(control["weights_path"])
     for name in V3_DECISIONS:
         fingerprints[f"v3 decisions {name}"] = fingerprint(OUT_DIR / f"{name}-decisions.jsonl")
+    if joined:
+        for timing_doc, label in ((fit_timing, "fit"), (held_timing if args.heldout else None, "held-out")):
+            for src, info in ((timing_doc or {}).get("sources") or {}).items():
+                fingerprints[f"join source {src} {label} features"] = fingerprint(ROOT / info["features"])
+                fingerprints[f"join source {src} {label} timing"] = fingerprint(ROOT / info["timing"])
     fingerprints["prompt bundle"] = fingerprint(HERE / "roughcut_jev_prompts.py")
     summary["fingerprints"] = fingerprints
 

@@ -419,16 +419,30 @@ F2_NEW_QUESTIONS = [
 
 F2_QUESTIONS = [q for q in F1_QUESTIONS if q[0] not in F2_DROPPED] + F2_NEW_QUESTIONS
 
+# f3 (round two, third pass, spec "Step 4"): f1's eighteen plus the two f2
+# questions with signal alone. Never asked as its own run: f1 and f2 asked
+# their questions over the same state, blocks and sentences, one answer per
+# question independent of the others, so the f3 feature rows are a join of
+# the two runs (``scripts/jev_real/roughcut_jev_join.py``). ``JOINED_FROM``
+# says which run supplies which column; the texts are carried by reference.
+F3_FROM_F2 = ["said_earlier", "wrap_up"]
+F3_QUESTIONS = list(F1_QUESTIONS) + [q for q in F2_NEW_QUESTIONS if q[0] in F3_FROM_F2]
+
 #: ``Q_LABEL`` names the question block in the combiner's feature-set names
 #: (``q`` for f1, ``q2`` for f2). ``PARENT`` is the bundle a version was
 #: edited from, with the keys it dropped and the keys it added, so the
 #: combiner can report each change against the parent without guessing.
+#: ``JOINED_FROM`` (join bundles only) maps each source bundle to the keys
+#: its feature run supplies; a join bundle makes no Jev requests of its own.
 FEATURE_PROMPTS = {
     "f1": {"QUESTIONS": F1_QUESTIONS, "RULES": RULES, "Q_LABEL": "q",
            "PARENT": None, "DROPPED": [], "NEW": []},
     "f2": {"QUESTIONS": F2_QUESTIONS, "RULES": RULES, "Q_LABEL": "q2",
            "PARENT": "f1", "DROPPED": F2_DROPPED,
            "NEW": [key for key, _text in F2_NEW_QUESTIONS]},
+    "f3": {"QUESTIONS": F3_QUESTIONS, "RULES": RULES, "Q_LABEL": "q3",
+           "PARENT": "f1", "DROPPED": [], "NEW": list(F3_FROM_F2),
+           "JOINED_FROM": {"f1": [key for key, _text in F1_QUESTIONS], "f2": list(F3_FROM_F2)}},
 }
 FEATURE_PROMPT_VERSION = "f1"
 FEATURE_PROMPT_VERSIONS = list(FEATURE_PROMPTS)
@@ -450,6 +464,15 @@ for _name, _bundle in FEATURE_PROMPTS.items():
             if _key not in _parent_keys:
                 raise AssertionError(f"feature bundle {_name} drops {_key}, which "
                                      f"{_bundle['PARENT']} never asked")
+    if _bundle.get("JOINED_FROM"):
+        _joined = [k for keys in _bundle["JOINED_FROM"].values() for k in keys]
+        if sorted(_joined) != sorted(_keys):
+            raise AssertionError(f"join bundle {_name}: JOINED_FROM does not cover its questions once each")
+        for _source, _source_keys in _bundle["JOINED_FROM"].items():
+            _texts = dict(FEATURE_PROMPTS[_source]["QUESTIONS"])
+            for _key in _source_keys:
+                if _texts.get(_key) != dict(_bundle["QUESTIONS"])[_key]:
+                    raise AssertionError(f"join bundle {_name}: {_key} is not {_source}'s text")
 
 
 def feature_prompts_for(version):
@@ -467,4 +490,6 @@ def feature_prompts_for(version):
     return SimpleNamespace(version=version, questions=list(bundle["QUESTIONS"]),
                            rules=bundle["RULES"], q_label=bundle["Q_LABEL"],
                            parent=bundle["PARENT"], dropped=list(bundle["DROPPED"]),
-                           new=list(bundle["NEW"]))
+                           new=list(bundle["NEW"]),
+                           joined_from={k: list(v) for k, v in
+                                        (bundle.get("JOINED_FROM") or {}).items()} or None)

@@ -424,6 +424,9 @@ def main():
     if args.episodes == ["heldout"]:
         args.episodes = list(HELDOUT_EPISODES)
     bundle = feature_prompts_for(args.feature_version)
+    if bundle.joined_from:
+        parser.error(f"bundle {bundle.version} is a join of {sorted(bundle.joined_from)} and is never "
+                     f"asked live; build its rows with roughcut_jev_join.py")
     v3_rows, v3_sources = load_v3()
 
     features_path = OUT_DIR / f"{args.out}-features.jsonl"

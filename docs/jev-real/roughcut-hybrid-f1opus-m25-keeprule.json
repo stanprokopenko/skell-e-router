@@ -1,0 +1,22 @@
+{
+  "rule": "score>=2",
+  "chosen_on": "fit six of roughcut-hybrid-f1opus-m25, before any held-out call",
+  "fit_six_sentence_points": {
+    "decision": 0.8843237331388988,
+    "score>=1": 0.8725847612103533,
+    "score>=2": 0.8854903390448413,
+    "score>=3": 0.8815530441122856,
+    "score>=4": 0.8530441122858183
+  },
+  "tie_break": "best fit-six SP, ties to the decision field, then the lower score threshold",
+  "frozen_utc": "2026-09-27T04:19:27+00:00",
+  "fit_episodes_on_disk": [
+    "colman-02.04-skeleton-demo",
+    "hampton-5.4-assignment-demo",
+    "colman-03.03-muscles-crit",
+    "edges-7.01-intro",
+    "hampton-5.2-shape-demo",
+    "perspective-14e-boxes-critique"
+  ],
+  "heldout_episodes_on_disk": []
+}

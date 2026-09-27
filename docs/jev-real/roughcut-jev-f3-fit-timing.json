@@ -1,0 +1,264 @@
+{
+  "generated_utc": "2026-09-27T04:07:17+00:00",
+  "script": "scripts/jev_real/roughcut_jev_join.py",
+  "kind": "join",
+  "feature_version": "f3",
+  "questions": [
+    "false_start",
+    "retake_loser",
+    "crew_talk",
+    "screen_ops",
+    "pre_lesson",
+    "off_topic",
+    "repeats_point",
+    "pure_filler",
+    "pep_talk",
+    "funny",
+    "teaching_point",
+    "essential",
+    "referenced_later",
+    "transition",
+    "describes_screen",
+    "rambling",
+    "split_fragment",
+    "tangent",
+    "said_earlier",
+    "wrap_up"
+  ],
+  "joined_from": {
+    "f1": [
+      "false_start",
+      "retake_loser",
+      "crew_talk",
+      "screen_ops",
+      "pre_lesson",
+      "off_topic",
+      "repeats_point",
+      "pure_filler",
+      "pep_talk",
+      "funny",
+      "teaching_point",
+      "essential",
+      "referenced_later",
+      "transition",
+      "describes_screen",
+      "rambling",
+      "split_fragment",
+      "tangent"
+    ],
+    "f2": [
+      "said_earlier",
+      "wrap_up"
+    ]
+  },
+  "base": "f1",
+  "sources": {
+    "f1": {
+      "run": "roughcut-jev-f1-fit",
+      "features": "docs/jev-real/roughcut-jev-f1-fit-features.jsonl",
+      "features_md5": "bca3b191584ab0d8096ae731eb11ce32",
+      "timing": "docs/jev-real/roughcut-jev-f1-fit-timing.json",
+      "timing_md5": "0d0506b78962b9bf55d5156df279c575",
+      "cost_usd": 0.291296,
+      "requests": 221
+    },
+    "f2": {
+      "run": "roughcut-jev-f2-fit",
+      "features": "docs/jev-real/roughcut-jev-f2-fit-features.jsonl",
+      "features_md5": "ddddfe249a7c558b93886f42a85afc81",
+      "timing": "docs/jev-real/roughcut-jev-f2-fit-timing.json",
+      "timing_md5": "b847b516e88026b25f4d520e9dbdccb6",
+      "cost_usd": 0.326063,
+      "requests": 221
+    }
+  },
+  "new_jev_requests": 0,
+  "episodes": {
+    "colman-02.04-skeleton-demo": {
+      "wall_clock_s": 1.676,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 194,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 4.445,
+        "cost_usd": 0.014878
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 0.789,
+          "cost_usd": 0.017786,
+          "requests": 16
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 0.887,
+          "cost_usd": 0.020245,
+          "requests": 16
+        }
+      }
+    },
+    "hampton-5.4-assignment-demo": {
+      "wall_clock_s": 2.42,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 300,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 2.794,
+        "cost_usd": 0.021303
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 1.127,
+          "cost_usd": 0.026795,
+          "requests": 24
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 1.293,
+          "cost_usd": 0.030598,
+          "requests": 24
+        }
+      }
+    },
+    "colman-03.03-muscles-crit": {
+      "wall_clock_s": 2.565,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 303,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 3.097,
+        "cost_usd": 0.025192
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 1.178,
+          "cost_usd": 0.030665,
+          "requests": 25
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 1.387,
+          "cost_usd": 0.034505,
+          "requests": 25
+        }
+      }
+    },
+    "edges-7.01-intro": {
+      "wall_clock_s": 2.97,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 389,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 4.897,
+        "cost_usd": 0.0275
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 1.411,
+          "cost_usd": 0.032628,
+          "requests": 31
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 1.559,
+          "cost_usd": 0.037558,
+          "requests": 31
+        }
+      }
+    },
+    "hampton-5.2-shape-demo": {
+      "wall_clock_s": 3.535,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 411,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 3.2,
+        "cost_usd": 0.03375
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 1.715,
+          "cost_usd": 0.04267,
+          "requests": 33
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 1.82,
+          "cost_usd": 0.047879,
+          "requests": 33
+        }
+      }
+    },
+    "perspective-14e-boxes-critique": {
+      "wall_clock_s": 10.269,
+      "cost_usd": 0.0,
+      "requests": 0,
+      "errors": 0,
+      "unanswered_cells": 0,
+      "parts_per_block": {},
+      "sentences": 1146,
+      "v3_run": {
+        "source": "C:\\Users\\Stan\\Documents\\GitHub\\skell-e-router\\.worktrees\\jev-roughcut-r2-2026-09-25\\docs\\jev-real\\roughcut-jev-all18-v3-timing.json",
+        "wall_clock_s": 12.443,
+        "cost_usd": 0.105297
+      },
+      "source_runs": {
+        "f1": {
+          "run": "roughcut-jev-f1-fit",
+          "wall_clock_s": 4.946,
+          "cost_usd": 0.140752,
+          "requests": 92
+        },
+        "f2": {
+          "run": "roughcut-jev-f2-fit",
+          "wall_clock_s": 5.323,
+          "cost_usd": 0.155278,
+          "requests": 92
+        }
+      }
+    }
+  },
+  "totals": {
+    "episodes": 6,
+    "sentences": 2743,
+    "requests": 0,
+    "errors": 0,
+    "failed_parts": 0,
+    "unanswered_cells": 0,
+    "cost_usd": 0.0,
+    "source_cost_usd": {
+      "f1": 0.291296,
+      "f2": 0.326063
+    },
+    "source_wall_clock_s": {
+      "f1": 11.166,
+      "f2": 12.269
+    },
+    "wall_clock_s": 2.761
+  }
+}

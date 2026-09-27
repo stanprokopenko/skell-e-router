@@ -1,7 +1,12 @@
-"""The stack: the f1 combiner decides, gpt-5.6-luna overrides its least confident slice.
+"""The stack: a build B combiner decides, gpt-5.6-luna overrides its least confident slice.
 
-Second pass, step 2 of ``docs/superpowers/specs/2026-09-26-jev-roughcut-round-two-design.md``.
-The Jev side is build B's f1 combiner (``roughcut_jev_combine.py``, chosen set
+Second pass, step 2 of ``docs/superpowers/specs/2026-09-26-jev-roughcut-round-two-design.md``
+(and third pass, step 4, for any later bundle). ``--combiner`` names the
+combiner by its ``roughcut_jev_combine.py`` output prefix (default
+``roughcut-jev-f1``); the bundle version it carries (``f1``, ``f3``) names the
+outputs, ``roughcut-hybrid-<version>luna-m25-*`` and
+``roughcut-hybrid-<version>luna.md``. Everything below reads "f1" for the
+default. The Jev side is build B's f1 combiner (``roughcut_jev_combine.py``, chosen set
 ``q+code+v3`` at its frozen C and keep threshold): its keep/cut on every
 sentence of the 18 ladder episodes, ``keep_words`` null, ``cut_retake`` from
 the v3 row. Its per-sentence ``p_keep`` is recomputed here exactly as the f1
@@ -22,6 +27,8 @@ silence layer on.
 Modes::
 
   python scripts/jev_real/roughcut_hybrid_f1luna.py --check          # p_keep export + 84.81 reproduction, no calls
+  python scripts/jev_real/roughcut_hybrid_f1luna.py --report --no-write   # rebuild the write-up numbers, write nothing
+  python scripts/jev_real/roughcut_hybrid_f1luna.py --combiner roughcut-jev-f3 --budget 0.60   # f3's stack, plan only
   python scripts/jev_real/roughcut_hybrid_f1luna.py                  # plan and estimate, no calls
   python scripts/jev_real/roughcut_hybrid_f1luna.py --run --episodes colman-02.04-skeleton-demo --limit-groups 1 --out smoke-hybrid-f1luna
   python scripts/jev_real/roughcut_hybrid_f1luna.py --run            # the 18, writes roughcut-hybrid-f1luna-m25-*
@@ -38,6 +45,7 @@ import sys
 import warnings as pywarnings
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 
@@ -58,6 +66,10 @@ SHARE = 0.25
 F1_NAME = "roughcut-jev-f1"
 F1_FIT, F1_HELDOUT = "roughcut-jev-f1-fit", "roughcut-jev-f1-heldout"
 SMOKE_NAME = "smoke-hybrid-f1luna"
+#: Where each bundle's stack sits in the spec, for the write-up's first line.
+SPEC_STEP = {"f1": "second pass, step 2", "f3": "third pass, step 4"}
+#: The earlier stack a later one is reported next to.
+REFERENCE_STACK = "roughcut-hybrid-f1luna"
 BUILD_A_JSON = OUT_DIR / "roughcut-hybrid-luna.json"
 BUILD_A_TAG = "m046"                       # the 25% run the stack is compared with
 CEILING_TOL = 5e-4                         # reproduction tolerance on the 84.81
@@ -66,12 +78,33 @@ FIT, KEPT, THRESHOLD = r2.FIT, r2.KEPT, r2.THRESHOLD
 pct, table, num, money, fingerprint = hl.pct, hl.table, hl.num, hl.money, hl.fingerprint
 
 
+def stack_config(prefix=F1_NAME):
+    """Names for the stack built on the combiner ``roughcut_jev_combine.py`` wrote as ``prefix``.
+
+    The f1 weights file predates the ``feature_version`` field, so the
+    version falls back to the prefix's last dash part. The f1 names are the
+    module constants above, unchanged.
+    """
+    weights_path = OUT_DIR / f"{prefix}-weights.json"
+    if not weights_path.exists():
+        raise SystemExit(f"no frozen combiner weights at {weights_path}")
+    doc = json.loads(weights_path.read_text(encoding="utf-8"))
+    version = doc.get("feature_version") or prefix.rsplit("-", 1)[-1]
+    stem = f"roughcut-hybrid-{version}luna"
+    return SimpleNamespace(
+        prefix=prefix, version=version, weights_path=weights_path,
+        fit=f"{prefix}-fit", heldout=f"{prefix}-heldout", writeup_json=OUT_DIR / f"{prefix}.json",
+        out_stem=stem, arm_prefix=f"hybrid_{version}luna", smoke=f"smoke-hybrid-{version}luna",
+        spec_step=SPEC_STEP.get(version, "a later pass"),
+        reference_stack=None if stem == REFERENCE_STACK else REFERENCE_STACK)
+
+
 # ---------------------------------------------------------------------------
 # the combiner side
 # ---------------------------------------------------------------------------
 
-def combiner_p_keep(log=None):
-    """Per-sentence ``p_keep`` of the chosen f1 set over the 18 ladder episodes.
+def combiner_p_keep(log=None, cfg=None):
+    """Per-sentence ``p_keep`` of the combiner's chosen set over the 18 ladder episodes.
 
     Fit six: out-of-fold predictions, leave-one-episode-out at the frozen C
     (what the f1 write-up's fit-set numbers and its route-2 section used).
@@ -79,13 +112,14 @@ def combiner_p_keep(log=None):
     frozen coefficients, or the feature files have drifted from the weights.
     """
     log = log or (lambda msg: print(msg, file=sys.stderr, flush=True))
-    weights_path = OUT_DIR / f"{F1_NAME}-weights.json"
+    cfg = cfg or stack_config()
+    weights_path = cfg.weights_path
     doc = json.loads(weights_path.read_text(encoding="utf-8"))
     chosen = doc["chosen_set"]
     spec = doc["sets"][chosen]
     names, C, threshold = spec["features"], spec["C"], spec["threshold"]
-    fit_rows, fit_order, fit_timing, fit_paths = combine.load_features(F1_FIT)
-    held_rows, held_order, held_timing, held_paths = combine.load_features(F1_HELDOUT)
+    fit_rows, fit_order, fit_timing, fit_paths = combine.load_features(cfg.fit)
+    held_rows, held_order, held_timing, held_paths = combine.load_features(cfg.heldout)
     if sorted(fit_order) != sorted(doc["fit_episodes"]):
         raise SystemExit(f"fit feature run has {fit_order}, the weights were fitted on {doc['fit_episodes']}")
     fit_order = list(doc["fit_episodes"])
@@ -110,7 +144,7 @@ def combiner_p_keep(log=None):
     rows = {e: (fit_rows[e] if e in fit_rows else held_rows[e]) for e in ladder_eps}
     log(f"p_keep: {chosen} C {C:g} threshold {threshold:.2f}, {sum(len(v) for v in p.values())} sentences, "
         f"refit drift {drift:.1e}")
-    return {"chosen": chosen, "names": names, "C": C, "threshold": threshold,
+    return {"version": cfg.version, "chosen": chosen, "names": names, "C": C, "threshold": threshold,
             "p": p, "rows": rows, "episodes": ladder_eps, "fit_order": fit_order,
             "held_order": [e for e in held_order if e in ladder_eps],
             "weights_path": weights_path, "weights_doc": doc,
@@ -130,7 +164,7 @@ def stack_inputs(v3_inputs, cp):
     """
     episodes = cp["episodes"]
     if sorted(episodes) != sorted(v3_inputs["episodes"]):
-        raise SystemExit("the f1 ladder episodes are not the v3 run's 18")
+        raise SystemExit(f"the {cp['version']} ladder episodes are not the v3 run's 18")
     scale, threshold = combine.SCALE, cp["threshold"]
     jev, jev_rows = {}, {}
     for e in episodes:
@@ -179,13 +213,21 @@ def offline_ceiling(inputs, cp, share):
                                   episodes, [share])
 
 
-def published_route2(share):
-    doc = json.loads((OUT_DIR / f"{F1_NAME}.json").read_text(encoding="utf-8"))
+def published_route2(share, cfg=None):
+    """The combiner write-up's route-2 row, ladder SP, seconds and spend.
+
+    The f1 write-up predates the generic ``mine_sp`` ladder key; the
+    ``*_f1_*`` keys are kept for the scripts that read them.
+    """
+    cfg = cfg or stack_config()
+    doc = json.loads(cfg.writeup_json.read_text(encoding="utf-8"))
     block = doc["route2"]["by_set"][doc["chosen_set"]]
     row = next(s for s in block["shares"] if abs(s["share"] - share) < 1e-9)
+    ladder_sp = doc["ladder"].get("mine_sp", doc["ladder"].get("f1_sp"))
     return {"sentence_points": row["pooled"]["sentence_points"], "routed": row["routed"],
-            "cutoff_margin": row["cutoff_margin"], "ladder_f1_sp": doc["ladder"]["f1_sp"],
-            "f1_seconds": doc["seconds"]["per_episode"], "f1_spend": doc["spend"]}
+            "cutoff_margin": row["cutoff_margin"], "ladder_sp": ladder_sp,
+            "seconds": doc["seconds"]["per_episode"], "spend": doc["spend"],
+            "ladder_f1_sp": ladder_sp, "f1_seconds": doc["seconds"]["per_episode"], "f1_spend": doc["spend"]}
 
 
 def frozen_keep_rule():
@@ -199,20 +241,21 @@ def frozen_keep_rule():
     return frozen
 
 
-def check(log=None):
+def check(log=None, cfg=None):
     """Recompute ``p_keep``, select the slice, reproduce the offline ceiling. $0."""
     log = log or (lambda msg: print(msg, file=sys.stderr, flush=True))
-    cp = combiner_p_keep(log)
+    cfg = cfg or stack_config()
+    cp = combiner_p_keep(log, cfg)
     inputs = stack_inputs(hl.load_inputs(), cp)
     routed, cutoff = select_slice(inputs, SHARE)
     mine = offline_ceiling(inputs, cp, SHARE)
     if mine.get("error"):
         raise SystemExit(f"offline ceiling failed: {mine['error']}")
     mine_row = mine["shares"][0]
-    published = published_route2(SHARE)
+    published = published_route2(SHARE, cfg)
     gap = mine_row["pooled"]["sentence_points"] - published["sentence_points"]
     result = {
-        "chosen_set": cp["chosen"], "C": cp["C"], "threshold": cp["threshold"],
+        "combiner": cfg.prefix, "chosen_set": cp["chosen"], "C": cp["C"], "threshold": cp["threshold"],
         "coef_drift": cp["coef_drift"], "share": SHARE,
         "routed": sum(len(v) for v in routed.values()), "cutoff_margin": cutoff,
         "offline_ceiling_here": mine_row["pooled"]["sentence_points"],
@@ -222,7 +265,8 @@ def check(log=None):
         and abs((cutoff or 0) - published["cutoff_margin"]) < 1e-9,
     }
     if not result["reproduced"]:
-        raise SystemExit("offline ceiling does not reproduce the f1 write-up: " + json.dumps(result, indent=2))
+        raise SystemExit(f"offline ceiling does not reproduce the {cfg.version} write-up: "
+                         + json.dumps(result, indent=2))
     return result, inputs, cp, routed, cutoff
 
 
@@ -230,15 +274,16 @@ def check(log=None):
 # run
 # ---------------------------------------------------------------------------
 
-def run(args, parser):
-    result, inputs, cp, routed, cutoff = check()
+def run(args, parser, cfg):
+    result, inputs, cp, routed, cutoff = check(cfg=cfg)
     print(json.dumps({"check": result}, indent=2), flush=True)
     rules = hl.read_rules()
-    name = args.out or f"{OUT_STEM}-m{round(SHARE * 100):02d}" + ("" if args.effort == hl.DEFAULT_EFFORT else f"-{args.effort}")
-    arm = f"{ARM_PREFIX}_{name.split(OUT_STEM + '-', 1)[-1].replace('-', '_')}"
+    name = args.out or f"{cfg.out_stem}-m{round(SHARE * 100):02d}" + ("" if args.effort == hl.DEFAULT_EFFORT else f"-{args.effort}")
+    arm = f"{cfg.arm_prefix}_{name.split(cfg.out_stem + '-', 1)[-1].replace('-', '_')}"
     frozen = frozen_keep_rule()
     plan_extra = {"selection": "combiner margin abs(5 * p_keep - threshold), pooled, one cutoff",
-                  "combiner": {"set": cp["chosen"], "C": cp["C"], "threshold": cp["threshold"],
+                  "combiner": {"prefix": cfg.prefix, "version": cfg.version, "set": cp["chosen"],
+                               "C": cp["C"], "threshold": cp["threshold"],
                                "weights": str(cp["weights_path"])},
                   "offline_ceiling": result["offline_ceiling_here"],
                   "frozen_keep_rule": frozen["rule"]}
@@ -250,24 +295,34 @@ def run(args, parser):
 # report
 # ---------------------------------------------------------------------------
 
-def build_report():
+def build_report(cfg=None):
     log = lambda msg: print(msg, file=sys.stderr, flush=True)  # noqa: E731
-    result, inputs, cp, routed, cutoff = check(log)
+    cfg = cfg or stack_config()
+    result, inputs, cp, routed, cutoff = check(log, cfg)
     episodes, removals = inputs["episodes"], inputs["removals"]
     f1_jev, v3_jev = inputs["jev"], inputs["v3_jev"]
     frozen = frozen_keep_rule()
     rule = frozen["rule"]
     tag = f"m{round(SHARE * 100):02d}"
-    run = hl.load_hybrid_run(tag, episodes, stem=OUT_STEM)
+    run = hl.load_hybrid_run(tag, episodes, stem=cfg.out_stem)
     if run is None:
-        raise SystemExit(f"no finished run {OUT_STEM}-{tag} under docs/jev-real")
+        raise SystemExit(f"no finished run {cfg.out_stem}-{tag} under docs/jev-real")
     for e in episodes:
         if run["routed"][e] != routed[e]:
             raise SystemExit(f"{e}: the run's routed slice is not the slice selected now")
     build_a = hl.load_hybrid_run(BUILD_A_TAG, episodes)
     if build_a is None:
         raise SystemExit(f"build A run {BUILD_A_TAG} missing")
-    published = published_route2(SHARE)
+    published = published_route2(SHARE, cfg)
+    reference = None
+    if cfg.reference_stack and (OUT_DIR / f"{cfg.reference_stack}.json").exists():
+        ref_doc = json.loads((OUT_DIR / f"{cfg.reference_stack}.json").read_text(encoding="utf-8"))
+        ref_rule = ref_doc["frozen_keep_rule"]["rule"]
+        reference = {"stem": cfg.reference_stack, "rule": ref_rule,
+                     "combiner": ref_doc["combiner"].get("version", "f1"),
+                     "by_rule": {kr: ref_doc["by_rule"][kr] for kr in ("decision", ref_rule)},
+                     "seconds_per_episode_mean": ref_doc["seconds_per_episode_mean"],
+                     "cost_per_episode_mean": ref_doc["cost_per_episode_mean"]}
 
     log("donors...")
     donors, donor_paths = {}, {}
@@ -297,7 +352,7 @@ def build_report():
     luna_pure = r2.splits({e: scorer_v3.episode("luna", e, everything[e]) for e in episodes}, episodes)
     reproduction = {
         "jev_a": {"mine": v3_pooled["all"]["sentence_points"], "published": 0.8046516828804657},
-        "f1_combiner": {"mine": f1_pooled["all"]["sentence_points"], "published": published["ladder_f1_sp"]},
+        "combiner_alone": {"mine": f1_pooled["all"]["sentence_points"], "published": published["ladder_sp"]},
         "offline_ceiling_25": {"mine": result["offline_ceiling_here"], "published": published["sentence_points"]},
         "build_a_m046_decision": {"mine": build_a_pooled["all"]["sentence_points"], "published": 0.8363},
         "luna_pure": {"mine": luna_pure["all"]["sentence_points"], "published": 0.8371},
@@ -316,10 +371,14 @@ def build_report():
         raise SystemExit("Scorer ceiling and route2_handoff ceiling disagree on the same slice")
 
     ladder = r2.ladder_rows(episodes, v3_pooled["all"]["sentence_points"])
-    ladder.append({"label": f"Jev f1 `{cp['chosen']}` combiner (build B)", "key": "f1",
+    ladder.append({"label": f"Jev {cfg.version} `{cp['chosen']}` combiner (build B)", "key": cfg.version,
                    "sentence_points": f1_pooled["all"]["sentence_points"]})
     ladder.append({"label": "build A m046 (v3 margin 25%, live Luna decision)", "key": "build_a_m046",
                    "sentence_points": build_a_pooled["all"]["sentence_points"]})
+    if reference:
+        for kr in ("decision", reference["rule"]):
+            ladder.append({"label": f"{reference['combiner']}-Luna stack, `{kr}`", "key": f"reference_{kr}",
+                           "sentence_points": reference["by_rule"][kr]["all"]["sentence_points"]})
     ladder.sort(key=lambda r: -r["sentence_points"])
     placement = {kr: r2.placement(by_rule[kr]["pooled"]["all"]["sentence_points"], ladder)
                  for kr in ("decision", rule)}
@@ -362,7 +421,7 @@ def build_report():
     # per episode
     log("per episode...")
     t_eps = run["timing"]["episodes"]
-    f1_secs = published["f1_seconds"]
+    f1_secs = published["seconds"]
     per_episode = {}
     for e in episodes:
         t = t_eps[e]
@@ -374,12 +433,12 @@ def build_report():
             "retake_vetoed": t["retake_vetoed"], "substituted": t["substituted"],
             "unanswered": t["unanswered_targets"], "requests": t["requests"],
             "retries": t["retries"], "errors": t["errors"], "malformed": t["malformed"],
-            "v3": v3_eps[e], "f1": f1_eps[e], "build_a": build_a_eps[e],
+            "v3": v3_eps[e], "combiner": f1_eps[e], "build_a": build_a_eps[e],
             "decision": by_rule["decision"]["per_episode"][e], "frozen": by_rule[rule]["per_episode"][e],
             "ceiling": ceiling_ep[e],
-            "luna_seconds": luna_s, "f1_seconds": f1_s,
+            "luna_seconds": luna_s, "combiner_seconds": f1_s,
             "seconds": (luna_s + f1_s) if f1_s is not None else None,
-            "cost_usd": t["cost_usd"], "cost_listed_usd": t["cost_listed_usd"], "f1_cost_usd": f1_usd,
+            "cost_usd": t["cost_usd"], "cost_listed_usd": t["cost_listed_usd"], "combiner_cost_usd": f1_usd,
             "stack_cost_usd": (t["cost_usd"] + f1_usd) if f1_usd is not None else None,
             "prompt_tokens": t["prompt_tokens"], "cached_tokens": t["cached_tokens"],
             "completion_tokens": t["completion_tokens"], "reasoning_tokens": t["reasoning_tokens"],
@@ -389,18 +448,20 @@ def build_report():
     secs = [per_episode[e]["seconds"] for e in episodes if per_episode[e]["seconds"] is not None]
     stack_costs = [per_episode[e]["stack_cost_usd"] for e in episodes if per_episode[e]["stack_cost_usd"] is not None]
 
-    smoke_timing = hl.run_paths(SMOKE_NAME)["timing"]
+    smoke_timing = hl.run_paths(cfg.smoke)["timing"]
     smoke_spend = (json.loads(smoke_timing.read_text(encoding="utf-8"))["totals"]["cost_usd"]
                    if smoke_timing.exists() else None)
 
     inputs_fp = {k: fingerprint(v) for k, v in inputs["run_paths"].items()}
     inputs_fp["rules_prompt"] = fingerprint(hl.RULES_PATH)
     inputs_fp["ladder_reference"] = fingerprint(report_mod.REFERENCE_JSON)
-    inputs_fp["f1_weights"] = fingerprint(cp["weights_path"])
+    inputs_fp["combiner_weights"] = fingerprint(cp["weights_path"])
     for split, paths in cp["feature_paths"].items():
-        inputs_fp[f"f1_{split}_features"] = fingerprint(paths["features"])
-        inputs_fp[f"f1_{split}_timing"] = fingerprint(paths["timing"])
-    inputs_fp["f1_writeup_json"] = fingerprint(OUT_DIR / f"{F1_NAME}.json")
+        inputs_fp[f"combiner_{split}_features"] = fingerprint(paths["features"])
+        inputs_fp[f"combiner_{split}_timing"] = fingerprint(paths["timing"])
+    inputs_fp["combiner_writeup_json"] = fingerprint(cfg.writeup_json)
+    if reference:
+        inputs_fp["reference_stack_json"] = fingerprint(OUT_DIR / f"{reference['stem']}.json")
     inputs_fp["build_a_json"] = fingerprint(BUILD_A_JSON)
     for key, paths in donor_paths.items():
         for path in paths:
@@ -419,8 +480,10 @@ def build_report():
         "model": hl.MODEL, "effort": run["timing"]["effort"], "arm": run["timing"]["arm"], "tag": tag,
         "episodes": episodes, "fit": FIT, "heldout": [e for e in episodes if e not in FIT],
         "sentences": sum(len(f1_jev[e]) for e in episodes),
-        "combiner": {"set": cp["chosen"], "C": cp["C"], "threshold": cp["threshold"],
+        "combiner": {"prefix": cfg.prefix, "version": cfg.version, "spec_step": cfg.spec_step,
+                     "set": cp["chosen"], "C": cp["C"], "threshold": cp["threshold"],
                      "features": len(cp["names"]), "coef_drift": cp["coef_drift"]},
+        "out_stem": cfg.out_stem, "smoke_name": cfg.smoke, "reference_stack": reference,
         "share": SHARE, "cutoff": cutoff, "routed": n_routed,
         "asked": totals["asked"], "retake_vetoed": totals["retake_vetoed"],
         "substituted": totals["substituted"], "unanswered": totals["unanswered_targets"],
@@ -428,7 +491,7 @@ def build_report():
         "malformed": totals["malformed"],
         "frozen_keep_rule": frozen, "keep_rules": hl.KEEP_RULES,
         "reproduction": reproduction,
-        "f1": f1_pooled, "v3": v3_pooled, "build_a": build_a_pooled, "build_a_frozen": build_a_frozen_pooled,
+        "combiner_alone": f1_pooled, "v3": v3_pooled, "build_a": build_a_pooled, "build_a_frozen": build_a_frozen_pooled,
         "luna_pure": luna_pure,
         "by_rule": {kr: v["pooled"] for kr, v in by_rule.items()},
         "ceiling": ceiling, "opus_ceiling": opus_ceiling["all"],
@@ -440,13 +503,13 @@ def build_report():
         "cost_per_episode_mean": totals["cost_usd"] / len(episodes),
         "cost_per_episode_max": max(per_episode[e]["cost_usd"] for e in episodes),
         "stack_cost_per_episode_mean": statistics.mean(stack_costs) if stack_costs else None,
-        "f1_cost_per_episode_mean": statistics.mean(
-            [per_episode[e]["f1_cost_usd"] for e in episodes if per_episode[e]["f1_cost_usd"] is not None]),
+        "combiner_cost_per_episode_mean": statistics.mean(
+            [per_episode[e]["combiner_cost_usd"] for e in episodes if per_episode[e]["combiner_cost_usd"] is not None]),
         "seconds_per_episode_mean": statistics.mean(secs) if secs else None,
         "seconds_per_episode_max": max(secs) if secs else None,
         "luna_seconds_per_episode_mean": statistics.mean(per_episode[e]["luna_seconds"] for e in episodes),
-        "f1_seconds_per_episode_mean": statistics.mean(
-            [per_episode[e]["f1_seconds"] for e in episodes if per_episode[e]["f1_seconds"] is not None]),
+        "combiner_seconds_per_episode_mean": statistics.mean(
+            [per_episode[e]["combiner_seconds"] for e in episodes if per_episode[e]["combiner_seconds"] is not None]),
         "tokens": {k: totals[k] for k in ("prompt_tokens", "cached_tokens", "completion_tokens", "reasoning_tokens")},
         "estimate": run["timing"].get("estimate"), "wall_clock_s": totals["wall_clock_s"],
         "run_generated_utc": run["timing"]["generated_utc"],
@@ -467,42 +530,48 @@ def write_markdown(path, s, json_path):
         lines.append(text)
 
     rule = s["frozen_keep_rule"]["rule"]
+    v = s["combiner"]["version"]
     dec, frz, ceil = s["by_rule"]["decision"], s["by_rule"][rule], s["ceiling"]
-    smoke = (f", plus ${s['smoke_spend_usd']:.4f} for the one-group smoke request in `{SMOKE_NAME}-*`"
+    smoke = (f", plus ${s['smoke_spend_usd']:.4f} for the one-group smoke request in `{s['smoke_name']}-*`"
              if s.get("smoke_spend_usd") is not None else "")
-    add("# The f1-Luna stack: combiner decides, Luna overrides its unsure slice (developer-facing notes)")
+    add(f"# The {v}-Luna stack: combiner decides, Luna overrides its unsure slice (developer-facing notes)")
     add()
-    add(f"Generated {s['generated_utc']} by `{s['script']}` from the run files on disk, the f1 feature files and frozen weights, the stored v3 decisions, the archived donor ratings and the cached removal ranges. The report step makes no model calls; the run it reads cost ${s['cost_usd']:.4f} by the router's accounting (${s['cost_listed_usd']:.4f} at list rates 0.20 in, 0.02 cached, 1.20 out per million){smoke}. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.")
+    add(f"Generated {s['generated_utc']} by `{s['script']}` from the run files on disk, the {v} feature files and frozen weights, the stored v3 decisions, the archived donor ratings and the cached removal ranges. The report step makes no model calls; the run it reads cost ${s['cost_usd']:.4f} by the router's accounting (${s['cost_listed_usd']:.4f} at list rates 0.20 in, 0.02 cached, 1.20 out per million){smoke}. Every metric is x100, two decimals, with um removal + delete silence layered on (the ladder column). The JSON next to this file keeps the raw values and every per-episode number.")
     add()
-    add(f"Question: second pass, step 2 of the round-two design. Build B's f1 combiner (`{s['combiner']['set']}`, C {s['combiner']['C']:g}, keep threshold {s['combiner']['threshold']:.2f} on `5 * p_keep`) decides every one of the {s['sentences']:,} sentences of the 18 ladder episodes, `keep_words` null, `cut_retake` from the v3 row. The sentences whose `5 * p_keep` sits closest to the threshold (margin `abs(5 * p_keep - {s['combiner']['threshold']:.2f})` under one global cutoff, {s['cutoff']:.3f}, the bottom {s['share'] * 100:g}%, {s['routed']:,} sentences) go to `{s['model']}` exactly as build A sent Jev's v3 slice: whole episode transcript as Jev saw it, rules5 system prompt, groups of up to {s['settings']['group_max']}, {s['effort']} effort. On routed sentences Luna's verdict replaces the combiner's keep/cut, `keep_words` stays null, the retake veto stays. Two substitutions are reported: Luna's `decision` field, and the keep rule step 1 froze on build A's fit six (`{rule}`, `roughcut-hybrid-luna.md`, chosen before this run was made). The `p_keep` values are the ones the f1 write-up's route-2 section used: fit six out of fold by leave-one-episode-out at the frozen C, held-out 12 from the frozen weights, so the selection on the fit six is not held out in the strict sense (the C and threshold were chosen there), and neither is the cutoff (chosen from the pooled 18); Luna's decisions on the slice are.")
+    add(f"Question: {s['combiner']['spec_step']} of the round-two design. Build B's {v} combiner (`{s['combiner']['set']}`, C {s['combiner']['C']:g}, keep threshold {s['combiner']['threshold']:.2f} on `5 * p_keep`) decides every one of the {s['sentences']:,} sentences of the 18 ladder episodes, `keep_words` null, `cut_retake` from the v3 row. The sentences whose `5 * p_keep` sits closest to the threshold (margin `abs(5 * p_keep - {s['combiner']['threshold']:.2f})` under one global cutoff, {s['cutoff']:.3f}, the bottom {s['share'] * 100:g}%, {s['routed']:,} sentences) go to `{s['model']}` exactly as build A sent Jev's v3 slice: whole episode transcript as Jev saw it, rules5 system prompt, groups of up to {s['settings']['group_max']}, {s['effort']} effort. On routed sentences Luna's verdict replaces the combiner's keep/cut, `keep_words` stays null, the retake veto stays. Two substitutions are reported: Luna's `decision` field, and the keep rule step 1 froze on build A's fit six (`{rule}`, `roughcut-hybrid-luna.md`, chosen before this run was made). The `p_keep` values are the ones the {v} write-up's route-2 section used: fit six out of fold by leave-one-episode-out at the frozen C, held-out 12 from the frozen weights, so the selection on the fit six is not held out in the strict sense (the C and threshold were chosen there), and neither is the cutoff (chosen from the pooled 18); Luna's decisions on the slice are.")
     add()
 
     add("## Reproduction check")
     add()
     r = s["reproduction"]
     rows = [["pure Jev (jev_a v3)", pct(r["jev_a"]["mine"]), pct(r["jev_a"]["published"])],
-            [f"f1 `{s['combiner']['set']}` combiner alone (build B, ladder 18)", pct(r["f1_combiner"]["mine"]), pct(r["f1_combiner"]["published"])],
-            ["offline ceiling: combiner margin bottom 25%, archived Luna (f1 write-up)", pct(r["offline_ceiling_25"]["mine"]), pct(r["offline_ceiling_25"]["published"])],
+            [f"{v} `{s['combiner']['set']}` combiner alone (build B, ladder 18)", pct(r["combiner_alone"]["mine"]), pct(r["combiner_alone"]["published"])],
+            [f"offline ceiling: combiner margin bottom 25%, archived Luna ({v} write-up)", pct(r["offline_ceiling_25"]["mine"]), pct(r["offline_ceiling_25"]["published"])],
             ["build A m046: v3 margin bottom 25%, live Luna decision", pct(r["build_a_m046_decision"]["mine"]), pct(r["build_a_m046_decision"]["published"])],
             ["pure archived Luna chapters (routed 100%)", pct(r["luna_pure"]["mine"]), pct(r["luna_pure"]["published"])]]
     lines.extend(table(["arm", "SENTENCE POINTS here", "published"], rows))
     add()
-    add(f"The combiner's `p_keep` was recomputed from the feature files and the frozen weights (`{Path(str(s['inputs']['f1_weights']['path'])).name}`); refitting on the fit six lands {s['combiner']['coef_drift']:.1e} from the frozen coefficients, the slice has the same {s['routed']:,} sentences and the same cutoff as the f1 write-up's route-2 row, and the archived substitution reproduces its number through the combiner's own `route2_handoff` before any call was made.")
+    add(f"The combiner's `p_keep` was recomputed from the feature files and the frozen weights (`{Path(str(s['inputs']['combiner_weights']['path'])).name}`); refitting on the fit six lands {s['combiner']['coef_drift']:.1e} from the frozen coefficients, the slice has the same {s['routed']:,} sentences and the same cutoff as the {v} write-up's route-2 row, and the archived substitution reproduces its number through the combiner's own `route2_handoff` before any call was made.")
     add()
 
     add("## Pooled results")
     add()
-    add(f"Pooled over the fit six, the held-out 12 and all 18, with modules. `decision` substitutes Luna's decision field on the routed slice; `{rule}` substitutes the frozen keep rule; `ceiling` substitutes the archived Luna chapters decision (the offline number). Build A is the same live call on Jev's v3 slice. The fit-six column is where the combiner's C, threshold and (for build A) the keep rule were chosen; the held-out 12 column is not. Seconds per episode are Luna's wall clock at concurrency {s['settings']['concurrency']} plus the combiner's own per-episode time from the f1 run (v3 sentence pass plus the feature questions); dollars are the router's accounting, Luna only, with the stack total (Luna plus f1) alongside.")
+    add(f"Pooled over the fit six, the held-out 12 and all 18, with modules. `decision` substitutes Luna's decision field on the routed slice; `{rule}` substitutes the frozen keep rule; `ceiling` substitutes the archived Luna chapters decision (the offline number). Build A is the same live call on Jev's v3 slice. The fit-six column is where the combiner's C, threshold and (for build A) the keep rule were chosen; the held-out 12 column is not. Seconds per episode are Luna's wall clock at concurrency {s['settings']['concurrency']} plus the combiner's own per-episode time from the {v} run (v3 sentence pass plus the feature questions); dollars are the router's accounting, Luna only, with the stack total (Luna plus {v}) alongside.")
     add()
     rows = []
-    luna_cost, f1_cost = s["cost_per_episode_mean"], s["f1_cost_per_episode_mean"]
-    for label, p, sp_secs, cost, total in (
-            (f"f1 combiner alone (build B)", s["f1"], s["f1_seconds_per_episode_mean"], None, f1_cost),
+    luna_cost, f1_cost = s["cost_per_episode_mean"], s["combiner_cost_per_episode_mean"]
+    arms = [(f"{v} combiner alone (build B)", s["combiner_alone"], s["combiner_seconds_per_episode_mean"], None, f1_cost),
             (f"stack, Luna `decision`", dec, s["seconds_per_episode_mean"], luna_cost, s["stack_cost_per_episode_mean"]),
             (f"stack, frozen rule `{rule}`", frz, s["seconds_per_episode_mean"], luna_cost, s["stack_cost_per_episode_mean"]),
-            (f"stack ceiling (archived Luna on the same slice)", ceil, None, None, None),
-            (f"build A m046, Luna `decision`", s["build_a"], None, None, None),
-            (f"build A m046, frozen rule `{rule}`", s["build_a_frozen"], None, None, None)):
+            (f"stack ceiling (archived Luna on the same slice)", ceil, None, None, None)]
+    ref = s.get("reference_stack")
+    if ref:
+        for kr in ("decision", ref["rule"]):
+            arms.append((f"{ref['combiner']}-Luna stack, `{kr}` (`{ref['stem']}.md`)", ref["by_rule"][kr],
+                         ref["seconds_per_episode_mean"], ref["cost_per_episode_mean"], None))
+    arms += [(f"build A m046, Luna `decision`", s["build_a"], None, None, None),
+             (f"build A m046, frozen rule `{rule}`", s["build_a_frozen"], None, None, None)]
+    for label, p, sp_secs, cost, total in arms:
         rows.append([label, pct(p["fit"]["sentence_points"]), pct(p["heldout"]["sentence_points"]),
                      pct(p["all"]["sentence_points"]), pct(p["all"]["word_score"]), pct(p["all"]["grade"]),
                      num(sp_secs, 1), money(cost), money(total)])
@@ -510,12 +579,12 @@ def write_markdown(path, s, json_path):
                         "s/ep mean", "Luna $/ep mean", "arm total $/ep mean"], rows))
     add()
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
-    add(f"Ladder, with modules, same 18 episodes (build A and the f1 combiner added as rows): {ladder_text}. Placement: stack with `decision` {s['placement']['decision']['text']} (rank {s['placement']['decision']['rank']} of {s['placement']['decision']['of']}); stack with `{rule}` {s['placement'][rule]['text']} (rank {s['placement'][rule]['rank']} of {s['placement'][rule]['of']}); the ceiling on this slice {s['placement']['ceiling']['text']}.")
+    add(f"Ladder, with modules, same 18 episodes (build A and the {v} combiner added as rows): {ladder_text}. Placement: stack with `decision` {s['placement']['decision']['text']} (rank {s['placement']['decision']['rank']} of {s['placement']['decision']['of']}); stack with `{rule}` {s['placement'][rule]['text']} (rank {s['placement'][rule]['rank']} of {s['placement'][rule]['of']}); the ceiling on this slice {s['placement']['ceiling']['text']}.")
     add()
-    gain_dec = dec["all"]["sentence_points"] - s["f1"]["all"]["sentence_points"]
-    gain_frz = frz["all"]["sentence_points"] - s["f1"]["all"]["sentence_points"]
-    gain_ceil = ceil["all"]["sentence_points"] - s["f1"]["all"]["sentence_points"]
-    add(f"Against the offline ceiling {pct(ceil['all']['sentence_points'])} and build A's {pct(s['build_a']['all']['sentence_points'])}: the stack lands at {pct(dec['all']['sentence_points'])} with the decision field ({gain_dec * 100:+.2f} on the combiner alone, {(dec['all']['sentence_points'] - s['build_a']['all']['sentence_points']) * 100:+.2f} on build A) and {pct(frz['all']['sentence_points'])} with `{rule}` ({gain_frz * 100:+.2f} on the combiner alone, {(frz['all']['sentence_points'] - s['build_a_frozen']['all']['sentence_points']) * 100:+.2f} on build A under the same rule). Of the {gain_ceil * 100:.2f} SP the archived substitution adds over the combiner, the live call keeps {(gain_dec / gain_ceil * 100) if gain_ceil else float('nan'):.0f}% with the decision field and {(gain_frz / gain_ceil * 100) if gain_ceil else float('nan'):.0f}% with `{rule}`. Held out: {pct(dec['heldout']['sentence_points'])} and {pct(frz['heldout']['sentence_points'])} against build A's {pct(s['build_a']['heldout']['sentence_points'])} and {pct(s['build_a_frozen']['heldout']['sentence_points'])}, the combiner alone {pct(s['f1']['heldout']['sentence_points'])}, pure Jev v3 {pct(s['v3']['heldout']['sentence_points'])}.")
+    gain_dec = dec["all"]["sentence_points"] - s["combiner_alone"]["all"]["sentence_points"]
+    gain_frz = frz["all"]["sentence_points"] - s["combiner_alone"]["all"]["sentence_points"]
+    gain_ceil = ceil["all"]["sentence_points"] - s["combiner_alone"]["all"]["sentence_points"]
+    add(f"Against the offline ceiling {pct(ceil['all']['sentence_points'])} and build A's {pct(s['build_a']['all']['sentence_points'])}: the stack lands at {pct(dec['all']['sentence_points'])} with the decision field ({gain_dec * 100:+.2f} on the combiner alone, {(dec['all']['sentence_points'] - s['build_a']['all']['sentence_points']) * 100:+.2f} on build A) and {pct(frz['all']['sentence_points'])} with `{rule}` ({gain_frz * 100:+.2f} on the combiner alone, {(frz['all']['sentence_points'] - s['build_a_frozen']['all']['sentence_points']) * 100:+.2f} on build A under the same rule). Of the {gain_ceil * 100:.2f} SP the archived substitution adds over the combiner, the live call keeps {(gain_dec / gain_ceil * 100) if gain_ceil else float('nan'):.0f}% with the decision field and {(gain_frz / gain_ceil * 100) if gain_ceil else float('nan'):.0f}% with `{rule}`. Held out: {pct(dec['heldout']['sentence_points'])} and {pct(frz['heldout']['sentence_points'])} against build A's {pct(s['build_a']['heldout']['sentence_points'])} and {pct(s['build_a_frozen']['heldout']['sentence_points'])}, the combiner alone {pct(s['combiner_alone']['heldout']['sentence_points'])}, pure Jev v3 {pct(s['v3']['heldout']['sentence_points'])}.")
     add()
 
     add("## Every keep rule on this slice")
@@ -584,20 +653,20 @@ def write_markdown(path, s, json_path):
     for e in s["episodes"]:
         p = s["per_episode"][e]
         rows.append([e + (" (fit)" if e in s["fit"] else ""), p["sentences"], p["routed"], p["asked"], p["unanswered"],
-                     pct(p["v3"]["sentence_points"]), pct(p["f1"]["sentence_points"]),
+                     pct(p["v3"]["sentence_points"]), pct(p["combiner"]["sentence_points"]),
                      pct(p["build_a"]["sentence_points"]), pct(p["decision"]["sentence_points"]),
                      pct(p["frozen"]["sentence_points"]), pct(p["ceiling"]["sentence_points"]),
                      pct(p["frozen"]["word_score"]), pct(p["frozen"]["grade"]),
-                     p["requests"], p["retries"], num(p["luna_seconds"], 1), num(p["f1_seconds"], 1),
+                     p["requests"], p["retries"], num(p["luna_seconds"], 1), num(p["combiner_seconds"], 1),
                      num(p["seconds"], 1), money(p["cost_usd"]), money(p["stack_cost_usd"]),
                      f"{p['input_tokens_per_request'] / 1000:.1f}k" if p["input_tokens_per_request"] else "n/a",
                      f"{p['cached_tokens'] / max(1, p['prompt_tokens']) * 100:.0f}%"])
-    lines.extend(table(["episode", "sentences", "routed", "asked", "unanswered", "SP Jev v3", "SP f1", "SP build A",
+    lines.extend(table(["episode", "sentences", "routed", "asked", "unanswered", "SP Jev v3", f"SP {v}", "SP build A",
                         "SP stack decision", f"SP stack {rule}", "SP ceiling", f"WORD stack {rule}",
-                        f"GRADE stack {rule}", "requests", "retries", "Luna s", "f1 s", "s/ep", "Luna $",
+                        f"GRADE stack {rule}", "requests", "retries", "Luna s", f"{v} s", "s/ep", "Luna $",
                         "stack $", "input tokens/request", "cached share"], rows))
     add()
-    add(f"Routed sentences the v3 retake pass had already cut were not sent: {s['retake_vetoed']} of {s['routed']:,}. {s['requests']} requests, {s['retries']} retries, {s['errors']} errored attempts, {s['malformed']} malformed or incomplete answers, {s['unanswered']} targets left unanswered after retries (those keep the combiner's own decision). Tokens: {s['tokens']['prompt_tokens']:,} prompt of which {s['tokens']['cached_tokens']:,} cached, {s['tokens']['completion_tokens']:,} completion of which {s['tokens']['reasoning_tokens']:,} reasoning. Router cost ${s['cost_usd']:.4f} (${s['cost_per_episode_mean']:.4f} per episode, max ${s['cost_per_episode_max']:.4f}); the plan estimated ${s['estimate']['cost_usd']:.4f}. Stack cost per episode, Luna plus the f1 combiner's own calls: ${s['stack_cost_per_episode_mean']:.4f}. Seconds per episode {s['seconds_per_episode_mean']:.1f} mean, {s['seconds_per_episode_max']:.1f} max (Luna {s['luna_seconds_per_episode_mean']:.1f}, f1 {s['f1_seconds_per_episode_mean']:.1f}). Run wall clock {s['wall_clock_s']:.0f} s, generated {s['run_generated_utc']}.")
+    add(f"Routed sentences the v3 retake pass had already cut were not sent: {s['retake_vetoed']} of {s['routed']:,}. {s['requests']} requests, {s['retries']} retries, {s['errors']} errored attempts, {s['malformed']} malformed or incomplete answers, {s['unanswered']} targets left unanswered after retries (those keep the combiner's own decision). Tokens: {s['tokens']['prompt_tokens']:,} prompt of which {s['tokens']['cached_tokens']:,} cached, {s['tokens']['completion_tokens']:,} completion of which {s['tokens']['reasoning_tokens']:,} reasoning. Router cost ${s['cost_usd']:.4f} (${s['cost_per_episode_mean']:.4f} per episode, max ${s['cost_per_episode_max']:.4f}); the plan estimated ${s['estimate']['cost_usd']:.4f}. Stack cost per episode, Luna plus the {v} combiner's own calls: ${s['stack_cost_per_episode_mean']:.4f}. Seconds per episode {s['seconds_per_episode_mean']:.1f} mean, {s['seconds_per_episode_max']:.1f} max (Luna {s['luna_seconds_per_episode_mean']:.1f}, {v} {s['combiner_seconds_per_episode_mean']:.1f}). Run wall clock {s['wall_clock_s']:.0f} s, generated {s['run_generated_utc']}.")
     add()
 
     add("## How the call was made")
@@ -617,13 +686,25 @@ def write_markdown(path, s, json_path):
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def report(args, parser):
-    md_path = OUT_DIR / f"{OUT_STEM}.md"
-    json_path = OUT_DIR / f"{OUT_STEM}.json"
+def report(args, parser, cfg):
+    md_path = OUT_DIR / f"{cfg.out_stem}.md"
+    json_path = OUT_DIR / f"{cfg.out_stem}.json"
     existing = [str(p) for p in (md_path, json_path) if p.exists()]
-    if existing and not args.force:
+    if existing and not args.force and not args.no_write:
         parser.error(f"refusing to overwrite {existing}; pass --force")
-    summary = build_report()
+    summary = build_report(cfg)
+    if args.no_write:
+        published = (json.loads(json_path.read_text(encoding="utf-8")) if json_path.exists() else None)
+        rule = summary["frozen_keep_rule"]["rule"]
+        compare = {kr: {split: {"now": summary["by_rule"][kr][split]["sentence_points"],
+                                "on_disk": (published["by_rule"][kr][split]["sentence_points"]
+                                            if published else None)}
+                        for split in ("fit", "heldout", "all")} for kr in ("decision", rule)}
+        same = published is not None and all(abs(c["now"] - c["on_disk"]) < 1e-9
+                                             for block in compare.values() for c in block.values())
+        print(json.dumps({"no_write": True, "reproduces_write_up_on_disk": same, "by_rule": compare,
+                          "reproduction": summary["reproduction"]}, indent=2))
+        return 0 if same or published is None else 1
     json_path.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     write_markdown(md_path, summary, json_path)
     rule = summary["frozen_keep_rule"]["rule"]
@@ -648,11 +729,14 @@ def report(args, parser):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--combiner", default=F1_NAME,
+                        help=f"combiner output prefix from roughcut_jev_combine.py (default {F1_NAME})")
     parser.add_argument("--effort", default=hl.DEFAULT_EFFORT, choices=hl.EFFORTS)
     parser.add_argument("--episodes", nargs="+", default=None, help="subset of the 18 (default: all)")
     parser.add_argument("--limit-groups", type=int, default=None,
                         help="send only the first N groups of each episode (smoke test)")
-    parser.add_argument("--out", default=None, help=f"output basename (default {OUT_STEM}-m25)")
+    parser.add_argument("--out", default=None,
+                        help="output basename (default roughcut-hybrid-<version>luna-m25)")
     parser.add_argument("--run", action="store_true", help="actually call Luna")
     parser.add_argument("--resume", action="store_true", help="finish a run whose files exist")
     parser.add_argument("--budget", type=float, default=DEFAULT_BUDGET_USD, help="hard spend cap in USD")
@@ -661,15 +745,18 @@ def main():
                         help="recompute p_keep and reproduce the offline ceiling only; no calls")
     parser.add_argument("--report", action="store_true", help="write the markdown and JSON write-up")
     parser.add_argument("--force", action="store_true", help="overwrite the write-up")
+    parser.add_argument("--no-write", action="store_true",
+                        help="with --report: rebuild the numbers, compare them with the write-up on disk, write nothing")
     args = parser.parse_args()
     args.share = SHARE
+    cfg = stack_config(args.combiner)
     if args.check:
-        result, _inputs, _cp, _routed, _cutoff = check()
+        result, _inputs, _cp, _routed, _cutoff = check(cfg=cfg)
         print(json.dumps(result, indent=2))
         return 0
     if args.report:
-        return report(args, parser)
-    return run(args, parser)
+        return report(args, parser, cfg)
+    return run(args, parser, cfg)
 
 
 if __name__ == "__main__":
