@@ -58,6 +58,8 @@ MODEL, EFFORT = fo.MODEL, fo.EFFORT
 COMBINER = "roughcut-jev-f3"
 OUT_STEM = "roughcut-hybrid-f3opus"
 SHARES = {"m50": 0.50, "m25": 0.25}
+#: Reference Jev rows also placed on the published ladder in the write-up.
+PLACED_REFERENCE_ROWS = ("f3", "f1", "f1opus_rule", "f1opus_decision", "f1luna_rule")
 MAIN = "m50"
 NAME = f"{OUT_STEM}-m50"
 ARM = "hybrid_f3opus_m50"
@@ -513,9 +515,16 @@ def build_report():
          "sentence_points": luna_doc["by_rule"][luna_doc["frozen_keep_rule"]["rule"]]["all"]["sentence_points"]},
     ]
     ladder.sort(key=lambda r: -r["sentence_points"])
-    placement = {f"{tag}:{kr}": r2.placement(by_rule[tag][kr]["all"]["sentence_points"], ladder)
+    published = r2.published_rows(episodes)
+    placement = {f"{tag}:{kr}": r2.placement(by_rule[tag][kr]["all"]["sentence_points"], published)
                  for tag in SHARES for kr in ("decision", rules[tag])}
-    shipped = next(r for r in ladder if r["key"] == "opus5-cc-agentic" or r["label"] == "shipped Opus agentic")
+    for row in ladder:
+        if row["key"] in PLACED_REFERENCE_ROWS:
+            placement[row["key"]] = r2.placement(row["sentence_points"], published)
+    ref_arm = lambda r: {"key": r["key"], "label": r["label"], "sentence_points": r["sentence_points_layered"],  # noqa: E731
+                         "sentence_points_plain": r["sentence_points_plain"], "rank": r["rank"]}
+    opus5_agentic = ref_arm(next(r for r in published if r["key"] == "opus5-cc-agentic"))
+    top_arm = ref_arm(published[0])
 
     log("states, flips, agreement...")
     human, f3_states = {}, {}
@@ -611,7 +620,8 @@ def build_report():
                   "cost_usd": step5["cost_usd"], "per_sentence_usd": s5_per_sentence},
         "f1_alone": {"ladder_sp": f1_ladder, "block": step5["f1"],
                      "seconds_per_episode_mean": step5["f1_seconds_per_episode_mean"]},
-        "shipped": shipped, "ladder": ladder, "placement": placement, "flips": flips, "agreement": agreement,
+        "opus5_agentic": opus5_agentic, "top_arm": top_arm, "ladder": ladder,
+        "published_ladder": published, "placement": placement, "flips": flips, "agreement": agreement,
         "per_episode": per_episode,
         "cost_usd": new_cost, "cost_listed_usd": totals["cost_listed_usd"],
         "per_sentence_usd": per_sentence,
@@ -663,7 +673,10 @@ def write_markdown(path, s, json_path):
     add(f"Cost saver: {cnt['reused']:,} of the {cnt['asked']:,} sentences asked for the 50% slice already had a step 5 answer (same model, same system prompt and same cached prefix, both checked by md5), so only {cnt['asked_now']:,} were sent. The reused answers came from step 5's groups, which held a different mix of targets than a fresh 50% run would have, so a reused answer is what Opus said in a different group. For the 25% point, {c25['reused']:,} of its {c25['asked']:,} asked sentences are reused and the rest come from this run. Keep rules for both shares were chosen on the fit six alone and frozen to `{Path(s['inputs']['opus_keep_rule']['path']).name}` at {s['frozen_keep_rule']['frozen_utc']}, before any held-out call of this run: `{r50}` at 50%, `{r25}` at 25%.")
     add("")
     f3 = s["f3"]
-    add(f"Bottom line: f3 plus Opus at 50% with `{r50}` scores {pct(b50[r50]['all']['sentence_points'])} SP pooled 18 ({pct(b50[r50]['heldout']['sentence_points'])} held-out 12), and at 25% with `{r25}` {pct(b25[r25]['all']['sentence_points'])} ({pct(b25[r25]['heldout']['sentence_points'])} held out), against {pct(s5['rule_block']['all']['sentence_points'])} for the f1-Opus 25% stack, {pct(f3['all']['sentence_points'])} for f3 alone and {pct(s['shipped']['sentence_points'])} for shipped Opus agentic.")
+    rk50, rk25 = s["placement"][f"m50:{r50}"], s["placement"][f"m25:{r25}"]
+    stack_ranks = (f"both f3 stacks rank {rk50['rank']} of {rk50['of']} on that ladder" if rk50["rank"] == rk25["rank"]
+                   else f"the f3 stacks rank {rk50['rank']} (50%) and {rk25['rank']} (25%) of {rk50['of']} on that ladder")
+    add(f"Bottom line: f3 plus Opus at 50% with `{r50}` scores {pct(b50[r50]['all']['sentence_points'])} SP pooled 18 ({pct(b50[r50]['heldout']['sentence_points'])} held-out 12), and at 25% with `{r25}` {pct(b25[r25]['all']['sentence_points'])} ({pct(b25[r25]['heldout']['sentence_points'])} held out), against {pct(s5['rule_block']['all']['sentence_points'])} for the f1-Opus 25% stack, {pct(f3['all']['sentence_points'])} for f3 alone and {pct(s['opus5_agentic']['sentence_points'])} for {s['opus5_agentic']['label']}, the Opus 5 agentic arm earlier write-ups compare to. The top published arm with modules is {s['top_arm']['label']} at {pct(s['top_arm']['sentence_points'])}; {stack_ranks}.")
     add("")
 
     add("## Offline ceiling on the f3 slices")
@@ -704,17 +717,19 @@ def write_markdown(path, s, json_path):
     row("f1 + Opus 25%, Opus `decision` (step 5, reference)", s5["decision"], s5["seconds_per_episode_mean"], s5["cost_per_episode_mean"], s5["cost_per_episode_mean"])
     row("f3 alone (winning Jev-only run)", f3, s["f3_seconds_per_episode_mean"], 0.0, 0.0)
     row("f1 alone (reference)", s["f1_alone"]["block"], s["f1_alone"]["seconds_per_episode_mean"], 0.0, 0.0)
-    rows.append(["shipped Opus agentic (ladder)", "", "", pct(s["shipped"]["sentence_points"]), "", "", "", "", ""])
+    rows.append([f"{s['top_arm']['label']} (top published arm, ladder)", "", "", pct(s["top_arm"]["sentence_points"]), "", "", "", "", ""])
+    rows.append([f"{s['opus5_agentic']['label']} (ladder)", "", "", pct(s["opus5_agentic"]["sentence_points"]), "", "", "", "", ""])
     lines.extend(table(["arm", "SP fit 6", "SP held-out 12", "SP all 18", "WORD all 18", "GRADE all 18",
                         "s/ep mean", "model $/ep paid", "model $/ep fresh"], rows))
     add("")
-    add("f3 and f1 alone score the fit six with their leave-one-out predictions and the held-out 12 with their frozen weights, the same split as the stacks. Shipped Opus agentic has only its ladder number here; `docs/TASKS.md` puts it at about $5 and an hour per episode. The f3 combiner's $0 is new spend only; its rows are a join of Jev runs already paid for.")
+    add("f3 and f1 alone score the fit six with their leave-one-out predictions and the held-out 12 with their frozen weights, the same split as the stacks. The two published arms have only their ladder numbers here; `docs/TASKS.md` puts the Opus 5 agentic arm at about $5 and an hour per episode. The f3 combiner's $0 is new spend only; its rows are a join of Jev runs already paid for.")
     add("")
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
     pl = s["placement"]
-    places = "; ".join(f"{share} `{kr}` {pl[f'{tag}:{kr}']['text']} (rank {pl[f'{tag}:{kr}']['rank']} of {pl[f'{tag}:{kr}']['of']})"
-                       for tag, share, rule in (("m50", "50%", r50), ("m25", "25%", r25)) for kr in rule_pair(rule))
-    add(f"Ladder, with modules, same 18 episodes: {ladder_text}. Placement: {places}.")
+    places = [f"f3 + Opus {share} `{kr}` {pl[f'{tag}:{kr}']['text']}"
+              for tag, share, rule in (("m50", "50%", r50), ("m25", "25%", r25)) for kr in rule_pair(rule)]
+    places += [f"{r['label']} {pl[r['key']]['text']}" for r in s["ladder"] if r["key"] in pl]
+    add(f"Ladder, with modules, same 18 episodes (published arms quoted as the top arm, the bench page's headline best, each model family's best and the Opus 5 agentic arm; shipped flags are the bench page's): {ladder_text}. {report_mod.placement_lead(s['published_ladder'])}. Placement: {'; '.join(places)}.")
     add("")
 
     add("## Every keep rule")

@@ -739,16 +739,17 @@ def build_report():
     jev_eps = {e: scorer.episode(None, e, set()) for e in episodes}
     jev_pooled = r2.splits(jev_eps, episodes)
     ladder = r2.ladder_rows(episodes, jev_pooled["all"]["sentence_points"])
-    ladder_by_key = {r["key"]: r for r in ladder}
+    published = r2.published_rows(episodes)
+    published_sp = {r["key"]: r["sentence_points_layered"] for r in published}
     everything = {e: set(jev[e]) for e in episodes}
     reproduction = {
         "jev_a": {"mine": jev_pooled["all"]["sentence_points"], "published": 0.8046516828804657},
         "luna": {"mine": r2.splits({e: scorer.episode("luna", e, everything[e]) for e in episodes},
                                    episodes)["all"]["sentence_points"],
-                 "published": ladder_by_key["luna-chapters-rules5"]["sentence_points"]},
+                 "published": published_sp["luna-chapters-rules5"]},
         "opus": {"mine": r2.splits({e: scorer.episode("opus", e, everything[e]) for e in episodes},
                                    episodes)["all"]["sentence_points"],
-                 "published": ladder_by_key["opus5-cc-agentic"]["sentence_points"]},
+                 "published": published_sp["opus5-cc-agentic"]},
     }
 
     human, jev_states, donor_states = {}, {}, {}
@@ -811,8 +812,8 @@ def build_report():
             "pooled": pooled, "ceiling": ceiling, "score_sweep": sweep,
             "keep_rule": keep_blocks[tag],
             "opus_ceiling": r2.splits(opus_ep, episodes)["all"],
-            "placement": r2.placement(pooled["all"]["sentence_points"], ladder),
-            "ceiling_placement": r2.placement(ceiling["all"]["sentence_points"], ladder),
+            "placement": r2.placement(pooled["all"]["sentence_points"], published),
+            "ceiling_placement": r2.placement(ceiling["all"]["sentence_points"], published),
             "flips": r2.flip_block(scorer, key, routed, episodes, human, jev_states),
             "ceiling_flips": r2.flip_block(scorer, "luna", routed, episodes, human, jev_states),
             "slice": r2.slice_agreement(routed, episodes, human, jev_states, donor_states[key]),
@@ -866,7 +867,7 @@ def build_report():
         "heldout": [e for e in episodes if e not in FIT],
         "sentences": sum(len(jev[e]) for e in episodes),
         "missing_jev_answers": inputs["n_missing"],
-        "jev": jev_pooled, "ladder": ladder, "reproduction": reproduction,
+        "jev": jev_pooled, "ladder": ladder, "published_ladder": published, "reproduction": reproduction,
         "jev_cost_per_episode": statistics.mean(jev_latency[e]["cost_usd"] for e in episodes),
         "jev_seconds_per_episode": report_mod.mean_seconds(jev_latency, episodes),
         "runs": results, "trigger": trigger,
@@ -946,7 +947,7 @@ def write_markdown(path, s, json_path):
                         "Luna $/ep mean", "$/ep max"], rows))
     add()
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
-    add(f"Ladder, with modules, same 18 episodes: {ladder_text}. Placement: " + "; ".join(
+    add(f"Ladder, with modules, same 18 episodes: {ladder_text}. {report_mod.placement_lead(s['published_ladder'])}. Placement: " + "; ".join(
         f"{r['tag']} {r['placement']['text']} (ceiling on the same slice: {r['ceiling_placement']['text']})"
         for r in s["runs"]) + ".")
     add()

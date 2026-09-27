@@ -1,12 +1,12 @@
 Developer-facing notes on build B of the Jev rough-cut round two: the prompt breakup, 20 yes/no questions per sentence (bundle `f3`) and a logistic combiner fitted in code, Jev only.
 
-Generated 2026-09-27T05:43:28+00:00 by `scripts/jev_real/roughcut_jev_combine.py` from `roughcut-jev-f3-fit-features.jsonl` and `roughcut-jev-f3-heldout-features.jsonl`, control rows from `roughcut-jev-f1-fit-features.jsonl` and `roughcut-jev-f1-heldout-features.jsonl`, weights in `roughcut-jev-f3-weights.json`.
+Generated 2026-09-27T06:43:15+00:00 by `scripts/jev_real/roughcut_jev_combine.py` from `roughcut-jev-f3-fit-features.jsonl` and `roughcut-jev-f3-heldout-features.jsonl`, control rows from `roughcut-jev-f1-fit-features.jsonl` and `roughcut-jev-f1-heldout-features.jsonl`, weights in `roughcut-jev-f3-weights.json`.
 
 # Jev rough cut, build B: prompt breakup (f3)
 
 The v3 sentence pass asks one six-level score per sentence. This build asks 20 one-look yes/no questions instead (bundle `f3` in `roughcut_jev_prompts.py`), over the same state v3 sent, and fits an L2 logistic regression on the probabilities of yes. Sentence judgment is the only thing that changes: `keep_words` is null, the retake cut is jev_a v3's. Every number below is with um removal and delete silence layered on. Fit-set numbers are leave-one-episode-out over the 6 fit episodes with the keep threshold calibrated on the pooled out-of-fold predictions. C and the feature set were chosen on those numbers alone, then frozen. Bundle `f3` is `f1`'s 18 questions unchanged plus `said_earlier`, `wrap_up` from `f2`. It asked nothing itself: its rows are the `f1` feature rows with the 2 added columns joined from the `f2` feature rows by episode and sentence id (`roughcut_jev_join.py`), which works because both runs asked over the same state, blocks and sentences and each question is answered on its own. No new Jev requests were made. `f1`'s chosen set `q+code+v3` runs through the same fitting path as the control, from its own feature run, and its held-out and ladder rows use its own frozen weights.
 
-Bottom line: the chosen set is `q3+code+v3` (C 0.01, threshold 2.80). Leave-one-out on the fit six it scores 85.52 SP against 82.86 for the v3 score through the same fitting path, 85.63 for `f1`'s `q+code+v3` through the same path and 83.00 for jev_a v3 as published on the same six. On the 13 held-out episodes with the frozen weights and threshold it scores 81.72 SP against 81.17 for `f1` at its frozen weights and 76.74 for jev_a v3. On the 18-episode ladder it lands at 83.37 next to `f1`'s 82.91 and jev_a v3's 80.47 (below best Luna chapters, above Jev f1 `q+code+v3` combiner (frozen, reference)). Spend $0.00 in new Jev calls (the rows are a join of runs already paid for), 10.5 s per ladder episode with the v3 pass included (the source passes summed). Routing the bottom 25% by combiner margin to archived Luna gives 85.22 against 84.81 for `f1` and 84.06 for the v3 margin.
+Bottom line: the chosen set is `q3+code+v3` (C 0.01, threshold 2.80). Leave-one-out on the fit six it scores 85.52 SP against 82.86 for the v3 score through the same fitting path, 85.63 for `f1`'s `q+code+v3` through the same path and 83.00 for jev_a v3 as published on the same six. On the 13 held-out episodes with the frozen weights and threshold it scores 81.72 SP against 81.17 for `f1` at its frozen weights and 76.74 for jev_a v3. On the 18-episode ladder it lands at 83.37 next to `f1`'s 82.91 and jev_a v3's 80.47; on the published ladder with modules it is rank 16 of 30, below gpt-5.6-luna-xhigh · chapters · API · rules6 83.48, above gpt-5.6-luna-xhigh · chapters · API · rules5 + kept-parts tool 83.18, with claude-opus-5-5-low · chapters · API · rules5 on top at 87.57. Spend $0.00 in new Jev calls (the rows are a join of runs already paid for), 10.5 s per ladder episode with the v3 pass included (the source passes summed). Routing the bottom 25% by combiner margin to archived Luna gives 85.22 against 84.81 for `f1` and 84.06 for the v3 margin.
 
 ## The winning Jev-only run
 
@@ -14,7 +14,7 @@ Stan chose `f3` (`q3+code+v3`) as the winning Jev-only combiner on 2026-09-26, j
 
 ## Win test, decided before held-out
 
-The test: `f3` wins if its chosen set scores above `f1`'s frozen chosen set `q+code+v3` (85.63 SP) leave-one-out on the fit six. Stage 1 decided it and froze it in `roughcut-jev-f3-weights.json` at 2026-09-27T04:36:30+00:00 (weights file generated 2026-09-27T04:36:30+00:00), before the held-out rows were read; this write-up (generated 2026-09-27T05:43:28+00:00) only reports it. Leave-one-out per eligible set: `q3` 83.94, `q3+code` 85.49, `q3+code+v3` 85.52, `v3` 82.86. Chosen `q3+code+v3` at 85.52, -0.11 against the bar: `f3` does not win, so the Luna stack rerun is skipped; the held-out and ladder numbers below are reported anyway. That outcome stands; Stan's later choice of `f3` as the winning Jev-only run, on the held-out result, is recorded above and does not rewrite it. Seconds per episode on the fit six: 9.1.
+The test: `f3` wins if its chosen set scores above `f1`'s frozen chosen set `q+code+v3` (85.63 SP) leave-one-out on the fit six. Stage 1 decided it and froze it in `roughcut-jev-f3-weights.json` at 2026-09-27T04:36:30+00:00 (weights file generated 2026-09-27T04:36:30+00:00), before the held-out rows were read; this write-up (generated 2026-09-27T06:43:15+00:00) only reports it. Leave-one-out per eligible set: `q3` 83.94, `q3+code` 85.49, `q3+code+v3` 85.52, `v3` 82.86. Chosen `q3+code+v3` at 85.52, -0.11 against the bar: `f3` does not win, so the Luna stack rerun is skipped; the held-out and ladder numbers below are reported anyway. That outcome stands; Stan's later choice of `f3` as the winning Jev-only run, on the held-out result, is recorded above and does not rewrite it. Seconds per episode on the fit six: 9.1.
 
 ## Fit set, leave-one-episode-out
 
@@ -89,15 +89,23 @@ Per episode, frozen weights:
 
 The fit six enter with their leave-one-out predictions and the 12 ladder held-out episodes with the frozen weights, all at the frozen threshold 2.80; greco-2.2-thumbnailing is not a ladder episode and is left out here. jev_a v3 is rebuilt through the same scoring path and reproduces its published 80.47 at 80.47. `f1`'s row is built the same way from its own rows at its frozen threshold 3.00. Seconds per episode: 10.5 (f1 and f2 passes plus v3).
 
-| arm | SENTENCE POINTS | s/episode |
-|---|---:|---:|
-| shipped Opus agentic | 86.47 |  |
-| best Luna chapters | 83.71 |  |
-| Jev f3 `q3+code+v3` combiner (this build, winning Jev-only run) | 83.37 | 10.5 |
-| Jev f1 `q+code+v3` combiner (frozen, reference) | 82.91 | 7.9 |
-| Jev jev_a v3 (pure Jev) | 80.47 |  |
-| Luna single call | 65.36 |  |
-| deterministic baseline (um removal + retakes + delete silence) | 63.72 |  |
+Published arms quoted: the top arm with modules, the bench page's headline best, each model family's best with modules and the Opus 5 agentic arm earlier Jev write-ups compare to; shipped flags are the bench page's. Ranks count all 29 rows of the published ladder with modules plus the placed row (so out of 30); the top arm is claude-opus-5-5-low · chapters · API · rules5 at 87.57. Placement: this build rank 16 of 30, below gpt-5.6-luna-xhigh · chapters · API · rules6 83.48, above gpt-5.6-luna-xhigh · chapters · API · rules5 + kept-parts tool 83.18; `f1` rank 17 of 30, below gpt-5.6-luna-xhigh · chapters · API · rules5 + kept-parts tool 83.18, above gpt-5.6-luna-xhigh · chapters · API · rules5, topic-neutral 82.82.
+
+| arm | quoted as | SENTENCE POINTS | s/episode |
+|---|---:|---:|---:|
+| claude-opus-5-5-low · chapters · API · rules5 | top arm with modules; best claude-opus-5-5; shipped in v0.4.15 | 87.57 |  |
+| claude-opus-5-5-high · agentic · API · rules1 | bench page headline best, 85.05 without modules | 87.44 |  |
+| claude-opus-5-high · agentic · Claude Code · rules1 | best claude-opus-5; the arm earlier Jev write-ups compare to | 86.47 |  |
+| claude-fable-5-1-high · chapters · Claude Code · rules5 | best claude-fable-5-1 | 86.45 |  |
+| gpt-6-astra-high · chapters · Codex CLI · rules5 | best gpt-6-astra; shipped in v0.4.15 | 85.94 |  |
+| gpt-5.6-sol-high · chapters · Codex CLI · rules5 | best gpt-5.6-sol | 84.61 |  |
+| gpt-6-luna-xhigh · chapters · API · rules5 | best gpt-6-luna | 84.25 |  |
+| gpt-5.6-luna-xhigh · agentic · API · rules5 | best gpt-5.6-luna | 83.84 |  |
+| Jev f3 `q3+code+v3` combiner (this build, winning Jev-only run) |  | 83.37 | 10.5 |
+| Jev f1 `q+code+v3` combiner (frozen, reference) |  | 82.91 | 7.9 |
+| Jev jev_a v3 (pure Jev) |  | 80.47 |  |
+| gpt-5.6-terra-high · agentic · API · rules1 | best gpt-5.6-terra | 80.20 |  |
+| deterministic baseline (um removal + retakes + delete silence) |  | 63.72 |  |
 
 ## Standardised weights, chosen set
 

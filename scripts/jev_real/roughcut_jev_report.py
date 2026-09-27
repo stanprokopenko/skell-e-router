@@ -36,6 +36,7 @@ Usage::
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -47,6 +48,9 @@ OUT_DIR = ROOT / "docs" / "jev-real"
 REFERENCE_MD = Path(r"D:\solar-sailer\benchmarks\roughcut\results"
                     r"\2026-09-11-model-plus-deterministic.md")
 REFERENCE_JSON = REFERENCE_MD.with_suffix(".json")
+#: The bench page export: its ``shipped`` and ``best`` flags label the ladder.
+BENCH_PAGE_JSON = Path(r"C:\Users\Stan\Documents\GitHub\solar-sailer\website-docs"
+                       r"\static\data\rough-cut-bench.json")
 
 sys.path.insert(0, str(HERE))
 
@@ -79,13 +83,16 @@ DIAGNOSTIC_ARMS = (SWEPT_ARM,) + tuple(DERIVED_ARMS)
 DEFAULT_T_TRIM = [0.3, 0.5, 0.7, 0.9]
 PASSES = ["retake", "sentence", "trim_pick"]
 
-#: Published ladder arms quoted at the bottom of the notes, in the order the
-#: brief names them. Keys are ``arms`` keys in the reference JSON.
-REFERENCE_ARMS = [
-    ("luna-chapters-rules5", "best Luna chapters"),
-    ("opus5-cc-agentic", "shipped Opus agentic"),
-    ("luna-single-call", "Luna single call"),
-]
+#: Reference arms are derived from the reference JSON (see ``ladder``), not
+#: listed here. These keys are quoted whatever their rank, because earlier
+#: write-ups compare to them. Keys are ``arms`` keys in the reference JSON.
+NAMED_ARMS = ("opus5-cc-agentic",)
+#: Arms that are the Jev sentence pass itself: ranked on the full ladder, never
+#: quoted as a family's best (write-ups add their own Jev rows).
+SELF_ARMS = ("jev-sentence-pass",)
+BASELINE_KEY = "deterministic-baseline"
+#: Effort suffix stripped from a model name to get its family.
+EFFORT_SUFFIX = re.compile(r"-(minimal|low|medium|high|xhigh|max)$")
 #: Layer keys in the reference JSON: no modules, and um removal + delete silence.
 REF_PLAIN, REF_LAYERED = "published", "umm_silence"
 
@@ -567,18 +574,36 @@ def _weighted(pairs):
     return (num_ / den) if den else None
 
 
-def ladder(episodes):
-    """The published reference arms, restricted to ``episodes`` when possible.
+def _bench_page():
+    """``({arm id: page arm}, shipped release)`` from the bench page export, or ``({}, None)``."""
+    if not BENCH_PAGE_JSON.exists():
+        return {}, None
+    with BENCH_PAGE_JSON.open(encoding="utf-8") as handle:
+        doc = json.load(handle)
+    return {a["id"]: a for a in doc.get("arms", [])}, doc.get("shipped_release")
 
-    Returns ``(rows, restricted, covered)``. ``restricted`` is false when at
-    least one reported episode is absent from the reference file, in which case
-    the file's own 18-episode pooled numbers are quoted instead.
+
+def arm_label(arm):
+    """``model · workflow · harness · prompt``, the bench page's own label form."""
+    return " · ".join(str(arm[k]) for k in ("model", "workflow", "harness", "variant") if arm.get(k))
+
+
+def published_ladder(episodes):
+    """Every arm in the reference JSON plus the deterministic baseline.
+
+    Restricted to ``episodes`` when possible. Rows are sorted best first on SP
+    with modules and carry ``rank``, the model ``family``, and the bench page's
+    ``shipped`` and ``page_best`` flags (``None`` when the page export is not
+    readable). Returns ``(rows, restricted, covered)``; ``restricted`` is false
+    when at least one reported episode is absent from the reference file, in
+    which case the file's own 18-episode pooled numbers are quoted instead.
     """
     if not REFERENCE_JSON.exists():
         return [], False, []
     with REFERENCE_JSON.open(encoding="utf-8") as handle:
         doc = json.load(handle)
     arms = doc["arms"]
+    page, release = _bench_page()
 
     counts = {}
     for arm in arms.values():
@@ -591,13 +616,18 @@ def ladder(episodes):
 
     covered = [e for e in episodes if e in counts]
     restricted = len(covered) == len(episodes) and bool(covered)
+    unknown = False if page else None
 
     rows = []
-    for key, label in REFERENCE_ARMS:
-        arm = arms.get(key)
-        if not arm:
-            continue
-        entry = {"key": key, "label": label,
+    for key, arm in arms.items():
+        page_arm = page.get(key)
+        entry = {"key": key, "label": arm_label(arm), "model": arm.get("model"),
+                 "family": EFFORT_SUFFIX.sub("", arm.get("model") or ""),
+                 "workflow": arm.get("workflow"), "harness": arm.get("harness"),
+                 "variant": arm.get("variant"),
+                 "shipped": page_arm.get("shipped") if page_arm else unknown,
+                 "shipped_release": release,
+                 "page_best": page_arm.get("best") if page_arm else unknown,
                  "episodes": len(covered) if restricted else arm["episodes_scored"]}
         if restricted:
             per = arm["episodes"]
@@ -619,8 +649,11 @@ def ladder(episodes):
         rows.append(entry)
 
     base_per = doc.get("baseline_episodes") or {}
-    base = {"key": "deterministic-baseline",
+    base = {"key": BASELINE_KEY,
             "label": "deterministic baseline (um removal + retakes + delete silence)",
+            "model": None, "family": None, "workflow": None, "harness": None,
+            "variant": None, "shipped": None, "shipped_release": release,
+            "page_best": None,
             "episodes": len(covered) if restricted else len(base_per)}
     if restricted and all(e in base_per for e in covered):
         base["sentence_points_plain"] = _weighted(
@@ -638,7 +671,107 @@ def ladder(episodes):
     base["word_score_layered"] = base["word_score_plain"]
     base["grade_layered"] = base["grade_plain"]
     rows.append(base)
+
+    rows.sort(key=lambda r: -(r["sentence_points_layered"]
+                              if r["sentence_points_layered"] is not None else float("-inf")))
+    for rank, row in enumerate(rows, 1):
+        row["rank"] = rank
     return rows, restricted, covered
+
+
+def ladder(episodes):
+    """The reference arms worth quoting, derived from the reference JSON.
+
+    From ``published_ladder``: the top arm with modules, the bench page's
+    headline best (its no-modules best), the best arm of each model family on
+    SP with modules, and ``NAMED_ARMS``, deduplicated in ladder order, then the
+    deterministic baseline. Each row carries ``roles`` and a one-line ``note``;
+    "shipped" in a note comes only from the bench page's own flags. Returns
+    ``(rows, restricted, covered)`` like ``published_ladder``.
+    """
+    rows, restricted, covered = published_ladder(episodes)
+    if not rows:
+        return rows, restricted, covered
+    arms = [r for r in rows if r["key"] != BASELINE_KEY
+            and r["sentence_points_layered"] is not None]
+    roles = defaultdict(list)
+    if arms:
+        roles[arms[0]["key"]].append("top arm with modules")
+    headline = [r for r in arms if r["page_best"]]
+    headline_text = "bench page headline best"
+    if not headline and arms and all(r["page_best"] is None for r in arms):
+        headline = [max(arms, key=lambda r: r["sentence_points_plain"] or 0)]
+        headline_text = "best without modules (bench page not readable)"
+    for row in headline:
+        roles[row["key"]].append(
+            f"{headline_text}, {pct(row['sentence_points_plain'])} without modules")
+    seen = set()
+    for row in arms:
+        if row["key"] in SELF_ARMS or row["family"] in seen:
+            continue
+        seen.add(row["family"])
+        roles[row["key"]].append(f"best {row['family']}")
+    for key in NAMED_ARMS:
+        if any(r["key"] == key for r in arms):
+            roles[key].append("the arm earlier Jev write-ups compare to")
+    out = []
+    for row in arms:
+        if row["key"] not in roles:
+            continue
+        tags = list(roles[row["key"]])
+        if row["shipped"]:
+            tags.append(f"shipped in {row['shipped_release']}")
+        out.append(dict(row, roles=tags, note="; ".join(tags)))
+    out.extend(r for r in rows if r["key"] == BASELINE_KEY)
+    return out, restricted, covered
+
+
+def placement_lead(published, layer="layered"):
+    """One clause for a write-up: what a placement rank counts, and the top arm."""
+    field = f"sentence_points_{layer}"
+    arms = sorted((r for r in published if r.get(field) is not None), key=lambda r: -r[field])
+    if not arms:
+        return "No published ladder to place against"
+    layer_text = "with modules" if layer == "layered" else "without modules"
+    return (f"Ranks count all {len(arms)} rows of the published ladder {layer_text} plus the placed row "
+            f"(so out of {len(arms) + 1}); the top arm is {arms[0]['label']} at {pct(arms[0][field])}")
+
+
+def quoted_label(row):
+    """A quoted ladder row's label with its roles, for inline ladder lists."""
+    return f"{row['label']} ({row['note']})" if row.get("note") else row["label"]
+
+
+def placement(sp, published, layer="layered"):
+    """Where ``sp`` lands among every ``published_ladder`` row on one layer.
+
+    The candidate is counted in ``of``. ``where`` names the neighbours ("below
+    A 86.30, above B 85.94"); ``text`` is ``where`` led by the rank ("rank 8 of
+    30, below ..."). ``placement_lead`` says once what the rank counts and
+    which arm is on top.
+    """
+    field = f"sentence_points_{layer}"
+    arms = sorted((r for r in published if r.get(field) is not None),
+                  key=lambda r: -r[field])
+    if not arms or sp is None:
+        return {"rank": None, "of": None, "text": "no published ladder to place against",
+                "where": "no published ladder to place against", "top_key": None, "top_label": None, "top_sp": None}
+    above = [r for r in arms if r[field] > sp + 5e-5]
+    below = [r for r in arms if r[field] < sp - 5e-5]
+    level = [r for r in arms if abs(r[field] - sp) <= 5e-5]
+    rank, size = len(above) + 1, len(arms) + 1
+    near = []
+    if level:
+        near.append(f"level with {level[0]['label']} {pct(level[0][field])}")
+    if above:
+        near.append(f"below {above[-1]['label']} {pct(above[-1][field])}")
+    if below:
+        near.append(f"above {below[0]['label']} {pct(below[0][field])}")
+    top = arms[0]
+    where = ", ".join(near) if above else "top of the published ladder, " + ", ".join(near)
+    text = f"rank {rank} of {size}, {where}"
+    return {"rank": rank, "of": size, "text": text, "where": where, "top_key": top["key"],
+            "top_label": top["label"], "top_sp": top[field]}
 
 
 # ---------------------------------------------------------------------------
@@ -879,12 +1012,20 @@ def write_notes(path, summary):
                          f"{', '.join(summary['ladder']['uncovered']) or 'n/a'}), so "
                          f"the comparison is indicative only.")
         lines.append("")
-        rows = [[entry["label"], entry["episodes"],
+        published_n = len(summary["ladder"].get("published_rows") or [])
+        lines.append(f"The quoted rows are derived from the reference file: the top arm with "
+                     f"modules, the bench page's headline best, the best arm of each model "
+                     f"family with modules, and the Opus 5 agentic arm earlier Jev write-ups "
+                     f"compare to. Shipped flags are the bench page's own. "
+                     f"{placement_lead(summary['ladder'].get('published_rows') or [])}.")
+        lines.append("")
+        rows = [[entry["label"], entry.get("note", ""), entry.get("rank", ""), entry["episodes"],
                  pct(entry["sentence_points_plain"]), pct(entry["word_score_plain"]),
                  pct(entry["grade_plain"]), pct(entry["sentence_points_layered"]),
                  pct(entry["word_score_layered"]), pct(entry["grade_layered"])]
                 for entry in ladder_rows]
-        lines.extend(table(["reference arm", "episodes", "SP plain", "WORD plain",
+        lines.extend(table(["reference arm", "quoted as", "rank with modules", "episodes",
+                            "SP plain", "WORD plain",
                             "GRADE plain", "SP + modules", "WORD + modules",
                             "GRADE + modules"], rows))
         lines.append("")
@@ -1060,6 +1201,7 @@ def main():
     }
 
     ladder_rows, restricted, covered = ladder(episodes)
+    published_rows, _restricted, _covered = published_ladder(episodes)
     best = None
     for entry in arms_out:
         pooled = entry["plain"]["result"]["pooled"]
@@ -1081,10 +1223,7 @@ def main():
             if mine is None:
                 best[f"placement{suffix}"] = None
                 continue
-            above = [r["label"] for r in ladder_rows
-                     if (r[f"sentence_points_{tag}"] or 0) < mine]
-            best[f"placement{suffix}"] = ("above " + ", ".join(above)) if above else \
-                "below every reference arm quoted here"
+            best[f"placement{suffix}"] = placement(mine, published_rows, tag)["text"]
 
     # A swept threshold that emits the same trim set as its neighbour is a wasted
     # arm; say so rather than leaving four identical rows unexplained.
@@ -1154,6 +1293,7 @@ def main():
             "covered_episodes": covered,
             "uncovered": [e for e in episodes if e not in covered],
             "rows": ladder_rows,
+            "published_rows": published_rows,
             "best_jev": best,
         },
         "warnings": warnings,

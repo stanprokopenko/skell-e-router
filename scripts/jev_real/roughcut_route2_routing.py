@@ -10,8 +10,8 @@ set is then scored with um removal + delete silence layered on, through
 ``roughcut_partial_scoring.score_episode``.
 
 Donors are the two published ladder arms whose per-sentence ``run_ratings`` are
-archived: Luna chapters (``luna-chapters-rules5``) and the shipped Opus agentic
-arm (``opus5-cc-agentic``). Their result files are found with the same globs the
+archived: Luna chapters (``luna-chapters-rules5``) and the Opus 5 agentic
+Claude Code arm (``opus5-cc-agentic``). Their result files are found with the same globs the
 bench page's arm registry gives them, and read the way
 ``benchmarks/roughcut/scripts/model_plus_deterministic.py`` reads them
 (``run_ratings[0]``, the file's ``neutral_threshold``, corpus retake flags with
@@ -261,9 +261,16 @@ def splits(per_episode, episodes):
 # ladder
 # ---------------------------------------------------------------------------
 
+def published_rows(episodes):
+    """Every arm of the published ladder, best first with modules (``report_mod.published_ladder``)."""
+    rows, _restricted, _covered = report_mod.published_ladder(episodes)
+    return rows
+
+
 def ladder_rows(episodes, jev_sp):
+    """The quoted reference arms (``report_mod.ladder``) plus pure Jev, with modules."""
     rows, _restricted, _covered = report_mod.ladder(episodes)
-    out = [{"label": r["label"], "key": r["key"],
+    out = [{"label": report_mod.quoted_label(r), "key": r["key"],
             "sentence_points": r["sentence_points_layered"]} for r in rows]
     out.append({"label": "Jev jev_a v3 (pure Jev)", "key": "jev_a",
                 "sentence_points": jev_sp})
@@ -271,21 +278,9 @@ def ladder_rows(episodes, jev_sp):
     return out
 
 
-def placement(sp, ladder):
-    """Rank among the ladder arms and a plain 'between A and B' string."""
-    above = [r for r in ladder if r["sentence_points"] > sp + 5e-5]
-    below = [r for r in ladder if r["sentence_points"] < sp - 5e-5]
-    level = [r for r in ladder if abs(r["sentence_points"] - sp) <= 5e-5]
-    rank = len(above) + 1
-    if level:
-        text = f"level with {level[0]['label']}"
-    elif not above:
-        text = f"top, above {below[0]['label']}"
-    elif not below:
-        text = f"bottom, below {above[-1]['label']}"
-    else:
-        text = f"below {above[-1]['label']}, above {below[0]['label']}"
-    return {"rank": rank, "of": len(ladder) + (0 if level else 1), "text": text}
+def placement(sp, published):
+    """Rank among every published ladder arm (``published_rows``), neighbours and top arm."""
+    return report_mod.placement(sp, published)
 
 
 # ---------------------------------------------------------------------------
@@ -455,7 +450,8 @@ def build():
     jev_eps = {e: scorer.episode(None, e, set()) for e in episodes}
     jev_pooled = splits(jev_eps, episodes)
     ladder = ladder_rows(episodes, jev_pooled["all"]["sentence_points"])
-    ladder_by_key = {r["key"]: r for r in ladder}
+    published = published_rows(episodes)
+    published_sp = {r["key"]: r["sentence_points_layered"] for r in published}
 
     human, jev_states, donor_states = {}, {}, {k: {} for k in donors}
     for episode in episodes:
@@ -484,7 +480,7 @@ def build():
                         "routed": sum(len(v) for v in routed.values()),
                         "fit": pooled["fit"], "heldout": pooled["heldout"],
                         "all": pooled["all"],
-                        "placement": placement(pooled["all"]["sentence_points"], ladder),
+                        "placement": placement(pooled["all"]["sentence_points"], published),
                         "per_episode_sp": {e: per_ep[e]["sentence_points"]
                                            for e in episodes},
                         "slice": slice_agreement(routed, episodes, human, jev_states,
@@ -559,7 +555,7 @@ def build():
         full = sweeps[f"{key}/top_mass/per_episode"][-1]["all"]["sentence_points"]
         reproduction[key] = {
             "mine": full,
-            "published": ladder_by_key[DONORS[key]["ladder_key"]]["sentence_points"]}
+            "published": published_sp[DONORS[key]["ladder_key"]]}
 
     inputs = {k: fingerprint(v) for k, v in run_paths.items()}
     inputs["ladder_reference"] = fingerprint(report_mod.REFERENCE_JSON)
@@ -583,7 +579,8 @@ def build():
                              + f", one pooled threshold {pooled_thresholds[k.split('@')[0]]['threshold']:.1f}")
                          for k in donors},
         "pooled_thresholds": pooled_thresholds,
-        "jev": jev_pooled, "ladder": ladder, "reproduction": reproduction,
+        "jev": jev_pooled, "ladder": ladder, "published_ladder": published,
+        "reproduction": reproduction,
         "sweeps": sweeps, "best": best, "flips": flips, "costs": costs,
         "jev_cost_per_episode": jev_cost, "jev_seconds_per_episode": jev_seconds,
         "archive": archive, "heavy_output_tokens_per_sentence": heavy_out,
@@ -659,7 +656,7 @@ def write_markdown(path, s, json_path):
     add("## Best variant in full, with the ladder")
     add()
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
-    add(f"Ladder, with modules, same 18 episodes: {ladder_text}.")
+    add(f"Ladder, with modules, same 18 episodes: {ladder_text}. {report_mod.placement_lead(s['published_ladder'])}.")
     add()
     for key in donors:
         tag = s["best"][key]
@@ -673,7 +670,7 @@ def write_markdown(path, s, json_path):
                          pct(r["all"]["sentence_points"]), pct(r["all"]["word_score"]),
                          pct(r["all"]["grade"]),
                          f"{r['placement']['rank']} of {r['placement']['of']}",
-                         r["placement"]["text"]])
+                         r["placement"]["where"]])
         lines.extend(table(["share", "routed", "SP fit 6", "SP held-out 12", "SP all 18",
                             "WORD all 18", "GRADE all 18", "ladder rank", "placement"],
                            rows))

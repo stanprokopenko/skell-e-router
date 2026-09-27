@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-09-27T05:43:28+00:00",
+  "generated_utc": "2026-09-27T06:43:15+00:00",
   "script": "scripts/jev_real/roughcut_jev_combine.py",
   "feature_version": "f3",
   "q_label": "q3",
@@ -11419,12 +11419,52 @@
     ],
     "rows": [
       {
-        "label": "shipped Opus agentic",
+        "label": "claude-opus-5-5-low \u00b7 chapters \u00b7 API \u00b7 rules5",
+        "note": "top arm with modules; best claude-opus-5-5; shipped in v0.4.15",
+        "key": "opus55-api-chapters-low",
+        "sentence_points": 0.8756904841775703
+      },
+      {
+        "label": "claude-opus-5-5-high \u00b7 agentic \u00b7 API \u00b7 rules1",
+        "note": "bench page headline best, 85.05 without modules",
+        "key": "opus55-api-agentic-high",
+        "sentence_points": 0.8743933802974405
+      },
+      {
+        "label": "claude-opus-5-high \u00b7 agentic \u00b7 Claude Code \u00b7 rules1",
+        "note": "best claude-opus-5; the arm earlier Jev write-ups compare to",
+        "key": "opus5-cc-agentic",
         "sentence_points": 0.8647321927764741
       },
       {
-        "label": "best Luna chapters",
-        "sentence_points": 0.8370569160237066
+        "label": "claude-fable-5-1-high \u00b7 chapters \u00b7 Claude Code \u00b7 rules5",
+        "note": "best claude-fable-5-1",
+        "key": "fable51-cc-chapters",
+        "sentence_points": 0.8645085541764522
+      },
+      {
+        "label": "gpt-6-astra-high \u00b7 chapters \u00b7 Codex CLI \u00b7 rules5",
+        "note": "best gpt-6-astra; shipped in v0.4.15",
+        "key": "astra-codexcli-chapters",
+        "sentence_points": 0.8594431398859458
+      },
+      {
+        "label": "gpt-5.6-sol-high \u00b7 chapters \u00b7 Codex CLI \u00b7 rules5",
+        "note": "best gpt-5.6-sol",
+        "key": "sol-codexcli-chapters",
+        "sentence_points": 0.8461142793246127
+      },
+      {
+        "label": "gpt-6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5",
+        "note": "best gpt-6-luna",
+        "key": "gpt6luna-chapters-rules5",
+        "sentence_points": 0.8425136978642522
+      },
+      {
+        "label": "gpt-5.6-luna-xhigh \u00b7 agentic \u00b7 API \u00b7 rules5",
+        "note": "best gpt-5.6-luna",
+        "key": "luna-agentic-xhigh-rules5",
+        "sentence_points": 0.8383987476238407
       },
       {
         "label": "Jev f3 `q3+code+v3` combiner (this build, winning Jev-only run)",
@@ -11441,15 +11481,39 @@
         "sentence_points": 0.8046516828804657
       },
       {
-        "label": "Luna single call",
-        "sentence_points": 0.6535949904953597
+        "label": "gpt-5.6-terra-high \u00b7 agentic \u00b7 API \u00b7 rules1",
+        "note": "best gpt-5.6-terra",
+        "key": "terra-agentic-high",
+        "sentence_points": 0.8019792016101984
       },
       {
         "label": "deterministic baseline (um removal + retakes + delete silence)",
+        "note": "",
+        "key": "deterministic-baseline",
         "sentence_points": 0.6372246449737228
       }
     ],
-    "placement": "below best Luna chapters, above Jev f1 `q+code+v3` combiner (frozen, reference)",
+    "placement": "rank 16 of 30, below gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules6 83.48, above gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5 + kept-parts tool 83.18",
+    "placement_detail": {
+      "rank": 16,
+      "of": 30,
+      "text": "rank 16 of 30, below gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules6 83.48, above gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5 + kept-parts tool 83.18",
+      "where": "below gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules6 83.48, above gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5 + kept-parts tool 83.18",
+      "top_key": "opus55-api-chapters-low",
+      "top_label": "claude-opus-5-5-low \u00b7 chapters \u00b7 API \u00b7 rules5",
+      "top_sp": 0.8756904841775703
+    },
+    "control_placement": {
+      "rank": 17,
+      "of": 30,
+      "text": "rank 17 of 30, below gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5 + kept-parts tool 83.18, above gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5, topic-neutral 82.82",
+      "where": "below gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5 + kept-parts tool 83.18, above gpt-5.6-luna-xhigh \u00b7 chapters \u00b7 API \u00b7 rules5, topic-neutral 82.82",
+      "top_key": "opus55-api-chapters-low",
+      "top_label": "claude-opus-5-5-low \u00b7 chapters \u00b7 API \u00b7 rules5",
+      "top_sp": 0.8756904841775703
+    },
+    "published_size": 29,
+    "placement_lead": "Ranks count all 29 rows of the published ladder with modules plus the placed row (so out of 30); the top arm is claude-opus-5-5-low \u00b7 chapters \u00b7 API \u00b7 rules5 at 87.57",
     "mine_sp": 0.833724700883373,
     "control_sp": 0.8290841999329089,
     "jev_v3_sp": 0.8046516828804657,

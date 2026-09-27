@@ -649,9 +649,10 @@ def build_report():
     ladder.append({"label": f"f1-Luna stack, `{luna_rule}`", "key": "f1luna_rule",
                    "sentence_points": luna_stack[luna_rule]["all"]["sentence_points"]})
     ladder.sort(key=lambda r: -r["sentence_points"])
-    placement = {kr: r2.placement(by_rule[kr]["all"]["sentence_points"], ladder) for kr in ("decision", rule)}
-    placement["ceiling"] = r2.placement(ceil["opus"]["all"]["sentence_points"], ladder)
-    placement["ceiling_notrim"] = r2.placement(ceil["opus_notrim"]["all"]["sentence_points"], ladder)
+    ladder_published = r2.published_rows(episodes)
+    placement = {kr: r2.placement(by_rule[kr]["all"]["sentence_points"], ladder_published) for kr in ("decision", rule)}
+    placement["ceiling"] = r2.placement(ceil["opus"]["all"]["sentence_points"], ladder_published)
+    placement["ceiling_notrim"] = r2.placement(ceil["opus_notrim"]["all"]["sentence_points"], ladder_published)
 
     log("states, flips, agreement...")
     human, f1_states = {}, {}
@@ -758,7 +759,7 @@ def build_report():
         "frozen_keep_rule": frozen, "keep_rules": hl.KEEP_RULES, "luna_rule": luna_rule,
         "reproduction": reproduction,
         "f1": f1_pooled, "by_rule": by_rule, "luna_stack": luna_stack, "ceilings": ceil,
-        "ladder": ladder, "placement": placement, "flips": flips,
+        "ladder": ladder, "published_ladder": ladder_published, "placement": placement, "flips": flips,
         "agreement_archived_opus": agreement, "agreement_archived_luna": agreement_luna_archive,
         "vs_live_luna": vs_luna, "per_episode": per_episode,
         "cost_usd": totals["cost_usd"], "cost_listed_usd": totals["cost_listed_usd"],
@@ -845,7 +846,7 @@ def write_markdown(path, s, json_path):
     add()
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
     pl = s["placement"]
-    add(f"Ladder, with modules, same 18 episodes (the f1 combiner and both f1-Luna stack rows added): {ladder_text}. Placement: Opus stack with `decision` {pl['decision']['text']} (rank {pl['decision']['rank']} of {pl['decision']['of']}); with `{rule}` {pl[rule]['text']} (rank {pl[rule]['rank']} of {pl[rule]['of']}); the keep/cut-only ceiling {pl['ceiling_notrim']['text']}.")
+    add(f"Ladder, with modules, same 18 episodes (the f1 combiner and both f1-Luna stack rows added): {ladder_text}. {report_mod.placement_lead(s['published_ladder'])}. Placement: Opus stack with `decision` {pl['decision']['text']}; with `{rule}` {pl[rule]['text']}; the keep/cut-only ceiling {pl['ceiling_notrim']['text']}.")
     add()
     g_dec = dec["all"]["sentence_points"] - s["f1"]["all"]["sentence_points"]
     g_cn = cn["all"]["sentence_points"] - s["f1"]["all"]["sentence_points"]

@@ -906,7 +906,7 @@ def write_markdown(path, summary):
     if "skipped" in luna:
         add(f"Skipped: {luna['skipped']}.")
     else:
-        add("The oracle assumes a trimmer that matches the editor word for word. For a grounded number, the stored Luna chapters arm (gpt-5.6-luna, agentic, xhigh effort, the best Luna arm on the ladder at 83.71 SP) already picked kept words for every sentence of the 18 episodes. Here each flagged sentence Jev keeps takes Luna's `keep_words` (whole when Luna kept it whole), Jev's keep decisions are untouched, and the modules run on top. `every sentence Jev keeps` sends everything, so it is the no-flag version of the route. Luna chose those trims with the whole episode in view and a far bigger budget than the batched call priced below, so treat this as optimistic for a cheap Luna step.")
+        add("The oracle assumes a trimmer that matches the editor word for word. For a grounded number, the stored Luna chapters arm (gpt-5.6-luna, agentic, xhigh effort, rules5, `luna-chapters-rules5` on the ladder at 83.71 SP) already picked kept words for every sentence of the 18 episodes. Here each flagged sentence Jev keeps takes Luna's `keep_words` (whole when Luna kept it whole), Jev's keep decisions are untouched, and the modules run on top. `every sentence Jev keeps` sends everything, so it is the no-flag version of the route. Luna chose those trims with the whole episode in view and a far bigger budget than the batched call priced below, so treat this as optimistic for a cheap Luna step.")
         add("")
         rows = []
         for run in luna["runs"]:

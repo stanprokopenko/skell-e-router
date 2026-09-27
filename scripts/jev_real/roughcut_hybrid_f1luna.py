@@ -380,9 +380,10 @@ def build_report(cfg=None):
             ladder.append({"label": f"{reference['combiner']}-Luna stack, `{kr}`", "key": f"reference_{kr}",
                            "sentence_points": reference["by_rule"][kr]["all"]["sentence_points"]})
     ladder.sort(key=lambda r: -r["sentence_points"])
-    placement = {kr: r2.placement(by_rule[kr]["pooled"]["all"]["sentence_points"], ladder)
+    ladder_published = r2.published_rows(episodes)
+    placement = {kr: r2.placement(by_rule[kr]["pooled"]["all"]["sentence_points"], ladder_published)
                  for kr in ("decision", rule)}
-    placement["ceiling"] = r2.placement(ceiling["all"]["sentence_points"], ladder)
+    placement["ceiling"] = r2.placement(ceiling["all"]["sentence_points"], ladder_published)
 
     log("states, flips, agreement...")
     human, f1_states, v3_states = {}, {}, {}
@@ -496,7 +497,7 @@ def build_report(cfg=None):
         "by_rule": {kr: v["pooled"] for kr, v in by_rule.items()},
         "ceiling": ceiling, "opus_ceiling": opus_ceiling["all"],
         "offline_ceiling": result,
-        "ladder": ladder, "placement": placement,
+        "ladder": ladder, "published_ladder": ladder_published, "placement": placement,
         "flips": flips, "slices": slices, "agreement": agreement, "slice_overlap": slice_overlap,
         "per_episode": per_episode,
         "cost_usd": totals["cost_usd"], "cost_listed_usd": totals["cost_listed_usd"],
@@ -579,7 +580,7 @@ def write_markdown(path, s, json_path):
                         "s/ep mean", "Luna $/ep mean", "arm total $/ep mean"], rows))
     add()
     ladder_text = ", ".join(f"{r['label']} {pct(r['sentence_points'])}" for r in s["ladder"])
-    add(f"Ladder, with modules, same 18 episodes (build A and the {v} combiner added as rows): {ladder_text}. Placement: stack with `decision` {s['placement']['decision']['text']} (rank {s['placement']['decision']['rank']} of {s['placement']['decision']['of']}); stack with `{rule}` {s['placement'][rule]['text']} (rank {s['placement'][rule]['rank']} of {s['placement'][rule]['of']}); the ceiling on this slice {s['placement']['ceiling']['text']}.")
+    add(f"Ladder, with modules, same 18 episodes (build A and the {v} combiner added as rows): {ladder_text}. {report_mod.placement_lead(s['published_ladder'])}. Placement: stack with `decision` {s['placement']['decision']['text']}; stack with `{rule}` {s['placement'][rule]['text']}; the ceiling on this slice {s['placement']['ceiling']['text']}.")
     add()
     gain_dec = dec["all"]["sentence_points"] - s["combiner_alone"]["all"]["sentence_points"]
     gain_frz = frz["all"]["sentence_points"] - s["combiner_alone"]["all"]["sentence_points"]

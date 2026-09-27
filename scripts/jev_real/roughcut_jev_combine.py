@@ -574,14 +574,9 @@ def route2_handoff(decisions, p_by_episode, threshold, removals, episodes, share
 # ladder
 # ---------------------------------------------------------------------------
 
-def placement(sp, ladder):
-    above = [r for r in ladder if r["sentence_points"] > sp + 5e-5]
-    below = [r for r in ladder if r["sentence_points"] < sp - 5e-5]
-    if not above:
-        return "top, above " + below[0]["label"]
-    if not below:
-        return "bottom, below " + above[-1]["label"]
-    return f"below {above[-1]['label']}, above {below[0]['label']}"
+def placement(sp, published):
+    """Rank, neighbours and top arm among every published ladder row (``report_mod.placement``)."""
+    return report_mod.placement(sp, published)
 
 
 # ---------------------------------------------------------------------------
@@ -849,7 +844,10 @@ def write_markdown(path, s):
             line += f" next to `{ctrl['version']}`'s {pct(s['ladder']['control_sp'])} and"
         else:
             line += " next to"
-        line += (f" jev_a v3's {pct(s['ladder']['jev_v3_sp'])} ({s['ladder']['placement']}). "
+        top = (s['ladder'].get('placement_detail') or {})
+        line += (f" jev_a v3's {pct(s['ladder']['jev_v3_sp'])}; on the published ladder with modules it is "
+                 f"{s['ladder']['placement']}"
+                 + (f", with {top['top_label']} on top at {pct(top['top_sp'])}. " if top.get('top_label') else ". ")
                  + (f"Spend $0.00 in new Jev calls (the rows are a join of runs already paid for), "
                     if joined else f"Spend ${s['spend']['total_usd']:.2f} in Jev calls, ")
                  + f"{num(s['seconds']['ladder_mean'], 1)} s per ladder episode with the v3 pass included"
@@ -1049,8 +1047,16 @@ def write_markdown(path, s):
                  + (f"({' and '.join(joined)} passes plus v3)." if joined else f"({v} plus v3)."))
         L.append(text)
         L.append("")
-        header = ["arm", "SENTENCE POINTS", "s/episode"]
-        rows = [[r["label"], pct(r["sentence_points"]),
+        text = (f"Published arms quoted: the top arm with modules, the bench page's headline best, each "
+                f"model family's best with modules and the Opus 5 agentic arm earlier Jev write-ups compare "
+                f"to; shipped flags are the bench page's. {ld.get('placement_lead', '')}. Placement: this build "
+                f"{ld['placement']}")
+        if ld.get("control_placement"):
+            text += f"; `{ctrl['version']}` {ld['control_placement']['text']}"
+        L.append(text + ".")
+        L.append("")
+        header = ["arm", "quoted as", "SENTENCE POINTS", "s/episode"]
+        rows = [[r["label"], r.get("note", ""), pct(r["sentence_points"]),
                  num(s["seconds"]["ladder_mean"], 1) if r.get("mine") else
                  (num(s["seconds"]["control_ladder_mean"], 1) if r.get("control") else "")] for r in ld["rows"]]
         L.extend(table(header, rows))
@@ -1554,7 +1560,9 @@ def main():
         jev_18_dec = jev_v3_decisions(ladder_eps, with_trims=True)
         jev_18 = score_fixed(jev_18_dec, V3_THRESHOLD, removals)
         ref_rows, _restricted, _covered = report_mod.ladder(ladder_eps)
-        ladder = [{"label": r["label"], "sentence_points": r["sentence_points_layered"]} for r in ref_rows]
+        published, _restricted, _covered = report_mod.published_ladder(ladder_eps)
+        ladder = [{"label": r["label"], "note": r.get("note", ""), "key": r["key"],
+                   "sentence_points": r["sentence_points_layered"]} for r in ref_rows]
         ladder.append({"label": "Jev jev_a v3 (pure Jev)", "sentence_points": jev_18["pooled"]["sentence_points"]})
         control_18 = None
         if control:
@@ -1565,12 +1573,16 @@ def main():
             ladder.append({"label": f"Jev {control['version']} `{control['chosen']}` combiner (frozen{ref})",
                            "sentence_points": control_18["pooled"]["sentence_points"], "control": True})
         ladder.sort(key=lambda r: -r["sentence_points"])
-        place = placement(mine_18["pooled"]["sentence_points"], ladder)
+        place = placement(mine_18["pooled"]["sentence_points"], published)
+        control_place = placement(control_18["pooled"]["sentence_points"], published) if control_18 else None
         win = ", winning Jev-only run" if (OWNER_CHOICE.get(bundle.version) or {}).get("winner") == bundle.version else ""
         ladder.append({"label": f"Jev {bundle.version} `{chosen}` combiner (this build{win})",
                        "sentence_points": mine_18["pooled"]["sentence_points"], "mine": True})
         ladder.sort(key=lambda r: -r["sentence_points"])
-        summary["ladder"] = {"episodes": ladder_eps, "rows": ladder, "placement": place,
+        summary["ladder"] = {"episodes": ladder_eps, "rows": ladder, "placement": place["text"],
+                             "placement_detail": place, "control_placement": control_place,
+                             "published_size": len(published),
+                             "placement_lead": report_mod.placement_lead(published),
                              "mine_sp": mine_18["pooled"]["sentence_points"],
                              "control_sp": control_18["pooled"]["sentence_points"] if control_18 else None,
                              "jev_v3_sp": jev_18["pooled"]["sentence_points"],
