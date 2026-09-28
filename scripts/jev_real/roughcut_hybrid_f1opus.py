@@ -76,8 +76,10 @@ MAX_TOKENS = 32000
 PROBE_EPISODE = "colman-03.03-muscles-crit"
 STOP_USD = 7.00                          # extrapolated 18-episode total that stops the run
 DEFAULT_BUDGET_USD = 7.00                # hard cap on recorded spend
-#: USD per million: input, cache write (1.25x), cache read (0.1x), output.
-PRICE_IN, PRICE_WRITE, PRICE_READ, PRICE_OUT = 5.00, 6.25, 0.50, 25.00
+#: USD per million by model: input, cache write (1.25x input), cache read, output.
+PRICES = {"claude-opus-5": (5.00, 6.25, 0.50, 25.00),
+          "claude-opus-5-5": (4.00, 5.00, 0.20, 20.00)}
+PRICE_IN, PRICE_WRITE, PRICE_READ, PRICE_OUT = PRICES[MODEL]
 #: Plan-mode output guess per request, medium effort; the probe replaces it.
 OUT_TOKENS_BASE, OUT_TOKENS_PER_TARGET = 2000, 60
 LUNA_TAG = "m25"                          # the f1-Luna stack run, roughcut-hybrid-f1luna-m25-*
@@ -137,8 +139,9 @@ def build_jobs(episode, inputs, routed, rules):
 
 
 def estimate(jobs_by_episode, tokens_per_char=1 / hl.CHARS_PER_TOKEN,
-             out_base=OUT_TOKENS_BASE, out_per_target=OUT_TOKENS_PER_TARGET):
+             out_base=OUT_TOKENS_BASE, out_per_target=OUT_TOKENS_PER_TARGET, model=MODEL):
     """Cost with caching: first group writes the prefix, later groups read it."""
+    price_in, price_write, price_read, price_out = PRICES[model]
     per_episode, total = {}, Counter()
     for episode, jobs in jobs_by_episode.items():
         if not jobs:
@@ -149,7 +152,7 @@ def estimate(jobs_by_episode, tokens_per_char=1 / hl.CHARS_PER_TOKEN,
         uncached = sum(j["target_chars"] for j in jobs) * tokens_per_char
         targets = sum(len(j["ids"]) for j in jobs)
         out = out_base * len(jobs) + out_per_target * targets
-        cost = (uncached * PRICE_IN + write * PRICE_WRITE + read * PRICE_READ + out * PRICE_OUT) / 1e6
+        cost = (uncached * price_in + write * price_write + read * price_read + out * price_out) / 1e6
         per_episode[episode] = {"requests": len(jobs), "targets": targets,
                                 "cache_write_tokens": round(write), "cache_read_tokens": round(read),
                                 "uncached_tokens": round(uncached), "output_tokens": round(out),
@@ -167,13 +170,14 @@ def estimate(jobs_by_episode, tokens_per_char=1 / hl.CHARS_PER_TOKEN,
 # the Opus call
 # ---------------------------------------------------------------------------
 
-def _request(job, rules, budget, attempt, phase):
+def _request(job, rules, budget, attempt, phase, model=MODEL, effort=EFFORT):
     """One Opus call with the transcript prefix cached. ``(row, answers_or_None)``; never raises."""
     from skell_e_router import ask_ai
 
+    price_in, price_write, price_read, price_out = PRICES[model]
     row = {"episode": job["episode"], "group": job["group"], "ids": job["ids"],
-           "n_targets": len(job["ids"]), "attempt": attempt, "phase": phase, "model": MODEL,
-           "effort": EFFORT, "provider_model": None, "prompt_tokens": None,
+           "n_targets": len(job["ids"]), "attempt": attempt, "phase": phase, "model": model,
+           "effort": effort, "provider_model": None, "prompt_tokens": None,
            "uncached_input_tokens": None, "cache_write_tokens": None, "cache_read_tokens": None,
            "completion_tokens": None, "cost": None, "cost_listed": None, "finish_reason": None,
            "refusal": False, "elapsed_s": None, "error": None, "parse_error": None,
@@ -189,8 +193,8 @@ def _request(job, rules, budget, attempt, phase):
     started = time.perf_counter()
     answers = None
     try:
-        response = ask_ai(MODEL, messages, system_message=rules, rich_response=True,
-                          reasoning_effort=EFFORT, enable_caching=True, max_tokens=MAX_TOKENS)
+        response = ask_ai(model, messages, system_message=rules, rich_response=True,
+                          reasoning_effort=effort, enable_caching=True, max_tokens=MAX_TOKENS)
         usage = getattr(response.raw_response, "usage", None)
 
         def tok(attr):
@@ -202,8 +206,8 @@ def _request(job, rules, budget, attempt, phase):
         row.update(provider_model=response.model, prompt_tokens=response.prompt_tokens,
                    uncached_input_tokens=uncached, cache_write_tokens=write, cache_read_tokens=read,
                    completion_tokens=response.completion_tokens, cost=response.cost,
-                   cost_listed=round((uncached * PRICE_IN + write * PRICE_WRITE + read * PRICE_READ
-                                      + completion * PRICE_OUT) / 1e6, 6),
+                   cost_listed=round((uncached * price_in + write * price_write + read * price_read
+                                      + completion * price_out) / 1e6, 6),
                    finish_reason=response.finish_reason, refusal=response.finish_reason == "refusal",
                    content=response.content)
         budget.add(response.cost if response.cost is not None else row["cost_listed"])
@@ -220,7 +224,7 @@ def _request(job, rules, budget, attempt, phase):
     return row, answers
 
 
-def run_episode_jobs(jobs, rules, budget, concurrency, writer):
+def run_episode_jobs(jobs, rules, budget, concurrency, writer, model=MODEL, effort=EFFORT):
     """First group alone (writes the cache), the rest concurrently, then retries.
 
     A group gets up to ``MAX_ATTEMPTS`` attempts on an exception and one re-ask
@@ -251,7 +255,7 @@ def run_episode_jobs(jobs, rules, budget, concurrency, writer):
         last = {}
         with futures.ThreadPoolExecutor(max_workers=max(1, min(concurrency, len(batch)))) as pool:
             pending = {pool.submit(_request, job, rules, budget,
-                                   errors[job["group"]] + reasks[job["group"]] + 1, phase): job
+                                   errors[job["group"]] + reasks[job["group"]] + 1, phase, model, effort): job
                        for job in batch}
             for future in futures.as_completed(pending):
                 row, got = future.result()
