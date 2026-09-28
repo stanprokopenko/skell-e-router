@@ -1,5 +1,8 @@
 """The stack with Opus on the f3 base: the f3 combiner decides, claude-opus-5 overrides its unsure 50%.
 
+The run mechanics take a ``Run`` (model, files, slice, reused run), so
+``roughcut_hybrid_f3opus55.py`` drives the same code on claude-opus-5-5.
+
 Follows the third pass of ``docs/superpowers/specs/2026-09-26-jev-roughcut-round-two-design.md``
 after Stan picked f3 as the winning Jev-only combiner on the held-out result.
 The Opus call is step 5's (``roughcut_hybrid_f1opus.py``: rules5 system prompt,
@@ -37,6 +40,7 @@ import statistics
 import sys
 import time
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -69,10 +73,25 @@ F1_JSON = OUT_DIR / "roughcut-jev-f1.json"
 PROBE_EPISODE = fo.PROBE_EPISODE
 STOP_USD = 9.00                          # projected task total that stops the run
 DEFAULT_BUDGET_USD = 9.00
-PRICE_IN, PRICE_WRITE, PRICE_READ, PRICE_OUT = fo.PRICE_IN, fo.PRICE_WRITE, fo.PRICE_READ, fo.PRICE_OUT
 FIT, KEPT, THRESHOLD = r2.FIT, r2.KEPT, r2.THRESHOLD
 KEEP_RULE_PATH = OUT_DIR / f"{NAME}-keeprule.json"
 pct, table, num, money, fingerprint, md5_text = hl.pct, hl.table, hl.num, hl.money, hl.fingerprint, hl.md5_text
+
+
+@dataclass(frozen=True)
+class Run:
+    """One live run on an f3 slice: model, run files, the slice it asks, whose answers it reuses."""
+    model: str
+    name: str                 # run file stem under docs/jev-real
+    arm: str
+    tag: str                  # the slice asked: "m25" or "m50"
+    prior: str = None         # run whose answers are reused (same model, prompt, prefix md5)
+    stop_usd: float = STOP_USD
+    effort: str = EFFORT
+
+
+#: This script's own run: Opus 5 on the 50%, reusing step 5's answers.
+OPUS5 = Run(model=MODEL, name=NAME, arm=ARM, tag=MAIN, prior=STEP5_NAME)
 
 
 def log(msg):
@@ -107,11 +126,18 @@ def setup():
 
 def step5_answers(episodes):
     """Step 5's answered sentences and each episode's cached-prefix md5."""
-    paths = fo.run_paths(STEP5_NAME)
+    return prior_answers(STEP5_NAME, episodes, MODEL)
+
+
+def prior_answers(name, episodes, model):
+    """A finished run's answered sentences and each episode's cached-prefix and system md5."""
+    paths = fo.run_paths(name)
     timing = json.loads(paths["timing"].read_text(encoding="utf-8"))
     absent = [e for e in episodes if e not in timing["episodes"]]
     if absent:
-        raise SystemExit(f"step 5 run missing {absent}")
+        raise SystemExit(f"{name} run missing {absent}")
+    if timing["model"] != model:
+        raise SystemExit(f"{name} ran {timing['model']}, not {model}; its answers cannot be reused")
     answers = {e: {} for e in episodes}
     for row in report_mod.read_jsonl(paths["decisions"]):
         if row["episode"] in answers and row["opus_answered"]:
@@ -125,10 +151,13 @@ def step5_answers(episodes):
     return answers, prefix_md5, system_md5, timing, paths
 
 
-def plan(st, rules, episodes):
-    """Jobs for the sentences step 5 did not answer; the rest are reused."""
-    inputs, routed50 = st["inputs"], st["routed"]["m50"]
-    old, old_prefix, old_system, _t, _p = step5_answers(inputs["episodes"])
+def plan(st, rules, episodes, run=OPUS5):
+    """Jobs for the slice's sentences the prior run did not answer; the rest are reused."""
+    inputs, routed50 = st["inputs"], st["routed"][run.tag]
+    if run.prior:
+        old, old_prefix, old_system, _t, _p = prior_answers(run.prior, inputs["episodes"], run.model)
+    else:
+        old, old_prefix, old_system = {e: {} for e in inputs["episodes"]}, {}, {}
     jobs_by_episode, metas = {}, {}
     for e in episodes:
         reuse = {sid for sid in routed50[e] if sid in old[e]}
@@ -138,13 +167,13 @@ def plan(st, rules, episodes):
         full_jobs, _m = fo.build_jobs(e, inputs, {e: routed50[e]}, rules)
         if reuse:
             if old_prefix.get(e) != {full_jobs[0]["prefix_md5"]}:
-                raise SystemExit(f"{e}: step 5's prefix md5 {old_prefix.get(e)} is not this run's")
+                raise SystemExit(f"{e}: {run.prior}'s prefix md5 {old_prefix.get(e)} is not this run's")
             if old_system.get(e) != {md5_text(rules)}:
-                raise SystemExit(f"{e}: step 5's system prompt md5 differs from the rules read now")
+                raise SystemExit(f"{e}: {run.prior}'s system prompt md5 differs from the rules read now")
         losers = set(meta["vetoed_ids"])
         _d, _l, all_losers = hl.episode_context(e, inputs)
         if reuse & all_losers:
-            raise SystemExit(f"{e}: step 5 answered a sentence the retake pass cut")
+            raise SystemExit(f"{e}: {run.prior} answered a sentence the retake pass cut")
         meta = {**meta, "routed": len(routed50[e]), "routed_25": len(st["routed"]["m25"][e]),
                 "reused": len(reuse), "reused_ids": sorted(reuse),
                 "retake_vetoed": len(routed50[e] & all_losers), "vetoed_ids": sorted(routed50[e] & all_losers),
@@ -155,12 +184,12 @@ def plan(st, rules, episodes):
     return jobs_by_episode, metas, old
 
 
-def decision_rows(episode, st, answers, old, jobs, meta):
+def decision_rows(episode, st, answers, old, jobs, meta, run=OPUS5):
     """One row per sentence: f3's decision, the Opus verdict (reused or new), the mix."""
     inputs = st["inputs"]
     base, raw = inputs["jev"][episode], inputs["jev_rows"][episode]
     margin = fl.margin_of(inputs["combiner_threshold"])
-    r50, r25 = st["routed"]["m50"][episode], st["routed"]["m25"][episode]
+    r50, r25 = st["routed"][run.tag][episode], st["routed"]["m25"][episode]
     group_of = {sid: job["group"] for job in jobs for sid in job["ids"]}
     reused = set(meta["reused_ids"])
     rows = []
@@ -169,9 +198,9 @@ def decision_rows(episode, st, answers, old, jobs, meta):
         is_routed = sid in r50
         source = "reused" if sid in reused else ("new" if sid in group_of else None)
         answer = old[episode].get(sid) if source == "reused" else answers.get(sid)
-        row = {"arm": ARM, "episode": episode, "id": sid, "routed": is_routed, "routed_25": sid in r25,
+        row = {"arm": run.arm, "episode": episode, "id": sid, "routed": is_routed, "routed_25": sid in r25,
                "source": source, "asked": source is not None, "group": group_of.get(sid),
-               "step5_group": old[episode][sid]["group"] if source == "reused" else None,
+               "prior_group": old[episode][sid]["group"] if source == "reused" else None,
                "retake_vetoed": is_routed and sid in meta["vetoed_ids"],
                "jev_score": raw[sid]["score"], "jev_margin": margin(raw[sid]),
                "jev_keep": jev["score"] is not None and jev["score"] >= THRESHOLD,
@@ -179,7 +208,7 @@ def decision_rows(episode, st, answers, old, jobs, meta):
                "opus_score": None, "opus_decision": None, "opus_reason": None,
                "opus_answered": False, "fallback": source == "new" and not answer,
                "score": jev["score"], "keep_words": jev["keep_words"],
-               "model": MODEL, "effort": EFFORT, "preamble_version": hl.PREAMBLE_VERSION}
+               "model": run.model, "effort": run.effort, "preamble_version": hl.PREAMBLE_VERSION}
         if is_routed and answer:
             row.update(opus_score=answer["score"], opus_decision=answer["decision"],
                        opus_reason=answer["reason"], opus_answered=True,
@@ -192,33 +221,36 @@ def decision_rows(episode, st, answers, old, jobs, meta):
 # plan and run
 # ---------------------------------------------------------------------------
 
-def execute(args, parser):
+def execute(args, parser, run=OPUS5):
     st = setup()
     inputs = st["inputs"]
     rules = hl.read_rules()
-    paths = run_paths()
+    paths = run_paths(run.name)
     episodes = args.episodes or inputs["episodes"]
     unknown = [e for e in episodes if e not in inputs["episodes"]]
     if unknown:
         parser.error(f"not in the ladder: {unknown}")
-    jobs_by_episode, metas, old = plan(st, rules, episodes)
-    per_episode_est, total_est = fo.estimate(jobs_by_episode)
+    jobs_by_episode, metas, old = plan(st, rules, episodes, run)
+    per_episode_est, total_est = fo.estimate(jobs_by_episode, model=run.model)
     plan_extra = {"selection": "f3 combiner margin abs(5 * p_keep - threshold), pooled, one cutoff",
                   "combiner": {"prefix": COMBINER, "set": st["cp"]["chosen"], "C": st["cp"]["C"],
                                "threshold": st["cp"]["threshold"]},
                   "offline_luna_ceiling_25": st["check"]["offline_ceiling_here"],
-                  "reuse": f"step 5 answers from {STEP5_NAME}, same model, prompt and prefix md5",
+                  "reuse": (f"answers from {run.prior}, same model, prompt and prefix md5" if run.prior
+                            else "none, every sentence of the slice asked fresh"),
                   "caching": "system breakpoint (router) + caller breakpoint on preamble+transcript; targets uncached"}
     strip = ("vetoed_ids", "reused_ids")
-    out = {"mode": "plan" if not args.run else "run", "model": MODEL, "effort": EFFORT,
-           "share": SHARES[MAIN], "cutoff": st["cutoff"][MAIN],
-           "routed_total": sum(len(v) for v in st["routed"][MAIN].values()),
+    out = {"mode": "plan" if not args.run else "run", "model": run.model, "effort": run.effort,
+           "share": SHARES[run.tag], "cutoff": st["cutoff"][run.tag],
+           "routed_total": sum(len(v) for v in st["routed"][run.tag].values()),
            "reused_total": sum(metas[e]["reused"] for e in episodes),
            "asked_now_total": sum(metas[e]["asked_now"] for e in episodes),
            "vetoed_total": sum(metas[e]["retake_vetoed"] for e in episodes),
-           "out": NAME, "arm": ARM, "episodes": episodes, "group_max": fo.GROUP_MAX,
+           "out": run.name, "arm": run.arm, "episodes": episodes, "group_max": fo.GROUP_MAX,
            "group_span": fo.GROUP_SPAN, "concurrency": args.concurrency,
            "rules": {"path": str(hl.RULES_PATH), "md5": md5_text(rules)},
+           "price_per_million_usd": dict(zip(("input", "cache_write", "cache_read", "output"),
+                                             fo.PRICES[run.model])),
            "budget_cap_usd": args.budget,
            "per_episode": {e: {k: v for k, v in {**metas[e], **per_episode_est[e]}.items() if k not in strip}
                            for e in episodes},
@@ -252,8 +284,9 @@ def execute(args, parser):
             if episode in done:
                 continue
             jobs = jobs_by_episode[episode]
-            answers, timing = fo.run_episode_jobs(jobs, rules, budget, args.concurrency, writer)
-            rows = decision_rows(episode, st, answers, old, jobs, metas[episode])
+            answers, timing = fo.run_episode_jobs(jobs, rules, budget, args.concurrency, writer,
+                                                  model=run.model, effort=run.effort)
+            rows = decision_rows(episode, st, answers, old, jobs, metas[episode], run)
             new_decisions.extend(rows)
             timings[episode] = {**{k: v for k, v in metas[episode].items() if k not in strip}, **timing,
                                 "substituted": sum(1 for r in rows if r["opus_answered"]),
@@ -270,22 +303,23 @@ def execute(args, parser):
                 log(f"ABORT: {aborted}")
                 break
             write_run_files(paths, old_decisions + new_decisions, timings, out, args, aborted, old_timing,
-                            started, plan_extra)
+                            started, plan_extra, run)
     write_run_files(paths, old_decisions + new_decisions, timings, out, args, aborted, old_timing,
-                    started, plan_extra)
+                    started, plan_extra, run)
     print(json.dumps(json.loads(paths["timing"].read_text(encoding="utf-8"))["totals"], indent=2))
     return 2 if aborted else 0
 
 
-def write_run_files(paths, decisions, timings, plan_doc, args, aborted, old_timing, started, plan_extra):
+def write_run_files(paths, decisions, timings, plan_doc, args, aborted, old_timing, started, plan_extra,
+                    run=OPUS5):
     keys = ("requests", "retries", "errors", "malformed", "refusals", "unanswered_targets", "fallbacks",
             "prompt_tokens", "uncached_input_tokens", "cache_write_tokens", "cache_read_tokens",
             "completion_tokens", "routed", "routed_25", "asked", "asked_now", "reused", "retake_vetoed",
             "substituted", "substituted_new", "groups", "fresh_groups", "fresh_targets")
     summary = {
         "generated_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "model": MODEL, "effort": EFFORT, "share": SHARES[MAIN], "cutoff": plan_doc["cutoff"], "arm": ARM,
-        "out": NAME, "preamble_version": hl.PREAMBLE_VERSION, "rules": plan_doc["rules"],
+        "model": run.model, "effort": run.effort, "share": SHARES[run.tag], "cutoff": plan_doc["cutoff"],
+        "arm": run.arm, "out": run.name, "preamble_version": hl.PREAMBLE_VERSION, "rules": plan_doc["rules"],
         "group_max": fo.GROUP_MAX, "group_span": fo.GROUP_SPAN, "concurrency": args.concurrency,
         "max_tokens": fo.MAX_TOKENS, "budget_cap_usd": args.budget, "aborted": aborted,
         "resumed": bool(old_timing), "episodes": timings,
@@ -323,23 +357,36 @@ def ceiling_mode():
     return 0
 
 
-def extrapolate_mode():
-    """Task total from the finished episodes' real usage: listed prices on the planned asks."""
-    paths = run_paths()
-    if not paths["timing"].exists():
-        raise SystemExit("no run on disk; probe first")
-    timing = json.loads(paths["timing"].read_text(encoding="utf-8"))
-    requests = report_mod.read_jsonl(paths["requests"])
+def extrapolate_mode(run=OPUS5, ref=None, spent_before=0.0):
+    out = extrapolate(run, ref, spent_before)
+    print(json.dumps(out, indent=2))
+    return 0 if out["go"] else 3
+
+
+def extrapolate(run=OPUS5, ref=None, spent_before=0.0):
+    """Task total from real usage: listed prices on the planned asks, plus ``spent_before``.
+
+    Token rates come from this run's finished episodes, or from run ``ref``'s when given (a
+    top-up priced off the run it extends); this run's finished episodes count at their cost.
+    """
+    own, src = run_paths(run.name), run_paths(ref or run.name)
+    if not src["timing"].exists():
+        raise SystemExit(f"no {ref or run.name} run on disk; probe first")
+    usage = json.loads(src["timing"].read_text(encoding="utf-8"))
+    requests = report_mod.read_jsonl(src["requests"])
+    used = list(usage["episodes"])
+    timing = json.loads(own["timing"].read_text(encoding="utf-8")) if own["timing"].exists() else {"episodes": {}}
     done = list(timing["episodes"])
     st = setup()
     rules = hl.read_rules()
-    jobs_by_episode, metas, _old = plan(st, rules, st["inputs"]["episodes"])
-    firsts = [r for r in requests if r["phase"] == "first" and r["episode"] in done and not r["error"]]
-    chars = sum(jobs_by_episode[r["episode"]][0]["prefix_chars"] for r in firsts)
+    jobs_by_episode, metas, _old = plan(st, rules, st["inputs"]["episodes"], run)
+    price_in, price_write, price_read, price_out = fo.PRICES[run.model]
+    firsts = [r for r in requests if r["phase"] == "first" and r["episode"] in used and not r["error"]]
+    chars = sum(metas[r["episode"]]["prefix_chars"] for r in firsts)
     written = sum((r["cache_write_tokens"] or 0) + (r["cache_read_tokens"] or 0)
                   + (r["uncached_input_tokens"] or 0) for r in firsts)
     tokens_per_char = written / chars
-    ok = [r for r in requests if r["episode"] in done and not r["error"]]
+    ok = [r for r in requests if r["episode"] in used and not r["error"]]
     per_target = sum(r["completion_tokens"] or 0 for r in ok) / sum(r["n_targets"] for r in ok)
     per_request = sum(r["completion_tokens"] or 0 for r in ok) / len(ok)
     per_episode, total = {}, 0.0
@@ -353,27 +400,29 @@ def extrapolate_mode():
             n_targets = sum(len(j["ids"]) for j in jobs)
             out = max(per_target * n_targets, per_request * len(jobs))
             uncached = sum(j["target_chars"] for j in jobs) * tokens_per_char
-            cost = (prefix * PRICE_WRITE + prefix * (len(jobs) - 1) * PRICE_READ
-                    + uncached * PRICE_IN + out * PRICE_OUT) / 1e6
+            cost = (prefix * price_write + prefix * (len(jobs) - 1) * price_read
+                    + uncached * price_in + out * price_out) / 1e6
         per_episode[e] = round(cost, 4)
         total += cost
-    retry_factor = len([r for r in requests if r["episode"] in done]) / max(
-        1, sum(timing["episodes"][e]["groups"] for e in done))
-    projected = total * max(1.0, retry_factor)
-    out = {"probe_episodes": done, "probe_cost_usd": timing["totals"]["cost_usd"],
+    retry_factor = len([r for r in requests if r["episode"] in used]) / max(
+        1, sum(usage["episodes"][e]["groups"] for e in used))
+    projected = total * max(1.0, retry_factor) + spent_before
+    out = {"probe_episodes": done, "rates_from": {"run": ref or run.name, "episodes": used},
+           "probe_cost_usd": sum(t["cost_usd"] for t in timing["episodes"].values()),
+           "spent_before_usd": spent_before,
            "tokens_per_char": tokens_per_char, "completion_per_target": per_target,
            "completion_per_request": per_request, "retry_factor": retry_factor,
            "per_episode_usd": per_episode, "projected_18_usd": round(projected, 4),
-           "stop_threshold_usd": STOP_USD, "go": projected <= STOP_USD,
+           "stop_threshold_usd": run.stop_usd, "go": projected <= run.stop_usd,
            "asked_now_total": sum(m["asked_now"] for m in metas.values()),
            "reused_total": sum(m["reused"] for m in metas.values())}
-    print(json.dumps(out, indent=2))
-    return 0 if out["go"] else 3
+    return out
 
 
-def load_run(episodes, require_all=True):
-    """The run's rows as two views, 50% and f3's 25%, aliased to ``hl``'s ``luna_*`` names."""
-    paths = run_paths()
+def load_run(episodes, require_all=True, name=NAME, tags=tuple(SHARES), label="f3opus"):
+    """A run's rows as one view per slice in ``tags`` (a 50% run also holds f3's 25%), aliased to
+    ``hl``'s ``luna_*`` names. ``label`` keeps donor keys apart when several runs share a scorer."""
+    paths = run_paths(name)
     if not all(p.exists() for p in paths.values()):
         return None
     timing = json.loads(paths["timing"].read_text(encoding="utf-8"))
@@ -388,10 +437,10 @@ def load_run(episodes, require_all=True):
                                                "luna_answered": row["opus_answered"]}
     requests = report_mod.read_jsonl(paths["requests"])
     views = {}
-    for tag in SHARES:
+    for tag in tags:
         flag = "routed" if tag == "m50" else "routed_25"
         rows = {e: {sid: {**r, "routed": r[flag]} for sid, r in base[e].items()} for e in episodes}
-        views[tag] = {"tag": f"f3opus-{tag}", "rows": rows,
+        views[tag] = {"tag": f"{label}-{tag}", "rows": rows,
                       "routed": {e: {sid for sid, r in rows[e].items() if r["routed"]} for e in episodes},
                       "answered": {e: {sid for sid, r in rows[e].items() if r["routed"] and r["opus_answered"]}
                                    for e in episodes},

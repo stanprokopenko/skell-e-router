@@ -1,0 +1,16 @@
+{
+  "note": "copied from the --extrapolate output printed after the one-episode probe, before --extrapolate wrote this file itself",
+  "probe_episodes": ["colman-03.03-muscles-crit"],
+  "rates_from": {"run": "roughcut-hybrid-f3opus55-m25", "episodes": ["colman-03.03-muscles-crit"]},
+  "probe_cost_usd": 0.106241,
+  "spent_before_usd": 0.0,
+  "tokens_per_char": 0.35345471067406614,
+  "completion_per_target": 38.09230769230769,
+  "completion_per_request": 1238.0,
+  "retry_factor": 1.0,
+  "projected_18_usd": 3.1527,
+  "stop_threshold_usd": 4.5,
+  "go": true,
+  "asked_now_total": 2150,
+  "reused_total": 0
+}
