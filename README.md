@@ -289,6 +289,8 @@ response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enable
 
 Opus 5.5 always uses adaptive thinking. Do not send `budget_tokens` or a `thinking` dictionary with type `enabled`, type `disabled`, or a token budget. Raw thinking dictionaries pass through, and Anthropic rejects these settings. The router drops `temperature`, `top_p`, and `top_k` and converts forced tool choices to `auto`, so tool execution is never guaranteed. See Anthropic's [Opus 5.5 overview](https://platform.claude.com/docs/en/models/opus-5-5/overview) and [effort reference](https://platform.claude.com/docs/en/build-with-claude/effort).
 
+`claude-sonnet-5-5` (released September 28, 2026) uses Anthropic directly, with a 1M token context and a 128,000 token output limit. Set `reasoning_effort` to `low`, `medium`, `high`, `xhigh`, or `max`; Anthropic defaults to `high` when omitted. Input costs $2 per million tokens, output $10, and cache reads $0.20, the same as Sonnet 5. Like Opus 5.5, it rejects `budget_tokens`, thinking type `enabled` or `disabled`, sampling parameters, and forced tool choices; the router drops the sampling parameters and converts forced tool choices to `auto`. See Anthropic's [Sonnet 5.5 overview](https://platform.claude.com/docs/en/models/sonnet-5-5/overview).
+
 ### Anthropic Betas
 
 Pass beta feature flags to Claude models:

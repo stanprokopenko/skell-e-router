@@ -435,6 +435,22 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
         max_output_tokens=128000,
     ),
+    # Sonnet 5.5: released 2026-09-28. Adaptive thinking on by default, effort
+    # low..max (default high). No temperature/top_p/top_k, no budget_tokens, and
+    # thinking "disabled" now returns 400 (Anthropic replaced it with "between_tools").
+    # Forced tool use returns 400 — tool_choice "any" or a named tool is coerced to
+    # "auto" via accepted_tool_choices. 1M context, 128k max output. $2/$10 per 1M,
+    # same as Sonnet 5; standard 0.1x cache reads.
+    "claude-sonnet-5-5": AIModel(
+        name="anthropic/claude-sonnet-5-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        accepted_tool_choices={"auto", "none"},
+        use_direct_sdk=True,
+        max_output_tokens=128000,
+    ),
     # Sonnet 5: same API surface as Opus 4.8 — adaptive thinking only (budget_tokens
     # removed; thinking "disabled" is still accepted), no temperature/top_p/top_k.
     # 1M context, 128k max output. Effort defaults to high.
