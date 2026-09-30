@@ -478,9 +478,13 @@ def _compute_response_cost(response, ai_model=None) -> float | None:
         cached_tokens = min(cached_tokens, prompt_tokens)
 
         cached_rate = pricing.get("cached_input", pricing["input"])
-        return ((prompt_tokens - cached_tokens) * pricing["input"] / 1_000_000 +
-                cached_tokens * cached_rate / 1_000_000 +
-                completion_tokens * pricing["output"] / 1_000_000)
+        threshold = pricing.get("long_context_threshold")
+        long_context = threshold is not None and prompt_tokens > threshold
+        input_multiplier = pricing.get("long_context_input_multiplier", 1.0) if long_context else 1.0
+        output_multiplier = pricing.get("long_context_output_multiplier", 1.0) if long_context else 1.0
+        return (((prompt_tokens - cached_tokens) * pricing["input"] + cached_tokens * cached_rate)
+                * input_multiplier / 1_000_000 +
+                completion_tokens * pricing["output"] * output_multiplier / 1_000_000)
 
     if getattr(ai_model, 'authoritative_pricing', False):
         cost = configured_cost()

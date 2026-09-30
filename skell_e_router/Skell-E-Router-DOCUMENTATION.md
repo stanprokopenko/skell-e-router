@@ -198,6 +198,10 @@ The router adds `max_completion_tokens` to LiteLLM's `allowed_openai_params` so 
 
 `gpt-6-sol` and `gpt-6-luna` use the same bridge, because OpenAI allows function calling on Chat Completions only at `reasoning_effort="none"`. Both accept `none` through `max`. Their router pricing is authoritative too: Sol $2/$10 and Luna $0.10/$0.50 per million input/output tokens.
 
+`gpt-6.1-sol` also uses the Responses API bridge. Tools require this endpoint; Chat Completions supports text-only requests. Accepted efforts are `low`, `medium`, `high`, `xhigh`, and `max`; omitting effort selects OpenAI's `medium` default. `none` and `minimal` are invalid. The router drops sampling parameters. Context is 1,050,000 tokens and maximum output is 128,000 tokens.
+
+GPT-6.1 Sol's authoritative rates are $2 input, $0.10 cache reads, and $10 output per million tokens. Above 272,000 input tokens, the router applies 2x input and cache-read rates and 1.5x output rates to the whole request. Optional registry pricing keys `long_context_threshold`, `long_context_input_multiplier`, and `long_context_output_multiplier` control this calculation. `AIResponse.cost` excludes separately billed cache writes because normalized usage does not expose their token count; OpenAI lists these at $2.50 per million tokens at standard context. See the [model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [pricing](https://developers.openai.com/api/docs/pricing).
+
 By default, `ask_ai()` returns just the response content string for backwards compatibility. To get full response metadata, use `rich_response=True`:
 
 ### Basic Usage (Backwards Compatible)

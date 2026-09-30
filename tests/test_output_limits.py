@@ -76,15 +76,35 @@ def test_luna_limit_reaches_chat_http(captured_requests, limit_name, stream):
 
 
 @pytest.mark.parametrize("limit_name", ["max_tokens", "max_completion_tokens"])
-def test_astra_limit_reaches_responses_http(captured_requests, limit_name):
-    assert ask_ai("gpt-6-astra", "hi", config={"openai_api_key": "sk-dummy-no-network"}, **{limit_name: 128}) == "OK"
+@pytest.mark.parametrize("alias", ["gpt-6-astra", "gpt-6.1-sol"])
+def test_reasoning_limit_reaches_responses_http(captured_requests, limit_name, alias):
+    assert ask_ai(alias, "hi", config={"openai_api_key": "sk-dummy-no-network"}, **{limit_name: 128}) == "OK"
     assert len(captured_requests) == 1
     path, body = captured_requests[0]
     assert path.endswith("/responses")
-    assert body["model"] == "gpt-6-astra"
+    assert body["model"] == alias
     assert body["max_output_tokens"] == 128
     assert "max_tokens" not in body
     assert "max_completion_tokens" not in body
+
+
+@pytest.mark.parametrize("effort", ["low", "high"])
+def test_gpt_6_1_sol_tools_and_effort_reach_responses_http(captured_requests, effort):
+    tools = [{"type": "function", "function": {
+        "name": "lookup", "description": "Look up a value",
+        "parameters": {"type": "object", "properties": {}},
+    }}]
+    assert ask_ai("gpt-6.1-sol", "Use lookup", config={"openai_api_key": "sk-dummy-no-network"},
+                  reasoning_effort=effort, tools=tools, tool_choice="required", max_tokens=128,
+                  temperature=0.0, top_p=0.5) == "OK"
+    path, body = captured_requests[0]
+    assert path.endswith("/responses")
+    assert body["model"] == "gpt-6.1-sol"
+    assert body["reasoning"]["effort"] == effort
+    assert body["tools"][0]["name"] == "lookup"
+    assert body["tool_choice"] == "required"
+    assert "temperature" not in body
+    assert "top_p" not in body
 
 
 def test_gpt4o_keeps_legacy_limit(captured_requests):

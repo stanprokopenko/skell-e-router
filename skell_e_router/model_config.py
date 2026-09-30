@@ -79,6 +79,21 @@ MODEL_CONFIG = {
 
     # OPENAI
 
+    # GPT-6.1 Sol: 1,050,000 context; tools require Responses; default effort medium.
+    # https://developers.openai.com/api/docs/models/gpt-6.1-sol
+    "gpt-6.1-sol": AIModel(
+        name="openai/gpt-6.1-sol",
+        provider="openai",
+        supports_thinking=True,
+        supported_params={"reasoning_effort", "stream", "tools", "tool_choice", "max_tokens", "max_completion_tokens"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        pricing={"input": 2.00, "cached_input": 0.10, "output": 10.00,
+                 "long_context_threshold": 272_000, "long_context_input_multiplier": 2.0,
+                 "long_context_output_multiplier": 1.5},
+        use_responses_api=True,
+        authoritative_pricing=True,
+        max_output_tokens=128_000,
+    ),
     # GPT-6 Astra launched September 3, 2026. 1,050,000 context, 128,000 max output.
     # Sampling params are rejected; reasoning effort supports low/medium/high/xhigh/max.
     # OpenAI requires the Responses API for Astra tool calling.
