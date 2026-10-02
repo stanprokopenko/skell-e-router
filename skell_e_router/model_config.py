@@ -503,14 +503,6 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
         max_output_tokens=64000,
     ),
-    "claude-sonnet-4-5-20250929": AIModel(
-        name="anthropic/claude-sonnet-4-5-20250929",
-        provider="anthropic",
-        supports_thinking=True,
-        supported_params={"temperature", "stop", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "betas"},
-        use_direct_sdk=True,
-        max_output_tokens=64000,
-    ),
 
     # META (MODEL API)
 

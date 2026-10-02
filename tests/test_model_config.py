@@ -221,7 +221,7 @@ class TestModelConfig:
 
     @pytest.mark.parametrize("alias", [
         "gpt-5.3-chat",
-        "claude-opus-4-1-20250805", "claude-sonnet-4-20250514",
+        "claude-opus-4-1-20250805", "claude-sonnet-4-20250514", "claude-sonnet-4-5-20250929",
         "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022",
         "grok-4-0220",
         "groq-compound", "groq-compound-mini", "qwen3-32b", "kimi-k2-0905",

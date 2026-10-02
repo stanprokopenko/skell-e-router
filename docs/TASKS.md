@@ -36,7 +36,8 @@
 - [ ] **Before 2026-12-11: drop `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `o3`** — OpenAI shutdown date; replacements gpt-5.6-sol / terra / luna / sol. `gpt-5` is the default model in most router tests (tests/helpers.py and test_utils.py), so swap the test default first. skell-e-web, benchmark config.yaml and skell-e-web's filter_tickets_llm.py use them.
 - [ ] **Before 2027-05-07: drop `gemini-3.1-flash-lite`** — Google shutdown date; replacement gemini-3.5-flash-lite. skell-e-web's RAG subagent and routing-classifier fallback, solar-sailer's editor config and beverly-bica's OCR tool all pin it.
 - [ ] **Watch `gemini-3-flash-preview`** — no date yet, but Google already names gemini-3.6-flash as its replacement.
-- [ ] **Watch the Anthropic 4.5 family** — earliest possible retirement dates are claude-sonnet-4-5 (2026-09-29), claude-haiku-4-5 (2026-10-15), claude-opus-4-5 (2026-11-24). Nothing announced; Anthropic gives 60 days' notice.
+- [x] **Dropped `claude-sonnet-4-5-20250929` on 2026-10-01 (v3.37.0)** after Anthropic announced its retirement for 2026-11-24 (availability may degrade from 2026-10-30). Replacement `claude-sonnet-5`. Benchmark `config.yaml`, skell-e-web (`backend/constants.py`, `proko-app/src/app/model-options.constants.ts`, `backend/benchmarks/looping_bench.py`; the old id now maps to `claude-sonnet-5` in `RETIRED_MODEL_FALLBACKS`) and skell-e-scripter (`backend/services/ai_service.py`) were repointed the same day. [Plan](plans/2026-10-01-sonnet-4-5-retirement.md).
+- [ ] **Watch `claude-haiku-4-5` and `claude-opus-4-5`** — earliest possible retirement dates are claude-haiku-4-5 (2026-10-15) and claude-opus-4-5 (2026-11-24). Nothing announced; Anthropic gives 60 days' notice.
 
 ## OpenRouter / GLM 5.3 Flash follow-ups (from 2026-08-27 work)
 
