@@ -1,6 +1,6 @@
 # Retire Claude Sonnet 4.5 from the router and the benchmark
 
-Status: proposed, not started. Written 2026-10-01.
+Status: approved by Stan 2026-10-01 (all repos), not started. Written 2026-10-01.
 
 ## Context
 
@@ -27,9 +27,11 @@ On 2026-09-30 Anthropic emailed that Claude Sonnet 4.5 (`claude-sonnet-4-5`, dat
    - `[ ]` Watch `claude-haiku-4-5` (earliest possible retirement 2026-10-15) and `claude-opus-4-5` (earliest 2026-11-24). Nothing announced; Anthropic gives 60 days' notice.
 8. Add a third TASKS line, open: repoint `claude-sonnet-4-5-20250929` in skell-e-web (`backend/constants.py` lines 74 and 101, `proko-app/src/app/model-options.constants.ts` lines 42 and 96, `backend/benchmarks/looping_bench.py` lines 90 and 97) and skell-e-scripter (`backend/services/ai_service.py` line 253) before 2026-10-30.
 
-## Push order for the router
+## Scope decision and push order
 
-skell-e-web and skell-e-scripter install the router from `@main`, and skell-e-web's RAG planner runs on this id today. A pushed router without the entry breaks their next install. Commit the router change locally, then stop and tell Stan. Push only after those two repos stop naming the id, or when Stan says to push anyway. The benchmark commit has no such dependency.
+Stan decided on 2026-10-01 (morning brief, item mb1001-10) to remove the model from every repo, not only the router and the benchmark. So this lead also repoints the two apps that still name the id, each in its own checkout, committing by path there and pushing when its tests pass:
+
+- skell-e-web (`C:\Users\Stan\Documents\GitHub\skell-e-web`): `backend/constants.py` lines 74 and 101, `proko-app/src/app/model-options.constants.ts` lines 42 and 96, `backend/benchmarks/looping_bench.py` lines 90 and 97. Replace `claude-sonnet-4-5-20250929` with `claude-sonnet-5` and keep any display label in step with the new model.\n- skell-e-scripter (`C:\Users\Stan\Documents\GitHub\skell-e-scripter`): `backend/services/ai_service.py` line 253, same replacement.\n\nOrder: benchmark first, then the two apps, then the router. Both apps install the router from `@main`, so the router push goes last, after the app commits are pushed. Step 8 under Router becomes a ticked line recording the repoints instead of an open task.
 
 ## Tests
 
