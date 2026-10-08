@@ -51,6 +51,7 @@ _PRICING = {
     "claude-sonnet-5": {"input": 2.00, "output": 10.00},  # launch intro price made permanent 2026-09-01 (increase to $3/$15 cancelled)
     "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
     "claude-opus-4-5": {"input": 5.00, "output": 25.00},
+    "claude-haiku-5-5": {"input": 0.10, "output": 0.50},  # tier for prompts <=100k tokens; >100k is $0.50/$2.50
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
 }
 

@@ -293,6 +293,8 @@ Opus 5.5 always uses adaptive thinking. Do not send `budget_tokens` or a `thinki
 
 `claude-sonnet-5-5` (released September 28, 2026) uses Anthropic directly, with a 1M token context and a 128,000 token output limit. Set `reasoning_effort` to `low`, `medium`, `high`, `xhigh`, or `max`; Anthropic defaults to `high` when omitted. Input costs $2 per million tokens, output $10, and cache reads $0.20, the same as Sonnet 5. Like Opus 5.5, it rejects `budget_tokens`, thinking type `enabled` or `disabled`, sampling parameters, and forced tool choices; the router drops the sampling parameters and converts forced tool choices to `auto`. See Anthropic's [Sonnet 5.5 overview](https://platform.claude.com/docs/en/models/sonnet-5-5/overview).
 
+`claude-haiku-5-5` (released October 7, 2026) uses Anthropic directly, with a 1M token context and a 128,000 token output limit. Set `reasoning_effort` to `low`, `medium`, `high`, `xhigh`, or `max`; Anthropic defaults to `medium` when omitted. Input costs $0.10 per million tokens and output $0.50 for prompts up to 100,000 tokens; above that Anthropic charges $0.50 and $2.50. It rejects `budget_tokens`, non-default sampling parameters and assistant prefill, and the router drops `temperature`, `top_p`, and `top_k`. Unlike Sonnet 5.5 it accepts forced tool choices. See Anthropic's [Haiku 5.5 overview](https://platform.claude.com/docs/en/models/haiku-5-5/overview).
+
 ### Anthropic Betas
 
 Pass beta feature flags to Claude models:

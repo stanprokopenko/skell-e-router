@@ -495,6 +495,21 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
         max_output_tokens=64000,
     ),
+    # Haiku 5.5 (released 2026-10-07): adaptive thinking on by default, effort
+    # low..max (default medium). budget_tokens, non-default sampling params and
+    # assistant prefill return 400; the router drops temperature/top_p/top_k.
+    # Forced tool choices ARE accepted (unlike Sonnet 5.5), so no coercion.
+    # 1M context, 128k max output. $0.10/$0.50 per 1M for prompts up to 100k
+    # tokens ($0.50/$2.50 above that); standard 0.1x cache reads.
+    "claude-haiku-5-5": AIModel(
+        name="anthropic/claude-haiku-5-5",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        use_direct_sdk=True,
+        max_output_tokens=128000,
+    ),
     "claude-haiku-4-5": AIModel(
         name="anthropic/claude-haiku-4-5",
         provider="anthropic",
