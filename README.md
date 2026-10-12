@@ -152,13 +152,14 @@ Route embedding calls through skell-e-router with `get_embedding()`. Supports Op
 ```python
 from skell_e_router import get_embedding
 
-# Single text → list[float]
-v = get_embedding("openai-embedding-3-large", "hello world")
+# Literal text → list[float], safe for search queries and transcripts
+v = get_embedding("openai-embedding-3-large", "hello world", literal_text=True)
 
 # Batch → list[list[float]]
 vs = get_embedding(
     "openai-embedding-3-large",
     ["doc 1", "doc 2", "doc 3"],
+    literal_text=True,
 )
 
 # Multimodal aggregation (Gemini): text + image → one fused embedding
@@ -167,6 +168,8 @@ v = get_embedding(
     [["a red shoe on wood", "shoe.jpg"]],
 )
 ```
+
+Use `literal_text=True` for untrusted text with either provider. It preserves exact strings and one vector per batch item, without probing file paths or interpreting URLs and media. The default retains automatic local-file uploads and media detection for existing callers. Nested media inputs use the default path.
 
 Available models: `openai-embedding-3-large`, `openai-embedding-3-small`, `gemini-embedding-2`. See [the technical reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#embeddings) for the capability matrix, input shape rules, and error codes.
 

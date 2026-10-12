@@ -86,6 +86,28 @@ v = get_embedding(
 
 **Not supported in one call:** mixing aggregation with batch (e.g. `[["a","b"], "c"]`) or doing multiple aggregations at once (e.g. `[["a","b"], ["c","d"]]`). Both raise `RouterError("INVALID_INPUT")`. To embed multiple multimodal items, call `get_embedding` once per item.
 
+### Literal text for search queries and transcripts
+
+Developer API, available since 3.38.1. Pass `literal_text=True` when input is untrusted text:
+
+```python
+get_embedding("gemini-embedding-2", "models.json", literal_text=True)
+get_embedding(
+    "gemini-embedding-2",
+    ["models.json", "gs://bucket/image.png", "data:image/png;base64,abc"],
+    literal_text=True,
+    dimensions=768,
+)
+```
+
+The first call embeds the filename itself. The second embeds three exact strings and returns three vectors in input order. Neither call probes the input as a filesystem path or interprets it as a URL, file reference, or media. Whitespace and Unicode stay unchanged; the router adds no prefixes. The same option works with both OpenAI embedding aliases and full registered model names. A scalar string returns `list[float]`; a flat string list returns `list[list[float]]`. `rich_response=True`, dimensions, credential configuration, retries, and error handling still apply.
+
+Literal text accepts a string or a non-empty flat list of strings. Nested lists, file-reference objects, and other values raise `INVALID_INPUT`. An empty string is forwarded unchanged; the provider may reject it. The default `literal_text=False` retains automatic file uploads and media detection, so untrusted text callers must opt in. Explicit image aggregation continues to use the default path.
+
+For Gemini literal text, the router uses LiteLLM's OpenAI transport with Google's [OpenAI-compatible embedding endpoint](https://ai.google.dev/gemini-api/docs/openai#embeddings) and the Gemini API key. Requests still go to Google and use the selected Gemini model. This avoids LiteLLM's native Gemini adapter, which treats some string prefixes as media and combines the batch. Ordinary Gemini media calls keep their existing transport.
+
+Google's compatible endpoint may omit usage information. For these responses, `prompt_tokens` can be zero and `cost` can be `None`; these values do not mean the request was free.
+
 ### Capability Matrix
 
 | Alias | Provider | Inputs | Max dims | Recommended dims | Aggregation | Notes |

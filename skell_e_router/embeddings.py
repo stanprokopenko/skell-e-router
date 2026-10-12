@@ -102,6 +102,8 @@ def _convert_part(part) -> tuple[str | dict, Modality]:
 def _normalize_input(
     input,
     model: EmbeddingModel,
+    *,
+    literal_text: bool = False,
 ) -> tuple[list, bool]:
     """Normalize the user's `input` argument to the LiteLLM-expected list shape.
 
@@ -136,6 +138,15 @@ def _normalize_input(
                 f"got {type(input).__name__}"
             ),
         )
+
+    # Untrusted text must never reach file detection or media classification.
+    if literal_text:
+        if not items or not all(isinstance(item, str) for item in items):
+            raise RouterError(
+                code="INVALID_INPUT",
+                message="literal_text requires a string or a non-empty flat list of strings",
+            )
+        return list(items), was_str
 
     aggregate_count = sum(1 for item in items if isinstance(item, list))
     has_aggregation = aggregate_count > 0
@@ -224,10 +235,14 @@ def _build_embedding_response(
     """Convert a LiteLLM embedding response into our EmbeddingResponse dataclass."""
     # Sort by `index` defensively — providers should return in order, but
     # protect against any reordering.
-    data = sorted(
-        response.data,
-        key=lambda d: d["index"] if isinstance(d, dict) else d.index,
-    )
+    def response_index(entry):
+        position, datum = entry
+        index = datum.get("index") if isinstance(datum, dict) else datum.index
+        # Google's OpenAI-compatible endpoint omits the zero index. Keep the
+        # provider's position for unindexed results; honor explicit indices.
+        return position if index is None else index
+
+    data = [datum for _, datum in sorted(enumerate(response.data), key=response_index)]
     embeddings = [
         d["embedding"] if isinstance(d, dict) else d.embedding
         for d in data
@@ -280,6 +295,7 @@ def get_embedding(
     model: str,
     input: str,
     *,
+    literal_text: bool = False,
     dimensions: int | None = None,
     config: dict | None = None,
     rich_response: Literal[False] = False,
@@ -292,6 +308,7 @@ def get_embedding(
     model: str,
     input: list,
     *,
+    literal_text: bool = False,
     dimensions: int | None = None,
     config: dict | None = None,
     rich_response: Literal[False] = False,
@@ -304,6 +321,7 @@ def get_embedding(
     model: str,
     input,
     *,
+    literal_text: bool = False,
     dimensions: int | None = None,
     config: dict | None = None,
     rich_response: Literal[True],
@@ -315,6 +333,7 @@ def get_embedding(
     model: str,
     input,
     *,
+    literal_text: bool = False,
     dimensions: int | None = None,
     config: dict | None = None,
     rich_response: bool = False,
@@ -340,6 +359,10 @@ def get_embedding(
             multiple aggregations in one call (``[["a","b"], ["c","d"]]``) is
             not supported and raises ``RouterError("INVALID_INPUT")``. To embed
             multiple multimodal items, call this function once per item.
+        literal_text: Treat a string or flat string batch as exact text, without
+            filesystem probes or URL/media interpretation. Use for untrusted
+            search queries and transcripts. Gemini uses Google's OpenAI-compatible
+            text endpoint through LiteLLM; explicit media inputs use the default path.
         dimensions: Optional output dimension count, ``1 ≤ dimensions ≤
             model.max_dimensions``. The provider truncates and (for Gemini and
             OpenAI text-embedding-3) renormalizes.
@@ -367,12 +390,26 @@ def get_embedding(
     embedding_model = resolve_embedding_alias(model)
     _check_provider_key(embedding_model, config, verbosity)
 
-    normalized, was_str = _normalize_input(input, embedding_model)
+    if not isinstance(literal_text, bool):
+        raise RouterError(code="INVALID_PARAM", message="literal_text must be a bool")
+    normalized, was_str = _normalize_input(input, embedding_model, literal_text=literal_text)
     _validate_dimensions(dimensions, embedding_model)
 
     api_key = _resolve_api_key(embedding_model, config)
 
     extra_kwargs = {}
+    transport_model = embedding_model.name
+    if literal_text and embedding_model.provider == "gemini":
+        # LiteLLM's native Gemini adapter reinterprets data:, gs:// and files/
+        # strings as media and fuses the batch. Google's OpenAI-compatible text
+        # endpoint preserves strings and cardinality, without adapter overrides.
+        transport_model = "openai/" + embedding_model.name.split("/", 1)[1]
+        extra_kwargs["api_base"] = "https://generativelanguage.googleapis.com/v1beta/openai/"
+        # Do not let the OpenAI adapter fall back to an OpenAI credential.
+        api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            raise RouterError(code="MISSING_ENV", message="Gemini API key is required for literal text embeddings")
+        extra_kwargs["allowed_openai_params"] = ["dimensions"]
     if dimensions is not None:
         extra_kwargs["dimensions"] = dimensions
 
@@ -386,7 +423,7 @@ def get_embedding(
     try:
         start_time = time.perf_counter()
         response, request_duration_s = _perform_embedding(
-            model_name=embedding_model.name,
+            model_name=transport_model,
             input=normalized,
             api_key=api_key,
             **extra_kwargs,

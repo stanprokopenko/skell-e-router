@@ -1,5 +1,10 @@
 # Active Tasks & Deferred Follow-ups
 
+## Literal text embeddings
+
+- [x] Added `get_embedding(..., literal_text=True)` in 3.38.1 for untrusted search and transcript text. Gemini and OpenAI preserve exact strings and batch size without input filesystem probes or URL/media interpretation. Existing image uploads keep their default path. Consumer migration requires adding this keyword; the Solar Sailer moment-search review lead owns that change. [Supported API](../skell_e_router/Skell-E-Router-DOCUMENTATION.md#literal-text-for-search-queries-and-transcripts).
+- [x] Verified 34 HTTP-boundary and response regressions, plus the full suite of 1,075 tests and 17 subtests. Live Gemini and OpenAI checks each returned eight 768-dimensional vectors for eight inputs; ordinary text matched the existing transport within 4.36e-9 for Gemini and exactly for OpenAI. Live Gemini image aggregation passed. Independent security review found no blocking issues. Google may omit usage, and literal Gemini cost estimates can be unavailable; total probe spend is estimated below $0.01.
+
 ## Jev classification comparison
 
 - [x] Added and authenticated Jev support, including all three aliases and Choice/Noul/Score. The 333-call fixture benchmark verified integration and measured speed/cost, but used examples covered by deterministic rules. It does not establish whether Jev can replace an existing AI step. Total task API spend was about $0.0461. No production routing changed. [Evidence and corrected interpretation](jev-classification.md).
