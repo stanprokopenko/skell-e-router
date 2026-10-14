@@ -708,6 +708,14 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         if "reasoning_effort" not in existing:
             kwargs["allowed_openai_params"] = list(existing) + ["reasoning_effort"]
 
+    # LiteLLM before 1.83 rejects reasoning_effort "xhigh" for OpenAI chat models outside
+    # its registry (UnsupportedParamsError) even though the API accepts it, and the
+    # whitelist above does not bypass that value check. extra_body reaches the wire
+    # untouched, so send xhigh that way on the plain chat path (the Responses bridge is fine).
+    if (ai_model.is_openai and ai_model.name.startswith("openai/") and not ai_model.use_responses_api
+            and kwargs.get("reasoning_effort") == "xhigh"):
+        kwargs["extra_body"] = {**(kwargs.get("extra_body") or {}), "reasoning_effort": kwargs.pop("reasoning_effort")}
+
     # Gemini (LiteLLM path): sanitize tool parameter schemas. The Gemini API
     # rejects $defs/$ref/additionalProperties and requires `items` on arrays;
     # the direct SDK path sanitizes in _build_generate_config, this covers

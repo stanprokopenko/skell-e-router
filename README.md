@@ -288,6 +288,8 @@ response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enable
 
 `gpt-6-sol` and `gpt-6-luna` use the same Responses API bridge, because OpenAI allows function calling on Chat Completions only at `reasoning_effort="none"`. Both accept `none`, `low`, `medium`, `high`, `xhigh`, and `max`; OpenAI defaults to `medium`. Router pricing is authoritative: Sol costs $2 input and $10 output per million tokens, Luna $0.10 and $0.50.
 
+`gpt-5.6-sol`, `gpt-5.6-terra`, and `gpt-5.6-luna` accept `reasoning_effort="xhigh"` on the plain chat path. LiteLLM releases before 1.83 reject that value for these models even though OpenAI accepts it, so the router sends `xhigh` through `extra_body`, which LiteLLM forwards to the request body untouched. Other effort levels travel as a normal parameter.
+
 `gpt-6.1-sol` uses the Responses API bridge for tool support. It accepts `low`, `medium`, `high`, `xhigh`, and `max`, with `medium` as the provider default. It has a 1,050,000 token context and a 128,000 token output limit. Input costs $2 per million tokens, output $10, and cache reads $0.10. The cost estimate applies 2x input and cache-read rates and 1.5x output rates above 272,000 input tokens. It excludes separately billed cache writes, which cost $2.50 per million tokens at standard context. See OpenAI's [model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol) and [pricing](https://developers.openai.com/api/docs/pricing).
 
 `claude-opus-5-5` uses Anthropic directly, with a 1M token context and a 128,000 token output limit. Set `reasoning_effort` to `low`, `medium`, `high`, `xhigh`, or `max`. Anthropic defaults to `medium` when omitted. Input costs $4 per million tokens, output $20, and cache reads $0.20.

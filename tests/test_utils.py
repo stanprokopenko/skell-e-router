@@ -1700,3 +1700,29 @@ class TestEncodeToDataUri:
         out = _encode_image(str(p))
         assert out["type"] == "image_url"
         assert out["image_url"]["url"].startswith("data:image/png;base64,")
+
+
+# ---------------------------------------------------------------------------
+# xhigh on the OpenAI chat path travels in extra_body (LiteLLM < 1.83 rejects it)
+# ---------------------------------------------------------------------------
+
+class TestXhighViaExtraBody:
+
+    def test_openai_chat_xhigh_moves_to_extra_body(self):
+        result = _handle_model_specific_params(MODEL_CONFIG["gpt-5.6-sol"], {"reasoning_effort": "xhigh", "max_tokens": 500})
+        assert "reasoning_effort" not in result
+        assert result["extra_body"]["reasoning_effort"] == "xhigh"
+
+    def test_openai_chat_xhigh_keeps_caller_extra_body(self):
+        result = _handle_model_specific_params(MODEL_CONFIG["gpt-5.6-sol"], {"reasoning_effort": "xhigh", "extra_body": {"metadata": {"k": "v"}}})
+        assert result["extra_body"] == {"metadata": {"k": "v"}, "reasoning_effort": "xhigh"}
+
+    def test_openai_chat_high_stays_top_level(self):
+        result = _handle_model_specific_params(MODEL_CONFIG["gpt-5.6-sol"], {"reasoning_effort": "high"})
+        assert result["reasoning_effort"] == "high"
+        assert "reasoning_effort" not in (result.get("extra_body") or {})
+
+    def test_responses_bridge_xhigh_stays_top_level(self):
+        result = _handle_model_specific_params(MODEL_CONFIG["gpt-6.1-sol"], {"reasoning_effort": "xhigh"})
+        assert result["reasoning_effort"] == "xhigh"
+        assert "reasoning_effort" not in (result.get("extra_body") or {})
