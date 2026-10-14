@@ -98,7 +98,7 @@ class TestModelConfig:
         "gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
-        "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite",
+        "gemini-4-argon", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite",
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
@@ -151,7 +151,7 @@ class TestModelConfig:
 
     @pytest.mark.parametrize("alias", [
         "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
-        "gemini-3-flash-preview", "gemini-3-pro-preview",
+        "gemini-3-flash-preview", "gemini-3-pro-preview", "gemini-4-argon",
         "nano-banana-3",
     ])
     def test_gemini_models_have_safety_settings(self, alias):
@@ -253,6 +253,19 @@ class TestModelConfig:
         assert "gemini/gemini-3-pro-image" in MODEL_CONFIG
         model = MODEL_CONFIG["gemini/gemini-3-pro-image"]
         assert model.name == "gemini/gemini-3-pro-image"
+
+    def test_gemini_4_argon_config(self):
+        """gemini-4-argon: flagship GA model, direct SDK, thinking_level low/medium/high (no minimal, cannot disable), $2/$10 launch pricing."""
+        from skell_e_router.gemini_direct import _PRICING
+        model = MODEL_CONFIG["gemini-4-argon"]
+        assert model.name == "gemini/gemini-4-argon"
+        assert model.provider == "gemini"
+        assert model.supports_thinking is True
+        assert model.use_direct_sdk is True
+        assert "reasoning_effort" in model.supported_params
+        assert "budget_tokens" not in model.supported_params
+        assert model.accepted_reasoning_efforts == {"low", "medium", "high"}
+        assert _PRICING["gemini-4-argon"] == {"input": 2.00, "output": 10.00, "cached_input": 0.10}
 
     def test_gemini_3_8_flash_config(self):
         """gemini-3.8-flash: GA flash model, direct SDK, thinking_level low/medium/high only ("minimal" returns 400)."""

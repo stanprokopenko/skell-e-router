@@ -262,6 +262,20 @@ MODEL_CONFIG = {
     # Note: web_search_options enables Google Search Grounding for real-time web search
     # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
+    # gemini-4-argon: GA (stable) October 13, 2026. Google's flagship reasoning model, paid tier only.
+    # 1M context shared by input, thinking and output; 65,536 max output (long decode up to 1M via
+    # the Interactions API, not wired here). thinking_level low/medium/high, default medium, cannot be
+    # turned off. Google ignores temperature/top_p/top_k (accepted, no effect). No explicit caching;
+    # implicit cache hits bill at the cached_input rate. $2/$10/$0.10 per 1M through 2026-11-30,
+    # doubling on 2026-12-01. https://ai.google.dev/gemini-api/docs/models/gemini-4-argon
+    "gemini-4-argon": AIModel(
+        name="gemini/gemini-4-argon",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"low", "medium", "high"},
+        use_direct_sdk=True,
+    ),
     # gemini-3.8-flash: GA (stable) September 2, 2026. 1M context, 65,536 max output. Same API
     # surface as 3.7-flash: thinking_level low/medium/high ("minimal" returns 400), default medium.
     # Google's migration guide deprecates temperature/top_p/top_k/candidate_count but the API still
