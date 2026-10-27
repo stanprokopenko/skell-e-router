@@ -608,6 +608,34 @@ MODEL_CONFIG = {
 
     # MOONSHOT (FIRST-PARTY API)
 
+    # Kimi K3.1 Pro: post-trained successor to K3, released Oct 23, 2026 (open weights
+    # promised by Nov 4). Same parameter constraints as kimi-k3: reasoning always on
+    # (low/high/max, default max), temperature/top_p fixed server-side. 1M context;
+    # max_completion_tokens defaults to 131,072 and can be raised to 1,048,576.
+    # Official Moonshot pricing: https://platform.kimi.ai/docs/pricing/chat
+    # (cache writes bill separately: $2.00 5-min TTL / $4.00 1-hour TTL per 1M).
+    "kimi-k3.1-pro": AIModel(
+        name="openai/kimi-k3.1-pro",
+        provider="moonshot",
+        supports_thinking=True,
+        supported_params={"max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "high", "max"},
+        api_base="https://api.moonshot.ai/v1",
+        pricing={"input": 2.00, "cached_input": 0.20, "output": 10.00},
+    ),
+
+    # Kimi K3.1 Pro Highspeed: the same model served 2-3x faster at double the price
+    # (cache writes $4.00 5-min TTL / $8.00 1-hour TTL per 1M).
+    "kimi-k3.1-pro-highspeed": AIModel(
+        name="openai/kimi-k3.1-pro-highspeed",
+        provider="moonshot",
+        supports_thinking=True,
+        supported_params={"max_tokens", "max_completion_tokens", "reasoning_effort", "stream", "tools", "tool_choice"},
+        accepted_reasoning_efforts={"low", "high", "max"},
+        api_base="https://api.moonshot.ai/v1",
+        pricing={"input": 4.00, "cached_input": 0.20, "output": 20.00},
+    ),
+
     # Kimi K3: Moonshot's flagship (2.8T MoE, 16-of-896 experts), API launched Jul 16, 2026.
     # API-only until open weights land (~Jul 27, 2026) — served at api.moonshot.ai
     # (OpenAI-compatible), routed via LiteLLM's generic "openai/" provider with an

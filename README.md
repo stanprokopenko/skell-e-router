@@ -196,11 +196,14 @@ ANTHROPIC_API_KEY
 GROQ_API_KEY
 XAI_API_KEY
 OPENROUTER_API_KEY
+MOONSHOT_API_KEY
 ```
 
 Only the one you need is required — you don't need them all.
 
 > **OpenRouter models** (`glm-5.3-flash`) use the `OPENROUTER_API_KEY`.
+
+> **Moonshot models** (`kimi-k3.1-pro`, `kimi-k3.1-pro-highspeed`, `kimi-k3`) use the `MOONSHOT_API_KEY`. They always reason; set `reasoning_effort` to `low`, `high`, or `max` (default `max`). Moonshot fixes temperature server-side, so the router drops it. `kimi-k3.1-pro` costs $2 input, $0.20 cache reads and $10 output per million tokens; the Highspeed variant is the same model 2-3x faster at $4 / $0.20 / $20. See Moonshot's [pricing](https://platform.kimi.ai/docs/pricing/chat).
 
 > **Groq-hosted models** (`gpt-oss-120b`, `gpt-oss-20b`) use the `GROQ_API_KEY`.
 

@@ -105,7 +105,7 @@ class TestModelConfig:
         "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
-        "kimi-k3",
+        "kimi-k3.1-pro", "kimi-k3.1-pro-highspeed", "kimi-k3",
         "glm-5.3-flash",
         "grok-4.6", "grok-4.5", "grok-4.20", "grok-4.20-non-reasoning",
         "gpt-oss-120b", "gpt-oss-20b",
@@ -357,6 +357,23 @@ class TestModelConfig:
         assert model.pricing == {"input": 3.00, "cached_input": 0.30, "output": 15.00}
         # The DeepInfra stand-in is gone
         assert "kimi-k2.6" not in MODEL_CONFIG
+
+    @pytest.mark.parametrize("alias,pricing", [
+        ("kimi-k3.1-pro", {"input": 2.00, "cached_input": 0.20, "output": 10.00}),
+        ("kimi-k3.1-pro-highspeed", {"input": 4.00, "cached_input": 0.20, "output": 20.00}),
+    ])
+    def test_kimi_k3_1_pro_config(self, alias, pricing):
+        """Kimi K3.1 Pro and its Highspeed variant share kimi-k3's Moonshot routing
+        and parameter constraints; only the price differs."""
+        model = MODEL_CONFIG[alias]
+        assert model.provider == "moonshot"
+        assert model.name == f"openai/{alias}"
+        assert model.api_base == "https://api.moonshot.ai/v1"
+        assert model.supports_thinking is True
+        assert model.accepted_reasoning_efforts == {"low", "high", "max"}
+        assert model.supported_params == MODEL_CONFIG["kimi-k3"].supported_params
+        # Per 1M tokens, from https://platform.kimi.ai/docs/pricing/chat
+        assert model.pricing == pricing
 
     def test_glm_5_3_flash_config(self):
         """GLM 5.3 Flash is the first OpenRouter-routed model, using LiteLLM's native
