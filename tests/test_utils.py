@@ -1210,16 +1210,20 @@ class TestComputeResponseCost:
             cost = _compute_response_cost(mock_resp, self._pricing_model())
         assert cost == pytest.approx(1.25 + 4.25)
 
+    @pytest.mark.parametrize("alias,input_rate,cached_rate,output_rate", [
+        ("gpt-6.1-sol", 2.0, 0.10, 10.0), ("gpt-6.1-terra", 1.0, 0.05, 5.0),
+    ])
     @pytest.mark.parametrize("prompt_tokens,input_multiplier,output_multiplier", [
         (272_000, 1.0, 1.0), (272_001, 2.0, 1.5),
     ])
-    def test_gpt_6_1_sol_long_context_pricing(self, prompt_tokens, input_multiplier, output_multiplier):
+    def test_gpt_6_1_long_context_pricing(self, alias, input_rate, cached_rate, output_rate,
+                                          prompt_tokens, input_multiplier, output_multiplier):
         response = make_litellm_response(prompt_tokens=prompt_tokens, completion_tokens=1000)
         response.usage.prompt_tokens_details.cached_tokens = 100_000
         with patch("skell_e_router.utils.litellm") as mock_litellm:
-            cost = _compute_response_cost(response, MODEL_CONFIG["gpt-6.1-sol"])
-        expected = (((prompt_tokens - 100_000) * 2.0 + 100_000 * 0.10) * input_multiplier
-                    + 1000 * 10.0 * output_multiplier) / 1_000_000
+            cost = _compute_response_cost(response, MODEL_CONFIG[alias])
+        expected = (((prompt_tokens - 100_000) * input_rate + 100_000 * cached_rate) * input_multiplier
+                    + 1000 * output_rate * output_multiplier) / 1_000_000
         assert cost == pytest.approx(expected)
         mock_litellm.completion_cost.assert_not_called()
 
@@ -1264,7 +1268,7 @@ class TestComputeResponseCost:
 
 class TestAskAi:
 
-    @pytest.mark.parametrize("alias", ["gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol", "gpt-6-luna"])
+    @pytest.mark.parametrize("alias", ["gpt-6.1-terra", "gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol", "gpt-6-luna"])
     @patch("skell_e_router.utils.litellm")
     def test_gpt_6_uses_responses_api_bridge(self, mock_litellm, alias):
         mock_litellm.completion.return_value = make_litellm_response("tool result")
@@ -1722,7 +1726,8 @@ class TestXhighViaExtraBody:
         assert result["reasoning_effort"] == "high"
         assert "reasoning_effort" not in (result.get("extra_body") or {})
 
-    def test_responses_bridge_xhigh_stays_top_level(self):
-        result = _handle_model_specific_params(MODEL_CONFIG["gpt-6.1-sol"], {"reasoning_effort": "xhigh"})
+    @pytest.mark.parametrize("alias", ["gpt-6.1-sol", "gpt-6.1-terra"])
+    def test_responses_bridge_xhigh_stays_top_level(self, alias):
+        result = _handle_model_specific_params(MODEL_CONFIG[alias], {"reasoning_effort": "xhigh"})
         assert result["reasoning_effort"] == "xhigh"
         assert "reasoning_effort" not in (result.get("extra_body") or {})

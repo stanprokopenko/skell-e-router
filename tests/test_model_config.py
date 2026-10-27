@@ -95,7 +95,7 @@ class TestModelConfig:
         assert len(MODEL_CONFIG) > 0
 
     @pytest.mark.parametrize("alias", [
-        "gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
+        "gpt-6.1-terra", "gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna",
         "gpt-5.5", "gpt-5.4-mini", "gpt-5.4-nano",
         "gpt-5.3-codex", "gpt-5", "gpt-4o", "o3", "o1",
         "gemini-4-argon", "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite",
@@ -459,6 +459,23 @@ class TestModelConfig:
         assert "top_p" not in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh", "max"}
         assert model.pricing == {"input": 2.00, "cached_input": 0.10, "output": 10.00,
+                                 "long_context_threshold": 272_000, "long_context_input_multiplier": 2.0,
+                                 "long_context_output_multiplier": 1.5}
+        assert model.max_output_tokens == 128_000
+        assert model.use_responses_api is True
+        assert model.authoritative_pricing is True
+
+    def test_gpt_6_1_terra_config(self):
+        model = MODEL_CONFIG["gpt-6.1-terra"]
+        assert model.name == "openai/gpt-6.1-terra"
+        assert MODEL_CONFIG[model.name] is model
+        assert model.provider == "openai"
+        assert model.supports_thinking is True
+        assert {"reasoning_effort", "stream", "tools", "tool_choice"} <= model.supported_params
+        assert "temperature" not in model.supported_params
+        assert "top_p" not in model.supported_params
+        assert model.accepted_reasoning_efforts == {"none", "low", "medium", "high", "xhigh", "max"}
+        assert model.pricing == {"input": 1.00, "cached_input": 0.05, "output": 5.00,
                                  "long_context_threshold": 272_000, "long_context_input_multiplier": 2.0,
                                  "long_context_output_multiplier": 1.5}
         assert model.max_output_tokens == 128_000
