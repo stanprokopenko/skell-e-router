@@ -28,7 +28,8 @@
 ## Model registry follow-ups (from 2026-07-21 model-gap work)
 
 - [x] **Swap `kimi-k2.6` → Kimi K3** — done 2026-07-22 (v3.16.0): Moonshot's K3 API launched early (Jul 16), so `kimi-k3` now routes first-party via `api.moonshot.ai` (MOONSHOT_API_KEY, $3/$15 per 1M) and the `kimi-k2.6` DeepInfra stand-in was removed.
-- [ ] **Re-evaluate kimi-k3 hosting** once the K3 open weights land on DeepInfra (promised ~Jul 27, 2026) — DeepInfra may undercut Moonshot's $3/$15 first-party pricing, but check latency first (DeepInfra ran Kimi-K2.6 at ~3.5 min/answer).
+- [x] **Add Kimi K3.1 Pro** — done 2026-10-26 (v3.41.0): `kimi-k3.1-pro` ($2/$10) and `kimi-k3.1-pro-highspeed` ($4/$20) route first-party like `kimi-k3`. Benchmarked in benchmark's `docs/kimi-k3-1-pro-benchmark-results.md`.
+- [ ] **Re-evaluate Kimi hosting** once K3.1 Pro open weights land on third-party hosts (Moonshot promised by Nov 4, 2026). A host may undercut Moonshot's first-party pricing, but check latency first (DeepInfra ran Kimi-K2.6 at ~3.5 min/answer).
 - [x] **Remove or replace the dead Groq entries** — done 2026-09-25 (v3.33.0) as part of the retired-model sweep; `groq-compound`, `groq-compound-mini`, `qwen3-32b` and `kimi-k2-0905` are gone and the Groq-only request code with them. Audit in [model-deprecation-audit-2026-09-25.md](model-deprecation-audit-2026-09-25.md).
 - [ ] **Add Gemini 3.5 Pro when it goes GA** — still in limited Vertex preview as of Jul 21, 2026; Google shipped 3.6 Flash instead and teased Gemini 4.
 - [x] **Consider DeepSeek first-party API** — closed 2026-09-12 (v3.27.0). DeepSeek retired V4-Flash and repriced; for the new `deepseek-v4.1-flash`, DeepInfra ($0.20/$0.60 per 1M) is cheaper than first-party peak ($0.30/$1.20). No DEEPSEEK_API_KEY needed. Revisit only if DeepInfra lags a future DeepSeek release.
