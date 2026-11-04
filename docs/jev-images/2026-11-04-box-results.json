@@ -1,0 +1,2200 @@
+{
+  "model": [
+    "jev-1.14.0"
+  ],
+  "requests": 100,
+  "errors": 0,
+  "input_tokens": 187336,
+  "cost_text_rate": 0.00787,
+  "median_duration_seconds": 0.154,
+  "frames": {
+    "scored": 23,
+    "no_tip": 23,
+    "cant_tell": 4
+  },
+  "baselines": {
+    "image_center": {
+      "n": 23,
+      "median_px": 452.16479296822746,
+      "mean_px": 539.7454812647276,
+      "p90_px": 1042.9137068808714,
+      "max_px": 1323.272080866214,
+      "within_25px": 0.0,
+      "within_50px": 0.0,
+      "within_100px": 0.0,
+      "inside_box": null
+    },
+    "mean_labeled_point": {
+      "n": 23,
+      "median_px": 452.9274928723383,
+      "mean_px": 493.3151532519175,
+      "p90_px": 980.3913197731704,
+      "max_px": 1189.0057815596317,
+      "within_25px": 0.0,
+      "within_50px": 0.043478260869565216,
+      "within_100px": 0.043478260869565216,
+      "inside_box": null
+    },
+    "mean_labeled_point_leave_one_out": {
+      "n": 23,
+      "median_px": 473.5151061847171,
+      "mean_px": 515.7385693088228,
+      "p90_px": 1024.9545615810416,
+      "max_px": 1243.051498903251,
+      "within_25px": 0.0,
+      "within_50px": 0.043478260869565216,
+      "within_100px": 0.043478260869565216,
+      "inside_box": null
+    },
+    "mean_labeled_point_fraction": [
+      0.5524,
+      0.5514
+    ],
+    "label_spread_px": {
+      "x_std": 528.8,
+      "y_std": 260.7
+    }
+  },
+  "variants": {
+    "detailed": {
+      "instructions": "The tip of the pencil in `frame`, where the graphite point meets or nearly meets the paper.",
+      "missing_frames": [],
+      "scored": {
+        "overall": {
+          "n": 23,
+          "median_px": 120.9,
+          "mean_px": 194.7304347826087,
+          "p90_px": 469.8,
+          "max_px": 946.9,
+          "within_25px": 0.0,
+          "within_50px": 0.08695652173913043,
+          "within_100px": 0.4782608695652174,
+          "inside_box": 0.43478260869565216
+        },
+        "by_state": {
+          "not-touching": {
+            "n": 18,
+            "median_px": 125.3,
+            "mean_px": 197.2388888888889,
+            "p90_px": 470.9,
+            "max_px": 946.9,
+            "within_25px": 0.0,
+            "within_50px": 0.1111111111111111,
+            "within_100px": 0.4444444444444444,
+            "inside_box": 0.5
+          },
+          "touching": {
+            "n": 5,
+            "median_px": 87.6,
+            "mean_px": 185.7,
+            "p90_px": 469.8,
+            "max_px": 469.8,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.6,
+            "inside_box": 0.2
+          }
+        },
+        "by_confidence": {
+          "high (>=0.6)": {
+            "n": 12,
+            "median_px": 70.35,
+            "mean_px": 101.76666666666667,
+            "p90_px": 232.6,
+            "max_px": 235.9,
+            "within_25px": 0.0,
+            "within_50px": 0.16666666666666666,
+            "within_100px": 0.6666666666666666,
+            "inside_box": 0.4166666666666667
+          },
+          "mid (0.3-0.6)": {
+            "n": 10,
+            "median_px": 184.3,
+            "mean_px": 231.07,
+            "p90_px": 469.8,
+            "max_px": 470.9,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.3,
+            "inside_box": 0.5
+          },
+          "low (<0.3)": {
+            "n": 1,
+            "median_px": 946.9,
+            "mean_px": 946.9,
+            "p90_px": 946.9,
+            "max_px": 946.9,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.0,
+            "inside_box": 0.0
+          }
+        },
+        "median_confidence": 0.76,
+        "median_box_px": [
+          154,
+          108
+        ],
+        "tall_boxes_over_30pct_height": 1,
+        "per_frame": [
+          {
+            "review_id": "P-01",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+            "state": "not-touching",
+            "stan_point": [
+              0.3716,
+              0.4069
+            ],
+            "box": {
+              "top": 0.41,
+              "bottom": 0.47,
+              "left": 0.38,
+              "right": 0.42
+            },
+            "confidence": 0.81,
+            "center": [
+              0.4,
+              0.44
+            ],
+            "distance_px": 130.3,
+            "distance_1024px": 34.7,
+            "edge_distance_px": 32.9,
+            "inside": false,
+            "box_width_px": 154,
+            "box_height_px": 130,
+            "box_area_share": 0.0024
+          },
+          {
+            "review_id": "P-03",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+            "state": "touching",
+            "stan_point": [
+              0.5539,
+              0.6319
+            ],
+            "box": {
+              "top": 0.64,
+              "bottom": 0.67,
+              "left": 0.55,
+              "right": 0.58
+            },
+            "confidence": 0.8,
+            "center": [
+              0.565,
+              0.655
+            ],
+            "distance_px": 65.5,
+            "distance_1024px": 17.5,
+            "edge_distance_px": 17.4,
+            "inside": false,
+            "box_width_px": 115,
+            "box_height_px": 65,
+            "box_area_share": 0.0009
+          },
+          {
+            "review_id": "P-06",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+            "state": "touching",
+            "stan_point": [
+              0.6555,
+              0.6532
+            ],
+            "box": {
+              "top": 0.65,
+              "bottom": 0.7,
+              "left": 0.65,
+              "right": 0.69
+            },
+            "confidence": 0.59,
+            "center": [
+              0.67,
+              0.675
+            ],
+            "distance_px": 73.0,
+            "distance_1024px": 19.5,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 154,
+            "box_height_px": 108,
+            "box_area_share": 0.002
+          },
+          {
+            "review_id": "P-07",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+            "state": "touching",
+            "stan_point": [
+              0.6039,
+              0.6245
+            ],
+            "box": {
+              "top": 0.63,
+              "bottom": 0.69,
+              "left": 0.6,
+              "right": 0.63
+            },
+            "confidence": 0.81,
+            "center": [
+              0.615,
+              0.66
+            ],
+            "distance_px": 87.6,
+            "distance_1024px": 23.4,
+            "edge_distance_px": 11.8,
+            "inside": false,
+            "box_width_px": 115,
+            "box_height_px": 130,
+            "box_area_share": 0.0018
+          },
+          {
+            "review_id": "P-09",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240",
+            "state": "not-touching",
+            "stan_point": [
+              0.4427,
+              0.5764
+            ],
+            "box": {
+              "top": 0.54,
+              "bottom": 0.58,
+              "left": 0.44,
+              "right": 0.69
+            },
+            "confidence": 0.54,
+            "center": [
+              0.565,
+              0.56
+            ],
+            "distance_px": 470.9,
+            "distance_1024px": 125.6,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 960,
+            "box_height_px": 86,
+            "box_area_share": 0.01
+          },
+          {
+            "review_id": "P-10",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+            "state": "touching",
+            "stan_point": [
+              0.3167,
+              0.7259
+            ],
+            "box": {
+              "top": 0.73,
+              "bottom": 0.78,
+              "left": 0.33,
+              "right": 0.42
+            },
+            "confidence": 0.79,
+            "center": [
+              0.375,
+              0.755
+            ],
+            "distance_px": 232.6,
+            "distance_1024px": 62.0,
+            "edge_distance_px": 52.0,
+            "inside": false,
+            "box_width_px": 346,
+            "box_height_px": 108,
+            "box_area_share": 0.0045
+          },
+          {
+            "review_id": "P-15",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731",
+            "state": "not-touching",
+            "stan_point": [
+              0.5159,
+              0.6102
+            ],
+            "box": {
+              "top": 0.62,
+              "bottom": 0.68,
+              "left": 0.5,
+              "right": 0.53
+            },
+            "confidence": 0.58,
+            "center": [
+              0.515,
+              0.65
+            ],
+            "distance_px": 86.1,
+            "distance_1024px": 23.0,
+            "edge_distance_px": 21.2,
+            "inside": false,
+            "box_width_px": 115,
+            "box_height_px": 130,
+            "box_area_share": 0.0018
+          },
+          {
+            "review_id": "P-16",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612",
+            "state": "not-touching",
+            "stan_point": [
+              0.5469,
+              0.5657
+            ],
+            "box": {
+              "top": 0.47,
+              "bottom": 0.57,
+              "left": 0.54,
+              "right": 0.59
+            },
+            "confidence": 0.47,
+            "center": [
+              0.565,
+              0.52
+            ],
+            "distance_px": 120.9,
+            "distance_1024px": 32.2,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 192,
+            "box_height_px": 216,
+            "box_area_share": 0.005
+          },
+          {
+            "review_id": "P-19",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751",
+            "state": "not-touching",
+            "stan_point": [
+              0.8438,
+              0.5431
+            ],
+            "box": {
+              "top": 0.77,
+              "bottom": 0.81,
+              "left": 0.63,
+              "right": 0.65
+            },
+            "confidence": 0.08,
+            "center": [
+              0.64,
+              0.79
+            ],
+            "distance_px": 946.9,
+            "distance_1024px": 252.5,
+            "edge_distance_px": 891.0,
+            "inside": false,
+            "box_width_px": 77,
+            "box_height_px": 86,
+            "box_area_share": 0.0008
+          },
+          {
+            "review_id": "P-20",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+            "state": "touching",
+            "stan_point": [
+              0.5104,
+              0.6148
+            ],
+            "box": {
+              "top": 0.69,
+              "bottom": 0.87,
+              "left": 0.54,
+              "right": 0.64
+            },
+            "confidence": 0.57,
+            "center": [
+              0.59,
+              0.78
+            ],
+            "distance_px": 469.8,
+            "distance_1024px": 125.3,
+            "edge_distance_px": 198.2,
+            "inside": false,
+            "box_width_px": 384,
+            "box_height_px": 389,
+            "box_area_share": 0.018
+          },
+          {
+            "review_id": "P-21",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019",
+            "state": "not-touching",
+            "stan_point": [
+              0.6013,
+              0.5491
+            ],
+            "box": {
+              "top": 0.53,
+              "bottom": 0.56,
+              "left": 0.6,
+              "right": 0.67
+            },
+            "confidence": 0.33,
+            "center": [
+              0.635,
+              0.545
+            ],
+            "distance_px": 129.7,
+            "distance_1024px": 34.6,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 269,
+            "box_height_px": 65,
+            "box_area_share": 0.0021
+          },
+          {
+            "review_id": "P-25",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112",
+            "state": "not-touching",
+            "stan_point": [
+              0.7495,
+              0.669
+            ],
+            "box": {
+              "top": 0.67,
+              "bottom": 0.98,
+              "left": 0.73,
+              "right": 0.77
+            },
+            "confidence": 0.5,
+            "center": [
+              0.75,
+              0.825
+            ],
+            "distance_px": 337.0,
+            "distance_1024px": 89.9,
+            "edge_distance_px": 2.2,
+            "inside": false,
+            "box_width_px": 154,
+            "box_height_px": 670,
+            "box_area_share": 0.0124
+          },
+          {
+            "review_id": "P-29",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+            "state": "not-touching",
+            "stan_point": [
+              0.5112,
+              0.3079
+            ],
+            "box": {
+              "top": 0.3,
+              "bottom": 0.33,
+              "left": 0.5,
+              "right": 0.54
+            },
+            "confidence": 0.83,
+            "center": [
+              0.52,
+              0.315
+            ],
+            "distance_px": 37.1,
+            "distance_1024px": 9.9,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 154,
+            "box_height_px": 65,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-30",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220",
+            "state": "not-touching",
+            "stan_point": [
+              0.4779,
+              0.55
+            ],
+            "box": {
+              "top": 0.53,
+              "bottom": 0.58,
+              "left": 0.47,
+              "right": 0.52
+            },
+            "confidence": 0.79,
+            "center": [
+              0.495,
+              0.555
+            ],
+            "distance_px": 66.7,
+            "distance_1024px": 17.8,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 192,
+            "box_height_px": 108,
+            "box_area_share": 0.0025
+          },
+          {
+            "review_id": "P-32",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493",
+            "state": "not-touching",
+            "stan_point": [
+              0.7698,
+              0.5889
+            ],
+            "box": {
+              "top": 0.59,
+              "bottom": 0.64,
+              "left": 0.76,
+              "right": 0.81
+            },
+            "confidence": 0.52,
+            "center": [
+              0.785,
+              0.615
+            ],
+            "distance_px": 81.2,
+            "distance_1024px": 21.7,
+            "edge_distance_px": 2.4,
+            "inside": false,
+            "box_width_px": 192,
+            "box_height_px": 108,
+            "box_area_share": 0.0025
+          },
+          {
+            "review_id": "P-33",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935",
+            "state": "not-touching",
+            "stan_point": [
+              0.5404,
+              0.4616
+            ],
+            "box": {
+              "top": 0.45,
+              "bottom": 0.49,
+              "left": 0.53,
+              "right": 0.56
+            },
+            "confidence": 0.8,
+            "center": [
+              0.545,
+              0.47
+            ],
+            "distance_px": 25.5,
+            "distance_1024px": 6.8,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 115,
+            "box_height_px": 86,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-34",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385",
+            "state": "not-touching",
+            "stan_point": [
+              0.613,
+              0.2968
+            ],
+            "box": {
+              "top": 0.29,
+              "bottom": 0.33,
+              "left": 0.61,
+              "right": 0.64
+            },
+            "confidence": 0.9,
+            "center": [
+              0.625,
+              0.31
+            ],
+            "distance_px": 54.2,
+            "distance_1024px": 14.4,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 115,
+            "box_height_px": 86,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-35",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+            "state": "not-touching",
+            "stan_point": [
+              0.6336,
+              0.3116
+            ],
+            "box": {
+              "top": 0.31,
+              "bottom": 0.34,
+              "left": 0.63,
+              "right": 0.67
+            },
+            "confidence": 0.79,
+            "center": [
+              0.65,
+              0.325
+            ],
+            "distance_px": 69.4,
+            "distance_1024px": 18.5,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 154,
+            "box_height_px": 65,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-39",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622",
+            "state": "not-touching",
+            "stan_point": [
+              0.4461,
+              0.6861
+            ],
+            "box": {
+              "top": 0.69,
+              "bottom": 0.89,
+              "left": 0.44,
+              "right": 0.49
+            },
+            "confidence": 0.76,
+            "center": [
+              0.465,
+              0.79
+            ],
+            "distance_px": 235.9,
+            "distance_1024px": 62.9,
+            "edge_distance_px": 8.4,
+            "inside": false,
+            "box_width_px": 192,
+            "box_height_px": 432,
+            "box_area_share": 0.01
+          },
+          {
+            "review_id": "P-41",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178",
+            "state": "not-touching",
+            "stan_point": [
+              0.4766,
+              0.5708
+            ],
+            "box": {
+              "top": 0.56,
+              "bottom": 0.74,
+              "left": 0.47,
+              "right": 0.57
+            },
+            "confidence": 0.43,
+            "center": [
+              0.52,
+              0.65
+            ],
+            "distance_px": 238.9,
+            "distance_1024px": 63.7,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 384,
+            "box_height_px": 389,
+            "box_area_share": 0.018
+          },
+          {
+            "review_id": "P-42",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775",
+            "state": "not-touching",
+            "stan_point": [
+              0.5607,
+              0.5074
+            ],
+            "box": {
+              "top": 0.52,
+              "bottom": 0.77,
+              "left": 0.52,
+              "right": 0.57
+            },
+            "confidence": 0.33,
+            "center": [
+              0.545,
+              0.645
+            ],
+            "distance_px": 303.2,
+            "distance_1024px": 80.9,
+            "edge_distance_px": 27.2,
+            "inside": false,
+            "box_width_px": 192,
+            "box_height_px": 540,
+            "box_area_share": 0.0125
+          },
+          {
+            "review_id": "P-46",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133",
+            "state": "not-touching",
+            "stan_point": [
+              0.7065,
+              0.5171
+            ],
+            "box": {
+              "top": 0.51,
+              "bottom": 0.53,
+              "left": 0.71,
+              "right": 0.74
+            },
+            "confidence": 0.81,
+            "center": [
+              0.725,
+              0.52
+            ],
+            "distance_px": 71.3,
+            "distance_1024px": 19.0,
+            "edge_distance_px": 13.4,
+            "inside": false,
+            "box_width_px": 115,
+            "box_height_px": 43,
+            "box_area_share": 0.0006
+          },
+          {
+            "review_id": "P-50",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205",
+            "state": "not-touching",
+            "stan_point": [
+              0.2565,
+              0.7139
+            ],
+            "box": {
+              "top": 0.71,
+              "bottom": 0.78,
+              "left": 0.26,
+              "right": 0.32
+            },
+            "confidence": 0.83,
+            "center": [
+              0.29,
+              0.745
+            ],
+            "distance_px": 145.1,
+            "distance_1024px": 38.7,
+            "edge_distance_px": 13.4,
+            "inside": false,
+            "box_width_px": 230,
+            "box_height_px": 151,
+            "box_area_share": 0.0042
+          }
+        ],
+        "edge_distance_within_35px": 20
+      },
+      "no_tip": [
+        {
+          "review_id": "P-02",
+          "state": "no-tip",
+          "box": {
+            "top": 0.34,
+            "bottom": 0.51,
+            "left": 0.32,
+            "right": 0.37
+          },
+          "confidence": 0.45,
+          "box_area_share": 0.0085
+        },
+        {
+          "review_id": "P-08",
+          "state": "no-tip",
+          "box": {
+            "top": 0.42,
+            "bottom": 0.55,
+            "left": 0.27,
+            "right": 0.36
+          },
+          "confidence": 0.36,
+          "box_area_share": 0.0117
+        },
+        {
+          "review_id": "P-11",
+          "state": "no-tip",
+          "box": {
+            "top": 0.56,
+            "bottom": 0.63,
+            "left": 0.43,
+            "right": 0.47
+          },
+          "confidence": 0.71,
+          "box_area_share": 0.0028
+        },
+        {
+          "review_id": "P-12",
+          "state": "no-tip",
+          "box": {
+            "top": 0.87,
+            "bottom": 0.97,
+            "left": 0.7,
+            "right": 0.81
+          },
+          "confidence": 0.08,
+          "box_area_share": 0.011
+        },
+        {
+          "review_id": "P-14",
+          "state": "no-tip",
+          "box": {
+            "top": 0.23,
+            "bottom": 0.34,
+            "left": 0.59,
+            "right": 0.65
+          },
+          "confidence": 0.69,
+          "box_area_share": 0.0066
+        },
+        {
+          "review_id": "P-17",
+          "state": "no-tip",
+          "box": {
+            "top": 0.2,
+            "bottom": 0.31,
+            "left": 0.43,
+            "right": 0.48
+          },
+          "confidence": 0.21,
+          "box_area_share": 0.0055
+        },
+        {
+          "review_id": "P-18",
+          "state": "no-tip",
+          "box": {
+            "top": 0.84,
+            "bottom": 0.95,
+            "left": 0.92,
+            "right": 0.98
+          },
+          "confidence": 0.3,
+          "box_area_share": 0.0066
+        },
+        {
+          "review_id": "P-22",
+          "state": "no-tip",
+          "box": {
+            "top": 0.84,
+            "bottom": 0.95,
+            "left": 0.92,
+            "right": 0.97
+          },
+          "confidence": 0.12,
+          "box_area_share": 0.0055
+        },
+        {
+          "review_id": "P-23",
+          "state": "no-tip",
+          "box": {
+            "top": 0.81,
+            "bottom": 0.91,
+            "left": 0.63,
+            "right": 0.65
+          },
+          "confidence": 0.25,
+          "box_area_share": 0.002
+        },
+        {
+          "review_id": "P-24",
+          "state": "no-tip",
+          "box": {
+            "top": 0.81,
+            "bottom": 0.9,
+            "left": 0.92,
+            "right": 0.97
+          },
+          "confidence": 0.09,
+          "box_area_share": 0.0045
+        },
+        {
+          "review_id": "P-26",
+          "state": "no-tip",
+          "box": {
+            "top": 0.81,
+            "bottom": 0.91,
+            "left": 0.14,
+            "right": 0.25
+          },
+          "confidence": 0.15,
+          "box_area_share": 0.011
+        },
+        {
+          "review_id": "P-27",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.96,
+            "left": 0.37,
+            "right": 0.98
+          },
+          "confidence": 0.08,
+          "box_area_share": 0.0854
+        },
+        {
+          "review_id": "P-28",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.96,
+            "left": 0.93,
+            "right": 0.98
+          },
+          "confidence": 0.28,
+          "box_area_share": 0.007
+        },
+        {
+          "review_id": "P-36",
+          "state": "no-tip",
+          "box": {
+            "top": 0.84,
+            "bottom": 0.95,
+            "left": 0.93,
+            "right": 0.98
+          },
+          "confidence": 0.59,
+          "box_area_share": 0.0055
+        },
+        {
+          "review_id": "P-37",
+          "state": "no-tip",
+          "box": {
+            "top": 0.85,
+            "bottom": 0.96,
+            "left": 0.18,
+            "right": 0.23
+          },
+          "confidence": 0.04,
+          "box_area_share": 0.0055
+        },
+        {
+          "review_id": "P-38",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.9,
+            "left": 0.92,
+            "right": 0.98
+          },
+          "confidence": 0.38,
+          "box_area_share": 0.0048
+        },
+        {
+          "review_id": "P-40",
+          "state": "no-tip",
+          "box": {
+            "top": 0.21,
+            "bottom": 0.97,
+            "left": 0.31,
+            "right": 0.36
+          },
+          "confidence": 0.05,
+          "box_area_share": 0.038
+        },
+        {
+          "review_id": "P-43",
+          "state": "no-tip",
+          "box": {
+            "top": 0.57,
+            "bottom": 0.96,
+            "left": 0.35,
+            "right": 0.37
+          },
+          "confidence": 0.04,
+          "box_area_share": 0.0078
+        },
+        {
+          "review_id": "P-44",
+          "state": "no-tip",
+          "box": {
+            "top": 0.03,
+            "bottom": 0.22,
+            "left": 0.06,
+            "right": 0.21
+          },
+          "confidence": 0.06,
+          "box_area_share": 0.0285
+        },
+        {
+          "review_id": "P-45",
+          "state": "no-tip",
+          "box": {
+            "top": 0.79,
+            "bottom": 0.88,
+            "left": 0.22,
+            "right": 0.26
+          },
+          "confidence": 0.41,
+          "box_area_share": 0.0036
+        },
+        {
+          "review_id": "P-47",
+          "state": "no-tip",
+          "box": {
+            "top": 0.34,
+            "bottom": 0.43,
+            "left": 0.43,
+            "right": 0.49
+          },
+          "confidence": 0.76,
+          "box_area_share": 0.0054
+        },
+        {
+          "review_id": "P-48",
+          "state": "no-tip",
+          "box": {
+            "top": 0.03,
+            "bottom": 0.1,
+            "left": 0.21,
+            "right": 0.23
+          },
+          "confidence": 0.3,
+          "box_area_share": 0.0014
+        },
+        {
+          "review_id": "P-49",
+          "state": "no-tip",
+          "box": {
+            "top": 0.35,
+            "bottom": 0.89,
+            "left": 0.36,
+            "right": 0.68
+          },
+          "confidence": 0.04,
+          "box_area_share": 0.1728
+        }
+      ],
+      "cant_tell": [
+        {
+          "review_id": "P-04",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.88,
+            "bottom": 0.97,
+            "left": 0.54,
+            "right": 0.56
+          },
+          "confidence": 0.1,
+          "box_area_share": 0.0018,
+          "distance_px": 937.9,
+          "inside": false
+        },
+        {
+          "review_id": "P-05",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.35,
+            "bottom": 0.43,
+            "left": 0.69,
+            "right": 0.72
+          },
+          "confidence": 0.47,
+          "box_area_share": 0.0024,
+          "distance_px": 105.6,
+          "inside": false
+        },
+        {
+          "review_id": "P-13",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.46,
+            "bottom": 0.56,
+            "left": 0.6,
+            "right": 0.69
+          },
+          "confidence": 0.74,
+          "box_area_share": 0.009,
+          "distance_px": 54.8,
+          "inside": true
+        },
+        {
+          "review_id": "P-31",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.37,
+            "bottom": 0.46,
+            "left": 0.34,
+            "right": 0.37
+          },
+          "confidence": 0.65,
+          "box_area_share": 0.0027,
+          "distance_px": 139.5,
+          "inside": false
+        }
+      ],
+      "tip_presence_by_confidence": {
+        "median_confidence_tip_frames": 0.76,
+        "median_confidence_no_tip_frames": 0.25,
+        "thresholds": {
+          "0.3": {
+            "tip_frames_at_or_above": 22,
+            "no_tip_frames_at_or_above": 10,
+            "accuracy_as_presence_detector": 0.761
+          },
+          "0.4": {
+            "tip_frames_at_or_above": 20,
+            "no_tip_frames_at_or_above": 6,
+            "accuracy_as_presence_detector": 0.804
+          },
+          "0.5": {
+            "tip_frames_at_or_above": 18,
+            "no_tip_frames_at_or_above": 4,
+            "accuracy_as_presence_detector": 0.804
+          },
+          "0.6": {
+            "tip_frames_at_or_above": 12,
+            "no_tip_frames_at_or_above": 3,
+            "accuracy_as_presence_detector": 0.696
+          }
+        }
+      }
+    },
+    "short": {
+      "instructions": "The pencil tip in `frame`.",
+      "missing_frames": [],
+      "scored": {
+        "overall": {
+          "n": 23,
+          "median_px": 168.9,
+          "mean_px": 239.59565217391304,
+          "p90_px": 528.4,
+          "max_px": 902.3,
+          "within_25px": 0.0,
+          "within_50px": 0.0,
+          "within_100px": 0.4782608695652174,
+          "inside_box": 0.391304347826087
+        },
+        "by_state": {
+          "not-touching": {
+            "n": 18,
+            "median_px": 174.10000000000002,
+            "mean_px": 249.04999999999998,
+            "p90_px": 616.2,
+            "max_px": 902.3,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.4444444444444444,
+            "inside_box": 0.5
+          },
+          "touching": {
+            "n": 5,
+            "median_px": 94.7,
+            "mean_px": 205.56,
+            "p90_px": 469.8,
+            "max_px": 469.8,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.6,
+            "inside_box": 0.0
+          }
+        },
+        "by_confidence": {
+          "high (>=0.6)": {
+            "n": 7,
+            "median_px": 253.8,
+            "mean_px": 198.02857142857144,
+            "p90_px": 314.2,
+            "max_px": 314.2,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.42857142857142855,
+            "inside_box": 0.2857142857142857
+          },
+          "mid (0.3-0.6)": {
+            "n": 13,
+            "median_px": 97.4,
+            "mean_px": 187.46923076923076,
+            "p90_px": 469.8,
+            "max_px": 528.4,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.6153846153846154,
+            "inside_box": 0.46153846153846156
+          },
+          "low (<0.3)": {
+            "n": 3,
+            "median_px": 616.2,
+            "mean_px": 562.4666666666667,
+            "p90_px": 902.3,
+            "max_px": 902.3,
+            "within_25px": 0.0,
+            "within_50px": 0.0,
+            "within_100px": 0.0,
+            "inside_box": 0.3333333333333333
+          }
+        },
+        "median_confidence": 0.51,
+        "median_box_px": [
+          230,
+          130
+        ],
+        "tall_boxes_over_30pct_height": 2,
+        "per_frame": [
+          {
+            "review_id": "P-01",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+            "state": "not-touching",
+            "stan_point": [
+              0.3716,
+              0.4069
+            ],
+            "box": {
+              "top": 0.41,
+              "bottom": 0.52,
+              "left": 0.37,
+              "right": 0.44
+            },
+            "confidence": 0.51,
+            "center": [
+              0.405,
+              0.465
+            ],
+            "distance_px": 179.3,
+            "distance_1024px": 47.8,
+            "edge_distance_px": 6.6,
+            "inside": false,
+            "box_width_px": 269,
+            "box_height_px": 238,
+            "box_area_share": 0.0077
+          },
+          {
+            "review_id": "P-03",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+            "state": "touching",
+            "stan_point": [
+              0.5539,
+              0.6319
+            ],
+            "box": {
+              "top": 0.64,
+              "bottom": 0.68,
+              "left": 0.55,
+              "right": 0.59
+            },
+            "confidence": 0.64,
+            "center": [
+              0.57,
+              0.66
+            ],
+            "distance_px": 86.6,
+            "distance_1024px": 23.1,
+            "edge_distance_px": 17.4,
+            "inside": false,
+            "box_width_px": 154,
+            "box_height_px": 86,
+            "box_area_share": 0.0016
+          },
+          {
+            "review_id": "P-06",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+            "state": "touching",
+            "stan_point": [
+              0.6555,
+              0.6532
+            ],
+            "box": {
+              "top": 0.66,
+              "bottom": 0.7,
+              "left": 0.65,
+              "right": 0.7
+            },
+            "confidence": 0.34,
+            "center": [
+              0.675,
+              0.68
+            ],
+            "distance_px": 94.7,
+            "distance_1024px": 25.3,
+            "edge_distance_px": 14.6,
+            "inside": false,
+            "box_width_px": 192,
+            "box_height_px": 86,
+            "box_area_share": 0.002
+          },
+          {
+            "review_id": "P-07",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+            "state": "touching",
+            "stan_point": [
+              0.6039,
+              0.6245
+            ],
+            "box": {
+              "top": 0.63,
+              "bottom": 0.68,
+              "left": 0.59,
+              "right": 0.65
+            },
+            "confidence": 0.68,
+            "center": [
+              0.62,
+              0.655
+            ],
+            "distance_px": 90.3,
+            "distance_1024px": 24.1,
+            "edge_distance_px": 11.8,
+            "inside": false,
+            "box_width_px": 230,
+            "box_height_px": 108,
+            "box_area_share": 0.003
+          },
+          {
+            "review_id": "P-09",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240",
+            "state": "not-touching",
+            "stan_point": [
+              0.4427,
+              0.5764
+            ],
+            "box": {
+              "top": 0.53,
+              "bottom": 0.59,
+              "left": 0.43,
+              "right": 0.73
+            },
+            "confidence": 0.37,
+            "center": [
+              0.58,
+              0.56
+            ],
+            "distance_px": 528.4,
+            "distance_1024px": 140.9,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 1152,
+            "box_height_px": 130,
+            "box_area_share": 0.018
+          },
+          {
+            "review_id": "P-10",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+            "state": "touching",
+            "stan_point": [
+              0.3167,
+              0.7259
+            ],
+            "box": {
+              "top": 0.71,
+              "bottom": 0.79,
+              "left": 0.34,
+              "right": 0.44
+            },
+            "confidence": 0.63,
+            "center": [
+              0.39,
+              0.75
+            ],
+            "distance_px": 286.4,
+            "distance_1024px": 76.4,
+            "edge_distance_px": 89.6,
+            "inside": false,
+            "box_width_px": 384,
+            "box_height_px": 173,
+            "box_area_share": 0.008
+          },
+          {
+            "review_id": "P-15",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731",
+            "state": "not-touching",
+            "stan_point": [
+              0.5159,
+              0.6102
+            ],
+            "box": {
+              "top": 0.63,
+              "bottom": 0.67,
+              "left": 0.5,
+              "right": 0.53
+            },
+            "confidence": 0.48,
+            "center": [
+              0.515,
+              0.65
+            ],
+            "distance_px": 86.1,
+            "distance_1024px": 23.0,
+            "edge_distance_px": 42.8,
+            "inside": false,
+            "box_width_px": 115,
+            "box_height_px": 86,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-16",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612",
+            "state": "not-touching",
+            "stan_point": [
+              0.5469,
+              0.5657
+            ],
+            "box": {
+              "top": 0.11,
+              "bottom": 0.57,
+              "left": 0.55,
+              "right": 0.74
+            },
+            "confidence": 0.2,
+            "center": [
+              0.645,
+              0.34
+            ],
+            "distance_px": 616.2,
+            "distance_1024px": 164.3,
+            "edge_distance_px": 12.0,
+            "inside": false,
+            "box_width_px": 730,
+            "box_height_px": 994,
+            "box_area_share": 0.0874
+          },
+          {
+            "review_id": "P-19",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751",
+            "state": "not-touching",
+            "stan_point": [
+              0.8438,
+              0.5431
+            ],
+            "box": {
+              "top": 0.86,
+              "bottom": 0.98,
+              "left": 0.91,
+              "right": 0.98
+            },
+            "confidence": 0.09,
+            "center": [
+              0.945,
+              0.92
+            ],
+            "distance_px": 902.3,
+            "distance_1024px": 240.6,
+            "edge_distance_px": 730.3,
+            "inside": false,
+            "box_width_px": 269,
+            "box_height_px": 259,
+            "box_area_share": 0.0084
+          },
+          {
+            "review_id": "P-20",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+            "state": "touching",
+            "stan_point": [
+              0.5104,
+              0.6148
+            ],
+            "box": {
+              "top": 0.68,
+              "bottom": 0.88,
+              "left": 0.54,
+              "right": 0.64
+            },
+            "confidence": 0.48,
+            "center": [
+              0.59,
+              0.78
+            ],
+            "distance_px": 469.8,
+            "distance_1024px": 125.3,
+            "edge_distance_px": 180.9,
+            "inside": false,
+            "box_width_px": 384,
+            "box_height_px": 432,
+            "box_area_share": 0.02
+          },
+          {
+            "review_id": "P-21",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019",
+            "state": "not-touching",
+            "stan_point": [
+              0.6013,
+              0.5491
+            ],
+            "box": {
+              "top": 0.52,
+              "bottom": 0.56,
+              "left": 0.6,
+              "right": 0.69
+            },
+            "confidence": 0.24,
+            "center": [
+              0.645,
+              0.54
+            ],
+            "distance_px": 168.9,
+            "distance_1024px": 45.1,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 346,
+            "box_height_px": 86,
+            "box_area_share": 0.0036
+          },
+          {
+            "review_id": "P-25",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112",
+            "state": "not-touching",
+            "stan_point": [
+              0.7495,
+              0.669
+            ],
+            "box": {
+              "top": 0.67,
+              "bottom": 0.98,
+              "left": 0.73,
+              "right": 0.77
+            },
+            "confidence": 0.52,
+            "center": [
+              0.75,
+              0.825
+            ],
+            "distance_px": 337.0,
+            "distance_1024px": 89.9,
+            "edge_distance_px": 2.2,
+            "inside": false,
+            "box_width_px": 154,
+            "box_height_px": 670,
+            "box_area_share": 0.0124
+          },
+          {
+            "review_id": "P-29",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+            "state": "not-touching",
+            "stan_point": [
+              0.5112,
+              0.3079
+            ],
+            "box": {
+              "top": 0.3,
+              "bottom": 0.35,
+              "left": 0.51,
+              "right": 0.54
+            },
+            "confidence": 0.58,
+            "center": [
+              0.525,
+              0.325
+            ],
+            "distance_px": 64.6,
+            "distance_1024px": 17.2,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 115,
+            "box_height_px": 108,
+            "box_area_share": 0.0015
+          },
+          {
+            "review_id": "P-30",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220",
+            "state": "not-touching",
+            "stan_point": [
+              0.4779,
+              0.55
+            ],
+            "box": {
+              "top": 0.52,
+              "bottom": 0.58,
+              "left": 0.47,
+              "right": 0.53
+            },
+            "confidence": 0.67,
+            "center": [
+              0.5,
+              0.55
+            ],
+            "distance_px": 85.0,
+            "distance_1024px": 22.7,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 230,
+            "box_height_px": 130,
+            "box_area_share": 0.0036
+          },
+          {
+            "review_id": "P-32",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493",
+            "state": "not-touching",
+            "stan_point": [
+              0.7698,
+              0.5889
+            ],
+            "box": {
+              "top": 0.59,
+              "bottom": 0.66,
+              "left": 0.76,
+              "right": 0.81
+            },
+            "confidence": 0.41,
+            "center": [
+              0.785,
+              0.625
+            ],
+            "distance_px": 97.4,
+            "distance_1024px": 26.0,
+            "edge_distance_px": 2.4,
+            "inside": false,
+            "box_width_px": 192,
+            "box_height_px": 151,
+            "box_area_share": 0.0035
+          },
+          {
+            "review_id": "P-33",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935",
+            "state": "not-touching",
+            "stan_point": [
+              0.5404,
+              0.4616
+            ],
+            "box": {
+              "top": 0.46,
+              "bottom": 0.5,
+              "left": 0.53,
+              "right": 0.57
+            },
+            "confidence": 0.58,
+            "center": [
+              0.55,
+              0.48
+            ],
+            "distance_px": 54.3,
+            "distance_1024px": 14.5,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 154,
+            "box_height_px": 86,
+            "box_area_share": 0.0016
+          },
+          {
+            "review_id": "P-34",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385",
+            "state": "not-touching",
+            "stan_point": [
+              0.613,
+              0.2968
+            ],
+            "box": {
+              "top": 0.29,
+              "bottom": 0.35,
+              "left": 0.61,
+              "right": 0.66
+            },
+            "confidence": 0.55,
+            "center": [
+              0.635,
+              0.32
+            ],
+            "distance_px": 98.2,
+            "distance_1024px": 26.2,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 192,
+            "box_height_px": 130,
+            "box_area_share": 0.003
+          },
+          {
+            "review_id": "P-35",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+            "state": "not-touching",
+            "stan_point": [
+              0.6336,
+              0.3116
+            ],
+            "box": {
+              "top": 0.31,
+              "bottom": 0.35,
+              "left": 0.63,
+              "right": 0.67
+            },
+            "confidence": 0.44,
+            "center": [
+              0.65,
+              0.33
+            ],
+            "distance_px": 74.5,
+            "distance_1024px": 19.9,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 154,
+            "box_height_px": 86,
+            "box_area_share": 0.0016
+          },
+          {
+            "review_id": "P-39",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622",
+            "state": "not-touching",
+            "stan_point": [
+              0.4461,
+              0.6861
+            ],
+            "box": {
+              "top": 0.68,
+              "bottom": 0.92,
+              "left": 0.44,
+              "right": 0.51
+            },
+            "confidence": 0.82,
+            "center": [
+              0.475,
+              0.8
+            ],
+            "distance_px": 269.9,
+            "distance_1024px": 72.0,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 269,
+            "box_height_px": 518,
+            "box_area_share": 0.0168
+          },
+          {
+            "review_id": "P-41",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178",
+            "state": "not-touching",
+            "stan_point": [
+              0.4766,
+              0.5708
+            ],
+            "box": {
+              "top": 0.55,
+              "bottom": 0.73,
+              "left": 0.48,
+              "right": 0.58
+            },
+            "confidence": 0.66,
+            "center": [
+              0.53,
+              0.64
+            ],
+            "distance_px": 253.8,
+            "distance_1024px": 67.7,
+            "edge_distance_px": 13.2,
+            "inside": false,
+            "box_width_px": 384,
+            "box_height_px": 389,
+            "box_area_share": 0.018
+          },
+          {
+            "review_id": "P-42",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775",
+            "state": "not-touching",
+            "stan_point": [
+              0.5607,
+              0.5074
+            ],
+            "box": {
+              "top": 0.5,
+              "bottom": 0.75,
+              "left": 0.52,
+              "right": 0.57
+            },
+            "confidence": 0.48,
+            "center": [
+              0.545,
+              0.625
+            ],
+            "distance_px": 261.0,
+            "distance_1024px": 69.6,
+            "edge_distance_px": 0.0,
+            "inside": true,
+            "box_width_px": 192,
+            "box_height_px": 540,
+            "box_area_share": 0.0125
+          },
+          {
+            "review_id": "P-46",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133",
+            "state": "not-touching",
+            "stan_point": [
+              0.7065,
+              0.5171
+            ],
+            "box": {
+              "top": 0.51,
+              "bottom": 0.54,
+              "left": 0.71,
+              "right": 0.75
+            },
+            "confidence": 0.43,
+            "center": [
+              0.73,
+              0.525
+            ],
+            "distance_px": 91.8,
+            "distance_1024px": 24.5,
+            "edge_distance_px": 13.4,
+            "inside": false,
+            "box_width_px": 154,
+            "box_height_px": 65,
+            "box_area_share": 0.0012
+          },
+          {
+            "review_id": "P-50",
+            "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205",
+            "state": "not-touching",
+            "stan_point": [
+              0.2565,
+              0.7139
+            ],
+            "box": {
+              "top": 0.71,
+              "bottom": 0.8,
+              "left": 0.26,
+              "right": 0.41
+            },
+            "confidence": 0.6,
+            "center": [
+              0.335,
+              0.755
+            ],
+            "distance_px": 314.2,
+            "distance_1024px": 83.8,
+            "edge_distance_px": 13.4,
+            "inside": false,
+            "box_width_px": 576,
+            "box_height_px": 194,
+            "box_area_share": 0.0135
+          }
+        ],
+        "edge_distance_within_35px": 19
+      },
+      "no_tip": [
+        {
+          "review_id": "P-02",
+          "state": "no-tip",
+          "box": {
+            "top": 0.34,
+            "bottom": 0.51,
+            "left": 0.31,
+            "right": 0.37
+          },
+          "confidence": 0.44,
+          "box_area_share": 0.0102
+        },
+        {
+          "review_id": "P-08",
+          "state": "no-tip",
+          "box": {
+            "top": 0.42,
+            "bottom": 0.56,
+            "left": 0.26,
+            "right": 0.35
+          },
+          "confidence": 0.32,
+          "box_area_share": 0.0126
+        },
+        {
+          "review_id": "P-11",
+          "state": "no-tip",
+          "box": {
+            "top": 0.54,
+            "bottom": 0.57,
+            "left": 0.42,
+            "right": 0.45
+          },
+          "confidence": 0.44,
+          "box_area_share": 0.0009
+        },
+        {
+          "review_id": "P-12",
+          "state": "no-tip",
+          "box": {
+            "top": 0.88,
+            "bottom": 0.98,
+            "left": 0.7,
+            "right": 0.85
+          },
+          "confidence": 0.06,
+          "box_area_share": 0.015
+        },
+        {
+          "review_id": "P-14",
+          "state": "no-tip",
+          "box": {
+            "top": 0.22,
+            "bottom": 0.35,
+            "left": 0.59,
+            "right": 0.66
+          },
+          "confidence": 0.83,
+          "box_area_share": 0.0091
+        },
+        {
+          "review_id": "P-17",
+          "state": "no-tip",
+          "box": {
+            "top": 0.2,
+            "bottom": 0.3,
+            "left": 0.43,
+            "right": 0.48
+          },
+          "confidence": 0.59,
+          "box_area_share": 0.005
+        },
+        {
+          "review_id": "P-18",
+          "state": "no-tip",
+          "box": {
+            "top": 0.83,
+            "bottom": 0.92,
+            "left": 0.93,
+            "right": 0.98
+          },
+          "confidence": 0.72,
+          "box_area_share": 0.0045
+        },
+        {
+          "review_id": "P-22",
+          "state": "no-tip",
+          "box": {
+            "top": 0.84,
+            "bottom": 0.95,
+            "left": 0.95,
+            "right": 0.98
+          },
+          "confidence": 0.31,
+          "box_area_share": 0.0033
+        },
+        {
+          "review_id": "P-23",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.92,
+            "left": 0.65,
+            "right": 0.97
+          },
+          "confidence": 0.15,
+          "box_area_share": 0.032
+        },
+        {
+          "review_id": "P-24",
+          "state": "no-tip",
+          "box": {
+            "top": 0.84,
+            "bottom": 0.89,
+            "left": 0.95,
+            "right": 0.98
+          },
+          "confidence": 0.61,
+          "box_area_share": 0.0015
+        },
+        {
+          "review_id": "P-26",
+          "state": "no-tip",
+          "box": {
+            "top": 0.81,
+            "bottom": 0.95,
+            "left": 0.95,
+            "right": 0.98
+          },
+          "confidence": 0.19,
+          "box_area_share": 0.0042
+        },
+        {
+          "review_id": "P-27",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.95,
+            "left": 0.91,
+            "right": 0.98
+          },
+          "confidence": 0.05,
+          "box_area_share": 0.0091
+        },
+        {
+          "review_id": "P-28",
+          "state": "no-tip",
+          "box": {
+            "top": 0.83,
+            "bottom": 0.91,
+            "left": 0.95,
+            "right": 0.99
+          },
+          "confidence": 0.53,
+          "box_area_share": 0.0032
+        },
+        {
+          "review_id": "P-36",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.91,
+            "left": 0.94,
+            "right": 0.98
+          },
+          "confidence": 0.89,
+          "box_area_share": 0.0036
+        },
+        {
+          "review_id": "P-37",
+          "state": "no-tip",
+          "box": {
+            "top": 0.33,
+            "bottom": 0.92,
+            "left": 0.22,
+            "right": 0.24
+          },
+          "confidence": 0.07,
+          "box_area_share": 0.0118
+        },
+        {
+          "review_id": "P-38",
+          "state": "no-tip",
+          "box": {
+            "top": 0.82,
+            "bottom": 0.95,
+            "left": 0.92,
+            "right": 0.98
+          },
+          "confidence": 0.21,
+          "box_area_share": 0.0078
+        },
+        {
+          "review_id": "P-40",
+          "state": "no-tip",
+          "box": {
+            "top": 0.22,
+            "bottom": 0.36,
+            "left": 0.32,
+            "right": 0.37
+          },
+          "confidence": 0.15,
+          "box_area_share": 0.007
+        },
+        {
+          "review_id": "P-43",
+          "state": "no-tip",
+          "box": {
+            "top": 0.57,
+            "bottom": 0.97,
+            "left": 0.35,
+            "right": 0.41
+          },
+          "confidence": 0.07,
+          "box_area_share": 0.024
+        },
+        {
+          "review_id": "P-44",
+          "state": "no-tip",
+          "box": {
+            "top": 0.04,
+            "bottom": 0.23,
+            "left": 0.19,
+            "right": 0.22
+          },
+          "confidence": 0.1,
+          "box_area_share": 0.0057
+        },
+        {
+          "review_id": "P-45",
+          "state": "no-tip",
+          "box": {
+            "top": 0.79,
+            "bottom": 0.89,
+            "left": 0.22,
+            "right": 0.25
+          },
+          "confidence": 0.18,
+          "box_area_share": 0.003
+        },
+        {
+          "review_id": "P-47",
+          "state": "no-tip",
+          "box": {
+            "top": 0.32,
+            "bottom": 0.43,
+            "left": 0.43,
+            "right": 0.48
+          },
+          "confidence": 0.6,
+          "box_area_share": 0.0055
+        },
+        {
+          "review_id": "P-48",
+          "state": "no-tip",
+          "box": {
+            "top": 0.03,
+            "bottom": 0.08,
+            "left": 0.2,
+            "right": 0.21
+          },
+          "confidence": 0.42,
+          "box_area_share": 0.0005
+        },
+        {
+          "review_id": "P-49",
+          "state": "no-tip",
+          "box": {
+            "top": 0.4,
+            "bottom": 0.47,
+            "left": 0.04,
+            "right": 0.08
+          },
+          "confidence": 0.21,
+          "box_area_share": 0.0028
+        }
+      ],
+      "cant_tell": [
+        {
+          "review_id": "P-04",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.89,
+            "bottom": 0.98,
+            "left": 0.53,
+            "right": 0.56
+          },
+          "confidence": 0.17,
+          "box_area_share": 0.0027,
+          "distance_px": 955.4,
+          "inside": false
+        },
+        {
+          "review_id": "P-05",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.35,
+            "bottom": 0.87,
+            "left": 0.69,
+            "right": 0.74
+          },
+          "confidence": 0.34,
+          "box_area_share": 0.026,
+          "distance_px": 571.0,
+          "inside": false
+        },
+        {
+          "review_id": "P-13",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.43,
+            "bottom": 0.56,
+            "left": 0.64,
+            "right": 0.73
+          },
+          "confidence": 0.74,
+          "box_area_share": 0.0117,
+          "distance_px": 204.7,
+          "inside": false
+        },
+        {
+          "review_id": "P-31",
+          "state": "cant-tell",
+          "box": {
+            "top": 0.37,
+            "bottom": 0.51,
+            "left": 0.34,
+            "right": 0.57
+          },
+          "confidence": 0.57,
+          "box_area_share": 0.0322,
+          "distance_px": 494.4,
+          "inside": false
+        }
+      ],
+      "tip_presence_by_confidence": {
+        "median_confidence_tip_frames": 0.51,
+        "median_confidence_no_tip_frames": 0.31,
+        "thresholds": {
+          "0.3": {
+            "tip_frames_at_or_above": 20,
+            "no_tip_frames_at_or_above": 12,
+            "accuracy_as_presence_detector": 0.674
+          },
+          "0.4": {
+            "tip_frames_at_or_above": 18,
+            "no_tip_frames_at_or_above": 10,
+            "accuracy_as_presence_detector": 0.674
+          },
+          "0.5": {
+            "tip_frames_at_or_above": 12,
+            "no_tip_frames_at_or_above": 7,
+            "accuracy_as_presence_detector": 0.609
+          },
+          "0.6": {
+            "tip_frames_at_or_above": 7,
+            "no_tip_frames_at_or_above": 5,
+            "accuracy_as_presence_detector": 0.543
+          }
+        }
+      }
+    }
+  },
+  "wording_agreement": {
+    "median_center_gap_px": 28.9,
+    "within_100px": 0.8695652173913043
+  }
+}

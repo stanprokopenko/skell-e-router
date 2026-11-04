@@ -7,16 +7,21 @@ JSON map from review IDs (H-01, S-01, B-1a, P-01, I-1, ...) to frame ids.
 Every number and answer on the page comes from the data files.
 
 Run: python docs/jev-images/build_review.py
+From a worktree, point --data-root at the main checkout, where the frames and
+.agent-scratch live.
 """
 
 from __future__ import annotations
 
+import argparse
 import ast
 import base64
 import html
 import io
 import json
+import math
 import re
+import statistics
 from pathlib import Path
 
 from PIL import Image
@@ -29,6 +34,18 @@ OUT_HTML = OUT_DIR / "2026-11-04-jev-review.html"
 OUT_IDS = HERE / "2026-11-04-review-ids.json"
 PENCIL_LABELS = Path("D:/solar-sailer/labeling/dataset/labels/tp-20260831-001")
 IMPORT_FRAMES = SCRATCH / "import-frames-512"
+BOX_RUNS = HERE / "2026-11-04-box-runs.jsonl"
+
+
+def set_data_root(root: Path) -> None:
+    """Read frames and write the page under another checkout (a worktree has no .agent-scratch)."""
+    global ROOT, SCRATCH, OUT_DIR, OUT_HTML, IMPORT_FRAMES
+    ROOT = root
+    SCRATCH = ROOT / ".agent-scratch" / "2026-11-04-jev-images"
+    OUT_DIR = SCRATCH / "review"
+    OUT_HTML = OUT_DIR / "2026-11-04-jev-review.html"
+    IMPORT_FRAMES = SCRATCH / "import-frames-512"
+
 
 def hand_questions() -> dict[str, str]:
     """HAND_QUESTIONS from run_eval.py, read without importing the router."""
@@ -57,6 +74,10 @@ STAGE_NAMES = ["blank", "first marks", "in progress", "finished"]
 TIP_NAMES = {"touching": "touching", "not-touching": "not touching", "no-tip": "no tip", "cant-tell": "can't tell"}
 LETTERS = "abcd"
 POSITION_NAMES = {"first_extracted": "start", "median_extracted": "middle", "last_extracted": "end"}
+# pencil tip box test (Jev 1.14): variant key, line label
+BOX_VARIANTS = [("detailed", "Detailed"), ("short", "Short")]
+SOURCE_W, SOURCE_H = 3840, 2160
+BOX_MISS_PX = 100  # outside the box and farther than this from its center counts as a miss
 
 
 def load_json(name: str):
@@ -201,6 +222,39 @@ def stan_point(frame_id: str):
     return d["point"]["x"] / d["sourceWidth"], d["point"]["y"] / d["sourceHeight"]
 
 
+def load_boxes(path: Path):
+    """(frame_id, variant) -> box run row, or None when the run file is missing.
+
+    A later row replaces an earlier one (reruns append), except that an error
+    never replaces a row that has a box.
+    """
+    if not path.exists():
+        print(f"warning: {path} not found, building the page without pencil tip boxes")
+        return None
+    boxes: dict[tuple[str, str], dict] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get("task") != "pencil_tip_box":
+            continue
+        key = (row["frame_id"], row["variant"])
+        if key in boxes and boxes[key].get("box") and not row.get("box"):
+            continue
+        boxes[key] = row
+    return boxes
+
+
+def box_check(box: dict, pt):
+    """Box center, distance from it to Stan's point in source pixels, and whether the point is inside."""
+    cx, cy = (box["left"] + box["right"]) / 2, (box["top"] + box["bottom"]) / 2
+    if pt is None:
+        return cx, cy, None, None
+    dist = math.hypot((cx - pt[0]) * SOURCE_W, (cy - pt[1]) * SOURCE_H)
+    inside = box["left"] <= pt[0] <= box["right"] and box["top"] <= pt[1] <= box["bottom"]
+    return cx, cy, dist, inside
+
+
 # ---------------------------------------------------------------- model answers
 
 def hand_answer(a):
@@ -269,6 +323,26 @@ def feedback(review_id: str, kind: str) -> str:
     return f'<div class="fb" data-id="{review_id}" data-kind="{kind}"></div>'
 
 
+def box_overlay(box: dict, cx: float, cy: float, dashed: bool) -> str:
+    """Jev's box on the frame; the solid (detailed) one also gets a center dot."""
+    style = (f'left:{box["left"] * 100:.2f}%;top:{box["top"] * 100:.2f}%;'
+             f'width:{(box["right"] - box["left"]) * 100:.2f}%;height:{(box["bottom"] - box["top"]) * 100:.2f}%')
+    out = f'<span class="bx{" dash" if dashed else ""}" style="{style}"></span>'
+    if not dashed:
+        out += f'<span class="bxd" style="left:{cx * 100:.2f}%;top:{cy * 100:.2f}%"></span>'
+    return out
+
+
+def box_line(name: str, dashed: bool, verdict: str, dist, conf, disagree: bool) -> str:
+    out = (f'<div class="bxr{" dis" if disagree else ""}"><span class="bxk{" dash" if dashed else ""}"></span>'
+           f'<span class="lk">{esc(name)}</span> <b>{esc(verdict)}</b>')
+    if dist is not None:
+        out += f' {round(dist)} px'
+    if conf is not None:
+        out += f' <span class="cc">{num(float(conf))}</span>'
+    return out + "</div>"
+
+
 def label_row(prefix: str, value: str, note: str = "", extra: str = "", was: str | None = None) -> str:
     out = f'<div class="lab"><span class="lk">{esc(prefix)}</span> <b>{esc(value)}</b>'
     if was is not None:
@@ -301,8 +375,10 @@ def strip_ticks(text: str, replacements: dict[str, str]) -> str:
 
 # ---------------------------------------------------------------- build
 
-def build():
+def build(box_runs: Path = BOX_RUNS):
     manifest, labels, results, runs, runs_v2, questions, imports, imports_384, frames_index, was = load_all()
+    boxes = load_boxes(box_runs)
+    box_dist, box_inside, box_n = [], 0, 0  # detailed variant, touching and not-touching frames
     images = Images()
     ids: dict[str, dict] = {}
     model_keys = [m[0] for m in MODELS]
@@ -427,16 +503,51 @@ def build():
             dis |= bad
             correct["tip"][m] += scored and not bad
             items.append((chip_names[m], TIP_NAMES[choice], num(conf), bad))
-        pencil_dis += dis
         key = images.drawing(frame_path(manifest, fid))
         pt = stan_point(fid)
         ring = (f'<span class="ring" style="left:{pt[0] * 100:.2f}%;top:{pt[1] * 100:.2f}%"></span>'
                 if pt else "")
         lab_html = label_row("Stan", TIP_NAMES[truth], extra="" if scored else "(not scored)")
+        overlays, lines = "", []
+        if boxes is not None:
+            drawn = None
+            for variant, name in BOX_VARIANTS:
+                dashed = variant != "detailed"
+                row = boxes.get((fid, variant))
+                if row is None:
+                    lines.append(box_line(name, dashed, "not run yet", None, None, False))
+                    continue
+                assert row["review_id"] == rid, (row["review_id"], rid, fid)
+                box = row.get("box")
+                if variant == "detailed" and truth in ("touching", "not-touching"):
+                    box_n += 1
+                if row.get("error") or not box:
+                    lines.append(box_line(name, dashed, "no box returned", None, None, False))
+                    continue
+                cx, cy, dist, inside = box_check(box, pt)
+                if box != drawn:
+                    overlays += box_overlay(box, cx, cy, dashed)
+                    drawn = drawn or box
+                miss = False
+                if truth == "no-tip":
+                    verdict = "no tip labeled"
+                elif truth == "cant-tell":
+                    verdict = "not scored"
+                elif dist is None:
+                    verdict = "no mark to compare"
+                else:
+                    verdict = "inside" if inside else "outside"
+                    miss = not inside and dist > BOX_MISS_PX
+                    if variant == "detailed":
+                        box_dist.append(dist)
+                        box_inside += inside
+                dis |= miss
+                lines.append(box_line(name, dashed, verdict, dist, row.get("confidence"), miss))
+        pencil_dis += dis
         pencil_cards.append(
             f'<article class="card" data-dis="{int(dis)}"><div class="cid">{rid}</div>'
-            f'<div class="imgw">{images.tag(key)}{ring}</div>'
-            f'{lab_html}{chips(items)}{feedback(rid, "tip")}</article>')
+            f'<div class="imgw">{images.tag(key)}{overlays}{ring}</div>'
+            f'{lab_html}{chips(items)}{"".join(lines)}{feedback(rid, "tip")}</article>')
 
     # ---- import
     imp_by = {}
@@ -505,6 +616,10 @@ def build():
     I512 = results["import_512"]
     first = model_keys[0]
     n_pencil = len(manifest["pencil_contact_frames"])
+    n_scored_tip = sum(manifest["frames"][f]["pencil_label"] in ("touching", "not-touching")
+                       for f in manifest["pencil_contact_frames"])
+    box_cell = (f'{round(statistics.median(box_dist))} px off, {pct(box_inside / box_n)} inside'
+                if box_dist else "no boxes yet")
     rows_html = [
         ("Hand over the drawing", "#hand",
          cell_vals(lambda m: f'{pct(M[m[0]]["hand_obstruction"]["covered"]["accuracy"])} ({pct(M[m[0]]["hand_obstruction"]["covered"]["balanced_accuracy"])})'),
@@ -523,6 +638,10 @@ def build():
         ("Pencil tip", "#pencil",
          cell_vals(lambda m: pct(M[m[0]]["pencil_contact"]["accuracy"])),
          f'{M[first]["pencil_contact"]["n_scored"]} of {n_pencil} scored'),
+        *([("Pencil tip box (Jev 1.14)", "#pencil",
+            "".join(f'<td>{esc(box_cell) if m[0] == "jev-1.14.0" else "-"}</td>' for m in MODELS),
+            f'{box_n} of {n_scored_tip} run' if box_n < n_scored_tip else f'{n_scored_tip} scored')]
+          if boxes is not None else []),
         ("Import shot type", "#import",
          cell_vals(lambda m: f'{I512[m[1]]["strict_correct"]} of {I512[m[1]]["n"]}'),
          f'{I512["jev"]["n"]} clips'),
@@ -539,7 +658,11 @@ def build():
         f'<p class="cap">Hand: share right, and in brackets the score with "yes" and "no" frames weighted equally. '
         f'Saying "yes" every time would score {pct(M[first]["hand_obstruction"]["always_yes_baseline_covered"])}. '
         f'Best still: exact hits, then how many landed in the acceptable set. '
-        f'Imports: Gemini at the production 384px width got {g384["strict_correct"]} of {g384["n"]}.</p>')
+        f'Imports: Gemini at the production 384px width got {g384["strict_correct"]} of {g384["n"]}.'
+        + (' Pencil tip box: median distance from the box center to your mark, in pixels of the 4K source video, '
+           'then how often your mark is inside the box. Frames with no tip or "can\'t tell" are left out.'
+           if boxes is not None else "")
+        + '</p>')
 
     # ---- section intros (questions quoted from the run files)
     q = questions
@@ -569,6 +692,16 @@ def build():
                   f'The frame marked "Label" is the rater\'s pick.</p>')
     intro_tip = (f'<p>Question: "{esc(tip_q)}" The answer key is your own labels from the stroke-detection set. '
                  f'The ring marks where you put the tip. Frames you marked "can\'t tell" are not scored.</p>')
+    if boxes is not None:
+        box_q = {}
+        for (_, variant), row in boxes.items():
+            box_q.setdefault(variant, strip_ticks(row["instructions"], {"`frame`": "this frame"}))
+        asked = " and ".join(f'"{esc(box_q[v])}" for the {"solid" if v == "detailed" else "dashed"} box'
+                             for v, _ in BOX_VARIANTS if v in box_q)
+        intro_tip += (f'<p><span class="bxk"></span>The blue box is where Jev 1.14 thinks the pencil tip is, and the '
+                      f'dot is its center. Jev was asked for {asked}. The dashed box only shows when it differs. '
+                      f'Distances are in pixels of the 4K source video. A box line turns red when your mark is '
+                      f'outside the box and more than {BOX_MISS_PX} pixels from its center.</p>')
     intro_import = (f'<p>Question: "{esc(imp_q)}" The answer key and its notes come from the Solar Sailer '
                     f'import benchmark file. Each model saw the ten frames at 512px wide; the last column is Gemini '
                     f'at the 384px width production uses.</p>'
@@ -614,7 +747,7 @@ CSS = r"""
 --text-bright:#f7f7f7;--text-muted:#adadad;--text-disabled:#474747;--border-subtle:rgba(247,247,247,.06);
 --shadow-card:rgba(0,0,0,.16) 0 4px 16px 0;--shadow-header:rgba(0,0,0,.08) 0 0 16px 0;
 --radius-xs:4px;--radius-button:8px;--radius-chip:10px;--radius-card:12px;--radius-panel:16px;
---t-fast:.15s cubic-bezier(.4,0,.2,1);
+--box:#38bdf8;--t-fast:.15s cubic-bezier(.4,0,.2,1);
 --f-body:"Open Sans","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 --f-ui:Rubik,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
 *{box-sizing:border-box}
@@ -678,6 +811,17 @@ summary{cursor:pointer;color:var(--text-primary)}
 .ov{left:4px;top:4px}.ts{right:4px;bottom:4px}.pick{right:4px;top:4px;background:var(--text-bright);color:#1c1c1c}
 .strip .ov,.strip .ts{padding:0 4px}
 .ring{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px rgba(0,0,0,.85),inset 0 0 0 1.5px rgba(0,0,0,.85);pointer-events:none}
+.bx,.bxd{position:absolute;pointer-events:none;z-index:1}
+.bx{border:2px solid var(--box);background:rgba(56,189,248,.08);box-shadow:0 0 0 1px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.7)}
+.bx.dash{border-style:dashed;background:none}
+.bxd{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:var(--box);box-shadow:0 0 0 1px rgba(0,0,0,.85)}
+.ring{z-index:2}
+.bxr{font-size:14px;line-height:20px;padding:2px 8px;margin-top:-4px;border-radius:var(--radius-chip)}
+.bxr b{color:var(--text-bright);font-weight:400}
+.bxr.dis{background:var(--bg-tag-accent)}
+.bxr.dis,.bxr.dis b,.bxr.dis .lk{color:var(--accent-primary)}
+.bxk{display:inline-block;width:14px;height:10px;border:2px solid var(--box);border-radius:2px;margin-right:6px;vertical-align:-1px}
+.bxk.dash{border-style:dashed}
 .lab{font-size:14px;line-height:20px}
 .lk{color:var(--text-muted);font-size:12px}
 .lab b{color:var(--text-bright)}
@@ -777,4 +921,11 @@ document.getElementById("copy").addEventListener("click",async()=>{const b=docum
 """
 
 if __name__ == "__main__":
-    build()
+    ap = argparse.ArgumentParser(description="Build the Jev image test review page for Stan.")
+    ap.add_argument("--box-runs", type=Path, default=BOX_RUNS,
+                    help="pencil tip box runs (JSONL); if missing, the page is built without boxes")
+    ap.add_argument("--data-root", type=Path, default=ROOT,
+                    help="checkout holding .agent-scratch with the frames and the review folder (default: this repo)")
+    args = ap.parse_args()
+    set_data_root(args.data_root.resolve())
+    build(args.box_runs)

@@ -1,5 +1,7 @@
 # Jev box question on pencil-tip position, handoff
 
+Completed 2026-11-04 by the successor lead; results in [2026-11-04-results.md](../jev-images/2026-11-04-results.md#pencil-tip-box-added-later-on-2026-11-04). Kept for the record.
+
 For the successor lead continuing the Jev image evaluations in `C:/Users/Stan/Documents/GitHub/skell-e-router`. Stan asked, in the Jev image thread on 2026-11-04: "Let's test the box feature seeing if it can identify the position of the pencil tip. That's already human labeled so we know our data is correct." The previous lead ran out of context after a one-frame probe; everything below is verified unless marked otherwise.
 
 ## What is already true

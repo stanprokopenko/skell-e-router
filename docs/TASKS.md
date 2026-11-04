@@ -9,6 +9,7 @@
 
 - [x] Added base64 image assets to `classify()` with preview-header handling and offline contract tests. Image cost remains unknown until verified with TypeSafe. [First-run checkpoint](jev-images/2026-11-04-first-run.md).
 - [x] Completed the Jev image and Solar Sailer import evaluations for about $0.14, reviewed item by item by Stan. With the reworded hand question Jev 1.13 scores 51/52 against Gemini 3.1 Flash Lite's 48/52, and 7/7 against 6/7 on the import benchmark, at about a tenth of the latency. [Scored results](jev-images/2026-11-04-results.md).
+- [x] Tested Jev 1.14's box question on pencil-tip position against Stan's 23 labeled tip points (router 3.43.0 added box support). Median miss 121 source px against a 452 px baseline, mark inside the box 43% of the time, confidence honest; a region finder, not a contact-point detector. [Scored results](jev-images/2026-11-04-results.md#pencil-tip-box-added-later-on-2026-11-04).
 - [ ] Confirm the reworded hand question on a fresh set of frames; its 98% was measured on the same 52 frames the wording was tuned against.
 - [ ] Confirm TypeSafe's image billing rate with TypeSafe; all Jev image costs are the text rate applied to reported tokens. Jev rejects images under 512 px wide, so a Solar Sailer adoption would raise its 384 px import frames.
 
