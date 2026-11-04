@@ -1,5 +1,7 @@
 # Jev image evaluations handoff
 
+Completed 2026-11-04 by the Fable 5.1 lead. Scored results: [2026-11-04-results.md](../jev-images/2026-11-04-results.md). The instructions below are kept for history.
+
 For the Fable 5.1 lead requested by Stan. The router implementation and live smoke test are complete. Run the evaluations next. Do not ask Stan to unlock 1Password again or repeat the smoke-test approval checkpoint.
 
 ## Start here

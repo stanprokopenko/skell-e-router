@@ -1,0 +1,1554 @@
+{
+  "built": "2026-11-04",
+  "long_side": 1024,
+  "hand_obstruction_frames": [
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+    "bauman__bauman-gs1-014-475be0__f0030376",
+    "bauman__bauman-gs1-013-be9bcf__f0051051",
+    "finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576",
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985",
+    "court-jones__mvi-0012-ff263c__f0003715",
+    "court-jones__mvi-0009-1a6809__f0000438",
+    "sanford__3030-01030129-c002-553730__f0158023",
+    "sanford__3030-01030129-c002-553730__f0122094"
+  ],
+  "hand_obstruction_labeled_subset": [
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036"
+  ],
+  "drawing_stage_groups": [
+    {
+      "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708",
+      "positions": [
+        "first_extracted",
+        "median_extracted",
+        "last_extracted"
+      ],
+      "frames": [
+        "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+        "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+        "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977"
+      ]
+    },
+    {
+      "clip": "sanford__3030-01030129-c002-553730",
+      "positions": [
+        "first_extracted",
+        "median_extracted",
+        "last_extracted"
+      ],
+      "frames": [
+        "sanford__3030-01030129-c002-553730__f0001237",
+        "sanford__3030-01030129-c002-553730__f0116968",
+        "sanford__3030-01030129-c002-553730__f0256419"
+      ]
+    },
+    {
+      "clip": "eliza__1133-12250805-c003-00699711-762ab5",
+      "positions": [
+        "first_extracted",
+        "median_extracted",
+        "last_extracted"
+      ],
+      "frames": [
+        "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+        "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+        "eliza__1133-12250805-c003-00699711-762ab5__f0221379"
+      ]
+    },
+    {
+      "clip": "1154_12130305_C001_V1-0001.mov",
+      "positions": [
+        "start_1s",
+        "middle",
+        "end_minus_1s"
+      ],
+      "frames": [
+        "stroke-samples__video__start_1s",
+        "stroke-samples__video__middle",
+        "stroke-samples__video__end_minus_1s"
+      ],
+      "duration_seconds": 2365.125
+    }
+  ],
+  "best_still_groups": [
+    {
+      "clip": "court-jones__mvi-0012-ff263c",
+      "frames": [
+        "court-jones__mvi-0012-ff263c__f0000112",
+        "court-jones__mvi-0012-ff263c__f0002324",
+        "court-jones__mvi-0012-ff263c__f0004447",
+        "court-jones__mvi-0012-ff263c__f0006642"
+      ]
+    },
+    {
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "frames": [
+        "solovev__camera-2-nest-f9a5cc__f0000049",
+        "solovev__camera-2-nest-f9a5cc__f0006280",
+        "solovev__camera-2-nest-f9a5cc__f0012490",
+        "solovev__camera-2-nest-f9a5cc__f0018736"
+      ]
+    },
+    {
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "frames": [
+        "elitha__1037-12032254-c001-5a9d28__f0000675",
+        "elitha__1037-12032254-c001-5a9d28__f0063464",
+        "elitha__1037-12032254-c001-5a9d28__f0125290",
+        "elitha__1037-12032254-c001-5a9d28__f0188767"
+      ]
+    },
+    {
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "frames": [
+        "ryan-benjamin__1017-06061628-c001-406ec4__f0002788",
+        "ryan-benjamin__1017-06061628-c001-406ec4__f0101217",
+        "ryan-benjamin__1017-06061628-c001-406ec4__f0193793",
+        "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+      ]
+    },
+    {
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "frames": [
+        "blaise__blaise-gh5-007-bd5030__f0003949",
+        "blaise__blaise-gh5-007-bd5030__f0043769",
+        "blaise__blaise-gh5-007-bd5030__f0088088",
+        "blaise__blaise-gh5-007-bd5030__f0128055"
+      ]
+    }
+  ],
+  "pencil_contact_frames": [
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0002233",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0007821",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010051",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010349",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011832",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0016873",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0017438",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021572",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0022339",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0023717",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0026155",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0028761",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031133",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036208",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036808",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037235",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0042595",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0048259",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0052411",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0053333",
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205"
+  ],
+  "frames": {
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 1339,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "43e683f0291ed367beadd1296fda54052869f2029fc13f53129be39ca33176b1"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0002233": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0002233",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0002233.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 2233,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "3ed998ef3c655db6bad0da2cb1fb5a05780cc2dbf6de34097b7c203a697c9170"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493.jpg",
+      "pencil_label": "touching",
+      "source_frame": 4493,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "f445b3633333a7d8eec2e2a4c90ad9a21f23f6e1800bdc03da63235e776110fc"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036.jpg",
+      "pencil_label": "cant-tell",
+      "source_frame": 5036,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "c69f9b74e570c8f7d213d5d0605c35d6bfb022f60b007039ffd11f2916b99dfd"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363.jpg",
+      "pencil_label": "cant-tell",
+      "source_frame": 5363,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "8c175f3c7dba58ffc9b91c74882db94fca8a3eece27a0eca0d02b1903c8eaa68"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051.jpg",
+      "pencil_label": "touching",
+      "source_frame": 6051,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "6cd4639788aa1cd7f670a3bcf56ea1f18ff6b5959f15b2ea65fe5dd1c4aab494"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907.jpg",
+      "pencil_label": "touching",
+      "source_frame": 6907,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "3c4e256f6cefd1756d5c3fba180c08a791b2255eeb761dd3c1b207326f63ba8a"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0007821": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0007821",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0007821.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 7821,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "10a962801427664852e8bcc325c803fc45d1c81c6499fdee7d72f4fcd0b273df"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 8240,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "5f356e2556f5fdb7f5973c0c4715d06750ee9e481d5247eaa3fd442b22601fac"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695.jpg",
+      "pencil_label": "touching",
+      "source_frame": 8695,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "623e4ba8bd9873525107b3e9395c52749ec5f0a716a0aefe42b7a32d44cd6766"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010051": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010051",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010051.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 10051,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "a6b99fd578fce3b6310b96e30ff15a23742b9641abb1e2c1e9051664a25d3588"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010349": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010349",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010349.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 10349,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "7f558d9131aac189dd23c03842f1eeb9d6c39edc2e6487b686997bf32ffb94ee"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360.jpg",
+      "pencil_label": "cant-tell",
+      "source_frame": 11360,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "76e6f672211205cc8396ece887858802fa5905000db6d30c0a53700fdf8732a5"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011832": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011832",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011832.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 11832,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "c25fecd45be74128ccd036ece426f6fa3a71155557b1cf4ee5f4fb57a7d87a0d"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 14731,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "76c9f840b3e5304327279caa6ae178beeec5530749472f170bf8efc431fbd04f"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 15612,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "89db9ccf737f5e2baefca66e5ea315cb684097e09706f235610c7618e6144c33"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0016873": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0016873",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0016873.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 16873,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "5f6657bd9898557732315c0ee3dadcac79fe9e694350aade588c67659cf9dc06"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0017438": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0017438",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0017438.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 17438,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "c74e294489db493606cdcc5e51c786c36d1bc861bd376aa3e0c7932cbb81473a"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 18751,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "e4064a021838b1d46155d01f2eaca483d9cde588f1747a6f64c9bccc460f24cc"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749.jpg",
+      "pencil_label": "touching",
+      "source_frame": 19749,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "0d54e88beed1d0bd0be4ea621ea5cecbef5a8d12954fe29845c500c589830c06"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 21019,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1b6829361c024ba6cbe56b9637fd97e3a181ad51b46b73aa1ee169fe2dd202ce"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021572": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021572",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021572.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 21572,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "5ef4c332bae05705608f9e2e04ab35d57e2627efae125a77f374b9ae2f13baa1"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0022339": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0022339",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0022339.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 22339,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "63e9f510da7d61fea65758b2dccdcb3548162242f8bb1e99fabc35aec96d560a"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0023717": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0023717",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0023717.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 23717,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "d51e1188e8508e3d88d7439cb438b9da67cb577d723499aaf401ea34b2bb921c"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 25112,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1df997d24b5e218a356f0a9d3db8d6347d79fbe2046be1d4b67a67da8a3ca6ae"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0026155": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0026155",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0026155.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 26155,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "acc3df1aaf8bf9e948f620440a353e1b14be9b16ebd85eee6abac2b3c6b093ef"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0028761": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0028761",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0028761.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 28761,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "467f1ee049c4f5097236e929941125d44d2a7d8dae9af399b17acb2967f4350e"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031133": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031133",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031133.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 31133,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "7354b7137aac0af03b4b54dfcb9e7abb2b47477a10b3af938a89af2fb66c2fff"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 31940,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "3b7b6d9f8eaaa47a4f63b499b3bed4498283f6811dca0e806e5390a68c0e972b"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 32220,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "b8d1bb5006df06087a21172418d28dad3df2d63f98ba31aadfd1efac60830785"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315.jpg",
+      "pencil_label": "cant-tell",
+      "source_frame": 33315,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "97af67f71794db313fd1574594192efdaf218d67c01b98f9a7da32de4ecd0ac4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 34493,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "45ef3ad24e1cd4560f792ecc0be697c3a1f6355c550349359870602c7d7841e8"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 34935,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "83f5b6796d84de96190c0c2d56e20c77649ea2f5d208a514f2cb726e03db51b7"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 35385,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "9566c3d136a7753d5de20e5463c645d337e3c1a50d37e841098dd06af0fdd2a4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 35761,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "93cd50c18fc89cdb9b32b344246c3e76ad77269d418a810d30104ee3ba2eb1b4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036208": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036208",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036208.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 36208,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "c6961278660e7d9a8771c26a40fb43cc242c4b5789c6d546ded841da6075da0a"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036808": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036808",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036808.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 36808,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "52d90ec29738e4ec088ad3381c289017f226e47e544ff06257860728d9133dd6"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037235": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037235",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037235.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 37235,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "6a9a83ced175ea2320e8d4fe05248bffce69582186f3f801e7ba56b2b6ff37f4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 37622,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "214c381e28732bec6c8bb3a8a237e250695558f269854230f518c0b4a3f03ee5"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0042595": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0042595",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0042595.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 42595,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "9248abfa8f884004b4282b0c703545d6b37d2b4ae8a24a6cff210663f46e56f7"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 43178,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "276777d9d931b44dff8632a2cf148afb41e47abbb1c4e75c9db2bb018a5a8f0f"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 43775,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "2ac18c7f9b5baf866d6f0b341c7fcda420de87d9f6d91f350ca2d54af5ff5cbb"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 46368,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "25f9fa953d4131c5c9840964c81b53db2abf30b0316f485ee704047e383bdce7"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 47381,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "399a8c235257ecf480a5106beabdcb772a87cfa7d4ab393ab8782c6a528befe4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0048259": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0048259",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0048259.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 48259,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "d33778ff6855e226a9fb5f5c2987b1c85b5df6c2258637e27f5e45eca1b5d0ec"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 49133,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "38d7eb870f2d933caacf4d7ecbdae541e07f354ff18c12d27ad90cb97150cc6e"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact",
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 50947,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "9e997f95412a80315bc24565c8e2f19fa52e393502ad2dc5d6665ea5ddb3eac0"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0052411": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0052411",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0052411.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 52411,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "8474241b12f0115baac77b9663bb384d69277b6e8556d7f387e90581510af08a"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0053333": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0053333",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0053333.jpg",
+      "pencil_label": "no-tip",
+      "source_frame": 53333,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "be7aae1c28d225c5520245d2a7a879c019ed34c4e58a9d8dfb7d987a9d0e35c4"
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205": {
+      "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205",
+      "source": "stroke-samples",
+      "tasks": [
+        "pencil_contact"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205.jpg",
+      "pencil_label": "not-touching",
+      "source_frame": 55205,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "7321fa2883b88c0a231ec48a140ec44a49e67db2cb15d0da0fd92b1945c6e08f"
+    },
+    "bauman__bauman-gs1-014-475be0__f0030376": {
+      "frame_id": "bauman__bauman-gs1-014-475be0__f0030376",
+      "source": "bauman",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\bauman__bauman-gs1-014-475be0__f0030376.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "ab4e3480d574d5df8c7eadd1c9f58702783a3306e6dc479d7e80bded6f0bebd7"
+    },
+    "bauman__bauman-gs1-013-be9bcf__f0051051": {
+      "frame_id": "bauman__bauman-gs1-013-be9bcf__f0051051",
+      "source": "bauman",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\bauman__bauman-gs1-013-be9bcf__f0051051.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "029dc075d526031b5193a374b88b2b68230475edf6cce512bdba5e9961710a02"
+    },
+    "finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576": {
+      "frame_id": "finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576",
+      "source": "finch-pencil",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "06f823213baa012d985fa79d5207e7bd066d3f9a627f4ab9fc90ce03ebdfc5cf"
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985": {
+      "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985",
+      "source": "finch-pencil",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "99bb183b39c89cdd33f452c4c36b3a2bf142ca80ae8c47c06491df85f5fbfa3e"
+    },
+    "court-jones__mvi-0012-ff263c__f0003715": {
+      "frame_id": "court-jones__mvi-0012-ff263c__f0003715",
+      "source": "court-jones",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0012-ff263c__f0003715.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1e2a2e9936ec65f35088ff9e8c45505113195c6ae77730915eb3f87f8fe3b5b1"
+    },
+    "court-jones__mvi-0009-1a6809__f0000438": {
+      "frame_id": "court-jones__mvi-0009-1a6809__f0000438",
+      "source": "court-jones",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0009-1a6809__f0000438.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "62514d2c002b4c94adf6c08b9ec7f9b7274c9b49fe70a8b5c39e48c1fe51f7ac"
+    },
+    "sanford__3030-01030129-c002-553730__f0158023": {
+      "frame_id": "sanford__3030-01030129-c002-553730__f0158023",
+      "source": "sanford",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\sanford__3030-01030129-c002-553730__f0158023.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "efcf0b789f0f904ec0ee0f0524e801b765e69320dc976133317c2e27dd8869d6"
+    },
+    "sanford__3030-01030129-c002-553730__f0122094": {
+      "frame_id": "sanford__3030-01030129-c002-553730__f0122094",
+      "source": "sanford",
+      "tasks": [
+        "hand_obstruction"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\sanford__3030-01030129-c002-553730__f0122094.jpg",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "ee3f7e532b7a7439e26575b617a4b211285a332dc07ddfea65c39aa120940d2e"
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582": {
+      "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+      "source": "finch-pencil",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582.jpg",
+      "source_frame": 582,
+      "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708",
+      "clip_position": "first_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "8793a083b614ee76e2b3d7e0346f3842ec822465b155794ded7f6cfb2016b5b9"
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515": {
+      "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+      "source": "finch-pencil",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515.jpg",
+      "source_frame": 28515,
+      "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708",
+      "clip_position": "median_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "cf18296efa8617b9d1b6d11cdd03cb0345f21cd6788fc472904e61e28077f602"
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977": {
+      "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+      "source": "finch-pencil",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977.jpg",
+      "source_frame": 52977,
+      "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708",
+      "clip_position": "last_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "8db93284c707f0203cedf1d558edf84d020f8fd1f81f9278fd5af5adc30d3e71"
+    },
+    "sanford__3030-01030129-c002-553730__f0001237": {
+      "frame_id": "sanford__3030-01030129-c002-553730__f0001237",
+      "source": "sanford",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\sanford__3030-01030129-c002-553730__f0001237.jpg",
+      "source_frame": 1237,
+      "clip": "sanford__3030-01030129-c002-553730",
+      "clip_position": "first_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "ae4b5ed516b1cbf75915ccb962d7839852dc62ef602d868e010ea7e923b5eafb"
+    },
+    "sanford__3030-01030129-c002-553730__f0116968": {
+      "frame_id": "sanford__3030-01030129-c002-553730__f0116968",
+      "source": "sanford",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\sanford__3030-01030129-c002-553730__f0116968.jpg",
+      "source_frame": 116968,
+      "clip": "sanford__3030-01030129-c002-553730",
+      "clip_position": "median_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "05f688732229c61e9ec97ea321b0794690713788b8211e519735f5fcc631e5cf"
+    },
+    "sanford__3030-01030129-c002-553730__f0256419": {
+      "frame_id": "sanford__3030-01030129-c002-553730__f0256419",
+      "source": "sanford",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\sanford__3030-01030129-c002-553730__f0256419.jpg",
+      "source_frame": 256419,
+      "clip": "sanford__3030-01030129-c002-553730",
+      "clip_position": "last_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1b5ba7907fb9ec202caeb24cb313076f41b36357b1917461d4b2fd1cd397cec6"
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0000919": {
+      "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+      "source": "eliza",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\eliza__1133-12250805-c003-00699711-762ab5__f0000919.jpg",
+      "source_frame": 919,
+      "clip": "eliza__1133-12250805-c003-00699711-762ab5",
+      "clip_position": "first_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "35d0d5415fd7e4f5e51523f1619c550231075994ebd04713411e32e09145926a"
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0105427": {
+      "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+      "source": "eliza",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\eliza__1133-12250805-c003-00699711-762ab5__f0105427.jpg",
+      "source_frame": 105427,
+      "clip": "eliza__1133-12250805-c003-00699711-762ab5",
+      "clip_position": "median_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "90466a548b2f98d8a5a10b68d5b7b80523acc930c059ec533930531b06926a21"
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0221379": {
+      "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0221379",
+      "source": "eliza",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\eliza__1133-12250805-c003-00699711-762ab5__f0221379.jpg",
+      "source_frame": 221379,
+      "clip": "eliza__1133-12250805-c003-00699711-762ab5",
+      "clip_position": "last_extracted",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "73b6578bfe93f8e422fb0edf37c98ccea3de073b08d50c6f3314c7804fc09973"
+    },
+    "stroke-samples__video__start_1s": {
+      "frame_id": "stroke-samples__video__start_1s",
+      "source": "stroke-samples",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__video__start_1s.jpg",
+      "clip": "1154_12130305_C001_V1-0001.mov",
+      "clip_position": "start_1s",
+      "seconds": 1.0,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "3b7b901659d954a4f93675cabab7392f58a5eab96c6f1bd524afff5a0437d7bd"
+    },
+    "stroke-samples__video__middle": {
+      "frame_id": "stroke-samples__video__middle",
+      "source": "stroke-samples",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__video__middle.jpg",
+      "clip": "1154_12130305_C001_V1-0001.mov",
+      "clip_position": "middle",
+      "seconds": 1182.562,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "4747913dcabb2f3a15c99a6d2f2da2fcb5a277559b07da072c2d4d21d8e80257"
+    },
+    "stroke-samples__video__end_minus_1s": {
+      "frame_id": "stroke-samples__video__end_minus_1s",
+      "source": "stroke-samples",
+      "tasks": [
+        "drawing_stage"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\stroke-samples__video__end_minus_1s.jpg",
+      "clip": "1154_12130305_C001_V1-0001.mov",
+      "clip_position": "end_minus_1s",
+      "seconds": 2364.125,
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "702497ee0a75fde007f3399e0078530a299fc324a202ecc3e0381049152fd177"
+    },
+    "court-jones__mvi-0012-ff263c__f0000112": {
+      "frame_id": "court-jones__mvi-0012-ff263c__f0000112",
+      "source": "court-jones",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0012-ff263c__f0000112.jpg",
+      "source_frame": 112,
+      "clip": "court-jones__mvi-0012-ff263c",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "b9f4ce36d2e4fdc7caa885dc0dc9e0afa94120bd476c89b36750570c60459f98"
+    },
+    "court-jones__mvi-0012-ff263c__f0002324": {
+      "frame_id": "court-jones__mvi-0012-ff263c__f0002324",
+      "source": "court-jones",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0012-ff263c__f0002324.jpg",
+      "source_frame": 2324,
+      "clip": "court-jones__mvi-0012-ff263c",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "75a5faf8e6df40f9ca7a01dc3b0e817c8f3e6b30ec4fb35b748a4c42dd7d63a9"
+    },
+    "court-jones__mvi-0012-ff263c__f0004447": {
+      "frame_id": "court-jones__mvi-0012-ff263c__f0004447",
+      "source": "court-jones",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0012-ff263c__f0004447.jpg",
+      "source_frame": 4447,
+      "clip": "court-jones__mvi-0012-ff263c",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "34b499f52b4781959ddabbf22e2a2bd2e82ddd99495438817c4188a17ce81f8b"
+    },
+    "court-jones__mvi-0012-ff263c__f0006642": {
+      "frame_id": "court-jones__mvi-0012-ff263c__f0006642",
+      "source": "court-jones",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\court-jones__mvi-0012-ff263c__f0006642.jpg",
+      "source_frame": 6642,
+      "clip": "court-jones__mvi-0012-ff263c",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "6dd9abf6edf3929c0e410ce567d341c0cbb0b29f15a7b8d1642598db653122b5"
+    },
+    "solovev__camera-2-nest-f9a5cc__f0000049": {
+      "frame_id": "solovev__camera-2-nest-f9a5cc__f0000049",
+      "source": "solovev",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\solovev__camera-2-nest-f9a5cc__f0000049.jpg",
+      "source_frame": 49,
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "5cce34634987f9b1475d6d66c46c3fb70500c8cef7563c745720276093002e1d"
+    },
+    "solovev__camera-2-nest-f9a5cc__f0006280": {
+      "frame_id": "solovev__camera-2-nest-f9a5cc__f0006280",
+      "source": "solovev",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\solovev__camera-2-nest-f9a5cc__f0006280.jpg",
+      "source_frame": 6280,
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "e9f2872332bf5a6646c485ed26276c50e36e9191596d2491fc11d5f1b82f081a"
+    },
+    "solovev__camera-2-nest-f9a5cc__f0012490": {
+      "frame_id": "solovev__camera-2-nest-f9a5cc__f0012490",
+      "source": "solovev",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\solovev__camera-2-nest-f9a5cc__f0012490.jpg",
+      "source_frame": 12490,
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "d45eb35936bd02a724f1959c12c91bb855691a182a58df69e6f74d7e513ecf43"
+    },
+    "solovev__camera-2-nest-f9a5cc__f0018736": {
+      "frame_id": "solovev__camera-2-nest-f9a5cc__f0018736",
+      "source": "solovev",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\solovev__camera-2-nest-f9a5cc__f0018736.jpg",
+      "source_frame": 18736,
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "c091084dc0b8bbe63118e1d5854c0398c18011c70a437ed649b3265a19acb070"
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0000675": {
+      "frame_id": "elitha__1037-12032254-c001-5a9d28__f0000675",
+      "source": "elitha",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\elitha__1037-12032254-c001-5a9d28__f0000675.jpg",
+      "source_frame": 675,
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "06f559faa26c3c926be4ea9b3269ce9f73a05e88a756e9c619a17ea342c9d443"
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0063464": {
+      "frame_id": "elitha__1037-12032254-c001-5a9d28__f0063464",
+      "source": "elitha",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\elitha__1037-12032254-c001-5a9d28__f0063464.jpg",
+      "source_frame": 63464,
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "58fdcbb6720babcbf599e49ec9840e882d81fce17df7bbd1e2e952b40c33cd4d"
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0125290": {
+      "frame_id": "elitha__1037-12032254-c001-5a9d28__f0125290",
+      "source": "elitha",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\elitha__1037-12032254-c001-5a9d28__f0125290.jpg",
+      "source_frame": 125290,
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "e2a1ee992f5055db1a4ea226a1cb43804ae2be118086107f9b0e03f8d93dd169"
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0188767": {
+      "frame_id": "elitha__1037-12032254-c001-5a9d28__f0188767",
+      "source": "elitha",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\elitha__1037-12032254-c001-5a9d28__f0188767.jpg",
+      "source_frame": 188767,
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1f49314ef3d852e0eea75ef0bfb0b93af531d0d99e1ee98e02f871f36aace7f2"
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0002788": {
+      "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0002788",
+      "source": "ryan-benjamin",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\ryan-benjamin__1017-06061628-c001-406ec4__f0002788.jpg",
+      "source_frame": 2788,
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "1addb3a2f0e7e20983b0194cc297cccf7f4560fa0b10b59871b8724e2d83bd33"
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0101217": {
+      "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0101217",
+      "source": "ryan-benjamin",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\ryan-benjamin__1017-06061628-c001-406ec4__f0101217.jpg",
+      "source_frame": 101217,
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "573264f40278a48afdb1d948cfc0699fc231ca08f70a552652889297386d6c7c"
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0193793": {
+      "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0193793",
+      "source": "ryan-benjamin",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\ryan-benjamin__1017-06061628-c001-406ec4__f0193793.jpg",
+      "source_frame": 193793,
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "bbdd371caef0ec715c5d5d31221bf24df97cbb9b508e55c0bd688ea9c64b8efa"
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0292404": {
+      "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+      "source": "ryan-benjamin",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\ryan-benjamin__1017-06061628-c001-406ec4__f0292404.jpg",
+      "source_frame": 292404,
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "dimensions": [
+        1024,
+        576
+      ],
+      "sha256": "fa74124dc7d21518657337302903423c320f6588294ef308055ca0bf8f84eb04"
+    },
+    "blaise__blaise-gh5-007-bd5030__f0003949": {
+      "frame_id": "blaise__blaise-gh5-007-bd5030__f0003949",
+      "source": "blaise",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\blaise__blaise-gh5-007-bd5030__f0003949.jpg",
+      "source_frame": 3949,
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "dimensions": [
+        1024,
+        540
+      ],
+      "sha256": "ae7e4289d1298b660a67f3abd90c7c874478cbc841276c7744b6850b370953d7"
+    },
+    "blaise__blaise-gh5-007-bd5030__f0043769": {
+      "frame_id": "blaise__blaise-gh5-007-bd5030__f0043769",
+      "source": "blaise",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\blaise__blaise-gh5-007-bd5030__f0043769.jpg",
+      "source_frame": 43769,
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "dimensions": [
+        1024,
+        540
+      ],
+      "sha256": "a6007a0d1e9a45d850e556a5bac9caee4e6b21d74b0d169fd432096e7fbab348"
+    },
+    "blaise__blaise-gh5-007-bd5030__f0088088": {
+      "frame_id": "blaise__blaise-gh5-007-bd5030__f0088088",
+      "source": "blaise",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\blaise__blaise-gh5-007-bd5030__f0088088.jpg",
+      "source_frame": 88088,
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "dimensions": [
+        1024,
+        540
+      ],
+      "sha256": "fa399af2f29924ebe7b1f8e02a145b41f1bb9777e1599ff34e1aa2f1dd4cb0a5"
+    },
+    "blaise__blaise-gh5-007-bd5030__f0128055": {
+      "frame_id": "blaise__blaise-gh5-007-bd5030__f0128055",
+      "source": "blaise",
+      "tasks": [
+        "best_still"
+      ],
+      "image": ".agent-scratch\\2026-11-04-jev-images\\frames\\blaise__blaise-gh5-007-bd5030__f0128055.jpg",
+      "source_frame": 128055,
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "dimensions": [
+        1024,
+        540
+      ],
+      "sha256": "554a54ccb9a2b66c71a088f22a641ec88071c406e1d6bb79e4a67c4b1fdc2c48"
+    }
+  }
+}

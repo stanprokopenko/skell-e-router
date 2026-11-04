@@ -1,0 +1,2301 @@
+{
+  "models": {
+    "jev-1.13.0": {
+      "usage": {
+        "requests": 119,
+        "errors": 0,
+        "median_latency_s": 0.141,
+        "mean_input_tokens": 2125,
+        "total_input_tokens": 252924,
+        "text_rate_cost_usd": 0.01062,
+        "text_rate_cost_per_1000_requests_usd": 0.0893
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 0.141,
+          "mean_input_tokens": 1894,
+          "total_input_tokens": 98483,
+          "text_rate_cost_usd": 0.00414,
+          "text_rate_cost_per_1000_requests_usd": 0.0795
+        },
+        "drawing_stage": {
+          "requests": 12,
+          "errors": 0,
+          "median_latency_s": 0.133,
+          "mean_input_tokens": 1939,
+          "total_input_tokens": 23272,
+          "text_rate_cost_usd": 0.00098,
+          "text_rate_cost_per_1000_requests_usd": 0.0815
+        },
+        "best_still": {
+          "requests": 5,
+          "errors": 0,
+          "median_latency_s": 0.216,
+          "mean_input_tokens": 6705,
+          "total_input_tokens": 33525,
+          "text_rate_cost_usd": 0.00141,
+          "text_rate_cost_per_1000_requests_usd": 0.2816
+        },
+        "pencil_contact": {
+          "requests": 50,
+          "errors": 0,
+          "median_latency_s": 0.137,
+          "mean_input_tokens": 1953,
+          "total_input_tokens": 97644,
+          "text_rate_cost_usd": 0.0041,
+          "text_rate_cost_per_1000_requests_usd": 0.082
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.769,
+          "recall_true": 0.721,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.86,
+          "confusion": {
+            "false->no": 9,
+            "true->no": 12,
+            "true->yes": 31
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 26,
+              "n": 29,
+              "accuracy": 0.897
+            },
+            "low (<0.6)": {
+              "correct": 6,
+              "n": 8,
+              "accuracy": 0.75
+            },
+            "mid (0.6-0.8)": {
+              "correct": 8,
+              "n": 15,
+              "accuracy": 0.533
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 0.981,
+          "recall_true": 1.0,
+          "recall_false": 0.875,
+          "balanced_accuracy": 0.938,
+          "confusion": {
+            "false->no": 7,
+            "false->yes": 1,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 51,
+              "n": 51,
+              "accuracy": 1.0
+            },
+            "mid (0.6-0.8)": {
+              "correct": 0,
+              "n": 1,
+              "accuracy": 0.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.827,
+        "mistakes_covered": [
+          "court-jones__mvi-0012-ff263c__f0000112",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+          "sanford__3030-01030129-c002-553730__f0116968",
+          "sanford__3030-01030129-c002-553730__f0122094",
+          "sanford__3030-01030129-c002-553730__f0158023",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+          "stroke-samples__video__start_1s"
+        ]
+      },
+      "drawing_stage": {
+        "n": 12,
+        "exact_accuracy": 0.833,
+        "acceptable_accuracy": 0.833,
+        "mean_abs_error_levels": 0.25,
+        "confusion": {
+          "first_marks->first_marks": 2,
+          "in_progress->in_progress": 5,
+          "blank->blank": 2,
+          "finished->finished": 1,
+          "finished->in_progress": 1,
+          "finished->first_marks": 1
+        },
+        "rows": [
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 1.04,
+            "confidence": 0.96,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.54,
+            "confidence": 0.54,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.79,
+            "confidence": 0.77,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0001237",
+            "truth": 0,
+            "acceptable": [
+              0,
+              1
+            ],
+            "pred": 0,
+            "score": 0.44,
+            "confidence": 0.58,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0116968",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 1.98,
+            "confidence": 0.98,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0256419",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 3,
+            "score": 2.94,
+            "confidence": 0.94,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.7,
+            "confidence": 0.7,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0221379",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 2,
+            "score": 2.37,
+            "confidence": 0.62,
+            "exact": false,
+            "acceptable_hit": false,
+            "abs_error": 1
+          },
+          {
+            "item": "stroke-samples__video__start_1s",
+            "truth": 0,
+            "acceptable": [
+              0
+            ],
+            "pred": 0,
+            "score": 0.01,
+            "confidence": 0.99,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__middle",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 1.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__end_minus_1s",
+            "truth": 3,
+            "acceptable": [
+              2,
+              3
+            ],
+            "pred": 1,
+            "score": 1.09,
+            "confidence": 0.91,
+            "exact": false,
+            "acceptable_hit": false,
+            "abs_error": 2
+          }
+        ]
+      },
+      "best_still": {
+        "n": 5,
+        "exact_hits": 4,
+        "acceptable_hits": 5,
+        "rows": [
+          {
+            "clip": "court-jones__mvi-0012-ff263c",
+            "pick": "court-jones__mvi-0012-ff263c__f0006642",
+            "best": "court-jones__mvi-0012-ff263c__f0006642",
+            "acceptable": [
+              "court-jones__mvi-0012-ff263c__f0006642"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.95,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.01,
+              "frame_3": 0.03,
+              "frame_4": 0.96
+            }
+          },
+          {
+            "clip": "solovev__camera-2-nest-f9a5cc",
+            "pick": "solovev__camera-2-nest-f9a5cc__f0018736",
+            "best": "solovev__camera-2-nest-f9a5cc__f0012490",
+            "acceptable": [
+              "solovev__camera-2-nest-f9a5cc__f0012490",
+              "solovev__camera-2-nest-f9a5cc__f0018736"
+            ],
+            "exact": false,
+            "acceptable_hit": true,
+            "confidence": 0.63,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.16,
+              "frame_3": 0.12,
+              "frame_4": 0.72
+            }
+          },
+          {
+            "clip": "elitha__1037-12032254-c001-5a9d28",
+            "pick": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "best": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "acceptable": [
+              "elitha__1037-12032254-c001-5a9d28__f0188767"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 1.0,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.0,
+              "frame_3": 0.0,
+              "frame_4": 1.0
+            }
+          },
+          {
+            "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+            "pick": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "best": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "acceptable": [
+              "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.93,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.04,
+              "frame_3": 0.01,
+              "frame_4": 0.95
+            }
+          },
+          {
+            "clip": "blaise__blaise-gh5-007-bd5030",
+            "pick": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "best": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "acceptable": [
+              "blaise__blaise-gh5-007-bd5030__f0088088",
+              "blaise__blaise-gh5-007-bd5030__f0003949"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.35,
+            "probabilities": {
+              "frame_1": 0.49,
+              "frame_2": 0.0,
+              "frame_3": 0.51,
+              "frame_4": 0.0
+            }
+          }
+        ]
+      },
+      "pencil_contact": {
+        "n_scored": 46,
+        "accuracy": 0.826,
+        "per_class": {
+          "touching": {
+            "n": 5,
+            "recall": 1.0
+          },
+          "not-touching": {
+            "n": 18,
+            "recall": 0.889
+          },
+          "no-tip": {
+            "n": 23,
+            "recall": 0.739
+          }
+        },
+        "majority_class_baseline": 0.5,
+        "confusion": {
+          "no-tip->no-tip": 17,
+          "no-tip->not-touching": 5,
+          "no-tip->touching": 1,
+          "not-touching->no-tip": 1,
+          "not-touching->not-touching": 16,
+          "not-touching->touching": 1,
+          "touching->touching": 5
+        },
+        "accuracy_by_band": {
+          "high (>=0.8)": {
+            "correct": 16,
+            "n": 17,
+            "accuracy": 0.941
+          },
+          "low (<0.5)": {
+            "correct": 3,
+            "n": 3,
+            "accuracy": 1.0
+          },
+          "mid (0.5-0.8)": {
+            "correct": 19,
+            "n": 26,
+            "accuracy": 0.731
+          }
+        },
+        "planned_12_frame_subset": {
+          "n": 11,
+          "accuracy": 0.818
+        },
+        "mistakes": [
+          {
+            "item": "f0007821",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.58
+          },
+          {
+            "item": "f0010051",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.53
+          },
+          {
+            "item": "f0011832",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.86
+          },
+          {
+            "item": "f0015612",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 0.66
+          },
+          {
+            "item": "f0018751",
+            "truth": "not-touching",
+            "pred": "no-tip",
+            "confidence": 0.56
+          },
+          {
+            "item": "f0047381",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.56
+          },
+          {
+            "item": "f0048259",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.79
+          },
+          {
+            "item": "f0050947",
+            "truth": "no-tip",
+            "pred": "touching",
+            "confidence": 0.66
+          }
+        ]
+      }
+    },
+    "jev-1.14.0": {
+      "usage": {
+        "requests": 119,
+        "errors": 0,
+        "median_latency_s": 0.136,
+        "mean_input_tokens": 2125,
+        "total_input_tokens": 252924,
+        "text_rate_cost_usd": 0.01062,
+        "text_rate_cost_per_1000_requests_usd": 0.0893
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 0.132,
+          "mean_input_tokens": 1894,
+          "total_input_tokens": 98483,
+          "text_rate_cost_usd": 0.00414,
+          "text_rate_cost_per_1000_requests_usd": 0.0795
+        },
+        "drawing_stage": {
+          "requests": 12,
+          "errors": 0,
+          "median_latency_s": 0.137,
+          "mean_input_tokens": 1939,
+          "total_input_tokens": 23272,
+          "text_rate_cost_usd": 0.00098,
+          "text_rate_cost_per_1000_requests_usd": 0.0815
+        },
+        "best_still": {
+          "requests": 5,
+          "errors": 0,
+          "median_latency_s": 0.19,
+          "mean_input_tokens": 6705,
+          "total_input_tokens": 33525,
+          "text_rate_cost_usd": 0.00141,
+          "text_rate_cost_per_1000_requests_usd": 0.2816
+        },
+        "pencil_contact": {
+          "requests": 50,
+          "errors": 0,
+          "median_latency_s": 0.138,
+          "mean_input_tokens": 1953,
+          "total_input_tokens": 97644,
+          "text_rate_cost_usd": 0.0041,
+          "text_rate_cost_per_1000_requests_usd": 0.082
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.827,
+          "recall_true": 0.791,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.895,
+          "confusion": {
+            "false->no": 9,
+            "true->no": 9,
+            "true->yes": 34
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 27,
+              "n": 29,
+              "accuracy": 0.931
+            },
+            "low (<0.6)": {
+              "correct": 3,
+              "n": 6,
+              "accuracy": 0.5
+            },
+            "mid (0.6-0.8)": {
+              "correct": 13,
+              "n": 17,
+              "accuracy": 0.765
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 1.0,
+          "recall_true": 1.0,
+          "recall_false": 1.0,
+          "balanced_accuracy": 1.0,
+          "confusion": {
+            "false->no": 8,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 50,
+              "n": 50,
+              "accuracy": 1.0
+            },
+            "mid (0.6-0.8)": {
+              "correct": 2,
+              "n": 2,
+              "accuracy": 1.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.827,
+        "mistakes_covered": [
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+          "sanford__3030-01030129-c002-553730__f0158023",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+          "stroke-samples__video__start_1s"
+        ]
+      },
+      "drawing_stage": {
+        "n": 12,
+        "exact_accuracy": 0.833,
+        "acceptable_accuracy": 0.833,
+        "mean_abs_error_levels": 0.25,
+        "confusion": {
+          "first_marks->first_marks": 2,
+          "in_progress->in_progress": 5,
+          "blank->blank": 2,
+          "finished->finished": 1,
+          "finished->in_progress": 1,
+          "finished->first_marks": 1
+        },
+        "rows": [
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 1.21,
+            "confidence": 0.78,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.72,
+            "confidence": 0.72,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.97,
+            "confidence": 0.8,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0001237",
+            "truth": 0,
+            "acceptable": [
+              0,
+              1
+            ],
+            "pred": 0,
+            "score": 0.8,
+            "confidence": 0.2,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0116968",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 1.98,
+            "confidence": 0.96,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0256419",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 3,
+            "score": 2.7,
+            "confidence": 0.71,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 1.78,
+            "confidence": 0.77,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0221379",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 2,
+            "score": 2.31,
+            "confidence": 0.65,
+            "exact": false,
+            "acceptable_hit": false,
+            "abs_error": 1
+          },
+          {
+            "item": "stroke-samples__video__start_1s",
+            "truth": 0,
+            "acceptable": [
+              0
+            ],
+            "pred": 0,
+            "score": 0.04,
+            "confidence": 0.97,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__middle",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 0.99,
+            "confidence": 0.99,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__end_minus_1s",
+            "truth": 3,
+            "acceptable": [
+              2,
+              3
+            ],
+            "pred": 1,
+            "score": 1.28,
+            "confidence": 0.73,
+            "exact": false,
+            "acceptable_hit": false,
+            "abs_error": 2
+          }
+        ]
+      },
+      "best_still": {
+        "n": 5,
+        "exact_hits": 4,
+        "acceptable_hits": 5,
+        "rows": [
+          {
+            "clip": "court-jones__mvi-0012-ff263c",
+            "pick": "court-jones__mvi-0012-ff263c__f0006642",
+            "best": "court-jones__mvi-0012-ff263c__f0006642",
+            "acceptable": [
+              "court-jones__mvi-0012-ff263c__f0006642"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.8,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.02,
+              "frame_3": 0.13,
+              "frame_4": 0.85
+            }
+          },
+          {
+            "clip": "solovev__camera-2-nest-f9a5cc",
+            "pick": "solovev__camera-2-nest-f9a5cc__f0018736",
+            "best": "solovev__camera-2-nest-f9a5cc__f0012490",
+            "acceptable": [
+              "solovev__camera-2-nest-f9a5cc__f0012490",
+              "solovev__camera-2-nest-f9a5cc__f0018736"
+            ],
+            "exact": false,
+            "acceptable_hit": true,
+            "confidence": 0.55,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.1,
+              "frame_3": 0.24,
+              "frame_4": 0.66
+            }
+          },
+          {
+            "clip": "elitha__1037-12032254-c001-5a9d28",
+            "pick": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "best": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "acceptable": [
+              "elitha__1037-12032254-c001-5a9d28__f0188767"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.96,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.03,
+              "frame_3": 0.0,
+              "frame_4": 0.97
+            }
+          },
+          {
+            "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+            "pick": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "best": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "acceptable": [
+              "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.83,
+            "probabilities": {
+              "frame_1": 0.0,
+              "frame_2": 0.07,
+              "frame_3": 0.06,
+              "frame_4": 0.87
+            }
+          },
+          {
+            "clip": "blaise__blaise-gh5-007-bd5030",
+            "pick": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "best": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "acceptable": [
+              "blaise__blaise-gh5-007-bd5030__f0088088",
+              "blaise__blaise-gh5-007-bd5030__f0003949"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.53,
+            "probabilities": {
+              "frame_1": 0.35,
+              "frame_2": 0.0,
+              "frame_3": 0.65,
+              "frame_4": 0.0
+            }
+          }
+        ]
+      },
+      "pencil_contact": {
+        "n_scored": 46,
+        "accuracy": 0.804,
+        "per_class": {
+          "touching": {
+            "n": 5,
+            "recall": 1.0
+          },
+          "not-touching": {
+            "n": 18,
+            "recall": 0.833
+          },
+          "no-tip": {
+            "n": 23,
+            "recall": 0.739
+          }
+        },
+        "majority_class_baseline": 0.5,
+        "confusion": {
+          "no-tip->no-tip": 17,
+          "no-tip->not-touching": 4,
+          "no-tip->touching": 2,
+          "not-touching->no-tip": 2,
+          "not-touching->not-touching": 15,
+          "not-touching->touching": 1,
+          "touching->touching": 5
+        },
+        "accuracy_by_band": {
+          "high (>=0.8)": {
+            "correct": 12,
+            "n": 12,
+            "accuracy": 1.0
+          },
+          "low (<0.5)": {
+            "correct": 11,
+            "n": 15,
+            "accuracy": 0.733
+          },
+          "mid (0.5-0.8)": {
+            "correct": 14,
+            "n": 19,
+            "accuracy": 0.737
+          }
+        },
+        "planned_12_frame_subset": {
+          "n": 11,
+          "accuracy": 0.818
+        },
+        "mistakes": [
+          {
+            "item": "f0008240",
+            "truth": "not-touching",
+            "pred": "no-tip",
+            "confidence": 0.2
+          },
+          {
+            "item": "f0010051",
+            "truth": "no-tip",
+            "pred": "touching",
+            "confidence": 0.35
+          },
+          {
+            "item": "f0011832",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.7
+          },
+          {
+            "item": "f0015612",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 0.6
+          },
+          {
+            "item": "f0018751",
+            "truth": "not-touching",
+            "pred": "no-tip",
+            "confidence": 0.62
+          },
+          {
+            "item": "f0036208",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.26
+          },
+          {
+            "item": "f0047381",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.62
+          },
+          {
+            "item": "f0048259",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.46
+          },
+          {
+            "item": "f0050947",
+            "truth": "no-tip",
+            "pred": "touching",
+            "confidence": 0.5
+          }
+        ]
+      }
+    },
+    "gemini-3.1-flash-lite": {
+      "usage": {
+        "requests": 119,
+        "errors": 0,
+        "median_latency_s": 1.424,
+        "mean_input_tokens": 1324,
+        "total_input_tokens": 157523,
+        "reported_cost_usd": 0.04231,
+        "cost_per_1000_requests_usd": 0.3555
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 1.607,
+          "mean_input_tokens": 1186,
+          "total_input_tokens": 61688,
+          "reported_cost_usd": 0.01657,
+          "cost_per_1000_requests_usd": 0.3186
+        },
+        "drawing_stage": {
+          "requests": 12,
+          "errors": 0,
+          "median_latency_s": 1.061,
+          "mean_input_tokens": 1207,
+          "total_input_tokens": 14484,
+          "reported_cost_usd": 0.00388,
+          "cost_per_1000_requests_usd": 0.3233
+        },
+        "best_still": {
+          "requests": 5,
+          "errors": 0,
+          "median_latency_s": 1.529,
+          "mean_input_tokens": 4520,
+          "total_input_tokens": 22601,
+          "reported_cost_usd": 0.00577,
+          "cost_per_1000_requests_usd": 1.1543
+        },
+        "pencil_contact": {
+          "requests": 50,
+          "errors": 0,
+          "median_latency_s": 1.364,
+          "mean_input_tokens": 1175,
+          "total_input_tokens": 58750,
+          "reported_cost_usd": 0.01609,
+          "cost_per_1000_requests_usd": 0.3218
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.827,
+          "recall_true": 0.791,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.895,
+          "confusion": {
+            "false->no": 9,
+            "true->no": 9,
+            "true->yes": 34
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 43,
+              "n": 51,
+              "accuracy": 0.843
+            },
+            "mid (0.6-0.8)": {
+              "correct": 0,
+              "n": 1,
+              "accuracy": 0.0
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 1.0,
+          "recall_true": 1.0,
+          "recall_false": 1.0,
+          "balanced_accuracy": 1.0,
+          "confusion": {
+            "false->no": 8,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 52,
+              "n": 52,
+              "accuracy": 1.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.827,
+        "mistakes_covered": [
+          "court-jones__mvi-0012-ff263c__f0000112",
+          "elitha__1037-12032254-c001-5a9d28__f0000675",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+          "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+          "sanford__3030-01030129-c002-553730__f0122094",
+          "sanford__3030-01030129-c002-553730__f0158023",
+          "solovev__camera-2-nest-f9a5cc__f0012490",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036"
+        ]
+      },
+      "drawing_stage": {
+        "n": 12,
+        "exact_accuracy": 0.917,
+        "acceptable_accuracy": 0.917,
+        "mean_abs_error_levels": 0.17,
+        "confusion": {
+          "first_marks->first_marks": 2,
+          "in_progress->in_progress": 5,
+          "blank->blank": 2,
+          "finished->finished": 2,
+          "finished->first_marks": 1
+        },
+        "rows": [
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 1.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 0.9,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 0.9,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0001237",
+            "truth": 0,
+            "acceptable": [
+              0,
+              1
+            ],
+            "pred": 0,
+            "score": 0.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0116968",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 0.95,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "sanford__3030-01030129-c002-553730__f0256419",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 3,
+            "score": 3.0,
+            "confidence": 0.95,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+            "truth": 2,
+            "acceptable": [
+              1,
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 0.95,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+            "truth": 2,
+            "acceptable": [
+              2
+            ],
+            "pred": 2,
+            "score": 2.0,
+            "confidence": 0.95,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "eliza__1133-12250805-c003-00699711-762ab5__f0221379",
+            "truth": 3,
+            "acceptable": [
+              3
+            ],
+            "pred": 3,
+            "score": 3.0,
+            "confidence": 0.9,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__start_1s",
+            "truth": 0,
+            "acceptable": [
+              0
+            ],
+            "pred": 0,
+            "score": 0.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__middle",
+            "truth": 1,
+            "acceptable": [
+              1
+            ],
+            "pred": 1,
+            "score": 1.0,
+            "confidence": 1.0,
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
+          },
+          {
+            "item": "stroke-samples__video__end_minus_1s",
+            "truth": 3,
+            "acceptable": [
+              2,
+              3
+            ],
+            "pred": 1,
+            "score": 1.0,
+            "confidence": 0.9,
+            "exact": false,
+            "acceptable_hit": false,
+            "abs_error": 2
+          }
+        ]
+      },
+      "best_still": {
+        "n": 5,
+        "exact_hits": 4,
+        "acceptable_hits": 5,
+        "rows": [
+          {
+            "clip": "court-jones__mvi-0012-ff263c",
+            "pick": "court-jones__mvi-0012-ff263c__f0006642",
+            "best": "court-jones__mvi-0012-ff263c__f0006642",
+            "acceptable": [
+              "court-jones__mvi-0012-ff263c__f0006642"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.8,
+            "probabilities": null
+          },
+          {
+            "clip": "solovev__camera-2-nest-f9a5cc",
+            "pick": "solovev__camera-2-nest-f9a5cc__f0018736",
+            "best": "solovev__camera-2-nest-f9a5cc__f0012490",
+            "acceptable": [
+              "solovev__camera-2-nest-f9a5cc__f0012490",
+              "solovev__camera-2-nest-f9a5cc__f0018736"
+            ],
+            "exact": false,
+            "acceptable_hit": true,
+            "confidence": 0.8,
+            "probabilities": null
+          },
+          {
+            "clip": "elitha__1037-12032254-c001-5a9d28",
+            "pick": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "best": "elitha__1037-12032254-c001-5a9d28__f0188767",
+            "acceptable": [
+              "elitha__1037-12032254-c001-5a9d28__f0188767"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 1.0,
+            "probabilities": null
+          },
+          {
+            "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+            "pick": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "best": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+            "acceptable": [
+              "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 1.0,
+            "probabilities": null
+          },
+          {
+            "clip": "blaise__blaise-gh5-007-bd5030",
+            "pick": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "best": "blaise__blaise-gh5-007-bd5030__f0088088",
+            "acceptable": [
+              "blaise__blaise-gh5-007-bd5030__f0088088",
+              "blaise__blaise-gh5-007-bd5030__f0003949"
+            ],
+            "exact": true,
+            "acceptable_hit": true,
+            "confidence": 0.95,
+            "probabilities": null
+          }
+        ]
+      },
+      "pencil_contact": {
+        "n_scored": 46,
+        "accuracy": 0.804,
+        "per_class": {
+          "touching": {
+            "n": 5,
+            "recall": 1.0
+          },
+          "not-touching": {
+            "n": 18,
+            "recall": 0.667
+          },
+          "no-tip": {
+            "n": 23,
+            "recall": 0.87
+          }
+        },
+        "majority_class_baseline": 0.5,
+        "confusion": {
+          "no-tip->no-tip": 20,
+          "no-tip->not-touching": 2,
+          "no-tip->touching": 1,
+          "not-touching->no-tip": 2,
+          "not-touching->not-touching": 12,
+          "not-touching->touching": 4,
+          "touching->touching": 5
+        },
+        "accuracy_by_band": {
+          "high (>=0.8)": {
+            "correct": 37,
+            "n": 46,
+            "accuracy": 0.804
+          }
+        },
+        "planned_12_frame_subset": {
+          "n": 11,
+          "accuracy": 0.909
+        },
+        "mistakes": [
+          {
+            "item": "f0011832",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.95
+          },
+          {
+            "item": "f0015612",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 1.0
+          },
+          {
+            "item": "f0018751",
+            "truth": "not-touching",
+            "pred": "no-tip",
+            "confidence": 0.95
+          },
+          {
+            "item": "f0021019",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 1.0
+          },
+          {
+            "item": "f0032220",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 0.98
+          },
+          {
+            "item": "f0043178",
+            "truth": "not-touching",
+            "pred": "no-tip",
+            "confidence": 1.0
+          },
+          {
+            "item": "f0048259",
+            "truth": "no-tip",
+            "pred": "not-touching",
+            "confidence": 0.95
+          },
+          {
+            "item": "f0050947",
+            "truth": "no-tip",
+            "pred": "touching",
+            "confidence": 0.95
+          },
+          {
+            "item": "f0055205",
+            "truth": "not-touching",
+            "pred": "touching",
+            "confidence": 1.0
+          }
+        ]
+      }
+    }
+  },
+  "pencil_contact_cant_tell": {
+    "jev-1.13.0": [
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+        "pred": "no-tip",
+        "confidence": 0.33
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363",
+        "pred": "touching",
+        "confidence": 0.46
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360",
+        "pred": "touching",
+        "confidence": 0.26
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315",
+        "pred": "not-touching",
+        "confidence": 0.89
+      }
+    ],
+    "jev-1.14.0": [
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+        "pred": "no-tip",
+        "confidence": 0.43
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363",
+        "pred": "touching",
+        "confidence": 0.62
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360",
+        "pred": "touching",
+        "confidence": 0.48
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315",
+        "pred": "touching",
+        "confidence": 0.38
+      }
+    ],
+    "gemini-3.1-flash-lite": [
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+        "pred": "no-tip",
+        "confidence": 1.0
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363",
+        "pred": "touching",
+        "confidence": 1.0
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360",
+        "pred": "touching",
+        "confidence": 1.0
+      },
+      {
+        "item": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315",
+        "pred": "touching",
+        "confidence": 0.95
+      }
+    ]
+  },
+  "import_384": {
+    "jev": {
+      "model": "jev",
+      "max_width": null,
+      "n": 7,
+      "strict_correct": 0,
+      "lenient_correct": 0,
+      "usage": {
+        "requests": 0,
+        "errors": 7,
+        "median_latency_s": null,
+        "mean_input_tokens": null,
+        "total_input_tokens": 0
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.482,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.125,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.144,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.131,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.126,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.137,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.123,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        }
+      ]
+    },
+    "jev-latest": {
+      "model": "jev-latest",
+      "max_width": null,
+      "n": 7,
+      "strict_correct": 0,
+      "lenient_correct": 0,
+      "usage": {
+        "requests": 0,
+        "errors": 7,
+        "median_latency_s": null,
+        "mean_input_tokens": null,
+        "total_input_tokens": 0
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.137,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.129,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.164,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.119,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.128,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.118,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": null,
+          "strict": false,
+          "lenient": false,
+          "confidence": null,
+          "runner_up": null,
+          "framing": null,
+          "thumbnail": null,
+          "input_tokens": null,
+          "cost": null,
+          "latency_s": 0.127,
+          "error": "PROVIDER_ERROR: Provider rejected the request."
+        }
+      ]
+    },
+    "gemini-3.1-flash-lite": {
+      "model": "gemini-3.1-flash-lite",
+      "max_width": null,
+      "n": 7,
+      "strict_correct": 5,
+      "lenient_correct": 5,
+      "usage": {
+        "requests": 7,
+        "errors": 0,
+        "median_latency_s": 2.943,
+        "mean_input_tokens": 13482,
+        "total_input_tokens": 94374,
+        "reported_cost_usd": 0.02445,
+        "cost_per_1000_requests_usd": 3.4931
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": "FAC",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.98,
+          "runner_up": [
+            "WRK",
+            0.02
+          ],
+          "framing": "medium",
+          "thumbnail": 1,
+          "input_tokens": 13482,
+          "cost": 0.0035069999999999997,
+          "latency_s": 1.955,
+          "error": null
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.95,
+          "runner_up": [
+            "SBJ",
+            0.04
+          ],
+          "framing": "medium",
+          "thumbnail": 2,
+          "input_tokens": 13482,
+          "cost": 0.0035459999999999997,
+          "latency_s": 2.943,
+          "error": null
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": "MIX",
+          "strict": false,
+          "lenient": false,
+          "confidence": 0.95,
+          "runner_up": [
+            "SCN",
+            0.03
+          ],
+          "framing": null,
+          "thumbnail": 0,
+          "input_tokens": 13482,
+          "cost": 0.0035429999999999997,
+          "latency_s": 2.956,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "wide",
+          "thumbnail": 7,
+          "input_tokens": 13482,
+          "cost": 0.0034635,
+          "latency_s": 2.383,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": "ANI",
+          "strict": false,
+          "lenient": false,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "medium",
+          "thumbnail": 3,
+          "input_tokens": 13482,
+          "cost": 0.0034635,
+          "latency_s": 8.787,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "wide",
+          "thumbnail": 3,
+          "input_tokens": 13482,
+          "cost": 0.0034635,
+          "latency_s": 2.306,
+          "error": null
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": "FLM",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "wide",
+          "thumbnail": 2,
+          "input_tokens": 13482,
+          "cost": 0.0034649999999999998,
+          "latency_s": 4.835,
+          "error": null
+        }
+      ]
+    }
+  },
+  "import_512": {
+    "jev": {
+      "model": "jev-1.13.0",
+      "max_width": 512,
+      "n": 7,
+      "strict_correct": 6,
+      "lenient_correct": 6,
+      "usage": {
+        "requests": 7,
+        "errors": 0,
+        "median_latency_s": 0.19,
+        "mean_input_tokens": 5586,
+        "total_input_tokens": 39100,
+        "text_rate_cost_usd": 0.00164,
+        "text_rate_cost_per_1000_requests_usd": 0.2346
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": "FAC",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.4,
+          "runner_up": [
+            "WRK",
+            0.39
+          ],
+          "framing": "medium",
+          "thumbnail": "frame_5",
+          "input_tokens": 5584,
+          "cost": null,
+          "latency_s": 0.273,
+          "error": null
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.95,
+          "runner_up": [
+            "POV",
+            0.05
+          ],
+          "framing": "close",
+          "thumbnail": "frame_1",
+          "input_tokens": 5590,
+          "cost": null,
+          "latency_s": 0.196,
+          "error": null
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.57,
+          "runner_up": [
+            "SCN",
+            0.23
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_0",
+          "input_tokens": 5594,
+          "cost": null,
+          "latency_s": 0.188,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": [
+            "FAC",
+            0.0
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_0",
+          "input_tokens": 5580,
+          "cost": null,
+          "latency_s": 0.166,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": "ANI",
+          "strict": false,
+          "lenient": false,
+          "confidence": 0.84,
+          "runner_up": [
+            "GFX",
+            0.15
+          ],
+          "framing": "close",
+          "thumbnail": "frame_1",
+          "input_tokens": 5582,
+          "cost": null,
+          "latency_s": 0.19,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.99,
+          "runner_up": [
+            "MIX",
+            0.01
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_3",
+          "input_tokens": 5587,
+          "cost": null,
+          "latency_s": 0.204,
+          "error": null
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": "FLM",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.99,
+          "runner_up": [
+            "MIX",
+            0.01
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_0",
+          "input_tokens": 5583,
+          "cost": null,
+          "latency_s": 0.168,
+          "error": null
+        }
+      ]
+    },
+    "jev-latest": {
+      "model": "jev-1.14.0",
+      "max_width": 512,
+      "n": 7,
+      "strict_correct": 6,
+      "lenient_correct": 6,
+      "usage": {
+        "requests": 7,
+        "errors": 0,
+        "median_latency_s": 0.159,
+        "mean_input_tokens": 5582,
+        "total_input_tokens": 39071,
+        "text_rate_cost_usd": 0.00164,
+        "text_rate_cost_per_1000_requests_usd": 0.2344
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": "FAC",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.42,
+          "runner_up": [
+            "WRK",
+            0.28
+          ],
+          "framing": "medium",
+          "thumbnail": "frame_2",
+          "input_tokens": 5593,
+          "cost": null,
+          "latency_s": 0.155,
+          "error": null
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.88,
+          "runner_up": [
+            "POV",
+            0.1
+          ],
+          "framing": "close",
+          "thumbnail": "frame_1",
+          "input_tokens": 5592,
+          "cost": null,
+          "latency_s": 0.157,
+          "error": null
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.42,
+          "runner_up": [
+            "SCN",
+            0.35
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_0",
+          "input_tokens": 5578,
+          "cost": null,
+          "latency_s": 0.207,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.99,
+          "runner_up": [
+            "MIX",
+            0.01
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_0",
+          "input_tokens": 5572,
+          "cost": null,
+          "latency_s": 0.207,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": "ANI",
+          "strict": false,
+          "lenient": false,
+          "confidence": 0.84,
+          "runner_up": [
+            "GFX",
+            0.13
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_6",
+          "input_tokens": 5575,
+          "cost": null,
+          "latency_s": 0.232,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.93,
+          "runner_up": [
+            "MIX",
+            0.04
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_3",
+          "input_tokens": 5577,
+          "cost": null,
+          "latency_s": 0.153,
+          "error": null
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": "FLM",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.96,
+          "runner_up": [
+            "SCN",
+            0.02
+          ],
+          "framing": "wide",
+          "thumbnail": "frame_7",
+          "input_tokens": 5584,
+          "cost": null,
+          "latency_s": 0.159,
+          "error": null
+        }
+      ]
+    },
+    "gemini-3.1-flash-lite": {
+      "model": "gemini-3.1-flash-lite",
+      "max_width": 512,
+      "n": 7,
+      "strict_correct": 5,
+      "lenient_correct": 5,
+      "usage": {
+        "requests": 7,
+        "errors": 0,
+        "median_latency_s": 2.932,
+        "mean_input_tokens": 13482,
+        "total_input_tokens": 94374,
+        "reported_cost_usd": 0.02449,
+        "cost_per_1000_requests_usd": 3.4991
+      },
+      "rows": [
+        {
+          "fixture": "sketchbook_C004",
+          "true": "FAC",
+          "pred": "FAC",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.98,
+          "runner_up": [
+            "SCN",
+            0.02
+          ],
+          "framing": "medium",
+          "thumbnail": 5,
+          "input_tokens": 13482,
+          "cost": 0.0034964999999999996,
+          "latency_s": 4.993,
+          "error": null
+        },
+        {
+          "fixture": "sketchbook_C006",
+          "true": "WRK",
+          "pred": "WRK",
+          "strict": true,
+          "lenient": true,
+          "confidence": 0.95,
+          "runner_up": [
+            "SBJ",
+            0.04
+          ],
+          "framing": "medium",
+          "thumbnail": 5,
+          "input_tokens": 13482,
+          "cost": 0.003525,
+          "latency_s": 2.701,
+          "error": null
+        },
+        {
+          "fixture": "ddr_world_record",
+          "true": "WRK",
+          "pred": "SCN",
+          "strict": false,
+          "lenient": false,
+          "confidence": 0.95,
+          "runner_up": [
+            "SBJ",
+            0.04
+          ],
+          "framing": "wide",
+          "thumbnail": 2,
+          "input_tokens": 13482,
+          "cost": 0.0035085,
+          "latency_s": 3.549,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_hippo",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": [
+            "SCN",
+            0.0
+          ],
+          "framing": "wide",
+          "thumbnail": 7,
+          "input_tokens": 13482,
+          "cost": 0.0035175,
+          "latency_s": 2.768,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_opening",
+          "true": "GFX",
+          "pred": "ANI",
+          "strict": false,
+          "lenient": false,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "medium",
+          "thumbnail": 7,
+          "input_tokens": 13482,
+          "cost": 0.0034635,
+          "latency_s": 2.932,
+          "error": null
+        },
+        {
+          "fixture": "kaiba_ep1",
+          "true": "ANI",
+          "pred": "ANI",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": [
+            "SCN",
+            0.0
+          ],
+          "framing": "wide",
+          "thumbnail": 5,
+          "input_tokens": 13482,
+          "cost": 0.0035175,
+          "latency_s": 2.469,
+          "error": null
+        },
+        {
+          "fixture": "twilight_baseball",
+          "true": "FLM",
+          "pred": "FLM",
+          "strict": true,
+          "lenient": true,
+          "confidence": 1.0,
+          "runner_up": null,
+          "framing": "wide",
+          "thumbnail": 2,
+          "input_tokens": 13482,
+          "cost": 0.0034649999999999998,
+          "latency_s": 4.471,
+          "error": null
+        }
+      ]
+    }
+  }
+}

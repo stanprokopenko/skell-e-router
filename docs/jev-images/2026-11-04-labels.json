@@ -1,0 +1,405 @@
+{
+  "rater": "Claude Opus subagent, 2026-11-04, labeled before any model predictions existed",
+  "rubric": {
+    "hand_obstruction": "covered=true when a hand, arm or hand-held tool (pencil, pen, brush, stump) lies over any part of the paper / drawing surface, including a pencil tip touching the paper; a hand on the desk beside the paper is false; loose objects that are not hands, arms or tools (pencil shavings, a pencil case) do not count. hand_visible=true when any human hand or arm appears anywhere in the frame.",
+    "drawing_stage": "0 = blank page (no marks); 1 = first marks (a few lines, construction or gesture only); 2 = drawing in progress (clearly underway, substantial but unfinished); 3 = finished drawing (complete, little left to add). acceptable adds an adjacent level only when the frame genuinely sits between two levels.",
+    "best_still": "Pick the frame where the drawing is most fully visible, no hand or tool in the way, sharp (not motion blurred), well lit, and representative of the finished or most advanced state. When no frame is clean, prefer the most advanced state with the least obstruction."
+  },
+  "hand_obstruction": {
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Left hand rests on the sketchbook page below the smudge card; right hand's pencil tip touches the card."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Pencil tip on the dark smudge; both hands over the lower page."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Right hand with a blending tool over the middle hatching patches; left fingertips on lower page edge."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand holding a blending stump over the page, tip on the toned patch."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Pencil tip on the smudge card; left hand rests on the page."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Blank page; right hand and pencil hover over the right half of the paper, left fingertips on bottom edge."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Blank page; hand and pencil lie over the right-center of the paper."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Blank page; right hand and pencil over the center, left hand on the bottom of the page."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Motion-blurred right hand sweeps over the page next to the scribble; left hand on lower-left page."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; page has two marks and scattered pencil shavings; razor blade sits on the desk off the paper."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; an open pencil case overlaps the left edge of the page but no hand or in-use tool is over the paper and both marks are fully visible."
+    },
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Left hand rests on the page below the smudge card; blurred right hand at the bottom edge."
+    },
+    "bauman__bauman-gs1-014-475be0__f0030376": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and mechanical pencil over the upside-down portrait, tip at the eye."
+    },
+    "bauman__bauman-gs1-013-be9bcf__f0051051": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil reach over the upside-down portrait, tip at the eye."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Drawing hand and pencil over the thumbnail boxes; other hand holds an eraser on the page."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil over the left side of the page, tip at the small head sketch."
+    },
+    "court-jones__mvi-0012-ff263c__f0003715": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil at the right side of the caricature head."
+    },
+    "court-jones__mvi-0009-1a6809__f0000438": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Blank paper fills the frame; hand with a blurred pen covers the center-right."
+    },
+    "sanford__3030-01030129-c002-553730__f0158023": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Right hand and brush pen overlap the lower-right edge of the inked page; blurred left hand is over the desk/reference sheet, not the main page."
+    },
+    "sanford__3030-01030129-c002-553730__f0122094": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and brush pen over the right half of the page beside the figure."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil over the left of the page, tip at the thumbnail box; other hand fingertips on the lower page."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil over the left of the page, tip at the head sketch."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Two fingers enter over the lower-left of the paper; drawing itself uncovered."
+    },
+    "sanford__3030-01030129-c002-553730__f0001237": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Both hands hold the bottom of the fresh sheet on the lightbox, thumbs over the paper."
+    },
+    "sanford__3030-01030129-c002-553730__f0116968": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Right hand and brush pen over the right side of the page; left fingers over the lower-left edge."
+    },
+    "sanford__3030-01030129-c002-553730__f0256419": {
+      "covered": false,
+      "hand_visible": true,
+      "note": "Hand with a tissue at the bottom of the frame, on the desk below the finished page."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0000919": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Plaid sleeve and arm cover the lower-left of the open sketchbook."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0105427": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and marker over the rider; head and other hand over the lower page."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0221379": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; pens on the desk at right; a second sketchbook lies on the left page but no hand or tool."
+    },
+    "stroke-samples__video__start_1s": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Blank page with a hand resting on the right side."
+    },
+    "stroke-samples__video__middle": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; single stroke fully visible; pencil case on the desk off the page."
+    },
+    "stroke-samples__video__end_minus_1s": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; shavings and razor on the desk off the page."
+    },
+    "court-jones__mvi-0012-ff263c__f0000112": {
+      "covered": true,
+      "hand_visible": false,
+      "note": "Blank paper fills the frame; a small dark tool tip pokes in at the bottom-right corner, no hand visible."
+    },
+    "court-jones__mvi-0012-ff263c__f0002324": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil over the lower-right of the caricature."
+    },
+    "court-jones__mvi-0012-ff263c__f0004447": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and charcoal over the right half of the face."
+    },
+    "court-jones__mvi-0012-ff263c__f0006642": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand over the right cheek of the caricature."
+    },
+    "solovev__camera-2-nest-f9a5cc__f0000049": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Arm and fist cover most of the blank sheet."
+    },
+    "solovev__camera-2-nest-f9a5cc__f0006280": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Motion-blurred hand and pencil over the lower-left of the portrait."
+    },
+    "solovev__camera-2-nest-f9a5cc__f0012490": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand over the right edge of the portrait box, pencil tip at the hair."
+    },
+    "solovev__camera-2-nest-f9a5cc__f0018736": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand covers the chin and lower third of the portrait; camera body sits on the desk."
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0000675": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Right hand rests over the lower-right of the tracing sheet; left hand with pencil mostly beside it."
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0063464": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Both hands on the page over the figure sketch, pencil across the left."
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0125290": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Arm, hand and pen over the middle of the tracing page; other hand at lower-right."
+    },
+    "elitha__1037-12032254-c001-5a9d28__f0188767": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "No hands; finished ink page clear, pens on the desk beside it."
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0002788": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand holding a phone over the upper-left of the page, other hand and pencil at right, head at bottom."
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0101217": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and pencil over the top-right of the page; fingertips at bottom-left."
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0193793": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Both hands and a ruler over the middle of the page."
+    },
+    "ryan-benjamin__1017-06061628-c001-406ec4__f0292404": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Right hand over the lower-middle of the page; blurred left hand over the desk."
+    },
+    "blaise__blaise-gh5-007-bd5030__f0003949": {
+      "covered": false,
+      "hand_visible": false,
+      "note": "Side view of the easel; canvas unobstructed; only the shirt of the artist shows at lower-left, no hand."
+    },
+    "blaise__blaise-gh5-007-bd5030__f0043769": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Arm, brush and maulstick across the lion close-up."
+    },
+    "blaise__blaise-gh5-007-bd5030__f0088088": {
+      "covered": false,
+      "hand_visible": true,
+      "note": "Hands with brushes at lower-left near the easel tray, below the canvas edge; reference photo clipped to the canvas corner."
+    },
+    "blaise__blaise-gh5-007-bd5030__f0128055": {
+      "covered": true,
+      "hand_visible": true,
+      "note": "Hand and brush over the lion chin close-up."
+    }
+  },
+  "drawing_stage": {
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582": {
+      "stage": 1,
+      "acceptable": [
+        1
+      ],
+      "note": "Only a thumbnail border and one inner rectangle drawn."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515": {
+      "stage": 2,
+      "acceptable": [
+        1,
+        2
+      ],
+      "note": "Full standing figure roughed in a frame plus head studies; still loose construction lines."
+    },
+    "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977": {
+      "stage": 2,
+      "acceptable": [
+        1,
+        2
+      ],
+      "note": "Two-panel thumbnail with toned figures and a rough side sketch; loose and unfinished."
+    },
+    "sanford__3030-01030129-c002-553730__f0001237": {
+      "stage": 0,
+      "acceptable": [
+        0,
+        1
+      ],
+      "note": "Fresh sheet placed on a lightbox; only ghosted figures from the sheet underneath show through, no marks on the new page."
+    },
+    "sanford__3030-01030129-c002-553730__f0116968": {
+      "stage": 2,
+      "acceptable": [
+        2
+      ],
+      "note": "Pencil figure with partial inking on outline, mask and one leg; clearly mid-inking."
+    },
+    "sanford__3030-01030129-c002-553730__f0256419": {
+      "stage": 3,
+      "acceptable": [
+        3
+      ],
+      "note": "Fully inked figure with spatter and signature."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0000919": {
+      "stage": 2,
+      "acceptable": [
+        1,
+        2
+      ],
+      "note": "Complete but loose pencil sketch of the whole composition, no ink or color yet."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0105427": {
+      "stage": 2,
+      "acceptable": [
+        2
+      ],
+      "note": "Marker color on the horse and rider; lower half still line art."
+    },
+    "eliza__1133-12250805-c003-00699711-762ab5__f0221379": {
+      "stage": 3,
+      "acceptable": [
+        3
+      ],
+      "note": "Fully colored with black background; complete."
+    },
+    "stroke-samples__video__start_1s": {
+      "stage": 0,
+      "acceptable": [
+        0
+      ],
+      "note": "Blank sketchbook page, hand resting on it."
+    },
+    "stroke-samples__video__middle": {
+      "stage": 1,
+      "acceptable": [
+        1
+      ],
+      "note": "Single diagonal stroke on an otherwise blank page."
+    },
+    "stroke-samples__video__end_minus_1s": {
+      "stage": 3,
+      "acceptable": [
+        2,
+        3
+      ],
+      "note": "Page full of stroke-sample scribbles at video end; a practice sheet, not a representational drawing, so finished vs in-progress is a judgment call."
+    }
+  },
+  "best_still": [
+    {
+      "clip": "court-jones__mvi-0012-ff263c",
+      "best": "court-jones__mvi-0012-ff263c__f0006642",
+      "acceptable": [
+        "court-jones__mvi-0012-ff263c__f0006642"
+      ],
+      "note": "No clean frame exists; f0006642 is the most complete caricature and the hand only covers the right cheek, while the only hand-free frame is blank."
+    },
+    {
+      "clip": "solovev__camera-2-nest-f9a5cc",
+      "best": "solovev__camera-2-nest-f9a5cc__f0012490",
+      "acceptable": [
+        "solovev__camera-2-nest-f9a5cc__f0012490",
+        "solovev__camera-2-nest-f9a5cc__f0018736"
+      ],
+      "note": "Every frame has a hand; f0012490 shows nearly the whole portrait sharp with the hand only at the right edge, f0018736 is more advanced (toned background) but the hand covers the chin and lower third."
+    },
+    {
+      "clip": "elitha__1037-12032254-c001-5a9d28",
+      "best": "elitha__1037-12032254-c001-5a9d28__f0188767",
+      "acceptable": [
+        "elitha__1037-12032254-c001-5a9d28__f0188767"
+      ],
+      "note": "Finished ink drawing fully visible, no hands, sharp (upside down relative to camera)."
+    },
+    {
+      "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+      "best": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+      "acceptable": [
+        "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+      ],
+      "note": "Most finished pencils with the full page visible; one hand dips over the lower-middle, still far less covered than the other frames."
+    },
+    {
+      "clip": "blaise__blaise-gh5-007-bd5030",
+      "best": "blaise__blaise-gh5-007-bd5030__f0088088",
+      "acceptable": [
+        "blaise__blaise-gh5-007-bd5030__f0088088",
+        "blaise__blaise-gh5-007-bd5030__f0003949"
+      ],
+      "note": "Whole canvas visible at its most advanced state with no hand on it (reference photo clipped to lower-left corner); f0003949 is equally clean but earlier, the two close-ups crop the canvas and have the hand on it."
+    }
+  ]
+}
