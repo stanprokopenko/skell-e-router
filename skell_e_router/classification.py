@@ -204,7 +204,7 @@ def _parse(data, questions, model):
         if kind == "box":
             box = answer.get("box")
             confidence = answer.get("confidence")
-            if (not isinstance(box, dict) or set(box) != _BOX_EDGES
+            if ("confidence" not in answer or not isinstance(box, dict) or set(box) != _BOX_EDGES
                     or not all(_number(box[edge]) for edge in _BOX_EDGES)
                     or not box["left"] < box["right"] or not box["top"] < box["bottom"]
                     or not (confidence is None or _number(confidence))):
@@ -257,7 +257,7 @@ def _cost(counts, model):
 def classify(model: str, state: str | dict | list, questions: dict, *,
              config: dict | None = None, timeout: float = 30,
              assets: dict | None = None) -> ClassificationResponse:
-    """Evaluate choice, score, and noul questions through TypeSafe.
+    """Evaluate choice, score, noul, and box questions through TypeSafe.
 
     ``jev`` pins 1.13.0; ``jev-latest`` follows provider upgrades. Credentials
     come from ``config['typesafe_api_key']`` or TYPESAFE_API_KEY when config is

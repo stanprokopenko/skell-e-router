@@ -367,6 +367,7 @@ def test_invalid_box_question_fails_before_transport(question, transport):
     (("box", "left"), 0.58), (("box", "left"), 0.6),
     (("box", "top"), 0.68), (("box", "top"), 0.9),
     (("confidence",), 1.5), (("confidence",), "high"), (("confidence",), float("inf")),
+    (("confidence",), True), (("confidence",), "missing"),
     (("type",), "choice"),
 ])
 def test_malformed_box_answer_fails_without_retry(path, value, transport):
@@ -374,7 +375,10 @@ def test_malformed_box_answer_fails_without_retry(path, value, transport):
     target = data["answers"]["tip"]
     for key in path[:-1]:
         target = target[key]
-    target[path[-1]] = value
+    if value == "missing":
+        del target[path[-1]]
+    else:
+        target[path[-1]] = value
     transport.return_value = http_response(data)
     with pytest.raises(RouterError) as caught:
         classify("jev-latest", "text", BOX_QUESTION)

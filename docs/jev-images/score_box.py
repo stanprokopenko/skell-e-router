@@ -35,12 +35,21 @@ def px(dx: float, dy: float) -> float:
     return math.hypot(dx * SOURCE[0], dy * SOURCE[1])
 
 
-def band(conf: float) -> str:
+def band(conf) -> str:
+    if conf is None:
+        return "none"
     return next(name for name, floor in BANDS if conf >= floor)
+
+
+def median_or_none(values):
+    values = [v for v in values if v is not None]
+    return statistics.median(values) if values else None
 
 
 def summarize(rows):
     """Aggregate per-frame rows (each has distance_px, optionally inside)."""
+    if not rows:
+        return None
     d = [r["distance_px"] for r in rows]
     return {
         "n": len(rows),
@@ -82,8 +91,8 @@ def score_variant(rows_by_frame, frames_scored, truth):
     return {
         "overall": summarize(per_frame),
         "by_state": {k: summarize(v) for k, v in by_state.items()},
-        "by_confidence": {name: summarize(by_band[name]) for name, _ in BANDS if by_band[name]},
-        "median_confidence": statistics.median(e["confidence"] for e in per_frame),
+        "by_confidence": {name: summarize(by_band[name]) for name in [*(n for n, _ in BANDS), "none"] if by_band[name]},
+        "median_confidence": median_or_none(e["confidence"] for e in per_frame),
         "median_box_px": [statistics.median(e["box_width_px"] for e in per_frame),
                           statistics.median(e["box_height_px"] for e in per_frame)],
         "tall_boxes_over_30pct_height": sum(e["box_height_px"] > 0.3 * SOURCE[1] for e in per_frame),
@@ -174,13 +183,14 @@ def main():
         tip_conf = [e["confidence"] for e in entry["scored"]["per_frame"]]
         none_conf = [e["confidence"] for e in entry["no_tip"]]
         entry["tip_presence_by_confidence"] = {
-            "median_confidence_tip_frames": statistics.median(tip_conf),
-            "median_confidence_no_tip_frames": statistics.median(none_conf),
+            "median_confidence_tip_frames": median_or_none(tip_conf),
+            "median_confidence_no_tip_frames": median_or_none(none_conf),
             "thresholds": {str(t): {
-                "tip_frames_at_or_above": sum(c >= t for c in tip_conf),
-                "no_tip_frames_at_or_above": sum(c >= t for c in none_conf),
+                "tip_frames_at_or_above": sum(c is not None and c >= t for c in tip_conf),
+                "no_tip_frames_at_or_above": sum(c is not None and c >= t for c in none_conf),
                 "accuracy_as_presence_detector": round(
-                    (sum(c >= t for c in tip_conf) + sum(c < t for c in none_conf)) / (len(tip_conf) + len(none_conf)), 3),
+                    (sum(c is not None and c >= t for c in tip_conf) + sum(c is None or c < t for c in none_conf))
+                    / (len(tip_conf) + len(none_conf)), 3),
             } for t in (0.3, 0.4, 0.5, 0.6)},
         }
         entry["scored"]["edge_distance_within_35px"] = sum(
@@ -189,7 +199,7 @@ def main():
     # Agreement between the two wordings on scored frames: center-to-center distance.
     if {"detailed", "short"} <= set(by_variant):
         gaps = []
-        for f in scored:
+        for f in [f for f in scored if f in by_variant["detailed"] and f in by_variant["short"]]:
             a, b = by_variant["detailed"][f]["box"], by_variant["short"][f]["box"]
             gaps.append(px((a["left"] + a["right"] - b["left"] - b["right"]) / 2,
                            (a["top"] + a["bottom"] - b["top"] - b["bottom"]) / 2))
@@ -206,6 +216,9 @@ def main():
                   f"<=100px {s['within_100px']:.0%}")
     for variant, v in results["variants"].items():
         s = v["scored"]["overall"]
+        if s is None:
+            print(f"{variant}: no scored frames")
+            continue
         print(f"{variant:9s} median {s['median_px']:6.1f} px  p90 {s['p90_px']:6.1f}  <=25 {s['within_25px']:.0%}  "
               f"<=50 {s['within_50px']:.0%}  <=100 {s['within_100px']:.0%}  inside {s['inside_box']:.0%}  "
               f"tall boxes {v['scored']['tall_boxes_over_30pct_height']}")
