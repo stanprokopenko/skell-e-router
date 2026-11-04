@@ -1175,7 +1175,7 @@ class ClassificationModel:
         # Provider limits, enforced by the API using its own tokenizer.
         self.max_input_tokens = 64000
         self.max_state_question_tokens = 32000
-        self.question_types = frozenset({"choice", "score", "noul"})
+        self.question_types = frozenset({"choice", "score", "noul", "box"})
 
 
 # https://docs.typesafe.ai/models and /model-jaggedness/jev-1.13

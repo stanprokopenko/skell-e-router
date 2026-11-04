@@ -315,7 +315,7 @@ print(result.answers["refund_requested"]["noul"])
 print(result.cost, result.duration_seconds)
 ```
 
-`classify(model, state, questions, *, config=None, timeout=30, assets=None)` always returns `ClassificationResponse`. State is a string, JSON object or JSON array. Questions are a nonempty map of IDs to native TypeSafe question objects. IDs match the returned answer keys. Instructions and criteria descriptions may be text, objects or arrays. Choice criteria map 2 to 255 labels to descriptions or null. Score criteria contain 2 to 10 ordered descriptions. Noul asks a yes/no question and optionally describes the true and false cases. Unsupported chat arguments such as reasoning effort, temperature, tools and streaming are absent from this API. See [structured criteria](https://docs.typesafe.ai/primitives/advanced).
+`classify(model, state, questions, *, config=None, timeout=30, assets=None)` always returns `ClassificationResponse`. State is a string, JSON object or JSON array. Questions are a nonempty map of IDs to native TypeSafe question objects. IDs match the returned answer keys. Instructions and criteria descriptions may be text, objects or arrays. Choice criteria map 2 to 255 labels to descriptions or null. Score criteria contain 2 to 10 ordered descriptions. Noul asks a yes/no question and optionally describes the true and false cases. Box asks for the location of one thing in an image asset, takes instructions only and no criteria, and needs `assets` plus a model that supports it (Jev 1.14 does; Jev 1.13 rejects box questions with an invalid-request error). Unsupported chat arguments such as reasoning effort, temperature, tools and streaming are absent from this API. See [structured criteria](https://docs.typesafe.ai/primitives/advanced).
 
 ### Image assets
 
@@ -339,7 +339,19 @@ result = classify(
 )
 ```
 
-Only `type`, `format` and `data_base64` are accepted per asset. Formats are `png`, `jpg` and `jpeg`; multipart assets, URLs and data URI prefixes are not supported. Callers resize images before encoding. `assets=None` omits the field; an empty map or invalid base64 fails before any request. Box questions are not supported.
+Only `type`, `format` and `data_base64` are accepted per asset. Formats are `png`, `jpg` and `jpeg`; multipart assets, URLs and data URI prefixes are not supported. Callers resize images before encoding. `assets=None` omits the field; an empty map or invalid base64 fails before any request.
+
+Box questions arrived in version 3.43.0:
+
+```python
+result = classify(
+    "jev-latest",
+    {"frame": frame_id},
+    {"tip": {"type": "box", "instructions": "The tip of the pencil in `frame`, where the graphite meets the paper."}},
+    assets={frame_id: {"type": "image", "format": "jpg", "data_base64": encoded}},
+)
+print(result.answers["tip"]["box"])  # {"top": 0.64, "bottom": 0.68, "left": 0.55, "right": 0.58}
+```
 
 The image transport is available in version 3.42.0. On November 4, 2026, Jev 1.13 and 1.14 each accepted a real-frame image request and correctly detected a visible hand. This verifies account access and one simple answer, not image-classification accuracy. TypeSafe's model page still lists text input. Image requests return `cost=None` because image pricing is unconfirmed; token counts remain available when the provider returns them. Do not use the text token rate as a verified image price. [Smoke evidence](../docs/jev-images/2026-11-04-smoke.json).
 
@@ -357,7 +369,7 @@ Set `TYPESAFE_API_KEY` or supply `config={"typesafe_api_key": key}`. Supplying a
 | `cost` | Estimated USD for text from the model's per-million input and output rates (Jev: $0.042 input, $0 output), or None for image requests or when a billed token count is unreported |
 | `duration_seconds` | Wall-clock duration including retries |
 
-Choice answers contain `choice`, `probabilities` and `confidence`. Score answers contain a probability-weighted `score`, `legend`, `probabilities` and `confidence`. Noul answers contain a value named `noul` between zero and one. Confidence is not a guarantee of correctness. Malformed responses raise a controlled provider error instead of returning an invented label. Reported usage covers the successful response; failed attempts may incur additional provider charges.
+Choice answers contain `choice`, `probabilities` and `confidence`. Score answers contain a probability-weighted `score`, `legend`, `probabilities` and `confidence`. Noul answers contain a value named `noul` between zero and one. Box answers contain `box` with `top`, `bottom`, `left` and `right` as fractions of the image from 0 to 1 measured from the top-left corner (the router checks that left is less than right and top less than bottom), plus `confidence`, which may be null. Confidence is not a guarantee of correctness. Malformed responses raise a controlled provider error instead of returning an invented label. Reported usage covers the successful response; failed attempts may incur additional provider charges.
 
 Sources: [TypeSafe API](https://docs.typesafe.ai/api), [models and pricing](https://docs.typesafe.ai/models), [Jev limitations](https://docs.typesafe.ai/model-jaggedness/jev-1.13). Research and comparison evidence lives in [docs/jev-classification.md](../docs/jev-classification.md).
 

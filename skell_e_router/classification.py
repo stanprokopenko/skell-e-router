@@ -49,8 +49,8 @@ def _validate(state, questions):
         if not key or not isinstance(question, dict):
             raise RouterError("INVALID_INPUT", "Each question needs a nonempty string ID and an object.")
         kind = question.get("type")
-        if kind not in ("choice", "score", "noul") or not _description(question.get("instructions")):
-            raise RouterError("INVALID_INPUT", "Questions require choice, score, or noul type and instructions.")
+        if kind not in ("choice", "score", "noul", "box") or not _description(question.get("instructions")):
+            raise RouterError("INVALID_INPUT", "Questions require choice, score, noul, or box type and instructions.")
         if set(question) - {"type", "instructions", "criteria"}:
             raise RouterError("INVALID_INPUT", "Unsupported question field.")
         criteria = question.get("criteria")
@@ -59,6 +59,9 @@ def _validate(state, questions):
                      and all(k and (v is None or _description(v)) for k, v in criteria.items()))
         elif kind == "score":
             valid = isinstance(criteria, list) and 2 <= len(criteria) <= 10 and all(_description(v) for v in criteria)
+        elif kind == "box":
+            # Box questions locate one region inside an image asset and take no criteria.
+            valid = "criteria" not in question
         else:
             valid = "criteria" not in question or (
                 isinstance(criteria, dict) and bool(criteria)
@@ -139,6 +142,10 @@ def _number(value, maximum=1):
     return type(value) in (int, float) and math.isfinite(value) and 0 <= value <= maximum
 
 
+#: Box answers give edges as fractions of the image, measured from the top-left corner.
+_BOX_EDGES = frozenset({"top", "bottom", "left", "right"})
+
+
 #: Decimal places the provider rounds probabilities and score answers to.
 #: Every tolerance below is derived from this, because a value rounded to two
 #: places cannot be checked more precisely than the rounding itself allows.
@@ -193,6 +200,15 @@ def _parse(data, questions, model):
         if kind == "noul":
             if not _number(answer.get("noul")):
                 raise ValueError("Invalid boolean probability")
+            continue
+        if kind == "box":
+            box = answer.get("box")
+            confidence = answer.get("confidence")
+            if (not isinstance(box, dict) or set(box) != _BOX_EDGES
+                    or not all(_number(box[edge]) for edge in _BOX_EDGES)
+                    or not box["left"] < box["right"] or not box["top"] < box["bottom"]
+                    or not (confidence is None or _number(confidence))):
+                raise ValueError("Invalid box")
             continue
         expected = set(question["criteria"]) if kind == "choice" else {
             str(i) for i in range(len(question["criteria"]))}

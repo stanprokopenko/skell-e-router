@@ -323,6 +323,76 @@ def test_malformed_success_fails_without_retry(path, value, transport):
     assert transport.call_count == 1
 
 
+BOX_QUESTION = {"tip": {"type": "box", "instructions": "The tip of the pencil in `frame`."}}
+BOX_ANSWER = {
+    "model": "jev-1.14.0",
+    "answers": {"tip": {"type": "box", "box": {"top": 0.64, "bottom": 0.68, "left": 0.55, "right": 0.58},
+                        "confidence": 0.8}},
+    "usage": {"input_tokens": 1881, "output_tokens": 0},
+}
+
+
+@pytest.mark.parametrize("confidence", [0.8, 0, 1, None])
+def test_box_answer_is_returned_unchanged(confidence, transport):
+    data = deepcopy(BOX_ANSWER)
+    data["answers"]["tip"]["confidence"] = confidence
+    transport.return_value = http_response(data)
+    result = classify("jev-latest", {"frame": "asset-id"}, BOX_QUESTION)
+    assert result.answers == data["answers"]
+    assert result.model == "jev-1.14.0"
+    body = transport.call_args.kwargs["json"]
+    assert body["questions"] == BOX_QUESTION
+    assert "criteria" not in body["questions"]["tip"]
+
+
+@pytest.mark.parametrize("question", [
+    {"type": "box", "instructions": "Find it", "criteria": {"a": "b"}},
+    {"type": "box", "instructions": "Find it", "criteria": None},
+    {"type": "box", "instructions": ""},
+    {"type": "box"},
+])
+def test_invalid_box_question_fails_before_transport(question, transport):
+    with pytest.raises(RouterError) as caught:
+        classify("jev-latest", "text", {"tip": question})
+    assert caught.value.code == "INVALID_INPUT"
+    transport.assert_not_called()
+
+
+@pytest.mark.parametrize("path,value", [
+    (("box",), None), (("box",), [0.1, 0.2, 0.3, 0.4]),
+    (("box",), {"top": 0.1, "bottom": 0.2, "left": 0.3}),
+    (("box",), {"top": 0.1, "bottom": 0.2, "left": 0.3, "right": 0.4, "extra": 0.5}),
+    (("box", "top"), "0.1"), (("box", "top"), True), (("box", "top"), float("nan")),
+    (("box", "right"), 1.5), (("box", "left"), -0.1),
+    (("box", "left"), 0.58), (("box", "left"), 0.6),
+    (("box", "top"), 0.68), (("box", "top"), 0.9),
+    (("confidence",), 1.5), (("confidence",), "high"), (("confidence",), float("inf")),
+    (("type",), "choice"),
+])
+def test_malformed_box_answer_fails_without_retry(path, value, transport):
+    data = deepcopy(BOX_ANSWER)
+    target = data["answers"]["tip"]
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+    transport.return_value = http_response(data)
+    with pytest.raises(RouterError) as caught:
+        classify("jev-latest", "text", BOX_QUESTION)
+    assert caught.value.code == "PROVIDER_ERROR"
+    assert caught.value.__context__ is None
+    assert transport.call_count == 1
+
+
+def test_box_question_mixes_with_other_types(transport):
+    data = deepcopy(ANSWER)
+    data["answers"]["tip"] = deepcopy(BOX_ANSWER["answers"]["tip"])
+    transport.return_value = http_response(data)
+    questions = {**QUESTIONS, **BOX_QUESTION}
+    result = classify("jev", "text", questions)
+    assert set(result.answers) == set(questions)
+    assert result.answers["tip"]["box"]["right"] == 0.58
+
+
 def test_invalid_json_body_is_sanitized(transport):
     transport.return_value.json.side_effect = ValueError("env-key private-state")
     with pytest.raises(RouterError) as caught:
