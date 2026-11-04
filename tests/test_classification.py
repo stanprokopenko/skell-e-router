@@ -1,6 +1,7 @@
 """Offline contract checks for TypeSafe classification, with no paid requests."""
 
 from copy import deepcopy
+import base64
 import traceback
 from unittest.mock import MagicMock
 
@@ -60,6 +61,62 @@ def test_contract_and_native_probabilities(transport):
         "https://api.typesafe.ai/v1/systemone",
         json={"model": "jev-1.13.0", "state": {"message": "Refund me", "amount": 15}, "questions": QUESTIONS},
         headers={"Authorization": "Bearer explicit-key"}, timeout=2.5, allow_redirects=False)
+
+
+@pytest.mark.parametrize("image_format", ["png", "jpg", "jpeg"])
+def test_image_assets_use_preview_header_and_preserve_references(image_format, transport):
+    assets = {"frame-id": {"type": "image", "format": image_format,
+                           "data_base64": base64.b64encode(b"provider-validates-image-bytes").decode()}}
+    state = {"frame": "frame-id"}
+    questions = deepcopy(QUESTIONS)
+    questions["urgent"]["instructions"] = "Does frame-id show an urgent problem?"
+    questions["route"]["criteria"]["billing"] = {"example": "frame-id"}
+    original = deepcopy((assets, state, questions))
+    result = classify("jev-latest", state, questions, assets=assets, timeout=7)
+    sent = transport.call_args.kwargs
+    assert sent["json"] == {"model": "jev-latest", "state": state, "questions": questions, "assets": assets}
+    assert sent["headers"] == {"Authorization": "Bearer env-key", "TypeSafe-Danger-Zone-Images": "true"}
+    assert sent["timeout"] == 7 and sent["allow_redirects"] is False
+    assert result.answers == ANSWER["answers"] and result.input_tokens == 1000
+    assert result.cost is None
+    assert (assets, state, questions) == original
+
+
+@pytest.mark.parametrize("assets", [
+    {}, [], "private-image", {"": {}}, {1: {}}, {"x": None},
+    {"x": {"type": "image", "format": "webp", "data_base64": "eA=="}},
+    {"x": {"type": "audio", "format": "png", "data_base64": "eA=="}},
+    {"x": {"type": "image", "format": "png", "data_base64": "private-image!"}},
+    {"x": {"type": "image", "format": "png", "data_base64": ""}},
+    {"x": {"type": "image", "format": "png", "data_base64": b"eA=="}},
+    {"x": {"type": "image", "format": "png", "data_base64": "\u2603"}},
+    {"x": {"type": "image", "format": "png", "part": "private-image"}},
+    {"x": {"type": "image", "format": "png", "data_base64": "eA==", "part": "private-image"}},
+])
+def test_invalid_assets_fail_before_transport_without_echoing_data(assets, transport):
+    with pytest.raises(RouterError) as caught:
+        classify("jev", "frame-id", QUESTIONS, assets=assets)
+    assert caught.value.code == "INVALID_INPUT"
+    assert "private-image" not in str(caught.value)
+    assert caught.value.__context__ is None
+    transport.assert_not_called()
+
+
+def test_image_assets_survive_retry_and_provider_rejection(transport):
+    assets = {"frame-id": {"type": "image", "format": "png", "data_base64": "eA=="}}
+    transport.side_effect = [http_response({}, 529), http_response()]
+    classify("jev", "frame-id", QUESTIONS, assets=assets)
+    assert transport.call_count == 2
+    for call in transport.call_args_list:
+        assert call.kwargs["json"]["assets"] == assets
+        assert call.kwargs["headers"]["TypeSafe-Danger-Zone-Images"] == "true"
+    transport.reset_mock(side_effect=True)
+    transport.return_value = http_response({"error": {"message": "private-image env-key"}}, 400)
+    with pytest.raises(RouterError) as caught:
+        classify("jev", "frame-id", QUESTIONS, assets=assets)
+    assert transport.call_count == 1
+    assert caught.value.details["status_code"] == 400
+    assert "private-image" not in str(caught.value) and "env-key" not in str(caught.value)
 
 
 @pytest.mark.parametrize("alias,expected", [("jev", "jev-1.13.0"), ("jev-latest", "jev-latest"), ("jev-1.13.0", "jev-1.13.0")])

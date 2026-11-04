@@ -1,5 +1,7 @@
 """TypeSafe's typed evaluation API. This endpoint does not generate text."""
 
+import base64
+import binascii
 import math
 import os
 import time
@@ -66,6 +68,26 @@ def _validate(state, questions):
             raise RouterError("INVALID_INPUT", "Invalid criteria for the question type.")
 
 
+def _validate_assets(assets):
+    if assets is None:
+        return
+    if not isinstance(assets, dict) or not assets:
+        raise RouterError("INVALID_INPUT", "Assets must be a nonempty image map or None.")
+    for key, asset in assets.items():
+        valid = (isinstance(key, str) and bool(key.strip()) and isinstance(asset, dict)
+                 and set(asset) == {"type", "format", "data_base64"}
+                 and asset["type"] == "image"
+                 and asset["format"] in ("png", "jpg", "jpeg")
+                 and isinstance(asset["data_base64"], str) and bool(asset["data_base64"]))
+        if valid:
+            try:
+                valid = bool(base64.b64decode(asset["data_base64"], validate=True))
+            except (ValueError, binascii.Error):
+                valid = False
+        if not valid:
+            raise RouterError("INVALID_INPUT", "Each asset requires an ID, image type, PNG/JPEG format and base64 data.")
+
+
 def _retryable(exc):
     # TypeSafe documents 529 as temporary overload; reuse shared 503 handling.
     if getattr(exc, "status_code", None) == 529:
@@ -92,8 +114,11 @@ def _wait(retry_state):
 @retry(retry=retry_if_exception(_retryable), wait=_wait,
        stop=stop_after_attempt(3), reraise=True)
 def _request(payload, api_key, timeout):
+    headers = {"Authorization": f"Bearer {api_key}"}
+    if "assets" in payload:
+        headers["TypeSafe-Danger-Zone-Images"] = "true"
     with requests.post(_ENDPOINT, json=payload,
-                       headers={"Authorization": f"Bearer {api_key}"},
+                       headers=headers,
                        timeout=timeout, allow_redirects=False) as response:
         if response.status_code != 200:
             exc = requests.HTTPError()
@@ -214,13 +239,17 @@ def _cost(counts, model):
 
 
 def classify(model: str, state: str | dict | list, questions: dict, *,
-             config: dict | None = None, timeout: float = 30) -> ClassificationResponse:
+             config: dict | None = None, timeout: float = 30,
+             assets: dict | None = None) -> ClassificationResponse:
     """Evaluate choice, score, and noul questions through TypeSafe.
 
     ``jev`` pins 1.13.0; ``jev-latest`` follows provider upgrades. Credentials
     come from ``config['typesafe_api_key']`` or TYPESAFE_API_KEY when config is
     None. Timeout is per HTTP attempt, with at most three transient attempts.
     Context limits are provider-enforced, using the provider's tokenizer.
+    Optional base64 image assets enable the provider's image preview header.
+    Reference their IDs in state, instructions or criteria. Image availability
+    is provider-enforced; image cost is unknown until pricing is published.
     """
     selected = resolve_classification_alias(model)
     if type(timeout) not in (int, float) or not math.isfinite(timeout) or timeout <= 0:
@@ -228,14 +257,19 @@ def classify(model: str, state: str | dict | list, questions: dict, *,
     if config is not None and not isinstance(config, dict):
         raise RouterError("INVALID_PARAM", "Config must be a dictionary or None.")
     _validate(state, questions)
+    _validate_assets(assets)
     api_key = config.get("typesafe_api_key") if config is not None else os.getenv("TYPESAFE_API_KEY")
     if not isinstance(api_key, str) or not api_key.strip():
         raise RouterError("MISSING_ENV", "TYPESAFE_API_KEY or config typesafe_api_key is required.")
     payload = {"model": selected.name, "state": state, "questions": questions}
+    if assets is not None:
+        payload["assets"] = assets
     started = time.perf_counter()
     result = call_provider(
         lambda: _parse(_request(payload, api_key, timeout), questions, selected),
         RouterError, details={"provider": selected.provider, "model": selected.name, "operation": "classify"},
     )
     result.duration_seconds = time.perf_counter() - started
+    if assets is not None:
+        result.cost = None
     return result
