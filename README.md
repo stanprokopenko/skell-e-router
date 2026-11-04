@@ -46,7 +46,7 @@ print(result.answers["team"]["probabilities"])
 
 Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
-Version 3.42.0 adds `classify(..., assets=...)` for TypeSafe's base64 PNG/JPEG image preview API. Model access and image pricing still need live verification. Image calls return `cost=None`. See [image assets](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-assets).
+Version 3.42.0 adds `classify(..., assets=...)` for TypeSafe's base64 PNG/JPEG image preview API. A real-frame smoke test passed on Jev 1.13 and 1.14. Image pricing remains unconfirmed, so image calls return `cost=None`. See [image assets](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-assets).
 
 ### Image Input (Vision)
 

@@ -341,7 +341,7 @@ result = classify(
 
 Only `type`, `format` and `data_base64` are accepted per asset. Formats are `png`, `jpg` and `jpeg`; multipart assets, URLs and data URI prefixes are not supported. Callers resize images before encoding. `assets=None` omits the field; an empty map or invalid base64 fails before any request. Box questions are not supported.
 
-The image transport is available in version 3.42.0, but live image inference has not yet been verified. TypeSafe's model page on November 4, 2026 lists stable Jev models as text-only. Image requests return `cost=None` because image pricing is unconfirmed; token counts remain available when the provider returns them. Do not use the text token rate as a verified image price.
+The image transport is available in version 3.42.0. On November 4, 2026, Jev 1.13 and 1.14 each accepted a real-frame image request and correctly detected a visible hand. This verifies account access and one simple answer, not image-classification accuracy. TypeSafe's model page still lists text input. Image requests return `cost=None` because image pricing is unconfirmed; token counts remain available when the provider returns them. Do not use the text token rate as a verified image price. [Smoke evidence](../docs/jev-images/2026-11-04-smoke.json).
 
 ### Models and responses
 

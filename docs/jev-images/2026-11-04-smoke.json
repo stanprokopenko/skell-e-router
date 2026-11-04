@@ -1,0 +1,65 @@
+{
+  "phase": "smoke_only",
+  "models": {
+    "models": [
+      {
+        "name": "jev-latest",
+        "description": "The latest iteration of TypeSafe's System One Model: Jev",
+        "release_date": "2026-10-22T02:00:00+00:00"
+      },
+      {
+        "name": "jev-preview",
+        "description": "Preview the next version of Jev before it gets promoted to jev-latest. Most of the time this is the same as jev-latest",
+        "release_date": "2026-10-14T20:14:00+00:00"
+      }
+    ]
+  },
+  "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339",
+  "dimensions": [
+    1024,
+    576
+  ],
+  "image_sha256": "43e683f0291ed367beadd1296fda54052869f2029fc13f53129be39ca33176b1",
+  "state": {
+    "frame": "5921ce77-d9c6-4008-b8e5-40f455ce563f"
+  },
+  "questions": {
+    "hand": {
+      "type": "noul",
+      "instructions": "Does `frame` show a human hand?"
+    }
+  },
+  "expected_answer": true,
+  "results": [
+    {
+      "requested_model": "jev",
+      "model": "jev-1.13.0",
+      "http_status": 200,
+      "answers": {
+        "hand": {
+          "type": "noul",
+          "noul": 1.0
+        }
+      },
+      "input_tokens": 1869,
+      "output_tokens": 20,
+      "cost": null,
+      "duration_seconds": 0.14922829996794462
+    },
+    {
+      "requested_model": "jev-latest",
+      "model": "jev-1.14.0",
+      "http_status": 200,
+      "answers": {
+        "hand": {
+          "type": "noul",
+          "noul": 0.98
+        }
+      },
+      "input_tokens": 1869,
+      "output_tokens": 20,
+      "cost": null,
+      "duration_seconds": 0.16294070007279515
+    }
+  ]
+}
