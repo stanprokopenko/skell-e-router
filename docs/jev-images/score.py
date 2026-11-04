@@ -84,6 +84,7 @@ def score_drawing(manifest, labels, normalised, raw_by_model, results):
             out["usage_by_task"][task] = usage([r for r in raw_by_model[model] if r["task"] == task])
 
         hand = labels["hand_obstruction"]
+        hand_only = not tasks.get("drawing_stage")
         covered = [(hand[i]["covered"], p_yes(model, "hand_obstruction", i, "covered")) for i in tasks["hand_obstruction"]]
         visible = [(hand[i]["hand_visible"], p_yes(model, "hand_obstruction", i, "hand_visible")) for i in tasks["hand_obstruction"]]
         out["hand_obstruction"] = {"covered": binary_scores(covered), "hand_visible": binary_scores(visible),
@@ -91,6 +92,9 @@ def score_drawing(manifest, labels, normalised, raw_by_model, results):
                                    "mistakes_covered": sorted(i for i in tasks["hand_obstruction"]
                                                               if (p_yes(model, "hand_obstruction", i, "covered") >= 0.5) != hand[i]["covered"])}
 
+        if hand_only:
+            results["models"][model] = out
+            continue
         stage_rows = []
         for item, answer in tasks["drawing_stage"].items():
             truth = labels["drawing_stage"][item]
@@ -215,13 +219,22 @@ def main():
     parser.add_argument("--gemini", type=Path, required=True)
     parser.add_argument("--imports", type=Path, required=True, help="production-width (384) replay")
     parser.add_argument("--imports-512", type=Path, default=None, help="512-wide replay, the smallest Jev accepts")
+    parser.add_argument("--jev-hand-v2", type=Path, default=None, help="Jev hand rerun with the v2 question")
+    parser.add_argument("--gemini-hand-v2", type=Path, default=None, help="Gemini hand rerun with the v2 question")
+    parser.add_argument("--corrections", type=Path, default=None, help="Stan's label overrides")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     labels = json.loads(args.labels.read_text(encoding="utf-8"))
+    corrections = json.loads(args.corrections.read_text(encoding="utf-8")) if args.corrections else {}
+    for frame_id, fix in corrections.get("hand_obstruction", {}).items():
+        labels["hand_obstruction"][frame_id]["covered"] = fix["covered"]
+    for frame_id, fix in corrections.get("drawing_stage", {}).items():
+        labels["drawing_stage"][frame_id].update({"stage": fix["stage"], "acceptable": fix["acceptable"]})
+    import_fixes = {k: v["true_code"] for k, v in corrections.get("import", {}).items()}
     jev_rows = [r for r in load(args.jev) if "error_code" not in r]
     gem_rows = [r for r in load(args.gemini) if "error" not in r and "parse_error" not in r]
-    results = {"models": {}, "pencil_contact_cant_tell": {}}
+    results = {"models": {}, "pencil_contact_cant_tell": {}, "corrections_applied": corrections}
 
     normalised = defaultdict(lambda: defaultdict(dict))  # model -> task -> item -> answer
     raw_by_model = defaultdict(list)
@@ -231,15 +244,32 @@ def main():
     for row in gem_rows:
         normalised["gemini-3.1-flash-lite"][row["task"]][row["item_id"]] = row["answers"]
         raw_by_model["gemini-3.1-flash-lite"].append(row)
+    for path, label in ((args.jev_hand_v2, None), (args.gemini_hand_v2, "gemini-3.1-flash-lite")):
+        if path is None:
+            continue
+        for row in load(path):
+            if "error_code" in row or "error" in row or "parse_error" in row:
+                continue
+            key = f"{label or row['model']} (v2 question)"
+            normalised[key]["hand_obstruction"][row["item_id"]] = row["answers"]
+            raw_by_model[key].append(row)
     score_drawing(manifest, labels, normalised, raw_by_model, results)
 
     for bucket, path in (("import_384", args.imports), ("import_512", args.imports_512)):
         if path is not None:
             results[bucket] = {}
-            score_import(load(path), results[bucket])
+            rows = load(path)
+            for row in rows:
+                if row["fixture_id"] in import_fixes:
+                    row["true_code"] = import_fixes[row["fixture_id"]]
+            score_import(rows, results[bucket])
 
     args.output.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     for model, out in results["models"].items():
+        if "drawing_stage" not in out:
+            print(model, "hand", out["hand_obstruction"]["covered"]["accuracy"], "balanced",
+                  out["hand_obstruction"]["covered"]["balanced_accuracy"], out["hand_obstruction"]["covered"]["confusion"])
+            continue
         print(model, "hand", out["hand_obstruction"]["covered"]["accuracy"], "stage", out["drawing_stage"]["exact_accuracy"],
               out["drawing_stage"]["acceptable_accuracy"], "best", out["best_still"]["exact_hits"],
               out["best_still"]["acceptable_hits"], "pencil", out["pencil_contact"]["accuracy"], out["usage"])

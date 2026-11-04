@@ -32,6 +32,13 @@ PENCIL_CRITERIA = {
     "no-tip": "No pencil tip visible",
 }
 BEST_STILL_KEYS = ["frame_1", "frame_2", "frame_3", "frame_4"]
+HAND_QUESTIONS = {
+    "v1": "Does a hand, arm or tool cover part of the drawing on the page in `frame`?",
+    # v2 after Stan's review: the first wording let a blank page not count as "the drawing".
+    "v2": ("Does a hand, arm or tool cover any part of the paper in `frame`? Treat the whole sheet of paper as the "
+           "drawing, even when it is blank. A hand or tool resting anywhere on the paper counts as covering it; "
+           "a hand beside the paper or off the page does not."),
+}
 
 
 def asset(path: str):
@@ -39,7 +46,7 @@ def asset(path: str):
     return str(uuid4()), {"type": "image", "format": "jpg", "data_base64": base64.b64encode(data).decode("ascii")}
 
 
-def requests_for(manifest, tasks):
+def requests_for(manifest, tasks, hand_wording="v1"):
     """Yield (task, item_id, frame_ids, state, questions, assets)."""
     frames = manifest["frames"]
     if "hand_obstruction" in tasks:
@@ -51,8 +58,7 @@ def requests_for(manifest, tasks):
         for frame_id in hand_ids:
             placeholder, blob = asset(frames[frame_id]["image"])
             yield ("hand_obstruction", frame_id, [frame_id], {"frame": placeholder}, {
-                "covered": {"type": "noul",
-                            "instructions": "Does a hand, arm or tool cover part of the drawing on the page in `frame`?"},
+                "covered": {"type": "noul", "instructions": HAND_QUESTIONS[hand_wording]},
                 "hand_visible": {"type": "noul",
                                  "instructions": "Is a human hand or arm visible anywhere in `frame`?"},
             }, {placeholder: blob})
@@ -98,6 +104,7 @@ def main():
     parser.add_argument("--models", default="jev,jev-latest")
     parser.add_argument("--tasks", default="hand_obstruction,drawing_stage,best_still,pencil_contact")
     parser.add_argument("--limit", type=int, default=0, help="stop after N new requests (cost probe)")
+    parser.add_argument("--hand-wording", default="v1", choices=sorted(HAND_QUESTIONS))
     args = parser.parse_args()
     key = os.environ.get("TYPESAFE_API_KEY")
     if not key:
@@ -112,7 +119,7 @@ def main():
     sent = 0
     totals = {"input_tokens": 0, "output_tokens": 0, "requests": 0, "errors": 0}
     with args.output.open("a", encoding="utf-8") as out:
-        for task, item_id, frame_ids, state, questions, assets in requests_for(manifest, args.tasks.split(",")):
+        for task, item_id, frame_ids, state, questions, assets in requests_for(manifest, args.tasks.split(","), args.hand_wording):
             if args.limit and sent >= args.limit:
                 break
             for model in args.models.split(","):
@@ -121,7 +128,7 @@ def main():
                 if args.limit and sent >= args.limit:
                     break
                 row = {"task": task, "item_id": item_id, "frame_ids": frame_ids, "requested_model": model,
-                       "state_keys": list(state), "questions": questions}
+                       "state_keys": list(state), "questions": questions, "hand_wording": args.hand_wording}
                 started = time.perf_counter()
                 try:
                     answer = classify(model, state, questions, assets=assets,

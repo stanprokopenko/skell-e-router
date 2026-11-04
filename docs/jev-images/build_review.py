@@ -11,6 +11,7 @@ Run: python docs/jev-images/build_review.py
 
 from __future__ import annotations
 
+import ast
 import base64
 import html
 import io
@@ -28,6 +29,15 @@ OUT_HTML = OUT_DIR / "2026-11-04-jev-review.html"
 OUT_IDS = HERE / "2026-11-04-review-ids.json"
 PENCIL_LABELS = Path("D:/solar-sailer/labeling/dataset/labels/tp-20260831-001")
 IMPORT_FRAMES = SCRATCH / "import-frames-512"
+
+def hand_questions() -> dict[str, str]:
+    """HAND_QUESTIONS from run_eval.py, read without importing the router."""
+    tree = ast.parse((HERE / "run_eval.py").read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(getattr(t, "id", None) == "HAND_QUESTIONS" for t in node.targets):
+            return ast.literal_eval(node.value)
+    raise LookupError("HAND_QUESTIONS not found in run_eval.py")
+
 
 LONG_SIDE = 800
 QUALITY = 80
@@ -122,6 +132,17 @@ def load_all():
     manifest = load_json("2026-11-04-manifest.json")
     labels = load_json("2026-11-04-labels.json")
     results = load_json("2026-11-04-results.json")
+    corrections = load_json("2026-11-04-stan-corrections.json")
+
+    # Stan's label overrides; keep the old value for the "corrected" tag
+    was: dict[tuple[str, str], str] = {}
+    for fid, fix in corrections["hand_obstruction"].items():
+        was[("hand_obstruction", fid)] = "yes" if labels["hand_obstruction"][fid]["covered"] else "no"
+        labels["hand_obstruction"][fid]["covered"] = fix["covered"]
+    for fid, fix in corrections["drawing_stage"].items():
+        was[("drawing_stage", fid)] = STAGE_NAMES[labels["drawing_stage"][fid]["stage"]]
+        labels["drawing_stage"][fid].update({"stage": fix["stage"], "acceptable": fix["acceptable"]})
+    import_fixes = {fx: fix["true_code"] for fx, fix in corrections["import"].items()}
 
     runs: dict[tuple[str, str, str], dict] = {}
     questions: dict[str, dict] = {}
@@ -139,11 +160,30 @@ def load_all():
         assert key not in runs, key
         runs[key] = row["answers"]
 
+    # hand question 2 rerun: (frame_id, model) -> answers
+    runs_v2: dict[tuple[str, str], dict] = {}
+    q_text = hand_questions()
+    for row in (load_jsonl("2026-11-04-drawing-runs-hand-v2.jsonl")
+                + load_jsonl("2026-11-04-drawing-gemini-runs-hand-v2.jsonl")):
+        if row.get("error_code") or row.get("error") or row.get("parse_error"):
+            continue
+        assert row["task"] == "hand_obstruction" and row["hand_wording"] == "v2", row["item_id"]
+        if "questions" in row:
+            assert row["questions"]["covered"]["instructions"] == q_text["v2"], row["item_id"]
+        key = (row["item_id"], row["model"])
+        assert key not in runs_v2, key
+        runs_v2[key] = row["answers"]
+
     imports = [r for r in load_jsonl("2026-11-04-import-runs-512.jsonl") if not r.get("error_code")]
     imports_384 = {r["fixture_id"]: r for r in load_jsonl("2026-11-04-import-runs.jsonl")
                    if not r.get("error_code") and r["requested_model"] == "gemini-3.1-flash-lite"}
+    for r in imports + list(imports_384.values()):
+        if r["fixture_id"] in import_fixes:
+            was.setdefault(("import", r["fixture_id"]), r["true_code"])
+            r["true_code"] = import_fixes[r["fixture_id"]]
+    assert len(was) == sum(len(corrections[t]) for t in ("hand_obstruction", "drawing_stage", "import")), was
     frames_index = json.loads((IMPORT_FRAMES / "frames.json").read_text(encoding="utf-8"))
-    return manifest, labels, results, runs, questions, imports, imports_384, frames_index
+    return manifest, labels, results, runs, runs_v2, questions, imports, imports_384, frames_index, was
 
 
 def frame_path(manifest, frame_id: str) -> Path:
@@ -163,8 +203,7 @@ def stan_point(frame_id: str):
 
 # ---------------------------------------------------------------- model answers
 
-def hand_answer(runs, frame_id, model):
-    a = runs[("hand_obstruction", frame_id, model)]
+def hand_answer(a):
     p = a["covered"]["noul"] if isinstance(a["covered"], dict) else float(a["covered"])
     yes = p >= 0.5
     return ("yes" if yes else "no"), (p if yes else 1 - p)
@@ -221,12 +260,19 @@ def chips(items) -> str:
     return '<div class="chips">' + "".join(chip(*i) for i in items) + "</div>"
 
 
+def question_rows(rows) -> str:
+    """Chip rows with a small left label each (hand cards: one row per question wording)."""
+    return "".join(f'<div class="qrow"><span class="qn">{esc(name)}</span>{chips(items)}</div>' for name, items in rows)
+
+
 def feedback(review_id: str, kind: str) -> str:
     return f'<div class="fb" data-id="{review_id}" data-kind="{kind}"></div>'
 
 
-def label_row(prefix: str, value: str, note: str = "", extra: str = "") -> str:
+def label_row(prefix: str, value: str, note: str = "", extra: str = "", was: str | None = None) -> str:
     out = f'<div class="lab"><span class="lk">{esc(prefix)}</span> <b>{esc(value)}</b>'
+    if was is not None:
+        out += f' <span class="fix">corrected by Stan, was {esc(was)}</span>'
     if extra:
         out += f' <span class="lx">{esc(extra)}</span>'
     out += "</div>"
@@ -256,12 +302,13 @@ def strip_ticks(text: str, replacements: dict[str, str]) -> str:
 # ---------------------------------------------------------------- build
 
 def build():
-    manifest, labels, results, runs, questions, imports, imports_384, frames_index = load_all()
+    manifest, labels, results, runs, runs_v2, questions, imports, imports_384, frames_index, was = load_all()
     images = Images()
     ids: dict[str, dict] = {}
     model_keys = [m[0] for m in MODELS]
     chip_names = {m[0]: m[3] for m in MODELS}
     correct = {task: {m: 0 for m in model_keys} for task in ("hand", "stage", "best", "tip", "import")}
+    wrong_v2 = {m: 0 for m in model_keys}
 
     # ---- hand obstruction
     hand_order = list(manifest["hand_obstruction_frames"])
@@ -277,19 +324,25 @@ def build():
         ids[rid] = {"task": "hand_obstruction", "frame_id": fid}
         lab = labels["hand_obstruction"][fid]
         truth = "yes" if lab["covered"] else "no"
-        items, dis = [], False
+        items, items_v2, dis = [], [], False
         for m in model_keys:
-            ans, conf = hand_answer(runs, fid, m)
+            ans, conf = hand_answer(runs[("hand_obstruction", fid, m)])
             bad = ans != truth
             dis |= bad
             correct["hand"][m] += not bad
             items.append((chip_names[m], ans, num(conf), bad))
+            ans, conf = hand_answer(runs_v2[(fid, m)])
+            bad = ans != truth
+            dis |= bad
+            wrong_v2[m] += bad
+            items_v2.append((chip_names[m], ans, num(conf), bad))
         hand_dis += dis
         key = images.drawing(frame_path(manifest, fid))
         hand_cards.append(
             f'<article class="card" data-dis="{int(dis)}"><div class="cid">{rid}</div>'
             f'<div class="imgw">{images.tag(key)}</div>'
-            f'{label_row("Label", truth, lab["note"])}{chips(items)}{feedback(rid, "yn")}</article>')
+            f'{label_row("Label", truth, lab["note"], was=was.get(("hand_obstruction", fid)))}'
+            f'{question_rows([("Question 1", items), ("Question 2", items_v2)])}{feedback(rid, "yn")}</article>')
 
     # ---- drawing stage
     stage_rows, stage_dis, s_i = [], 0, 0
@@ -316,7 +369,7 @@ def build():
                 f'<article class="card" data-dis="{int(dis)}"><div class="cid">{rid}'
                 f' <span class="pos">{esc(POSITION_NAMES.get(pos, pos))}</span></div>'
                 f'<div class="imgw">{images.tag(key)}</div>'
-                f'{label_row("Label", STAGE_NAMES[lab["stage"]], lab["note"], ("also ok: " + ", ".join(also)) if also else "")}'
+                f'{label_row("Label", STAGE_NAMES[lab["stage"]], lab["note"], ("also ok: " + ", ".join(also)) if also else "", was.get(("drawing_stage", fid)))}'
                 f'{chips(items)}{feedback(rid, "stage")}</article>')
         stage_rows.append(
             f'<div class="grp" data-dis="{int(row_dis)}"><h3>{first_id} to S-{s_i:02d}'
@@ -427,7 +480,7 @@ def build():
             f'<article class="card wide" data-dis="{int(dis)}"><div class="cid">{rid}'
             f' <span class="src">{esc(fx)}</span></div>'
             f'<div class="strip">{"".join(thumbs)}</div>'
-            f'{label_row("Benchmark", true_code, any_row["notes"])}'
+            f'{label_row("Benchmark", true_code, any_row["notes"], was=was.get(("import", fx)))}'
             f'<div class="icols">{"".join(col_html)}</div>{feedback(rid, "code")}</article>')
 
     # ---- check our counts against the scored results file
@@ -438,6 +491,9 @@ def build():
         assert round(correct["stage"][m] / r["drawing_stage"]["n"], 3) == r["drawing_stage"]["exact_accuracy"], ("stage", m)
         assert correct["best"][m] == r["best_still"]["exact_hits"], ("best", m)
         assert round(correct["tip"][m] / r["pencil_contact"]["n_scored"], 3) == r["pencil_contact"]["accuracy"], ("tip", m)
+        r2 = results["models"][f"{m} (v2 question)"]["hand_obstruction"]
+        assert wrong_v2[m] == len(r2["mistakes_covered"]), ("hand v2", m)
+        assert round(1 - wrong_v2[m] / r2["covered"]["n"], 3) == r2["covered"]["accuracy"], ("hand v2 accuracy", m)
     for _, req, _, _ in MODELS:
         assert correct["import"][imp_model_key[req]] == results["import_512"][req]["strict_correct"], ("import", req)
 
@@ -453,6 +509,10 @@ def build():
         ("Hand over the drawing", "#hand",
          cell_vals(lambda m: f'{pct(M[m[0]]["hand_obstruction"]["covered"]["accuracy"])} ({pct(M[m[0]]["hand_obstruction"]["covered"]["balanced_accuracy"])})'),
          f'{M[first]["hand_obstruction"]["covered"]["n"]}'),
+        ("Hand over the paper (question 2)", "#hand",
+         cell_vals(lambda m: f'{pct(M[m[0] + " (v2 question)"]["hand_obstruction"]["covered"]["accuracy"])}'
+                             f' ({pct(M[m[0] + " (v2 question)"]["hand_obstruction"]["covered"]["balanced_accuracy"])})'),
+         f'{M[first + " (v2 question)"]["hand_obstruction"]["covered"]["n"]}'),
         ("Drawing stage", "#stage",
          cell_vals(lambda m: pct(M[m[0]]["drawing_stage"]["exact_accuracy"])),
          f'{M[first]["drawing_stage"]["n"]}'),
@@ -483,7 +543,9 @@ def build():
 
     # ---- section intros (questions quoted from the run files)
     q = questions
-    hand_q = strip_ticks(q["hand_obstruction"]["covered"]["instructions"], {"`frame`": "this frame"})
+    hq = hand_questions()
+    assert q["hand_obstruction"]["covered"]["instructions"] == hq["v1"]
+    hand_q1, hand_q2 = (strip_ticks(hq[v], {"`frame`": "this frame"}) for v in ("v1", "v2"))
     stage_q = strip_ticks(q["drawing_stage"]["stage"]["instructions"], {"`frame`": "this frame"})
     best_q = strip_ticks(q["best_still"]["best"]["instructions"],
                          {"`frame_1`, `frame_2`, `frame_3` and `frame_4` are": "These four images are"})
@@ -496,7 +558,10 @@ def build():
     rater_line = ("A separate Claude Opus agent labeled these frames before any model ran. "
                   "Its call is what \"right\" means here, and you can overrule it.")
 
-    intro_hand = (f'<p>Question: "{esc(hand_q)}" {rater_line} '
+    intro_hand = (f'<p>Question 1: "{esc(hand_q1)}"</p><p>Question 2: "{esc(hand_q2)}"</p>'
+                  f'<p>Question 2 was added after you pointed out that a blank page was not being counted as the '
+                  f'drawing. Each card shows answers to question 1 on the first row and question 2 on the second. '
+                  f'{rater_line} '
                   f'Numbers show how sure each model was of its answer, 0 to 1.</p>')
     intro_stage = (f'<p>Question: "{esc(stage_q)}" Levels: {esc(level_list)}. {rater_line} '
                    f'Jev\'s number is its score on the 0 to 3 scale; Gemini\'s is how sure it was.</p>')
@@ -617,6 +682,10 @@ summary{cursor:pointer;color:var(--text-primary)}
 .lk{color:var(--text-muted);font-size:12px}
 .lab b{color:var(--text-bright)}
 .lx{color:var(--text-muted);font-size:12px}
+.fix{font-size:12px;line-height:16px;color:var(--text-primary);background:var(--bg-hover);border-radius:var(--radius-xs);padding:1px 6px;white-space:nowrap}
+.qrow{display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center}
+.qrow+.qrow{margin-top:-4px}
+.qn{font-size:12px;line-height:16px;color:var(--text-muted);width:52px}
 .note{font-size:12px;line-height:16px;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;min-height:32px;margin-top:-6px}
 .note.open{display:block}
 .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}

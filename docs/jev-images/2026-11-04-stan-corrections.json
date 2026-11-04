@@ -1,0 +1,28 @@
+{
+  "source": "Stan, 2026-11-04 thread feedback on the review page",
+  "hand_obstruction": {
+    "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381": {
+      "review_id": "H-11",
+      "covered": true,
+      "note": "Stan: label wrong. Open pencil case overlaps the page edge; counts as a tool covering the paper."
+    }
+  },
+  "drawing_stage": {
+    "stroke-samples__video__end_minus_1s": {
+      "review_id": "S-12",
+      "stage": 1,
+      "acceptable": [
+        1,
+        2
+      ],
+      "note": "Stan: label wrong (was finished). Set to first marks, the answer all three models gave; in progress also accepted. Confirm with Stan."
+    }
+  },
+  "import": {
+    "kaiba_opening": {
+      "review_id": "I-5",
+      "true_code": "ANI",
+      "note": "Stan: label wrong (was GFX). Set to ANI, the answer all four model runs gave."
+    }
+  }
+}

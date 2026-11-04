@@ -51,20 +51,20 @@
       "hand_obstruction": {
         "covered": {
           "n": 52,
-          "accuracy": 0.769,
-          "recall_true": 0.721,
+          "accuracy": 0.75,
+          "recall_true": 0.705,
           "recall_false": 1.0,
-          "balanced_accuracy": 0.86,
+          "balanced_accuracy": 0.852,
           "confusion": {
-            "false->no": 9,
-            "true->no": 12,
+            "false->no": 8,
+            "true->no": 13,
             "true->yes": 31
           },
           "accuracy_by_band": {
             "high (>=0.8)": {
-              "correct": 26,
+              "correct": 25,
               "n": 29,
-              "accuracy": 0.897
+              "accuracy": 0.862
             },
             "low (<0.6)": {
               "correct": 6,
@@ -102,7 +102,7 @@
             }
           }
         },
-        "always_yes_baseline_covered": 0.827,
+        "always_yes_baseline_covered": 0.846,
         "mistakes_covered": [
           "court-jones__mvi-0012-ff263c__f0000112",
           "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
@@ -115,21 +115,21 @@
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
           "stroke-samples__video__start_1s"
         ]
       },
       "drawing_stage": {
         "n": 12,
-        "exact_accuracy": 0.833,
-        "acceptable_accuracy": 0.833,
-        "mean_abs_error_levels": 0.25,
+        "exact_accuracy": 0.917,
+        "acceptable_accuracy": 0.917,
+        "mean_abs_error_levels": 0.08,
         "confusion": {
-          "first_marks->first_marks": 2,
+          "first_marks->first_marks": 3,
           "in_progress->in_progress": 5,
           "blank->blank": 2,
           "finished->finished": 1,
-          "finished->in_progress": 1,
-          "finished->first_marks": 1
+          "finished->in_progress": 1
         },
         "rows": [
           {
@@ -281,17 +281,17 @@
           },
           {
             "item": "stroke-samples__video__end_minus_1s",
-            "truth": 3,
+            "truth": 1,
             "acceptable": [
-              2,
-              3
+              1,
+              2
             ],
             "pred": 1,
             "score": 1.09,
             "confidence": 0.91,
-            "exact": false,
-            "acceptable_hit": false,
-            "abs_error": 2
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
           }
         ]
       },
@@ -540,20 +540,20 @@
       "hand_obstruction": {
         "covered": {
           "n": 52,
-          "accuracy": 0.827,
-          "recall_true": 0.791,
+          "accuracy": 0.808,
+          "recall_true": 0.773,
           "recall_false": 1.0,
-          "balanced_accuracy": 0.895,
+          "balanced_accuracy": 0.886,
           "confusion": {
-            "false->no": 9,
-            "true->no": 9,
+            "false->no": 8,
+            "true->no": 10,
             "true->yes": 34
           },
           "accuracy_by_band": {
             "high (>=0.8)": {
-              "correct": 27,
+              "correct": 26,
               "n": 29,
-              "accuracy": 0.931
+              "accuracy": 0.897
             },
             "low (<0.6)": {
               "correct": 3,
@@ -590,7 +590,7 @@
             }
           }
         },
-        "always_yes_baseline_covered": 0.827,
+        "always_yes_baseline_covered": 0.846,
         "mistakes_covered": [
           "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
           "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985",
@@ -600,21 +600,21 @@
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051",
           "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381",
           "stroke-samples__video__start_1s"
         ]
       },
       "drawing_stage": {
         "n": 12,
-        "exact_accuracy": 0.833,
-        "acceptable_accuracy": 0.833,
-        "mean_abs_error_levels": 0.25,
+        "exact_accuracy": 0.917,
+        "acceptable_accuracy": 0.917,
+        "mean_abs_error_levels": 0.08,
         "confusion": {
-          "first_marks->first_marks": 2,
+          "first_marks->first_marks": 3,
           "in_progress->in_progress": 5,
           "blank->blank": 2,
           "finished->finished": 1,
-          "finished->in_progress": 1,
-          "finished->first_marks": 1
+          "finished->in_progress": 1
         },
         "rows": [
           {
@@ -766,17 +766,17 @@
           },
           {
             "item": "stroke-samples__video__end_minus_1s",
-            "truth": 3,
+            "truth": 1,
             "acceptable": [
-              2,
-              3
+              1,
+              2
             ],
             "pred": 1,
             "score": 1.28,
             "confidence": 0.73,
-            "exact": false,
-            "acceptable_hit": false,
-            "abs_error": 2
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
           }
         ]
       },
@@ -1031,20 +1031,20 @@
       "hand_obstruction": {
         "covered": {
           "n": 52,
-          "accuracy": 0.827,
-          "recall_true": 0.791,
+          "accuracy": 0.808,
+          "recall_true": 0.773,
           "recall_false": 1.0,
-          "balanced_accuracy": 0.895,
+          "balanced_accuracy": 0.886,
           "confusion": {
-            "false->no": 9,
-            "true->no": 9,
+            "false->no": 8,
+            "true->no": 10,
             "true->yes": 34
           },
           "accuracy_by_band": {
             "high (>=0.8)": {
-              "correct": 43,
+              "correct": 42,
               "n": 51,
-              "accuracy": 0.843
+              "accuracy": 0.824
             },
             "mid (0.6-0.8)": {
               "correct": 0,
@@ -1071,7 +1071,7 @@
             }
           }
         },
-        "always_yes_baseline_covered": 0.827,
+        "always_yes_baseline_covered": 0.846,
         "mistakes_covered": [
           "court-jones__mvi-0012-ff263c__f0000112",
           "elitha__1037-12032254-c001-5a9d28__f0000675",
@@ -1081,20 +1081,20 @@
           "sanford__3030-01030129-c002-553730__f0122094",
           "sanford__3030-01030129-c002-553730__f0158023",
           "solovev__camera-2-nest-f9a5cc__f0012490",
-          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036"
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
         ]
       },
       "drawing_stage": {
         "n": 12,
-        "exact_accuracy": 0.917,
-        "acceptable_accuracy": 0.917,
-        "mean_abs_error_levels": 0.17,
+        "exact_accuracy": 1.0,
+        "acceptable_accuracy": 1.0,
+        "mean_abs_error_levels": 0,
         "confusion": {
-          "first_marks->first_marks": 2,
+          "first_marks->first_marks": 3,
           "in_progress->in_progress": 5,
           "blank->blank": 2,
-          "finished->finished": 2,
-          "finished->first_marks": 1
+          "finished->finished": 2
         },
         "rows": [
           {
@@ -1246,17 +1246,17 @@
           },
           {
             "item": "stroke-samples__video__end_minus_1s",
-            "truth": 3,
+            "truth": 1,
             "acceptable": [
-              2,
-              3
+              1,
+              2
             ],
             "pred": 1,
             "score": 1.0,
             "confidence": 0.9,
-            "exact": false,
-            "acceptable_hit": false,
-            "abs_error": 2
+            "exact": true,
+            "acceptable_hit": true,
+            "abs_error": 0
           }
         ]
       },
@@ -1424,6 +1424,305 @@
           }
         ]
       }
+    },
+    "jev-1.13.0 (v2 question)": {
+      "usage": {
+        "requests": 52,
+        "errors": 0,
+        "median_latency_s": 0.152,
+        "mean_input_tokens": 1935,
+        "total_input_tokens": 100600,
+        "text_rate_cost_usd": 0.00423,
+        "text_rate_cost_per_1000_requests_usd": 0.0813
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 0.152,
+          "mean_input_tokens": 1935,
+          "total_input_tokens": 100600,
+          "text_rate_cost_usd": 0.00423,
+          "text_rate_cost_per_1000_requests_usd": 0.0813
+        },
+        "drawing_stage": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "best_still": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "pencil_contact": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.981,
+          "recall_true": 0.977,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.989,
+          "confusion": {
+            "false->no": 8,
+            "true->no": 1,
+            "true->yes": 43
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 44,
+              "n": 45,
+              "accuracy": 0.978
+            },
+            "low (<0.6)": {
+              "correct": 2,
+              "n": 2,
+              "accuracy": 1.0
+            },
+            "mid (0.6-0.8)": {
+              "correct": 5,
+              "n": 5,
+              "accuracy": 1.0
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 0.981,
+          "recall_true": 1.0,
+          "recall_false": 0.875,
+          "balanced_accuracy": 0.938,
+          "confusion": {
+            "false->no": 7,
+            "false->yes": 1,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 51,
+              "n": 51,
+              "accuracy": 1.0
+            },
+            "mid (0.6-0.8)": {
+              "correct": 0,
+              "n": 1,
+              "accuracy": 0.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.846,
+        "mistakes_covered": [
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
+        ]
+      }
+    },
+    "jev-1.14.0 (v2 question)": {
+      "usage": {
+        "requests": 52,
+        "errors": 0,
+        "median_latency_s": 0.149,
+        "mean_input_tokens": 1935,
+        "total_input_tokens": 100600,
+        "text_rate_cost_usd": 0.00423,
+        "text_rate_cost_per_1000_requests_usd": 0.0813
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 0.149,
+          "mean_input_tokens": 1935,
+          "total_input_tokens": 100600,
+          "text_rate_cost_usd": 0.00423,
+          "text_rate_cost_per_1000_requests_usd": 0.0813
+        },
+        "drawing_stage": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "best_still": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "pencil_contact": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.942,
+          "recall_true": 0.932,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.966,
+          "confusion": {
+            "false->no": 8,
+            "true->no": 3,
+            "true->yes": 41
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 43,
+              "n": 44,
+              "accuracy": 0.977
+            },
+            "low (<0.6)": {
+              "correct": 1,
+              "n": 2,
+              "accuracy": 0.5
+            },
+            "mid (0.6-0.8)": {
+              "correct": 5,
+              "n": 6,
+              "accuracy": 0.833
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 1.0,
+          "recall_true": 1.0,
+          "recall_false": 1.0,
+          "balanced_accuracy": 1.0,
+          "confusion": {
+            "false->no": 8,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 50,
+              "n": 50,
+              "accuracy": 1.0
+            },
+            "low (<0.6)": {
+              "correct": 1,
+              "n": 1,
+              "accuracy": 1.0
+            },
+            "mid (0.6-0.8)": {
+              "correct": 1,
+              "n": 1,
+              "accuracy": 1.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.846,
+        "mistakes_covered": [
+          "court-jones__mvi-0012-ff263c__f0000112",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
+        ]
+      }
+    },
+    "gemini-3.1-flash-lite (v2 question)": {
+      "usage": {
+        "requests": 52,
+        "errors": 0,
+        "median_latency_s": 1.242,
+        "mean_input_tokens": 1229,
+        "total_input_tokens": 63924,
+        "reported_cost_usd": 0.01708,
+        "cost_per_1000_requests_usd": 0.3285
+      },
+      "usage_by_task": {
+        "hand_obstruction": {
+          "requests": 52,
+          "errors": 0,
+          "median_latency_s": 1.242,
+          "mean_input_tokens": 1229,
+          "total_input_tokens": 63924,
+          "reported_cost_usd": 0.01708,
+          "cost_per_1000_requests_usd": 0.3285
+        },
+        "drawing_stage": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "best_still": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        },
+        "pencil_contact": {
+          "requests": 0,
+          "errors": 0,
+          "median_latency_s": null,
+          "mean_input_tokens": null,
+          "total_input_tokens": 0
+        }
+      },
+      "hand_obstruction": {
+        "covered": {
+          "n": 52,
+          "accuracy": 0.923,
+          "recall_true": 0.909,
+          "recall_false": 1.0,
+          "balanced_accuracy": 0.955,
+          "confusion": {
+            "false->no": 8,
+            "true->no": 4,
+            "true->yes": 40
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 48,
+              "n": 52,
+              "accuracy": 0.923
+            }
+          }
+        },
+        "hand_visible": {
+          "n": 52,
+          "accuracy": 1.0,
+          "recall_true": 1.0,
+          "recall_false": 1.0,
+          "balanced_accuracy": 1.0,
+          "confusion": {
+            "false->no": 8,
+            "true->yes": 44
+          },
+          "accuracy_by_band": {
+            "high (>=0.8)": {
+              "correct": 52,
+              "n": 52,
+              "accuracy": 1.0
+            }
+          }
+        },
+        "always_yes_baseline_covered": 0.846,
+        "mistakes_covered": [
+          "court-jones__mvi-0012-ff263c__f0000112",
+          "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+          "ryan-benjamin__1017-06061628-c001-406ec4__f0292404",
+          "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
+        ]
+      }
     }
   },
   "pencil_contact_cant_tell": {
@@ -1493,6 +1792,34 @@
         "confidence": 0.95
       }
     ]
+  },
+  "corrections_applied": {
+    "source": "Stan, 2026-11-04 thread feedback on the review page",
+    "hand_obstruction": {
+      "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381": {
+        "review_id": "H-11",
+        "covered": true,
+        "note": "Stan: label wrong. Open pencil case overlaps the page edge; counts as a tool covering the paper."
+      }
+    },
+    "drawing_stage": {
+      "stroke-samples__video__end_minus_1s": {
+        "review_id": "S-12",
+        "stage": 1,
+        "acceptable": [
+          1,
+          2
+        ],
+        "note": "Stan: label wrong (was finished). Set to first marks, the answer all three models gave; in progress also accepted. Confirm with Stan."
+      }
+    },
+    "import": {
+      "kaiba_opening": {
+        "review_id": "I-5",
+        "true_code": "ANI",
+        "note": "Stan: label wrong (was GFX). Set to ANI, the answer all four model runs gave."
+      }
+    }
   },
   "import_384": {
     "jev": {
@@ -1571,7 +1898,7 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": null,
           "strict": false,
           "lenient": false,
@@ -1692,7 +2019,7 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": null,
           "strict": false,
           "lenient": false,
@@ -1741,8 +2068,8 @@
       "model": "gemini-3.1-flash-lite",
       "max_width": null,
       "n": 7,
-      "strict_correct": 5,
-      "lenient_correct": 5,
+      "strict_correct": 6,
+      "lenient_correct": 6,
       "usage": {
         "requests": 7,
         "errors": 0,
@@ -1824,10 +2151,10 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": "ANI",
-          "strict": false,
-          "lenient": false,
+          "strict": true,
+          "lenient": true,
           "confidence": 1.0,
           "runner_up": null,
           "framing": "medium",
@@ -1875,8 +2202,8 @@
       "model": "jev-1.13.0",
       "max_width": 512,
       "n": 7,
-      "strict_correct": 6,
-      "lenient_correct": 6,
+      "strict_correct": 7,
+      "lenient_correct": 7,
       "usage": {
         "requests": 7,
         "errors": 0,
@@ -1961,10 +2288,10 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": "ANI",
-          "strict": false,
-          "lenient": false,
+          "strict": true,
+          "lenient": true,
           "confidence": 0.84,
           "runner_up": [
             "GFX",
@@ -2019,8 +2346,8 @@
       "model": "jev-1.14.0",
       "max_width": 512,
       "n": 7,
-      "strict_correct": 6,
-      "lenient_correct": 6,
+      "strict_correct": 7,
+      "lenient_correct": 7,
       "usage": {
         "requests": 7,
         "errors": 0,
@@ -2105,10 +2432,10 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": "ANI",
-          "strict": false,
-          "lenient": false,
+          "strict": true,
+          "lenient": true,
           "confidence": 0.84,
           "runner_up": [
             "GFX",
@@ -2163,8 +2490,8 @@
       "model": "gemini-3.1-flash-lite",
       "max_width": 512,
       "n": 7,
-      "strict_correct": 5,
-      "lenient_correct": 5,
+      "strict_correct": 6,
+      "lenient_correct": 6,
       "usage": {
         "requests": 7,
         "errors": 0,
@@ -2249,10 +2576,10 @@
         },
         {
           "fixture": "kaiba_opening",
-          "true": "GFX",
+          "true": "ANI",
           "pred": "ANI",
-          "strict": false,
-          "lenient": false,
+          "strict": true,
+          "lenient": true,
           "confidence": 1.0,
           "runner_up": null,
           "framing": "medium",

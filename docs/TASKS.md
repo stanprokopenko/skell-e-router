@@ -8,7 +8,8 @@
 ## Jev classification comparison
 
 - [x] Added base64 image assets to `classify()` with preview-header handling and offline contract tests. Image cost remains unknown until verified with TypeSafe. [First-run checkpoint](jev-images/2026-11-04-first-run.md).
-- [x] Completed the Jev image and Solar Sailer import evaluations for about $0.12. Jev matches Gemini 3.1 Flash Lite on the drawing tasks and scores 6/7 against 5/7 on the import benchmark, at about a tenth of the latency. [Scored results](jev-images/2026-11-04-results.md).
+- [x] Completed the Jev image and Solar Sailer import evaluations for about $0.14, reviewed item by item by Stan. With the reworded hand question Jev 1.13 scores 51/52 against Gemini 3.1 Flash Lite's 48/52, and 7/7 against 6/7 on the import benchmark, at about a tenth of the latency. [Scored results](jev-images/2026-11-04-results.md).
+- [ ] Confirm the reworded hand question on a fresh set of frames; its 98% was measured on the same 52 frames the wording was tuned against.
 - [ ] Confirm TypeSafe's image billing rate with TypeSafe; all Jev image costs are the text rate applied to reported tokens. Jev rejects images under 512 px wide, so a Solar Sailer adoption would raise its 384 px import frames.
 
 - [x] Added and authenticated Jev support, including all three aliases and Choice/Noul/Score. The 333-call fixture benchmark verified integration and measured speed/cost, but used examples covered by deterministic rules. It does not establish whether Jev can replace an existing AI step. Total task API spend was about $0.0461. No production routing changed. [Evidence and corrected interpretation](jev-classification.md).

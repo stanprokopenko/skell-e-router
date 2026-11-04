@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from skell_e_router import ask_ai  # noqa: E402
-from run_eval import STAGE_CRITERIA, PENCIL_CRITERIA, BEST_STILL_KEYS  # noqa: E402
+from run_eval import STAGE_CRITERIA, PENCIL_CRITERIA, BEST_STILL_KEYS, HAND_QUESTIONS  # noqa: E402
 
 JSON_RULE = "Return ONLY one JSON object, no prose, no code fences."
 
@@ -23,7 +23,7 @@ def data_uri(path: str) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(Path(path).read_bytes()).decode("ascii")
 
 
-def requests_for(manifest, tasks):
+def requests_for(manifest, tasks, hand_wording="v1"):
     frames = manifest["frames"]
     if "hand_obstruction" in tasks:
         hand_ids = list(manifest["hand_obstruction_frames"])
@@ -32,7 +32,7 @@ def requests_for(manifest, tasks):
         for frame_id in hand_ids:
             yield ("hand_obstruction", frame_id, [frames[frame_id]["image"]],
                    "This is an overhead drawing-camera frame. Answer two yes/no questions with probabilities. "
-                   "covered: does a hand, arm or tool cover part of the drawing on the page? "
+                   "covered: " + HAND_QUESTIONS[hand_wording].replace("`frame`", "this frame") + " "
                    "hand_visible: is a human hand or arm visible anywhere in the frame? "
                    f'{JSON_RULE} Schema: {{"covered": <0..1>, "hand_visible": <0..1>}}')
     if "drawing_stage" in tasks:
@@ -64,6 +64,7 @@ def main():
     parser.add_argument("--model", default="gemini-3.1-flash-lite")
     parser.add_argument("--tasks", default="hand_obstruction,drawing_stage,best_still,pencil_contact")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--hand-wording", default="v1", choices=sorted(HAND_QUESTIONS))
     args = parser.parse_args()
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     done = set()
@@ -75,10 +76,11 @@ def main():
     sent = 0
     total_cost = 0.0
     with args.output.open("a", encoding="utf-8") as out:
-        for task, item_id, paths, prompt in requests_for(manifest, args.tasks.split(",")):
+        for task, item_id, paths, prompt in requests_for(manifest, args.tasks.split(","), args.hand_wording):
             if (task, item_id) in done or (args.limit and sent >= args.limit):
                 continue
-            row = {"task": task, "item_id": item_id, "requested_model": args.model, "prompt": prompt}
+            row = {"task": task, "item_id": item_id, "requested_model": args.model, "prompt": prompt,
+                   "hand_wording": args.hand_wording}
             started = time.perf_counter()
             try:
                 response = ask_ai(args.model, prompt, images=[data_uri(p) for p in paths], rich_response=True)
