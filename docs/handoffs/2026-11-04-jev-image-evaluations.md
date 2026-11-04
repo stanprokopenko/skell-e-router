@@ -39,4 +39,4 @@ The whole task has made two inference requests, totaling 3,738 input tokens and 
 - If the original video comparison cannot be recovered, report that clearly and use the drawing-camera fallback authorized by amendment 2. Any fresh Gemini comparison needs the same inputs and labels and must stay inside the combined cap; distinguish it from the historical selection benchmark.
 - Current TypeSafe docs list text input, yet image calls worked. Observed API behavior supports proceeding; it does not settle image pricing or quality. Keep all scored model calls through the router.
 
-The orchestrator's existing deferred-request entry tracks both evaluations. Ask it to assign that entry to the new lead and close it only after scored results or the plan's documented stop condition are delivered.
+The existing entry at `C:/Users/Stan/Documents/GitHub/claude-orchestrator/docs/deferred-requests.md:76` tracks both evaluations. Its older waiting status predates Stan's handoff instruction above. Ask the orchestrator to mark continuation approved, assign it to the Fable 5.1 lead, and close it only after scored results or the plan's documented stop condition are delivered.
