@@ -1,0 +1,648 @@
+{
+  "H-01": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051"
+  },
+  "H-02": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907"
+  },
+  "H-03": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749"
+  },
+  "H-04": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695"
+  },
+  "H-05": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493"
+  },
+  "H-06": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940"
+  },
+  "H-07": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761"
+  },
+  "H-08": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339"
+  },
+  "H-09": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947"
+  },
+  "H-10": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368"
+  },
+  "H-11": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
+  },
+  "H-12": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036"
+  },
+  "H-13": {
+    "task": "hand_obstruction",
+    "frame_id": "bauman__bauman-gs1-014-475be0__f0030376"
+  },
+  "H-14": {
+    "task": "hand_obstruction",
+    "frame_id": "bauman__bauman-gs1-013-be9bcf__f0051051"
+  },
+  "H-15": {
+    "task": "hand_obstruction",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-2-drawing-4619f1__f0004576"
+  },
+  "H-16": {
+    "task": "hand_obstruction",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0023985"
+  },
+  "H-17": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0003715"
+  },
+  "H-18": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0009-1a6809__f0000438"
+  },
+  "H-19": {
+    "task": "hand_obstruction",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0158023"
+  },
+  "H-20": {
+    "task": "hand_obstruction",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0122094"
+  },
+  "H-21": {
+    "task": "hand_obstruction",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582"
+  },
+  "H-22": {
+    "task": "hand_obstruction",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515"
+  },
+  "H-23": {
+    "task": "hand_obstruction",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977"
+  },
+  "H-24": {
+    "task": "hand_obstruction",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0001237"
+  },
+  "H-25": {
+    "task": "hand_obstruction",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0116968"
+  },
+  "H-26": {
+    "task": "hand_obstruction",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0256419"
+  },
+  "H-27": {
+    "task": "hand_obstruction",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0000919"
+  },
+  "H-28": {
+    "task": "hand_obstruction",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0105427"
+  },
+  "H-29": {
+    "task": "hand_obstruction",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0221379"
+  },
+  "H-30": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__video__start_1s"
+  },
+  "H-31": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__video__middle"
+  },
+  "H-32": {
+    "task": "hand_obstruction",
+    "frame_id": "stroke-samples__video__end_minus_1s"
+  },
+  "H-33": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0000112"
+  },
+  "H-34": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0002324"
+  },
+  "H-35": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0004447"
+  },
+  "H-36": {
+    "task": "hand_obstruction",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0006642"
+  },
+  "H-37": {
+    "task": "hand_obstruction",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0000049"
+  },
+  "H-38": {
+    "task": "hand_obstruction",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0006280"
+  },
+  "H-39": {
+    "task": "hand_obstruction",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0012490"
+  },
+  "H-40": {
+    "task": "hand_obstruction",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0018736"
+  },
+  "H-41": {
+    "task": "hand_obstruction",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0000675"
+  },
+  "H-42": {
+    "task": "hand_obstruction",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0063464"
+  },
+  "H-43": {
+    "task": "hand_obstruction",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0125290"
+  },
+  "H-44": {
+    "task": "hand_obstruction",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0188767"
+  },
+  "H-45": {
+    "task": "hand_obstruction",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0002788"
+  },
+  "H-46": {
+    "task": "hand_obstruction",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0101217"
+  },
+  "H-47": {
+    "task": "hand_obstruction",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0193793"
+  },
+  "H-48": {
+    "task": "hand_obstruction",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+  },
+  "H-49": {
+    "task": "hand_obstruction",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0003949"
+  },
+  "H-50": {
+    "task": "hand_obstruction",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0043769"
+  },
+  "H-51": {
+    "task": "hand_obstruction",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0088088"
+  },
+  "H-52": {
+    "task": "hand_obstruction",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0128055"
+  },
+  "S-01": {
+    "task": "drawing_stage",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0000582",
+    "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708"
+  },
+  "S-02": {
+    "task": "drawing_stage",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0028515",
+    "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708"
+  },
+  "S-03": {
+    "task": "drawing_stage",
+    "frame_id": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708__f0052977",
+    "clip": "finch-pencil__interior-page-start-to-finish-part-4-drawing-6ca708"
+  },
+  "S-04": {
+    "task": "drawing_stage",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0001237",
+    "clip": "sanford__3030-01030129-c002-553730"
+  },
+  "S-05": {
+    "task": "drawing_stage",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0116968",
+    "clip": "sanford__3030-01030129-c002-553730"
+  },
+  "S-06": {
+    "task": "drawing_stage",
+    "frame_id": "sanford__3030-01030129-c002-553730__f0256419",
+    "clip": "sanford__3030-01030129-c002-553730"
+  },
+  "S-07": {
+    "task": "drawing_stage",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0000919",
+    "clip": "eliza__1133-12250805-c003-00699711-762ab5"
+  },
+  "S-08": {
+    "task": "drawing_stage",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0105427",
+    "clip": "eliza__1133-12250805-c003-00699711-762ab5"
+  },
+  "S-09": {
+    "task": "drawing_stage",
+    "frame_id": "eliza__1133-12250805-c003-00699711-762ab5__f0221379",
+    "clip": "eliza__1133-12250805-c003-00699711-762ab5"
+  },
+  "S-10": {
+    "task": "drawing_stage",
+    "frame_id": "stroke-samples__video__start_1s",
+    "clip": "1154_12130305_C001_V1-0001.mov"
+  },
+  "S-11": {
+    "task": "drawing_stage",
+    "frame_id": "stroke-samples__video__middle",
+    "clip": "1154_12130305_C001_V1-0001.mov"
+  },
+  "S-12": {
+    "task": "drawing_stage",
+    "frame_id": "stroke-samples__video__end_minus_1s",
+    "clip": "1154_12130305_C001_V1-0001.mov"
+  },
+  "B-1": {
+    "task": "best_still",
+    "clip": "court-jones__mvi-0012-ff263c",
+    "frame_ids": [
+      "court-jones__mvi-0012-ff263c__f0000112",
+      "court-jones__mvi-0012-ff263c__f0002324",
+      "court-jones__mvi-0012-ff263c__f0004447",
+      "court-jones__mvi-0012-ff263c__f0006642"
+    ]
+  },
+  "B-1a": {
+    "task": "best_still",
+    "clip": "court-jones__mvi-0012-ff263c",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0000112"
+  },
+  "B-1b": {
+    "task": "best_still",
+    "clip": "court-jones__mvi-0012-ff263c",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0002324"
+  },
+  "B-1c": {
+    "task": "best_still",
+    "clip": "court-jones__mvi-0012-ff263c",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0004447"
+  },
+  "B-1d": {
+    "task": "best_still",
+    "clip": "court-jones__mvi-0012-ff263c",
+    "frame_id": "court-jones__mvi-0012-ff263c__f0006642"
+  },
+  "B-2": {
+    "task": "best_still",
+    "clip": "solovev__camera-2-nest-f9a5cc",
+    "frame_ids": [
+      "solovev__camera-2-nest-f9a5cc__f0000049",
+      "solovev__camera-2-nest-f9a5cc__f0006280",
+      "solovev__camera-2-nest-f9a5cc__f0012490",
+      "solovev__camera-2-nest-f9a5cc__f0018736"
+    ]
+  },
+  "B-2a": {
+    "task": "best_still",
+    "clip": "solovev__camera-2-nest-f9a5cc",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0000049"
+  },
+  "B-2b": {
+    "task": "best_still",
+    "clip": "solovev__camera-2-nest-f9a5cc",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0006280"
+  },
+  "B-2c": {
+    "task": "best_still",
+    "clip": "solovev__camera-2-nest-f9a5cc",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0012490"
+  },
+  "B-2d": {
+    "task": "best_still",
+    "clip": "solovev__camera-2-nest-f9a5cc",
+    "frame_id": "solovev__camera-2-nest-f9a5cc__f0018736"
+  },
+  "B-3": {
+    "task": "best_still",
+    "clip": "elitha__1037-12032254-c001-5a9d28",
+    "frame_ids": [
+      "elitha__1037-12032254-c001-5a9d28__f0000675",
+      "elitha__1037-12032254-c001-5a9d28__f0063464",
+      "elitha__1037-12032254-c001-5a9d28__f0125290",
+      "elitha__1037-12032254-c001-5a9d28__f0188767"
+    ]
+  },
+  "B-3a": {
+    "task": "best_still",
+    "clip": "elitha__1037-12032254-c001-5a9d28",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0000675"
+  },
+  "B-3b": {
+    "task": "best_still",
+    "clip": "elitha__1037-12032254-c001-5a9d28",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0063464"
+  },
+  "B-3c": {
+    "task": "best_still",
+    "clip": "elitha__1037-12032254-c001-5a9d28",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0125290"
+  },
+  "B-3d": {
+    "task": "best_still",
+    "clip": "elitha__1037-12032254-c001-5a9d28",
+    "frame_id": "elitha__1037-12032254-c001-5a9d28__f0188767"
+  },
+  "B-4": {
+    "task": "best_still",
+    "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+    "frame_ids": [
+      "ryan-benjamin__1017-06061628-c001-406ec4__f0002788",
+      "ryan-benjamin__1017-06061628-c001-406ec4__f0101217",
+      "ryan-benjamin__1017-06061628-c001-406ec4__f0193793",
+      "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+    ]
+  },
+  "B-4a": {
+    "task": "best_still",
+    "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0002788"
+  },
+  "B-4b": {
+    "task": "best_still",
+    "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0101217"
+  },
+  "B-4c": {
+    "task": "best_still",
+    "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0193793"
+  },
+  "B-4d": {
+    "task": "best_still",
+    "clip": "ryan-benjamin__1017-06061628-c001-406ec4",
+    "frame_id": "ryan-benjamin__1017-06061628-c001-406ec4__f0292404"
+  },
+  "B-5": {
+    "task": "best_still",
+    "clip": "blaise__blaise-gh5-007-bd5030",
+    "frame_ids": [
+      "blaise__blaise-gh5-007-bd5030__f0003949",
+      "blaise__blaise-gh5-007-bd5030__f0043769",
+      "blaise__blaise-gh5-007-bd5030__f0088088",
+      "blaise__blaise-gh5-007-bd5030__f0128055"
+    ]
+  },
+  "B-5a": {
+    "task": "best_still",
+    "clip": "blaise__blaise-gh5-007-bd5030",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0003949"
+  },
+  "B-5b": {
+    "task": "best_still",
+    "clip": "blaise__blaise-gh5-007-bd5030",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0043769"
+  },
+  "B-5c": {
+    "task": "best_still",
+    "clip": "blaise__blaise-gh5-007-bd5030",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0088088"
+  },
+  "B-5d": {
+    "task": "best_still",
+    "clip": "blaise__blaise-gh5-007-bd5030",
+    "frame_id": "blaise__blaise-gh5-007-bd5030__f0128055"
+  },
+  "P-01": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0001339"
+  },
+  "P-02": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0002233"
+  },
+  "P-03": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0004493"
+  },
+  "P-04": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005036"
+  },
+  "P-05": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0005363"
+  },
+  "P-06": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006051"
+  },
+  "P-07": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0006907"
+  },
+  "P-08": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0007821"
+  },
+  "P-09": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008240"
+  },
+  "P-10": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0008695"
+  },
+  "P-11": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010051"
+  },
+  "P-12": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0010349"
+  },
+  "P-13": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011360"
+  },
+  "P-14": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0011832"
+  },
+  "P-15": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0014731"
+  },
+  "P-16": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0015612"
+  },
+  "P-17": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0016873"
+  },
+  "P-18": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0017438"
+  },
+  "P-19": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0018751"
+  },
+  "P-20": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0019749"
+  },
+  "P-21": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021019"
+  },
+  "P-22": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0021572"
+  },
+  "P-23": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0022339"
+  },
+  "P-24": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0023717"
+  },
+  "P-25": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0025112"
+  },
+  "P-26": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0026155"
+  },
+  "P-27": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0028761"
+  },
+  "P-28": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031133"
+  },
+  "P-29": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0031940"
+  },
+  "P-30": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0032220"
+  },
+  "P-31": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0033315"
+  },
+  "P-32": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034493"
+  },
+  "P-33": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0034935"
+  },
+  "P-34": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035385"
+  },
+  "P-35": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0035761"
+  },
+  "P-36": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036208"
+  },
+  "P-37": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0036808"
+  },
+  "P-38": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037235"
+  },
+  "P-39": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0037622"
+  },
+  "P-40": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0042595"
+  },
+  "P-41": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043178"
+  },
+  "P-42": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0043775"
+  },
+  "P-43": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0046368"
+  },
+  "P-44": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0047381"
+  },
+  "P-45": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0048259"
+  },
+  "P-46": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0049133"
+  },
+  "P-47": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0050947"
+  },
+  "P-48": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0052411"
+  },
+  "P-49": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0053333"
+  },
+  "P-50": {
+    "task": "pencil_contact",
+    "frame_id": "stroke-samples__1154-12130305-c001-v1-0001-f73c6f__f0055205"
+  },
+  "I-1": {
+    "task": "import",
+    "clip": "sketchbook_C004"
+  },
+  "I-2": {
+    "task": "import",
+    "clip": "sketchbook_C006"
+  },
+  "I-3": {
+    "task": "import",
+    "clip": "ddr_world_record"
+  },
+  "I-4": {
+    "task": "import",
+    "clip": "kaiba_hippo"
+  },
+  "I-5": {
+    "task": "import",
+    "clip": "kaiba_opening"
+  },
+  "I-6": {
+    "task": "import",
+    "clip": "kaiba_ep1"
+  },
+  "I-7": {
+    "task": "import",
+    "clip": "twilight_baseball"
+  }
+}
