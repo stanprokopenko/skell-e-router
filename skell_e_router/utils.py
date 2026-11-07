@@ -7,6 +7,7 @@ import time
 import base64
 import mimetypes
 from copy import deepcopy
+from collections.abc import Mapping
 from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG
@@ -295,7 +296,7 @@ def _resolve_api_key(ai_model: "AIModel", config: dict | None) -> str | None:
 
 
 # Classify retryable errors and honor Retry-After when available
-def _extract_status_and_headers(exc: Exception) -> tuple[int | None, dict]:
+def _extract_status_and_headers(exc: Exception) -> tuple[int | None, Mapping]:
     status = getattr(exc, 'status_code', None)
     headers = getattr(exc, 'headers', None)
     if headers is None:
@@ -308,11 +309,14 @@ def _extract_status_and_headers(exc: Exception) -> tuple[int | None, dict]:
     return status, headers
 
 
-def _parse_retry_after_seconds(headers: dict) -> float | None:
-    if not isinstance(headers, dict):
+def _parse_retry_after_seconds(headers) -> float | None:
+    # Accept any mapping-like object: LiteLLM exceptions carry httpx.Headers,
+    # which is a Mapping but not a dict.
+    items = getattr(headers, 'items', None)
+    if headers is None or not callable(items):
         return None
     retry_after = None
-    for k, v in headers.items():
+    for k, v in items():
         if str(k).lower() == 'retry-after':
             retry_after = v
             break
@@ -795,6 +799,26 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 # MAIN CALL FUNCTIONS
 #--------------------
 
+def _strip_gemini_tool_call_keys(messages: list[dict]) -> list[dict]:
+    """Drop direct-Gemini ``thought_signature`` from assistant tool_calls.
+
+    A transcript that switched from direct Gemini to a LiteLLM model still
+    carries the key; it means nothing to other providers. Messages without it
+    are returned as the same objects.
+    """
+    out = []
+    for msg in messages:
+        tool_calls = msg.get("tool_calls") if isinstance(msg, dict) else None
+        if isinstance(tool_calls, list) and any(
+                isinstance(tc, dict) and "thought_signature" in tc for tc in tool_calls):
+            msg = {**msg, "tool_calls": [
+                {k: v for k, v in tc.items() if k != "thought_signature"}
+                if isinstance(tc, dict) else tc
+                for tc in tool_calls]}
+        out.append(msg)
+    return out
+
+
 @retry(
     retry=retry_if_exception(_is_retryable_exception),
     wait=_retry_after_wait,
@@ -802,6 +826,7 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     reraise=True,
 )
 def _perform_completion(model_name: str, messages: list[dict], api_key: str | None = None, **kwargs):
+    messages = _strip_gemini_tool_call_keys(messages)
     completion_kwargs = dict(model=model_name, messages=messages, **kwargs)
     if api_key:
         completion_kwargs["api_key"] = api_key
@@ -834,15 +859,46 @@ def _build_ai_response(
     total_duration_s: float | None = None,
     ai_model=None,
 ) -> AIResponse:
-    """Build AIResponse from LiteLLM completion response."""
+    """Build AIResponse from LiteLLM completion response.
 
-    content = response.choices[0].message.content if response.choices else ""
+    LiteLLM's Responses-API bridge (completion_extras/litellm_responses_transformation,
+    _convert_response_output_to_choices) emits one choice per output message
+    part plus a separate trailing choice holding every function call. All
+    choices are therefore read: content is the first non-empty text,
+    tool_calls is every choice's tool_calls in order, and a "stop"
+    finish_reason becomes "tool_calls" when any call exists.
+    """
+
+    choices = list(getattr(response, 'choices', None) or [])
     model_name = getattr(response, 'model', 'unknown')
 
     usage = getattr(response, 'usage', None)
     completion_details = getattr(usage, 'completion_tokens_details', None) if usage else None
-    first_choice = response.choices[0] if response.choices else None
+    first_choice = choices[0] if choices else None
     message = getattr(first_choice, 'message', None) if first_choice else None
+
+    content = ""
+    merged_tool_calls = []
+    for choice in choices:
+        choice_message = getattr(choice, 'message', None)
+        text = getattr(choice_message, 'content', None)
+        if not content and isinstance(text, str) and text:
+            content = text
+        merged_tool_calls.extend(getattr(choice_message, 'tool_calls', None) or [])
+    finish_reason = getattr(first_choice, 'finish_reason', None)
+    if merged_tool_calls:
+        tool_calls = merged_tool_calls
+        # The text choice says "stop" even when calls follow; a real stop
+        # condition such as "length" or "content_filter" is kept.
+        if finish_reason in (None, "stop"):
+            finish_reason = "tool_calls"
+    else:
+        tool_calls = getattr(message, 'tool_calls', None)
+
+    prompt_details = getattr(usage, 'prompt_tokens_details', None) if usage else None
+    cache_read_tokens = getattr(prompt_details, 'cached_tokens', None) if prompt_details is not None else None
+    if not isinstance(cache_read_tokens, int):
+        cache_read_tokens = None
 
     # Compute cost safely (LiteLLM cost map, else router-level pricing fallback)
     computed_cost = _compute_response_cost(response, ai_model)
@@ -867,7 +923,7 @@ def _build_ai_response(
     return AIResponse(
         content=content or "",
         model=model_name,
-        finish_reason=getattr(first_choice, 'finish_reason', None),
+        finish_reason=finish_reason,
         prompt_tokens=getattr(usage, 'prompt_tokens', None),
         completion_tokens=getattr(usage, 'completion_tokens', None),
         total_tokens=getattr(usage, 'total_tokens', None),
@@ -878,10 +934,11 @@ def _build_ai_response(
         grounding_metadata=grounding_metadata,
         safety_ratings=safety_ratings,
         images=response_images,
-        tool_calls=getattr(message, 'tool_calls', None),
+        tool_calls=tool_calls,
         function_call=getattr(message, 'function_call', None),
         provider_specific_fields=getattr(message, 'provider_specific_fields', None),
         raw_response=response,
+        cache_read_tokens=cache_read_tokens,
     )
 
 
@@ -900,6 +957,13 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
 
     stream = kwargs.pop("stream", False)
     system_instruction, contents = _convert_messages_to_contents(messages)
+    if not contents:
+        # Empty text never becomes a Gemini part, so an all-empty conversation
+        # has nothing to send (the SDK raises "contents are required").
+        raise RouterError(
+            code="INVALID_PARAM",
+            message="Gemini needs at least one non-empty user, assistant, or tool message.",
+        )
     gen_config, tools = _build_generate_config(ai_model, kwargs)
 
     _print_request_details(messages, kwargs, ai_model.name + " (direct)", verbosity)

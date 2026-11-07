@@ -7,6 +7,7 @@ import time
 import json
 import base64
 import hashlib
+import logging
 import re
 
 try:
@@ -17,6 +18,8 @@ except ImportError:
     anthropic = None
 
 from .response import AIResponse
+
+logger = logging.getLogger(__name__)
 
 
 # Cache Anthropic client instances per API key to avoid repeated construction overhead
@@ -39,6 +42,12 @@ NONSTREAM_MAX_TOKENS = 21_333
 
 # Known pricing per 1M tokens (USD) for direct-SDK models.
 # Optional "cache_read" key overrides the standard 0.1x-of-input cache-read rate.
+# Optional "long_context_threshold" plus "long_context_input_multiplier" /
+# "long_context_output_multiplier" (same keys as AIModel.pricing) apply
+# Anthropic's long-context rule: when the full prompt (uncached input + cache
+# writes + cache reads) exceeds the threshold, the WHOLE request bills at the
+# higher tier, cache multipliers included
+# (https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing).
 _PRICING = {
     "claude-opus-5-5": {"input": 4.00, "output": 20.00, "cache_read": 0.20},
     "claude-sonnet-5-5": {"input": 2.00, "output": 10.00},  # same prices as Sonnet 5
@@ -51,7 +60,9 @@ _PRICING = {
     "claude-sonnet-5": {"input": 2.00, "output": 10.00},  # launch intro price made permanent 2026-09-01 (increase to $3/$15 cancelled)
     "claude-sonnet-4-6": {"input": 3.00, "output": 15.00},
     "claude-opus-4-5": {"input": 5.00, "output": 25.00},
-    "claude-haiku-5-5": {"input": 0.10, "output": 0.50},  # tier for prompts <=100k tokens; >100k is $0.50/$2.50
+    # $0.10/$0.50 for prompts up to 100k tokens; $0.50/$2.50 above that.
+    "claude-haiku-5-5": {"input": 0.10, "output": 0.50, "long_context_threshold": 100_000,
+                         "long_context_input_multiplier": 5.0, "long_context_output_multiplier": 5.0},
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
 }
 
@@ -452,6 +463,19 @@ def _build_create_params(ai_model, kwargs: dict) -> tuple[dict, dict | None]:
             if fn_name:
                 params["tool_choice"] = {"type": "tool", "name": fn_name}
 
+    # Manual (budget_tokens) extended thinking supports only tool_choice auto
+    # or none; a forced choice returns 400. Adaptive thinking accepts it.
+    # https://platform.claude.com/docs/en/build-with-claude/extended-thinking
+    # ("Tool choice limitation")
+    thinking_cfg = params.get("thinking")
+    forced = params.get("tool_choice", {}).get("type") in ("any", "tool")
+    if forced and isinstance(thinking_cfg, dict) and thinking_cfg.get("type") == "enabled":
+        logger.warning(
+            "%s: tool_choice %r is incompatible with extended thinking "
+            "(budget_tokens); sending tool_choice auto instead.",
+            ai_model.name, kwargs.get("tool_choice"))
+        params["tool_choice"] = {"type": "auto"}
+
     # betas -> extra_headers
     if "betas" in kwargs and kwargs["betas"]:
         betas = kwargs["betas"]
@@ -545,15 +569,18 @@ def _call_anthropic_direct_stream(model_name: str, messages: list[dict], system_
 def _is_transient_anthropic_error(e: Exception) -> bool:
     """Check if an Anthropic SDK exception is transient and retryable."""
     err_name = type(e).__name__
-    # Retry on RateLimitError, InternalServerError, APITimeoutError, APIConnectionError
-    if err_name in ("RateLimitError", "InternalServerError", "APITimeoutError", "APIConnectionError"):
+    # Retry on RateLimitError, InternalServerError, OverloadedError (529, a
+    # direct APIStatusError subclass, not an InternalServerError),
+    # APITimeoutError, APIConnectionError
+    if err_name in ("RateLimitError", "InternalServerError", "OverloadedError",
+                    "APITimeoutError", "APIConnectionError"):
         return True
     # Generic checks
     err_lower = err_name.lower()
     if 'timeout' in err_lower or 'connection' in err_lower:
         return True
     status = getattr(e, 'status_code', None)
-    if status in (429, 500, 502, 503, 504):
+    if status in (429, 500, 502, 503, 504, 529):
         return True
     return False
 
@@ -588,18 +615,29 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
 
     # Token usage. With prompt caching enabled, Anthropic reports cached
     # tokens in separate fields that are NOT included in input_tokens:
-    # cache_creation_input_tokens (billed at 1.25x input price) and
-    # cache_read_input_tokens (billed at 0.1x input price).
+    # cache_creation_input_tokens (writes: 1.25x input for the 5-minute TTL,
+    # 2.0x for the 1-hour TTL) and cache_read_input_tokens (0.1x input unless
+    # the pricing entry sets "cache_read").
     usage = getattr(response, 'usage', None)
     prompt_tokens = getattr(usage, 'input_tokens', None)
     completion_tokens = getattr(usage, 'output_tokens', None)
 
-    def _cache_tokens(attr: str) -> int:
-        value = getattr(usage, attr, 0)
-        return value if isinstance(value, int) else 0
+    def _int_attr(obj, attr: str) -> int | None:
+        value = getattr(obj, attr, None)
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
 
-    cache_creation_tokens = _cache_tokens('cache_creation_input_tokens')
-    cache_read_tokens = _cache_tokens('cache_read_input_tokens')
+    cache_creation_tokens = _int_attr(usage, 'cache_creation_input_tokens') or 0
+    cache_read_tokens = _int_attr(usage, 'cache_read_input_tokens') or 0
+
+    # Per-TTL write breakdown (usage.cache_creation). When absent, every write
+    # is priced at the 5-minute 1.25x rate.
+    breakdown = getattr(usage, 'cache_creation', None)
+    write_5m = _int_attr(breakdown, 'ephemeral_5m_input_tokens')
+    write_1h = _int_attr(breakdown, 'ephemeral_1h_input_tokens')
+    if write_5m is None and write_1h is None:
+        write_5m, write_1h = cache_creation_tokens, 0
+    else:
+        write_5m, write_1h = write_5m or 0, write_1h or 0
 
     # Report the full prompt size (uncached + cache-write + cache-read)
     if prompt_tokens is not None:
@@ -610,17 +648,23 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     # Finish reason
     finish_reason = getattr(response, 'stop_reason', None)
 
-    # Compute cost from known pricing (cache writes 1.25x; cache reads 0.1x
-    # unless the model's pricing entry sets an explicit "cache_read" rate)
+    # Compute cost from known pricing
     cost = None
     pricing = _PRICING.get(display_model)
     if pricing and prompt_tokens is not None and completion_tokens is not None:
+        threshold = pricing.get("long_context_threshold")
+        long_context = threshold is not None and prompt_tokens > threshold
+        input_mult = pricing.get("long_context_input_multiplier", 1.0) if long_context else 1.0
+        output_mult = pricing.get("long_context_output_multiplier", 1.0) if long_context else 1.0
+        input_rate = pricing["input"] * input_mult
+        output_rate = pricing["output"] * output_mult
+        cache_read_rate = pricing.get("cache_read", pricing["input"] * 0.10) * input_mult
         uncached_tokens = prompt_tokens - cache_creation_tokens - cache_read_tokens
-        cache_read_rate = pricing.get("cache_read", pricing["input"] * 0.10)
-        cost = (uncached_tokens * pricing["input"] / 1_000_000 +
-                cache_creation_tokens * pricing["input"] * 1.25 / 1_000_000 +
+        cost = (uncached_tokens * input_rate / 1_000_000 +
+                write_5m * input_rate * 1.25 / 1_000_000 +
+                write_1h * input_rate * 2.0 / 1_000_000 +
                 cache_read_tokens * cache_read_rate / 1_000_000 +
-                completion_tokens * pricing["output"] / 1_000_000)
+                completion_tokens * output_rate / 1_000_000)
 
     return AIResponse(
         content=content,
@@ -634,6 +678,8 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
         total_duration_seconds=total_duration_s,
         tool_calls=tool_calls,
         raw_response=response,
+        cache_read_tokens=_int_attr(usage, 'cache_read_input_tokens'),
+        cache_write_tokens=_int_attr(usage, 'cache_creation_input_tokens'),
     )
 
 

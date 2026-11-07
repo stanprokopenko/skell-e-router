@@ -41,6 +41,13 @@ class AIResponse:
     # Raw response for advanced use
     raw_response: Any = None
 
+    # Prompt-cache token counts, a subset of prompt_tokens. None when the
+    # provider reported nothing. cache_write_tokens is only reported by
+    # Anthropic (Gemini and OpenAI do not bill cache writes separately).
+    # Appended last so positional construction stays compatible.
+    cache_read_tokens: int | None = None
+    cache_write_tokens: int | None = None
+
     def __str__(self) -> str:
         """Allow AIResponse to be used as a string (returns content)."""
         return self.content

@@ -197,12 +197,15 @@ class TestModelConfig:
         assert MODEL_CONFIG["claude-fable-5"].accepted_tool_choices is None
 
     def test_haiku_5_5_config(self):
-        """Haiku 5.5 accepts forced tool use (no coercion), 128k output, $0.10/$0.50 pricing."""
+        """Haiku 5.5 accepts forced tool use (no coercion), 128k output, $0.10/$0.50 pricing
+        up to 100k prompt tokens and 5x ($0.50/$2.50) above."""
         from skell_e_router.anthropic_direct import _PRICING
         model = MODEL_CONFIG["claude-haiku-5-5"]
         assert model.accepted_tool_choices is None
         assert model.max_output_tokens == 128000
-        assert _PRICING["claude-haiku-5-5"] == {"input": 0.10, "output": 0.50}
+        assert _PRICING["claude-haiku-5-5"] == {
+            "input": 0.10, "output": 0.50, "long_context_threshold": 100_000,
+            "long_context_input_multiplier": 5.0, "long_context_output_multiplier": 5.0}
 
     def test_opus_4_7_config(self):
         """Opus 4.7 drops sampling params and budget_tokens; only adaptive thinking via reasoning_effort."""

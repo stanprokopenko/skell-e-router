@@ -384,11 +384,13 @@ MODEL_CONFIG = {
         supports_thinking=True,
         supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
     ),
+    # Gemini 2.5 thinks via thinking_budget (thinking_level is Gemini 3 only and
+    # 400s here), so reasoning_effort maps to a budget like 2.5-flash-lite.
     "gemini-2.5-flash": AIModel(
         name="gemini/gemini-2.5-flash",
         provider="gemini",
         supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        supported_params={"temperature", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
         use_direct_sdk=True,
     ),
     "gemini-2.5-flash-lite": AIModel(

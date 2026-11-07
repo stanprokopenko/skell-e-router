@@ -730,7 +730,7 @@ class TestAskAiDirectGeminiIntegration:
     @patch("skell_e_router.utils._build_generate_config")
     def test_direct_sdk_true_routes_correctly(self, mock_config, mock_convert, mock_call):
         """direct_sdk=True should use the direct Gemini path."""
-        mock_convert.return_value = (None, [])
+        mock_convert.return_value = (None, ["<content>"])
         mock_config.return_value = (MagicMock(), None)
         mock_resp = make_gemini_response()
         mock_call.return_value = (mock_resp, 0.5)
@@ -779,7 +779,7 @@ class TestAskAiDirectGeminiIntegration:
     @patch("skell_e_router.utils._build_generate_config")
     def test_stream_true_uses_direct_streaming(self, mock_config, mock_convert, mock_stream):
         """stream=True should call _call_gemini_direct_stream."""
-        mock_convert.return_value = (None, [])
+        mock_convert.return_value = (None, ["<content>"])
         mock_config.return_value = (MagicMock(), None)
         sentinel = iter(["chunk1", "chunk2"])
         mock_stream.return_value = sentinel
@@ -798,7 +798,7 @@ class TestAskAiDirectGeminiIntegration:
     @patch("skell_e_router.utils._build_generate_config")
     def test_budget_tokens_transformed(self, mock_config, mock_convert, mock_call):
         """budget_tokens should be handled by _build_generate_config (no crash)."""
-        mock_convert.return_value = (None, [])
+        mock_convert.return_value = (None, ["<content>"])
         mock_config.return_value = (MagicMock(), None)
         mock_call.return_value = (make_gemini_response(), 0.5)
 
@@ -841,7 +841,7 @@ class TestAskAiDirectGeminiIntegration:
     @patch("skell_e_router.utils._build_generate_config")
     def test_provider_error_wrapped(self, mock_config, mock_convert, mock_call):
         """SDK exceptions should be wrapped in RouterError(PROVIDER_ERROR)."""
-        mock_convert.return_value = (None, [])
+        mock_convert.return_value = (None, ["<content>"])
         mock_config.return_value = (MagicMock(), None)
         mock_call.side_effect = RuntimeError("SDK boom")
 

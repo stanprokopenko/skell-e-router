@@ -46,6 +46,8 @@ print(result.answers["team"]["probabilities"])
 
 Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
+Version 3.44.0 fixes ten provider-integration bugs from the 2026-11-06 audit. Gemini now receives tool calls and tool results in its native format, LiteLLM's Responses API path keeps a tool call that arrives next to text, Anthropic 529 overloads retry, and Anthropic cost covers 1-hour cache writes and Haiku 5.5's above-100k tier. `AIResponse` gains `cache_read_tokens` and `cache_write_tokens`. See [CHANGELOG.md](CHANGELOG.md).
+
 Version 3.43.2 keeps Anthropic cache adjustments out of the caller's saved conversation on the LiteLLM path. Reusing a conversation no longer retains a one-hour cache setting added for an earlier request.
 
 Version 3.43.1 fixes two Anthropic tool-loop bugs. A `role: tool` message whose content is a block list (skell-e-agent 0.8.7 sends one when a CachePoint follows a tool return) now becomes real `tool_result` content instead of a Python repr of the list, and a `cache_control` marker on the tool message or inside its blocks is carried onto the `tool_result` block (the skell-e-agent 0.8.8 contract). The router also enforces Anthropic's non-increasing cache TTL rule itself on both provider paths: any caller marker ahead of a 1h marker is raised to 1h instead of failing the request with HTTP 400. See [prompt caching](skell_e_router/Skell-E-Router-DOCUMENTATION.md#prompt-caching-enable_caching).

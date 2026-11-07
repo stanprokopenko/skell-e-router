@@ -267,11 +267,13 @@ print(response)  # Prints content via __str__
 |-------|------|-------------|
 | `content` | str | The response text |
 | `model` | str | Model name used |
-| `finish_reason` | str | Why generation stopped |
+| `finish_reason` | str | Why generation stopped (provider value, e.g. `"stop"`/`"length"` on LiteLLM, `"STOP"`/`"MAX_TOKENS"` on direct Gemini) |
 | `prompt_tokens` | int | Input token count |
 | `completion_tokens` | int | Output token count |
 | `total_tokens` | int | Total tokens used |
 | `reasoning_tokens` | int | Thinking/reasoning tokens |
+| `cache_read_tokens` | int | Prompt tokens served from the provider's cache (part of `prompt_tokens`); None when not reported |
+| `cache_write_tokens` | int | Prompt tokens written to the cache (Anthropic only; part of `prompt_tokens`); None elsewhere |
 | `cost` | float | Estimated cost in USD |
 | `duration_seconds` | float | Request duration |
 | `grounding_metadata` | dict | Web search citations (Gemini) |
@@ -1055,6 +1057,8 @@ if response.tool_calls:
         print(f"{tc['function']['name']}({tc['function']['arguments']})")
 ```
 
+Tool call ids are Gemini's own `function_call.id` when Gemini sends one; the router mints `call_<hex>` only when it is absent. Since v3.44.0, tool history is sent back in Gemini's native form: an assistant message's `tool_calls` become `functionCall` parts (with the call id) on the model turn, and consecutive `role: "tool"` messages become one user turn of `functionResponse` parts, each with the matching id, the call's function name, and `response={"output": <tool text>}`. A tool message whose `tool_call_id` matches no earlier call and has no `name` goes out as labeled user text, because Gemini rejects an unanswered `functionResponse`. Empty or whitespace-only text is never sent as a part; a conversation with nothing left raises `RouterError("INVALID_PARAM")`.
+
 **tool_choice mapping:**
 
 | OpenAI value | Google SDK mode |
@@ -1068,7 +1072,7 @@ if response.tool_calls:
 
 The direct SDK path handles thinking configuration differently depending on what the model supports:
 
-- **Models with `budget_tokens`** (e.g., `gemini-2.5-flash-lite`): `budget_tokens` maps to `ThinkingConfig(thinking_budget=N)`. `reasoning_effort` also maps to `thinking_budget` (low=1024, medium=2048, high=4096).
+- **Models with `budget_tokens`** (e.g., `gemini-2.5-flash`, `gemini-2.5-flash-lite`): `budget_tokens` maps to `ThinkingConfig(thinking_budget=N)`. `reasoning_effort` also maps to `thinking_budget` (low=1024, medium=2048, high=4096). A model that declares neither parameter also gets a budget, never `thinking_level`, which Gemini 2.5 rejects.
 - **Models with only `reasoning_effort`** (e.g., `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`): `reasoning_effort` maps to `ThinkingConfig(thinking_level="LOW"/"MEDIUM"/"HIGH")`. `budget_tokens` is converted to the appropriate thinking level. This avoids the `ThinkingConfig thinking_budget Extra inputs are not permitted` validation error that occurs when sending `thinking_budget` to models that don't support it.
 
 ### Limitations
@@ -1176,6 +1180,8 @@ if response.tool_calls:
     for tc in response.tool_calls:
         print(f"{tc['function']['name']}({tc['function']['arguments']})")
 ```
+
+Tool call ids are Gemini's own `function_call.id` when Gemini sends one; the router mints `call_<hex>` only when it is absent. Since v3.44.0, tool history is sent back in Gemini's native form: an assistant message's `tool_calls` become `functionCall` parts (with the call id) on the model turn, and consecutive `role: "tool"` messages become one user turn of `functionResponse` parts, each with the matching id, the call's function name, and `response={"output": <tool text>}`. A tool message whose `tool_call_id` matches no earlier call and has no `name` goes out as labeled user text, because Gemini rejects an unanswered `functionResponse`. Empty or whitespace-only text is never sent as a part; a conversation with nothing left raises `RouterError("INVALID_PARAM")`.
 
 **tool_choice mapping:**
 

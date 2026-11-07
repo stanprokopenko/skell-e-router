@@ -1,5 +1,10 @@
 # Active Tasks & Deferred Follow-ups
 
+## Provider integration audit, 2026-11-06
+
+- [x] Released 3.44.0 with the audit's router fixes: Gemini direct tool history (function calls, grouped function responses, thought signatures), multi-choice merge on the OpenAI Responses bridge, Retry-After on the LiteLLM path, 529 retries, 1h cache-write and Haiku 5.5 tier pricing, cache token fields on `AIResponse`, gemini-2.5-flash thinking budget, forced tool choice with budget thinking. Tests in `tests/test_audit_fixes.py`. Findings, evidence and the new-provider checklist: skell-e-agent `docs/provider-integration-audit-2026-11.md`.
+- [ ] Open router findings from the audit, by cost: R3 reasoning replay and `store: false` on the Responses bridge (waits on Stan's design decision in the audit); E2 stacked SDK and router retries (up to 9 attempts); E5 out-of-credit needs a never-retried `quota` category; E7 context-length category; P1 effort `max` dropped by LiteLLM for gpt-6/6.1; P2 xhigh workaround keeps gpt-5.5/5.6 tools on chat/completions; R5 reasoning-exhausted reply retried as a fake 500; R10 gpt-6 long-context surcharge; E13 Gemini intro prices expire 2026-12-01 and 2027-01-01; R2 assistant text dropped beside tool calls on replay; A5 cap cache breakpoints at four; A6 empty user content; C6 carry the provider's error type in `RouterError.details`; E4, E6, E14, P6, P7, P11, G8 one-liners. Sizes in the audit's tables.
+
 ## Tool-message cache markers
 
 - [x] Reviewed v3.43.1 and fixed caller-history mutation on the LiteLLM route in v3.43.2. Two blind review rounds completed, the final review was clean, 1,164 tests and 17 subtests passed, and live bridge and tool-result checks passed. [Review and evidence](cache-marker-review-2026-11-06.md).

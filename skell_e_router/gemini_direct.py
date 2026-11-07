@@ -3,6 +3,8 @@
 # Bypass LiteLLM for speed-critical Gemini models by calling the google-genai SDK directly.
 # This eliminates 0.3-1.7s of overhead per call that LiteLLM adds.
 
+import base64
+import enum
 import time
 import json
 import uuid
@@ -69,18 +71,163 @@ _PRICING = {
 }
 
 
+def _content_to_parts(content) -> list:
+    """Convert OpenAI message content (str or list of parts) to SDK Parts.
+
+    Empty or whitespace-only text never becomes a Part: Gemini rejects an empty
+    text part with a 400 ("empty text parameter").
+    """
+    if isinstance(content, str):
+        return [types.Part.from_text(text=content)] if content.strip() else []
+    if not isinstance(content, list):
+        return []
+    parts = []
+    for part in content:
+        if not isinstance(part, dict):
+            continue
+        if part.get("type") == "text":
+            text = part.get("text") or ""
+            if text.strip():
+                parts.append(types.Part.from_text(text=text))
+        elif part.get("type") == "image_url":
+            url = part["image_url"]["url"]
+            if url.startswith("data:"):
+                # Parse data URI: data:mime;base64,DATA
+                header, b64_data = url.split(",", 1)
+                mime = header.split(":")[1].split(";")[0]
+                parts.append(types.Part.from_bytes(
+                    data=base64.b64decode(b64_data),
+                    mime_type=mime
+                ))
+            else:
+                parts.append(types.Part.from_uri(
+                    file_uri=url,
+                    mime_type="image/jpeg"  # Default; SDK may auto-detect
+                ))
+        elif part.get("type") == "input_audio":
+            audio_data = part["input_audio"]["data"]
+            audio_format = part["input_audio"]["format"]
+            mime = _AUDIO_FORMAT_TO_MIME.get(audio_format, f"audio/{audio_format}")
+            parts.append(types.Part.from_bytes(
+                data=base64.b64decode(audio_data),
+                mime_type=mime,
+            ))
+    return parts
+
+
+def _function_call_args(arguments) -> dict:
+    """Parse an OpenAI tool_call `arguments` value (JSON string or dict) into
+    the dict Gemini expects as functionCall.args."""
+    if isinstance(arguments, dict):
+        return arguments
+    if isinstance(arguments, str) and arguments.strip():
+        try:
+            parsed = json.loads(arguments)
+        except ValueError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
+
+
+def _tool_result_text(content) -> str:
+    """Text of an OpenAI tool message (str, or the text parts of a list)."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(
+            p.get("text") or "" for p in content
+            if isinstance(p, dict) and p.get("type") == "text"
+        )
+    return "" if content is None else str(content)
+
+
+# Gemini 3 rejects a model turn whose first functionCall part has no
+# thought_signature. History without one (another provider's turn, an older
+# transcript) gets this documented placeholder, as pydantic-ai's GoogleModel does:
+# https://ai.google.dev/gemini-api/docs/thought-signatures#faqs
+SKIP_THOUGHT_SIGNATURE = b"skip_thought_signature_validator"
+
+
+def _decode_thought_signature(value) -> bytes | None:
+    """Return the raw bytes of a tool_call's base64 ``thought_signature``, or None.
+
+    Accepts standard or URL-safe base64 (the SDK's own JSON uses URL-safe).
+    """
+    if isinstance(value, bytes):
+        return value or None
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        value = value.replace("-", "+").replace("_", "/")
+        return base64.b64decode(value, validate=True) or None
+    except ValueError:
+        return None
+
+
 def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, list]:
     """Convert OpenAI-format messages to Google SDK format.
 
     Returns (system_instruction, contents) where system_instruction is extracted
     from system messages and contents is the list of conversation turns.
+
+    Tool rounds map to Gemini's native function calling:
+    - An assistant message's ``tool_calls`` become ``functionCall`` parts on the
+      model turn, after any text, carrying the OpenAI call id as
+      ``functionCall.id``. A tool call's base64 ``thought_signature`` rides on
+      its part as bytes; the first call of a turn without one gets
+      ``SKIP_THOUGHT_SIGNATURE`` (Gemini 3 requires a signature there).
+    - A run of consecutive ``role: "tool"`` messages becomes ONE user turn of
+      ``functionResponse`` parts in message order, each carrying the
+      ``tool_call_id`` as ``id`` and the name of the call it answers. Gemini
+      expects all responses to one model turn in the very next user turn.
+    - The response payload is ``{"output": <tool text>}``, the key the SDK
+      documents for function output (FunctionResponse.response).
+    A user message after the function responses stays its own user turn. The
+    SDK does not merge or reject adjacent same-role Content objects, and the
+    Gemini API accepts them.
     """
     system_instruction = None
     contents = []
+    call_names: dict[str, str] = {}  # tool_call_id -> function name
+    response_parts: list = []  # functionResponse parts of the current tool run
+    extra_parts: list = []  # tool-run parts that cannot be functionResponses
+
+    def flush_tool_run():
+        if response_parts:
+            contents.append(types.Content(role="user", parts=list(response_parts)))
+        if extra_parts:
+            contents.append(types.Content(role="user", parts=list(extra_parts)))
+        response_parts.clear()
+        extra_parts.clear()
 
     for msg in messages:
         role = msg["role"]
-        content = msg["content"]
+        content = msg.get("content")
+
+        if role == "tool":
+            call_id = msg.get("tool_call_id")
+            text = _tool_result_text(content)
+            name = call_names.get(call_id) or msg.get("name")
+            if name:
+                response_parts.append(types.Part(function_response=types.FunctionResponse(
+                    id=call_id, name=name, response={"output": text},
+                )))
+            elif text.strip():
+                # No preceding call with this id (e.g. trimmed history) and no
+                # name on the message. Gemini rejects a functionResponse that
+                # does not answer a functionCall in the previous turn, so the
+                # result degrades to labeled user text instead of a guessed name.
+                label = f"[tool result {call_id}]" if call_id else "[tool result]"
+                extra_parts.append(types.Part.from_text(text=f"{label}\n{text}"))
+            # Media in a list-form tool result rides in a following user turn.
+            if isinstance(content, list):
+                extra_parts.extend(
+                    p for p in _content_to_parts(content)
+                    if getattr(p, "text", None) is None
+                )
+            continue
+
+        flush_tool_run()
 
         if role == "system":
             # Google SDK takes system instruction separately via config
@@ -88,49 +235,29 @@ def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, lis
                 system_instruction = content
             continue
 
-        # Map OpenAI roles to Google SDK roles
-        sdk_role = "model" if role == "assistant" else "user"
-
-        if isinstance(content, str):
-            contents.append(types.Content(
-                role=sdk_role,
-                parts=[types.Part.from_text(text=content)]
-            ))
-        elif isinstance(content, list):
-            # Multi-part content (text + images)
-            parts = []
-            for part in content:
-                if isinstance(part, dict):
-                    if part.get("type") == "text":
-                        parts.append(types.Part.from_text(text=part["text"]))
-                    elif part.get("type") == "image_url":
-                        url = part["image_url"]["url"]
-                        if url.startswith("data:"):
-                            # Parse data URI: data:mime;base64,DATA
-                            header, b64_data = url.split(",", 1)
-                            mime = header.split(":")[1].split(";")[0]
-                            import base64
-                            parts.append(types.Part.from_bytes(
-                                data=base64.b64decode(b64_data),
-                                mime_type=mime
-                            ))
-                        else:
-                            parts.append(types.Part.from_uri(
-                                file_uri=url,
-                                mime_type="image/jpeg"  # Default; SDK may auto-detect
-                            ))
-                    elif part.get("type") == "input_audio":
-                        audio_data = part["input_audio"]["data"]
-                        audio_format = part["input_audio"]["format"]
-                        mime = _AUDIO_FORMAT_TO_MIME.get(audio_format, f"audio/{audio_format}")
-                        import base64
-                        parts.append(types.Part.from_bytes(
-                            data=base64.b64decode(audio_data),
-                            mime_type=mime,
-                        ))
+        parts = _content_to_parts(content)
+        if role == "assistant":
+            for i, tc in enumerate(msg.get("tool_calls") or []):
+                fn = tc.get("function") or {}
+                call_id = tc.get("id")
+                name = fn.get("name")
+                if call_id and name:
+                    call_names[call_id] = name
+                signature = _decode_thought_signature(tc.get("thought_signature"))
+                if signature is None and i == 0:
+                    signature = SKIP_THOUGHT_SIGNATURE
+                parts.append(types.Part(
+                    function_call=types.FunctionCall(
+                        id=call_id, name=name, args=_function_call_args(fn.get("arguments")),
+                    ),
+                    thought_signature=signature,
+                ))
             if parts:
-                contents.append(types.Content(role=sdk_role, parts=parts))
+                contents.append(types.Content(role="model", parts=parts))
+        elif parts:
+            contents.append(types.Content(role="user", parts=parts))
 
+    flush_tool_run()
     return system_instruction, contents
 
 
@@ -310,9 +437,11 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 code="INVALID_PARAM",
                 message=f"'reasoning_effort' must be one of: {sorted(list(accepted))}"
             )
-        # Use thinking_level for models that support reasoning_effort,
-        # thinking_budget for models that support budget_tokens.
-        if "budget_tokens" in ai_model.supported_params:
+        # thinking_budget for models that declare budget_tokens. thinking_level
+        # is a Gemini 3 field (earlier models return 400), so only models that
+        # declare reasoning_effort get it; anything else gets a budget too.
+        if ("budget_tokens" in ai_model.supported_params
+                or "reasoning_effort" not in ai_model.supported_params):
             budget_map = {
                 "minimal": 0,
                 "low": 1024,
@@ -540,7 +669,9 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     if response.candidates:
         fr = getattr(response.candidates[0], 'finish_reason', None)
         if fr is not None:
-            finish_reason = str(fr)
+            # FinishReason is a str enum whose str() is "FinishReason.MAX_TOKENS";
+            # return the bare API value ("STOP", "MAX_TOKENS", "SAFETY", ...).
+            finish_reason = fr.name if isinstance(fr, enum.Enum) else str(fr)
 
     # Grounding metadata
     grounding_metadata = None
@@ -574,14 +705,23 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
                         args_str = json.dumps(args)
                     else:
                         args_str = json.dumps(dict(args)) if args else "{}"
-                    tool_calls.append({
-                        "id": f"call_{uuid.uuid4().hex[:24]}",
+                    # Keep Gemini's own id so the next turn's functionCall and
+                    # functionResponse can echo it; mint one only when absent.
+                    call_id = getattr(fc, 'id', None) or f"call_{uuid.uuid4().hex[:24]}"
+                    tool_call = {
+                        "id": call_id,
                         "type": "function",
                         "function": {
                             "name": fc.name,
                             "arguments": args_str,
                         }
-                    })
+                    }
+                    # Gemini 3 requires this signature back on the same
+                    # functionCall part next request; base64 keeps it JSON-safe.
+                    signature = getattr(p, 'thought_signature', None)
+                    if isinstance(signature, bytes) and signature:
+                        tool_call["thought_signature"] = base64.b64encode(signature).decode()
+                    tool_calls.append(tool_call)
 
     # Compute cost from known pricing. Gemini 2.5+ caches implicitly and bills
     # cache hits at the discounted cached-input rate; cached tokens are
@@ -590,6 +730,11 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     cached_tokens = getattr(usage, 'cached_content_token_count', None)
     if not isinstance(cached_tokens, int) or cached_tokens < 0:
         cached_tokens = 0  # None/absent (no cache hit or older model) -> flat pricing
+    # Reported as-is (None when Gemini sent no count). Gemini has no cache-write
+    # charge on this path (implicit caching), so cache_write_tokens stays None.
+    reported_cache_read = getattr(usage, 'cached_content_token_count', None)
+    if not isinstance(reported_cache_read, int):
+        reported_cache_read = None
 
     # Thinking tokens (usage_metadata.thoughts_token_count) are reported
     # separately from candidates_token_count but billed at the output rate.
@@ -621,6 +766,7 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
         safety_ratings=safety_ratings,
         tool_calls=tool_calls,
         raw_response=response,
+        cache_read_tokens=reported_cache_read,
     )
 
 
