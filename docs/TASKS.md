@@ -2,7 +2,7 @@
 
 ## Gemini 2.5 redirect
 
-- [ ] Ship the prepared web picker and usage-price change after Stan approves it. Router and benchmark are pushed. Shakuro owns the Proko knowledge-base repo; its local implementation was reverted at Stan's request. See [verification and release gates](gemini-25-redirect-verification.md).
+- [ ] Verify the approved web release finishes deploying: commit `1e09e45f`, backend workflow `42422661340`, frontend workflow `42422661326`. Router and benchmark are pushed. Shakuro owns the Proko knowledge-base repo; its local implementation was reverted at Stan's request. See [verification and release gates](gemini-25-redirect-verification.md).
 
 ## Provider integration audit, 2026-11-06
 

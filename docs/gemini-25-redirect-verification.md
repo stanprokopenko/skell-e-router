@@ -32,4 +32,4 @@ Total recorded model cost across the task is $0.308701. Retrieval embedding cost
 ## Remaining release gates
 
 - Knowledge-base is outside agent implementation scope. Shakuro must make and release that change; no Jira number or Linux test work is requested from Stan for this agent task.
-- Web changes remain uncommitted and unpushed pending Stan's explicit approval of the picker removal and former Flash users' price increase. Its evidence is in `docs/gemini-25-redirect-verification.md`. Commit frontend and backend together after approval and account for every main-branch commit before pushing, since the push deploys production.
+- Stan approved the web release. Frontend and backend were committed and pushed together as `1e09e45f6bc96caaf6c62083794eff4dc7b52b19`; no unrelated commits were included. The working tree is clean. Deployment is still running: [backend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661340) and [frontend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661326). Verify both complete successfully and the live frontend/backend identify the new release. No decision remains with Stan.
