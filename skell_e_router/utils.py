@@ -793,6 +793,20 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
         for key, value in kwargs.items()
         if key in ai_model.supported_params or key in PASSTHROUGH_KEYS
     }
+
+    # OpenAI's Responses API stores every request and response for 30 days unless
+    # store is false. The router never reuses previous_response_id, so opt out on
+    # every OpenAI request that reaches /v1/responses (explicit Responses aliases and
+    # LiteLLM's gpt-5.4+ tools-plus-effort bridge). LiteLLM 1.83 drops a top-level
+    # store before building optional params, so send it through extra_body, which
+    # reaches the wire untouched. An explicit caller value wins.
+    if (ai_model.is_openai and ai_model.name.startswith("openai/")
+            and (ai_model.use_responses_api or _uses_responses_bridge(ai_model.name, final_kwargs))):
+        final_kwargs.pop("store", None)
+        caller_store = kwargs.get("store")
+        extra_body = dict(final_kwargs.get("extra_body") or {})
+        extra_body.setdefault("store", False if caller_store is None else caller_store)
+        final_kwargs["extra_body"] = extra_body
     return final_kwargs
 
 

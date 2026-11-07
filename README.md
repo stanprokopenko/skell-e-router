@@ -303,6 +303,8 @@ response = ask_ai("claude-sonnet-4-6", "Complex task", thinking={"type": "enable
 
 `gpt-6-sol` and `gpt-6-luna` use the same Responses API bridge, because OpenAI allows function calling on Chat Completions only at `reasoning_effort="none"`. Both accept `none`, `low`, `medium`, `high`, `xhigh`, and `max`; OpenAI defaults to `medium`. Router pricing is authoritative: Sol costs $2 input and $10 output per million tokens, Luna $0.10 and $0.50.
 
+Every OpenAI request that reaches the Responses API, including gpt-5.4+ calls with tools plus a reasoning effort, sends `store: false` so OpenAI does not keep it for 30 days; pass `store=True` to opt back in.
+
 `gpt-5.6-sol`, `gpt-5.6-terra`, and `gpt-5.6-luna` accept `reasoning_effort="xhigh"` on the plain chat path. LiteLLM releases before 1.83 reject that value for these models even though OpenAI accepts it, so the router sends `xhigh` through `extra_body`, which LiteLLM forwards to the request body untouched. Other effort levels travel as a normal parameter.
 
 `gpt-6.1-terra` is the mid-tier GPT-6.1 model, released October 26, 2026. It uses the same Responses API bridge, context, output limit and long-context surcharge as `gpt-6.1-sol`, and additionally accepts `none`. Input costs $1 per million tokens, output $5, and cache reads $0.05; cache writes bill separately at $1.25. See OpenAI's [model reference](https://developers.openai.com/api/docs/models/gpt-6.1-terra).

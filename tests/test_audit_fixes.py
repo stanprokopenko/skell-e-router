@@ -485,3 +485,104 @@ class TestAnthropicForcedToolChoiceWithThinking:
         params = self._params("claude-haiku-5-5", {"reasoning_effort": "low", "tool_choice": "required"})
         assert params["thinking"] == {"type": "adaptive"}
         assert params["tool_choice"] == {"type": "any"}
+
+
+# ---------------------------------------------------------------------------
+# R3: OpenAI Responses requests opt out of 30-day server-side storage
+# ---------------------------------------------------------------------------
+
+_LOOKUP_TOOL = [{"type": "function", "function": {
+    "name": "lookup", "description": "Look up a value",
+    "parameters": {"type": "object", "properties": {}},
+}}]
+
+
+@pytest.fixture
+def captured_bodies(monkeypatch):
+    """Record each exact JSON body LiteLLM serializes and answer with a fake payload."""
+    import socket
+
+    requests = []
+
+    def deny_network(*args, **kwargs):
+        raise AssertionError("Store tests must not use the network")
+
+    original_connect = socket.socket.connect
+
+    def local_connect(sock, address):
+        # Windows asyncio creates its internal socket pair over loopback.
+        if isinstance(address, tuple) and address[0] in {"127.0.0.1", "::1"}:
+            return original_connect(sock, address)
+        return deny_network()
+
+    def send(client, request, **kwargs):
+        body = json.loads(request.content)
+        requests.append((request.url.path, body))
+        if request.url.path.endswith("/responses"):
+            data = {
+                "id": "resp_test", "object": "response", "created_at": 1,
+                "status": "completed", "model": body["model"],
+                "output": [{"id": "msg_test", "type": "message", "status": "completed",
+                            "role": "assistant", "content": [{"type": "output_text", "text": "OK", "annotations": []}]}],
+                "usage": {"input_tokens": 1, "output_tokens": 1, "total_tokens": 2},
+            }
+        else:
+            data = {
+                "id": "chatcmpl-test", "object": "chat.completion", "created": 1,
+                "model": body["model"], "choices": [{"index": 0, "message": {"role": "assistant", "content": "OK"}, "finish_reason": "stop"}],
+                "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
+            }
+        return httpx.Response(200, json=data, request=request)
+
+    monkeypatch.setattr(socket.socket, "connect", local_connect)
+    monkeypatch.setattr(socket, "create_connection", deny_network)
+    monkeypatch.setattr(httpx.Client, "send", send)
+    return requests
+
+
+_DUMMY_KEYS = {"openai_api_key": "sk-dummy-no-network", "xai_api_key": "xai-dummy-no-network"}
+
+
+class TestResponsesStoreFalse:
+    def _ask(self, captured, alias, **kwargs):
+        from skell_e_router import ask_ai
+        assert ask_ai(alias, "hi", config=_DUMMY_KEYS, **kwargs) == "OK"
+        assert len(captured) == 1
+        return captured[0]
+
+    @pytest.mark.parametrize("with_tools", [False, True])
+    def test_r3_gpt6_alias_sends_store_false(self, captured_bodies, with_tools):
+        extra = {"tools": _LOOKUP_TOOL, "reasoning_effort": "low"} if with_tools else {}
+        path, body = self._ask(captured_bodies, "gpt-6.1-sol", **extra)
+        assert path.endswith("/responses")
+        assert body["store"] is False
+
+    def test_r3_gpt56_tools_plus_effort_auto_bridge_sends_store_false(self, captured_bodies):
+        path, body = self._ask(captured_bodies, "gpt-5.6-sol", tools=_LOOKUP_TOOL, reasoning_effort="low")
+        assert path.endswith("/responses")
+        assert body["store"] is False
+
+    def test_r3_gpt56_without_tools_stays_on_chat_without_store(self, captured_bodies):
+        path, body = self._ask(captured_bodies, "gpt-5.6-sol", reasoning_effort="low")
+        assert path.endswith("/chat/completions")
+        assert "store" not in body
+
+    def test_r3_gpt41_chat_completions_has_no_store(self, captured_bodies):
+        path, body = self._ask(captured_bodies, "gpt-4.1", tools=_LOOKUP_TOOL)
+        assert path.endswith("/chat/completions")
+        assert "store" not in body
+
+    def test_r3_xai_alias_has_no_store(self, captured_bodies):
+        _, body = self._ask(captured_bodies, "grok-4.6", tools=_LOOKUP_TOOL, reasoning_effort="low")
+        assert "store" not in body
+
+    def test_r3_caller_store_true_wins(self, captured_bodies):
+        path, body = self._ask(captured_bodies, "gpt-6.1-sol", store=True)
+        assert path.endswith("/responses")
+        assert body["store"] is True
+
+    def test_r3_caller_extra_body_store_true_wins(self, captured_bodies):
+        path, body = self._ask(captured_bodies, "gpt-5.6-sol", tools=_LOOKUP_TOOL, reasoning_effort="low",
+                               extra_body={"store": True})
+        assert path.endswith("/responses")
+        assert body["store"] is True
