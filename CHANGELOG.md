@@ -2,6 +2,10 @@
 
 Earlier releases are described in the version notes in [README.md](README.md).
 
+## 3.45.0 - 2026-11-06
+
+Reasoning-state channel (audit findings R3 and A2). `AIResponse.reasoning_state` carries the provider-opaque reasoning a model expects back on its next turn, in the order it was returned: Claude's signed `thinking` and `redacted_thinking` blocks from the direct Anthropic path, and OpenAI's `reasoning` items (id, `encrypted_content`, summary) from LiteLLM's Responses bridge. Put the list back on the assistant message as `"reasoning_state"` and each converter replays only its own provider's entries: the Anthropic converter emits the blocks first in the assistant content, before text and `tool_use`; the LiteLLM path turns OpenAI entries into LiteLLM `reasoning_items`, which its bridge places right before the turn's `function_call` items, and strips the key on plain chat/completions and for other providers. Every OpenAI request that reaches `/v1/responses` now also asks for `include: ["reasoning.encrypted_content"]` next to `store: false`, since that blob is the only way to resume reasoning without stored state. Gemini's per-call `thought_signature` stays on `tool_calls` as before. Live: Anthropic and OpenAI both accept the replay (200); Opus 4.6 stops re-thinking after each tool result, Haiku 4.5 is unchanged because that model strips prior thinking itself. Tests: `tests/test_reasoning_state.py`. Transcripts that keep the state grow by a few KB per step.
+
 ## 3.44.4 - 2026-11-06
 
 Apply the `store: false` default when current LiteLLM routes a reasoning-summary request to OpenAI Responses without tools. Route detection now forwards both summary aliases to LiteLLM's own check when supported, while retaining compatibility with older versions. Explicit caller storage settings still win.

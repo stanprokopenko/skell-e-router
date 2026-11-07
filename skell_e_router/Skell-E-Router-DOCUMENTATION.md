@@ -276,6 +276,7 @@ print(response)  # Prints content via __str__
 | `reasoning_tokens` | int | Thinking/reasoning tokens |
 | `cache_read_tokens` | int | Prompt tokens served from the provider's cache (part of `prompt_tokens`); None when not reported |
 | `cache_write_tokens` | int | Prompt tokens written to the cache (Anthropic only; part of `prompt_tokens`); None elsewhere |
+| `reasoning_state` | list[dict] | Provider-opaque reasoning to send back on the next turn (Claude thinking blocks, OpenAI encrypted reasoning items); None on plain chat/completions. See Reasoning state below |
 | `cost` | float | Estimated cost in USD |
 | `duration_seconds` | float | Request duration |
 | `grounding_metadata` | dict | Web search citations (Gemini) |
@@ -283,6 +284,18 @@ print(response)  # Prints content via __str__
 | `images` | list[dict] | Generated images (see Image Output below) |
 | `tool_calls` | list | Function calls made |
 | `raw_response` | Any | Full LiteLLM response |
+
+### Reasoning state
+
+Claude signs its thinking blocks and OpenAI's Responses API returns encrypted reasoning items; each expects that state back on the next request of a tool loop, or the model redoes its reasoning (or, on adaptive Claude models, re-thinks after every tool result). Since v3.45.0, `AIResponse.reasoning_state` holds those entries in provider order, each tagged with its provider:
+
+```python
+[{"provider": "anthropic", "kind": "thinking", "text": "...", "signature": "..."},
+ {"provider": "anthropic", "kind": "redacted_thinking", "data": "..."},
+ {"provider": "openai", "kind": "reasoning", "id": "rs_...", "encrypted_content": "...", "summary": [...]}]
+```
+
+To replay, put the list on the assistant message dict as `"reasoning_state"` next to its `content` and `tool_calls`. The router replays only the entries that belong to the provider being called and drops the rest, so a transcript that switches providers mid-run stays valid: the Anthropic path emits the blocks first in the assistant content (Anthropic requires thinking before text and `tool_use`), the OpenAI Responses path places the reasoning item right before the turn's `function_call` items, and plain chat/completions and Gemini send nothing. Replay the entries exactly as received; Anthropic rejects a modified or reordered block. Every OpenAI request on `/v1/responses` asks for `include: ["reasoning.encrypted_content"]` so the blob is present under `store: false`. Gemini's equivalent, the per-call `thought_signature`, stays on each `tool_calls[i]` and round-trips the same way. Keeping the state in a transcript adds a few KB per step.
 
 Since v3.44.1, cache-write counts also reach this field through LiteLLM. The router combines text and tool calls across Responses API output items, but keeps only the first alternative for ordinary multi-candidate completions. Gemini prompt-level blocks without candidates return `finish_reason="content_filter"`.
 
