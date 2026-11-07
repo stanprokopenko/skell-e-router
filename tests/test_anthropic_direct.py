@@ -1053,6 +1053,200 @@ class TestCallerCacheControlPassThrough:
         assert "cache_control" not in blocks[1]
 
 
+class TestToolResultBlockContent:
+    """role "tool" messages whose content is a block list (skell-e-agent 0.8.7
+    does this when a CachePoint leads the next user part) must become real
+    tool_result content, never ``str()`` of the Python list."""
+
+    def convert(self, messages):
+        from skell_e_router.anthropic_direct import _convert_messages_for_anthropic
+        return _convert_messages_for_anthropic(messages)
+
+    def test_text_block_list_keeps_text(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1",
+             "content": [{"type": "text", "text": "42 degrees"}]},
+        ])
+        block = out[0]["content"][0]
+        assert block["type"] == "tool_result"
+        assert block["content"] == [{"type": "text", "text": "42 degrees"}]
+
+    def test_inner_cache_control_hoists_to_tool_result_block(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1",
+             "content": [{"type": "text", "text": "result",
+                          "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ])
+        block = out[0]["content"][0]
+        assert block["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        # Anthropic only documents cache_control on the tool_result block
+        # itself, so the inner marker must not be forwarded nested.
+        assert all("cache_control" not in b for b in block["content"])
+
+    def test_message_level_cache_control_lands_on_tool_result_block(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1", "content": "plain",
+             "cache_control": {"type": "ephemeral"}},
+        ])
+        block = out[0]["content"][0]
+        assert block["content"] == "plain"
+        assert block["cache_control"] == {"type": "ephemeral"}
+
+    def test_image_blocks_in_tool_result(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1",
+             "content": [
+                 {"type": "text", "text": "frame"},
+                 {"type": "image_url", "image_url": {"url": "data:image/png;base64,QUJD"}},
+             ]},
+        ])
+        content = out[0]["content"][0]["content"]
+        assert content[0] == {"type": "text", "text": "frame"}
+        assert content[1]["type"] == "image"
+        assert content[1]["source"] == {"type": "base64", "media_type": "image/png", "data": "QUJD"}
+
+    def test_plain_string_unchanged(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1", "content": "ok"},
+        ])
+        block = out[0]["content"][0]
+        assert block["content"] == "ok"
+        assert "cache_control" not in block
+
+    def test_empty_block_list_sends_empty_content(self):
+        _, out = self.convert([
+            {"role": "tool", "tool_call_id": "call_1", "content": []},
+        ])
+        assert out[0]["content"][0]["content"] == ""
+
+    def test_tool_result_marker_counts_as_caller_marked(self):
+        """A hoisted marker must suppress the router's own last-message breakpoint
+        and drive the system-breakpoint TTL, exactly like a user-text marker."""
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        _, msgs = self.convert([
+            {"role": "tool", "tool_call_id": "call_1",
+             "content": [{"type": "text", "text": "r",
+                          "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+            {"role": "user", "content": "next"},
+        ])
+        sys_out, out = _apply_cache_control("sys", msgs)
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        # tool_result and the next user text merge into one user turn; the
+        # trailing text block must not get the router's own breakpoint.
+        last_block = out[-1]["content"][-1]
+        assert last_block == {"type": "text", "text": "next"}
+
+
+class TestCacheTtlOrdering:
+    """Anthropic rejects a 5m breakpoint ahead of a 1h one (HTTP 400). The router
+    enforces non-increasing TTLs itself instead of trusting every caller."""
+
+    def test_direct_path_raises_earlier_5m_marker_to_1h(self):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "plan", "cache_control": {"type": "ephemeral"}}]},
+            {"role": "assistant", "content": "ok"},
+            {"role": "user", "content": [
+                {"type": "text", "text": "tail",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        sys_out, out = _apply_cache_control("sys", msgs)
+        assert sys_out[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[2]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+    def test_direct_path_leaves_1h_then_5m_alone(self):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "stable",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+            {"role": "user", "content": [
+                {"type": "text", "text": "recent", "cache_control": {"type": "ephemeral"}}]},
+        ]
+        _, out = _apply_cache_control("sys", msgs)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[1]["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_direct_path_explicit_5m_ttl_is_raised_too(self):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "a", "cache_control": {"type": "ephemeral", "ttl": "5m"}}]},
+            {"role": "user", "content": [
+                {"type": "text", "text": "b", "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        _, out = _apply_cache_control(None, msgs)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+    def test_direct_path_does_not_mutate_callers_marker_dict(self):
+        """Callers (skell-e-agent) may share one cache_control dict across
+        requests; raising the TTL must not write into their object."""
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        shared = {"type": "ephemeral"}
+        msgs = [
+            {"role": "user", "content": [{"type": "text", "text": "a", "cache_control": shared}]},
+            {"role": "user", "content": [
+                {"type": "text", "text": "b", "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        _apply_cache_control(None, msgs)
+        assert shared == {"type": "ephemeral"}
+
+    def test_direct_path_covers_tool_result_markers(self):
+        from skell_e_router.anthropic_direct import _apply_cache_control
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "tool_result", "tool_use_id": "t1", "content": "r",
+                 "cache_control": {"type": "ephemeral"}}]},
+            {"role": "user", "content": [
+                {"type": "text", "text": "b", "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        _, out = _apply_cache_control(None, msgs)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+    def test_litellm_path_raises_earlier_5m_marker_to_1h(self):
+        from skell_e_router.utils import _apply_cache_control_litellm
+        msgs = [
+            {"role": "system", "content": "sys"},
+            {"role": "user", "content": [
+                {"type": "text", "text": "plan", "cache_control": {"type": "ephemeral"}}]},
+            {"role": "assistant", "content": "ok"},
+            {"role": "user", "content": [
+                {"type": "text", "text": "tail",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        out = _apply_cache_control_litellm(msgs)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[1]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+        assert out[3]["content"][0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+    def test_litellm_path_leaves_1h_then_5m_alone(self):
+        from skell_e_router.utils import _apply_cache_control_litellm
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "stable",
+                 "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+            {"role": "user", "content": [
+                {"type": "text", "text": "recent", "cache_control": {"type": "ephemeral"}}]},
+        ]
+        out = _apply_cache_control_litellm(msgs)
+        assert out[1]["content"][0]["cache_control"] == {"type": "ephemeral"}
+
+    def test_litellm_path_covers_tool_message_markers(self):
+        """LiteLLM reads a tool message's top-level cache_control onto the
+        tool_result block, so the guard must see that marker in order too."""
+        from skell_e_router.utils import _apply_cache_control_litellm
+        msgs = [
+            {"role": "tool", "tool_call_id": "t1", "content": "r",
+             "cache_control": {"type": "ephemeral"}},
+            {"role": "user", "content": [
+                {"type": "text", "text": "b", "cache_control": {"type": "ephemeral", "ttl": "1h"}}]},
+        ]
+        out = _apply_cache_control_litellm(msgs)
+        assert out[0]["cache_control"] == {"type": "ephemeral", "ttl": "1h"}
+
+
 class TestBuildResponseCacheTokens:
     """_build_response must account for cache-write and cache-read tokens."""
 

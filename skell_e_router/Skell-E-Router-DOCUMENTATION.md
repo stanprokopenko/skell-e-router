@@ -1129,10 +1129,21 @@ response = ask_ai("claude-haiku-4-5", prompt, system_message, enable_caching=Tru
   router skips its own last-message breakpoint; the system-prompt breakpoint is
   still added. Anthropic allows at most 4 breakpoints per request — with the
   system one that leaves 3 for caller placement.
-- **TTL matching (v3.22.1).** Anthropic requires breakpoint TTLs in
-  non-increasing order (`tools` → `system` → `messages`), so when any caller
-  marker carries `{"ttl": "1h"}` the router's system-prompt breakpoint is also
-  written as 1h (a 5m system breakpoint ahead of a 1h caller marker is a 400).
+- **TTL ordering enforced (v3.43.1, extends v3.22.1).** Anthropic requires
+  breakpoint TTLs in non-increasing order (`tools` → `system` → `messages`) and
+  rejects the request with HTTP 400 otherwise. The router walks every marker in
+  request order and raises any marker ahead of a `{"ttl": "1h"}` marker to 1h,
+  including its own system-prompt breakpoint. Raising keeps the caller's intent
+  (the 1h marker already holds that whole prefix for an hour) where lowering
+  would silently shorten their cache; a 1h cache write bills at 2x the input
+  price instead of 1.25x. Caller marker dicts are never mutated in place.
+- **Tool results (v3.43.1).** A `role: tool` message may carry its content as a
+  block list (text and `image_url` parts); the router converts the blocks into
+  `tool_result` content instead of stringifying the list. Anthropic documents
+  `cache_control` on the `tool_result` block itself, so a marker on the tool
+  message (`msg["cache_control"]`, the skell-e-agent 0.8.8 contract) or inside
+  any of its blocks is hoisted onto the `tool_result` block and counts as a
+  caller-placed breakpoint.
 - **Off by default** because the first (cache-write) request is billed at 1.25x
   the input price; cache reads are billed at 0.1x. It pays off from the second
   request on the same prefix — use it for multi-turn agent loops and repeated

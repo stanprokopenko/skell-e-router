@@ -23,6 +23,7 @@ from .gemini_direct import (
 from .anthropic_direct import (
     _convert_messages_for_anthropic,
     _apply_cache_control,
+    _raise_ttls_before_1h,
     _build_create_params,
     _call_anthropic_direct,
     _call_anthropic_direct_stream,
@@ -1018,20 +1019,25 @@ def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
             content[-1]["cache_control"] = cc
 
     # Caller already placed breakpoints: respect their placement (LiteLLM
-    # forwards cache_control), don't add the last-message one on top.
-    caller_controls = [
-        block["cache_control"]
-        for msg in messages if msg.get("role") != "system"
-        for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
-        if isinstance(block, dict) and "cache_control" in block
-    ]
-    caller_marked = bool(caller_controls)
+    # forwards cache_control), don't add the last-message one on top. A
+    # "tool" message's own cache_control lands on the tool_result block in
+    # LiteLLM's Anthropic transform, so it counts as a marker in order too.
+    marked: list[dict] = []
+    for msg in messages:
+        if msg.get("role") == "system":
+            continue
+        content = msg.get("content")
+        if isinstance(content, list):
+            marked.extend(b for b in content if isinstance(b, dict) and "cache_control" in b)
+        if msg.get("role") == "tool" and "cache_control" in msg:
+            marked.append(msg)
+    caller_marked = bool(marked)
 
     # Anthropic requires TTLs in non-increasing order across breakpoints
-    # (system before messages): a 5m system breakpoint ahead of a caller 1h
-    # marker is a 400. Match the system breakpoint up to 1h.
+    # (system before messages) and 400s otherwise: raise every marker ahead
+    # of a 1h one, including the system breakpoint, to 1h.
     system_cc: dict = {"type": "ephemeral"}
-    if any(isinstance(cc, dict) and cc.get("ttl") == "1h" for cc in caller_controls):
+    if _raise_ttls_before_1h(marked):
         system_cc["ttl"] = "1h"
 
     for msg in messages:

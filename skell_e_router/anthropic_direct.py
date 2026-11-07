@@ -109,6 +109,94 @@ def _merge_consecutive_roles(messages: list[dict]) -> list[dict]:
     return merged
 
 
+def _convert_content_parts(content: list) -> list[dict]:
+    """Convert OpenAI multi-part content (text + images) to Anthropic blocks.
+
+    Caller-placed ``cache_control`` (e.g. skell-e-agent CachePoints) is kept on
+    the converted block. Audio parts raise UNSUPPORTED_MODALITY; unknown part
+    types are dropped.
+    """
+    parts = []
+    for part in content:
+        if not isinstance(part, dict):
+            continue
+        block = None
+        if part.get("type") == "text":
+            block = {"type": "text", "text": part["text"]}
+        elif part.get("type") == "image_url":
+            url = part["image_url"]["url"]
+            if url.startswith("data:"):
+                # Parse data URI: data:mime;base64,DATA
+                header, b64_data = url.split(",", 1)
+                mime = header.split(":")[1].split(";")[0]
+                block = {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": mime,
+                        "data": b64_data,
+                    }
+                }
+            else:
+                block = {
+                    "type": "image",
+                    "source": {
+                        "type": "url",
+                        "url": url,
+                    }
+                }
+        if block is not None:
+            # Preserve caller-placed cache breakpoints (e.g. skell-e-agent CachePoints)
+            if "cache_control" in part:
+                block["cache_control"] = part["cache_control"]
+            parts.append(block)
+            continue
+        if part.get("type") == "input_audio":
+            from .utils import RouterError
+            raise RouterError(
+                code="UNSUPPORTED_MODALITY",
+                message=(
+                    "Anthropic models do not support audio inputs. "
+                    "Use a Gemini or OpenAI audio-capable model."
+                ),
+            )
+    return parts
+
+
+def _tool_result_block(msg: dict) -> dict:
+    """OpenAI ``role: tool`` message -> Anthropic ``tool_result`` block.
+
+    Content may be a plain string or an OpenAI block list (skell-e-agent sends
+    a list when a CachePoint leads the next part); the list is converted
+    block-by-block, never stringified. Anthropic documents ``cache_control``
+    on the tool_result block itself, not on its inner content, so a marker on
+    the message or on any inner block is hoisted onto the tool_result block
+    (the last inner marker wins).
+    """
+    content = msg.get("content")
+    block: dict = {
+        "type": "tool_result",
+        "tool_use_id": _sanitize_tool_id(msg.get("tool_call_id")),
+    }
+    cache_control = msg.get("cache_control")
+    if isinstance(content, str):
+        block["content"] = content
+    elif isinstance(content, list):
+        parts = _convert_content_parts(content)
+        for part in parts:
+            inner = part.pop("cache_control", None)
+            if inner is not None:
+                cache_control = inner
+        block["content"] = parts if parts else ""
+    elif content is None:
+        block["content"] = ""
+    else:
+        block["content"] = str(content)
+    if cache_control is not None:
+        block["cache_control"] = cache_control
+    return block
+
+
 def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, list[dict]]:
     """Convert OpenAI-format messages to Anthropic format.
 
@@ -134,11 +222,7 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
         if role == "tool":
             converted.append({
                 "role": "user",
-                "content": [{
-                    "type": "tool_result",
-                    "tool_use_id": _sanitize_tool_id(msg.get("tool_call_id")),
-                    "content": content if isinstance(content, str) else str(content),
-                }],
+                "content": [_tool_result_block(msg)],
             })
             continue
 
@@ -162,50 +246,7 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
         if isinstance(content, str):
             converted.append({"role": role, "content": content})
         elif isinstance(content, list):
-            # Multi-part content (text + images)
-            parts = []
-            for part in content:
-                if isinstance(part, dict):
-                    block = None
-                    if part.get("type") == "text":
-                        block = {"type": "text", "text": part["text"]}
-                    elif part.get("type") == "image_url":
-                        url = part["image_url"]["url"]
-                        if url.startswith("data:"):
-                            # Parse data URI: data:mime;base64,DATA
-                            header, b64_data = url.split(",", 1)
-                            mime = header.split(":")[1].split(";")[0]
-                            block = {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": mime,
-                                    "data": b64_data,
-                                }
-                            }
-                        else:
-                            block = {
-                                "type": "image",
-                                "source": {
-                                    "type": "url",
-                                    "url": url,
-                                }
-                            }
-                    if block is not None:
-                        # Preserve caller-placed cache breakpoints (e.g. skell-e-agent CachePoints)
-                        if "cache_control" in part:
-                            block["cache_control"] = part["cache_control"]
-                        parts.append(block)
-                        continue
-                    if part.get("type") == "input_audio":
-                        from .utils import RouterError
-                        raise RouterError(
-                            code="UNSUPPORTED_MODALITY",
-                            message=(
-                                "Anthropic models do not support audio inputs. "
-                                "Use a Gemini or OpenAI audio-capable model."
-                            ),
-                        )
+            parts = _convert_content_parts(content)
             if parts:
                 converted.append({"role": role, "content": parts})
 
@@ -214,15 +255,43 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
     return system_prompt, _merge_consecutive_roles(converted)
 
 
+def _raise_ttls_before_1h(marked: list[dict]) -> bool:
+    """Enforce Anthropic's non-increasing cache TTL rule over ``marked``.
+
+    ``marked`` is every dict carrying a ``cache_control`` key, in request
+    order (system first, then message blocks). Anthropic rejects a request
+    (HTTP 400) when a 5m breakpoint precedes a 1h one, so every marker ahead
+    of a 1h marker is raised to 1h. Raising keeps the caller's intent (the 1h
+    marker already holds that whole prefix for an hour; the shorter prefix
+    simply joins it) where lowering would silently shorten their cache. A new
+    dict is written so a caller's shared marker object is never mutated.
+
+    Returns True when any marker is 1h (so the router's own system
+    breakpoint must be 1h too).
+    """
+    seen_1h = False
+    for holder in reversed(marked):
+        cc = holder.get("cache_control")
+        if not isinstance(cc, dict):
+            continue
+        if cc.get("ttl") == "1h":
+            seen_1h = True
+        elif seen_1h:
+            holder["cache_control"] = {**cc, "ttl": "1h"}
+    return seen_1h
+
+
 def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tuple[str | list[dict] | None, list[dict]]:
     """Add prompt-caching breakpoints to an Anthropic-format request.
 
     Places one breakpoint on the system prompt and one on the last content
     block of the last message, so the system prompt and the conversation
     prefix are cached across requests within Anthropic's cache TTL (5 min).
-    Caller-placed breakpoints suppress the last-message one, and if any caller
-    marker uses ttl "1h" the system breakpoint is written as 1h too (Anthropic
-    rejects a 5m breakpoint ahead of a 1h one).
+    Caller-placed breakpoints suppress the last-message one. Anthropic
+    requires TTLs in non-increasing order (tools -> system -> messages) and
+    returns 400 otherwise, so the router raises every marker ahead of a 1h
+    caller marker, including its own system breakpoint, to 1h
+    (see _raise_ttls_before_1h).
 
     Anthropic bills the first (cache-write) request at 1.25x input price and
     cache reads at 0.1x, so this is opt-in per call — worth it for multi-turn
@@ -230,19 +299,16 @@ def _apply_cache_control(system_prompt: str | None, messages: list[dict]) -> tup
     """
     # Caller already placed breakpoints (e.g. via skell-e-agent CachePoints):
     # respect their placement, don't add the last-message one on top.
-    caller_controls = [
-        block["cache_control"]
+    marked_blocks = [
+        block
         for msg in messages
         for block in (msg.get("content") if isinstance(msg.get("content"), list) else [])
         if isinstance(block, dict) and "cache_control" in block
     ]
-    caller_marked = bool(caller_controls)
+    caller_marked = bool(marked_blocks)
 
-    # Anthropic requires TTLs in non-increasing order across breakpoints
-    # (processed tools -> system -> messages): a 5m system breakpoint ahead of
-    # a caller 1h marker is a 400. Match the system breakpoint up to 1h.
     system_cc: dict = {"type": "ephemeral"}
-    if any(isinstance(cc, dict) and cc.get("ttl") == "1h" for cc in caller_controls):
+    if _raise_ttls_before_1h(marked_blocks):
         system_cc["ttl"] = "1h"
 
     if isinstance(system_prompt, str) and system_prompt:

@@ -46,6 +46,8 @@ print(result.answers["team"]["probabilities"])
 
 Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
+Version 3.43.1 fixes two Anthropic tool-loop bugs. A `role: tool` message whose content is a block list (skell-e-agent 0.8.7 sends one when a CachePoint follows a tool return) now becomes real `tool_result` content instead of a Python repr of the list, and a `cache_control` marker on the tool message or inside its blocks is carried onto the `tool_result` block (the skell-e-agent 0.8.8 contract). The router also enforces Anthropic's non-increasing cache TTL rule itself on both provider paths: any caller marker ahead of a 1h marker is raised to 1h instead of failing the request with HTTP 400. See [prompt caching](skell_e_router/Skell-E-Router-DOCUMENTATION.md#prompt-caching-enable_caching).
+
 Version 3.43.0 adds TypeSafe box questions to `classify()`: `{"type": "box", "instructions": ...}` with image assets returns one `box` of edge fractions plus confidence, validated by the router. Jev 1.14 answers them; Jev 1.13 rejects them. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev).
 
 Version 3.42.0 adds `classify(..., assets=...)` for TypeSafe's base64 PNG/JPEG image preview API. A real-frame smoke test passed on Jev 1.13 and 1.14. Image pricing remains unconfirmed, so image calls return `cost=None`. See [image assets](skell_e_router/Skell-E-Router-DOCUMENTATION.md#image-assets).
