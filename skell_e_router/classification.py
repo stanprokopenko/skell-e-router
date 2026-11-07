@@ -7,12 +7,12 @@ import os
 import time
 
 import requests
-from tenacity import retry, retry_if_exception, stop_after_attempt
+from tenacity import Retrying, retry_if_exception, stop_after_attempt
 
 from .errors import call_provider
 from .model_config import resolve_classification_alias
 from .response import ClassificationResponse
-from .utils import RouterError, _is_retryable_exception, _retry_after_wait
+from .utils import RouterError, _is_retryable_exception, _retry_after_wait, _parse_retry_after_seconds
 
 
 _ENDPOINT = "https://api.typesafe.ai/v1/systemone"
@@ -114,8 +114,6 @@ def _wait(retry_state):
     return _retry_after_wait(retry_state)
 
 
-@retry(retry=retry_if_exception(_retryable), wait=_wait,
-       stop=stop_after_attempt(3), reraise=True)
 def _request(payload, api_key, timeout):
     headers = {"Authorization": f"Bearer {api_key}"}
     if "assets" in payload:
@@ -256,12 +254,13 @@ def _cost(counts, model):
 
 def classify(model: str, state: str | dict | list, questions: dict, *,
              config: dict | None = None, timeout: float = 30,
-             assets: dict | None = None) -> ClassificationResponse:
+             assets: dict | None = None, max_attempts: int = 3) -> ClassificationResponse:
     """Evaluate choice, score, noul, and box questions through TypeSafe.
 
     ``jev`` pins 1.13.0; ``jev-latest`` follows provider upgrades. Credentials
     come from ``config['typesafe_api_key']`` or TYPESAFE_API_KEY when config is
-    None. Timeout is per HTTP attempt, with at most three transient attempts.
+    None. Timeout is per HTTP attempt. max_attempts includes the first request;
+    use 1 when the caller owns retries and cancellation.
     Context limits are provider-enforced, using the provider's tokenizer.
     Optional base64 image assets enable the provider's image preview header.
     Reference their IDs in state, instructions or criteria. Image availability
@@ -270,6 +269,8 @@ def classify(model: str, state: str | dict | list, questions: dict, *,
     selected = resolve_classification_alias(model)
     if type(timeout) not in (int, float) or not math.isfinite(timeout) or timeout <= 0:
         raise RouterError("INVALID_PARAM", "Timeout must be a finite positive number.")
+    if type(max_attempts) is not int or max_attempts < 1:
+        raise RouterError("INVALID_PARAM", "max_attempts must be a positive integer.")
     if config is not None and not isinstance(config, dict):
         raise RouterError("INVALID_PARAM", "Config must be a dictionary or None.")
     _validate(state, questions)
@@ -281,9 +282,23 @@ def classify(model: str, state: str | dict | list, questions: dict, *,
     if assets is not None:
         payload["assets"] = assets
     started = time.perf_counter()
+    request = Retrying(retry=retry_if_exception(_retryable), wait=_wait,
+                       stop=stop_after_attempt(max_attempts), reraise=True)
+    details = {"provider": selected.provider, "model": selected.name, "operation": "classify"}
+
+    def send():
+        try:
+            return request(_request, payload, api_key, timeout)
+        except Exception as exc:
+            details["retryable"] = bool(_retryable(exc))
+            delay = _parse_retry_after_seconds(getattr(exc, "headers", None))
+            if details["retryable"] and delay is not None and math.isfinite(delay) and 0 <= delay <= 120:
+                details["retry_after_seconds"] = delay
+            raise
+
     result = call_provider(
-        lambda: _parse(_request(payload, api_key, timeout), questions, selected),
-        RouterError, details={"provider": selected.provider, "model": selected.name, "operation": "classify"},
+        lambda: _parse(send(), questions, selected),
+        RouterError, details=details,
     )
     result.duration_seconds = time.perf_counter() - started
     if assets is not None:

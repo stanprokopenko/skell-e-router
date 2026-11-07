@@ -1,6 +1,8 @@
 """Offline contract checks for TypeSafe classification, with no paid requests."""
 
 from copy import deepcopy
+from functools import partial
+from tenacity import Retrying
 import base64
 import traceback
 from unittest.mock import MagicMock
@@ -44,7 +46,7 @@ def transport(monkeypatch):
     monkeypatch.setenv("TYPESAFE_API_KEY", "env-key")
     post = MagicMock(return_value=http_response())
     monkeypatch.setattr(implementation.requests, "post", post)
-    monkeypatch.setattr(implementation._request.retry, "sleep", lambda _: None)
+    monkeypatch.setattr(implementation, "Retrying", partial(Retrying, sleep=lambda _: None))
     return post
 
 
@@ -270,6 +272,71 @@ def test_missing_environment_key(monkeypatch, transport):
     transport.assert_not_called()
 
 
+@pytest.mark.parametrize("attempts", [1, 2, 7])
+def test_public_attempt_control_and_safe_errors(attempts, transport):
+    transport.return_value = http_response({"error": {"message": "env-key private-state"}}, 503)
+    state = "private-state"
+    with pytest.raises(RouterError) as caught:
+        classify("jev", state, QUESTIONS, max_attempts=attempts)
+    assert transport.call_count == attempts
+    assert caught.value.__context__ is None
+    trace = "".join(traceback.format_exception(caught.value))
+    assert "env-key" not in trace and "private-state" not in trace
+
+
+@pytest.mark.parametrize("attempts", [False, True, 0, -1, 1.5, "1", None])
+def test_invalid_attempt_control_fails_before_transport(attempts, transport):
+    with pytest.raises(RouterError, match="INVALID_PARAM"):
+        classify("jev", "text", QUESTIONS, max_attempts=attempts)
+    transport.assert_not_called()
+
+
+def test_attempt_control_is_independent_across_concurrent_calls(transport):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier, Lock
+
+    barrier, lock = Barrier(2), Lock()
+    counts = {"single": 0, "default": 0}
+
+    def fail(_url, *, json, **kwargs):
+        label = json["state"]
+        with lock:
+            counts[label] += 1
+            first = counts[label] == 1
+        if first:
+            barrier.wait(timeout=5)
+        return http_response({}, 503)
+
+    transport.side_effect = fail
+
+    def run(label, kwargs):
+        with pytest.raises(RouterError):
+            classify("jev", label, QUESTIONS, **kwargs)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        single = pool.submit(run, "single", {"max_attempts": 1})
+        default = pool.submit(run, "default", {})
+        single.result(timeout=10)
+        default.result(timeout=10)
+    assert counts == {"single": 1, "default": 3}
+
+
+@pytest.mark.parametrize("delay,expected", [("2", 2), ("0", 0), ("120", 120),
+                                          ("121", None), ("nan", None), ("inf", None),
+                                          ("env-key", None), ("-1", None)])
+def test_single_attempt_exposes_only_safe_retry_metadata(delay, expected, transport):
+    transport.return_value = http_response({}, 429, {"Retry-After": delay, "Secret": "env-key"})
+    with pytest.raises(RouterError) as caught:
+        classify("jev", "text", QUESTIONS, max_attempts=1)
+    assert transport.call_count == 1
+    details = caught.value.details
+    assert type(details["retryable"]) is bool
+    assert details.get("retry_after_seconds") == expected
+    if delay in ("121", "inf"):
+        assert details["retryable"] is False
+    assert "env-key" not in repr(details)
+
+
 def test_non_dictionary_config(transport):
     with pytest.raises(RouterError, match="INVALID_PARAM"):
         classify("jev", "text", QUESTIONS, config=[])
@@ -287,7 +354,7 @@ def test_header_failure_is_sanitized_without_retry(transport):
 
 def test_transient_then_success_honors_retry_after(transport, monkeypatch):
     sleep = MagicMock()
-    monkeypatch.setattr(implementation._request.retry, "sleep", sleep)
+    monkeypatch.setattr(implementation, "Retrying", partial(Retrying, sleep=sleep))
     transport.side_effect = [http_response({}, 529, {"Retry-After": "2"}), http_response()]
     assert classify("jev", "text", QUESTIONS).answers == ANSWER["answers"]
     sleep.assert_called_once_with(2)

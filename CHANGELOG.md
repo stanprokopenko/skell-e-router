@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.46.0 - 2026-11-07
+
+Add public `classify(..., max_attempts=3)` control. Callers that manage retries can select one HTTP attempt; other callers retain the existing three-attempt policy. Concurrent calls have independent retry policies.
+
 Earlier releases are described in the version notes in [README.md](README.md).
 
 ## 3.45.1 - 2026-11-06
