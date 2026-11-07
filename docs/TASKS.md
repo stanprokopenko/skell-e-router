@@ -1,9 +1,5 @@
 # Active Tasks & Deferred Follow-ups
 
-## Gemini 2.5 redirect
-
-- [ ] Verify the approved web release finishes deploying: commit `1e09e45f`, backend workflow `42422661340`, frontend workflow `42422661326`. Router and benchmark are pushed. Shakuro owns the Proko knowledge-base repo; its local implementation was reverted at Stan's request. See [verification and release gates](gemini-25-redirect-verification.md).
-
 ## Provider integration audit, 2026-11-06
 
 - [x] Reviewed the reasoning-state channel and released 3.45.1. Capture every raw OpenAI reasoning item before chat normalization, including collected streams; retain cutoff/refusal metadata and own-provider filtering. Review and live evidence: skell-e-agent `docs/reasoning-state-review-2026-11-06.md`.

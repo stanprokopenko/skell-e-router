@@ -1,6 +1,6 @@
 # Gemini 2.5 redirect verification
 
-Developer evidence for the four-repo migration. The router now resolves the two retired names to their replacements. The web picker and saved-chat changes require Stan's approval before production shipping.
+Developer evidence for the Gemini migration. Router, benchmark and web changes are released and verified. Stan excluded Shakuro's Proko knowledge-base repo from agent implementation; all local source changes there were reverted, and a message for Shakuro was drafted instead.
 
 ## Router 3.47.0
 
@@ -29,7 +29,11 @@ Raw logs and the live probe are retained in `.agent-scratch/2026-11-07-gemini-25
 
 Total recorded model cost across the task is $0.308701. Retrieval embedding costs are not separately reported by the chat benchmark.
 
-## Remaining release gates
+## Release completion
 
 - Knowledge-base is outside agent implementation scope. Shakuro must make and release that change; no Jira number or Linux test work is requested from Stan for this agent task.
-- Stan approved the web release. Frontend and backend were committed and pushed together as `1e09e45f6bc96caaf6c62083794eff4dc7b52b19`; no unrelated commits were included. The working tree is clean. Deployment is still running: [backend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661340) and [frontend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661326). Verify both complete successfully and the live frontend/backend identify the new release. No decision remains with Stan.
+- Stan approved the web release. Frontend and backend were committed and pushed together as `1e09e45f6bc96caaf6c62083794eff4dc7b52b19`; no unrelated commits were included. The working tree is clean. Both [backend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661340) and [frontend workflow](https://github.com/stanprokopenko/skell-e-web/actions/runs/42422661326) completed successfully. Cloud Run revision `skell-e-backend-00386-6zw` is ready, uses the image tagged with that commit and receives 100% of traffic. The live frontend serves `v2026.11.07`; its `chunk-G64ITVD5.js` contains both old-ID-to-3.8-Flash mappings. No decision or release check remains with Stan.
+
+## Local resources
+
+All task test servers, emulators and the isolated browser were stopped. Automatic approval review refused recursive temporary-folder removal, so the web and knowledge-base task folders under `D:/agent-builds/` remain unused. Do not retry the refused cleanup through another method. Benchmark's accepted `D:/agent-builds/benchmark/gemini-25-redirect-2026-11-07/runtime` is its maintained interpreter and must remain available; its pinned wheel is retained alongside it. Small screenshots and test evidence remain in the repos' ignored evidence directories.
