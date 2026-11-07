@@ -1136,7 +1136,7 @@ response = ask_ai("claude-haiku-4-5", prompt, system_message, enable_caching=Tru
   including its own system-prompt breakpoint. Raising keeps the caller's intent
   (the 1h marker already holds that whole prefix for an hour) where lowering
   would silently shorten their cache; a 1h cache write bills at 2x the input
-  price instead of 1.25x. Caller marker dicts are never mutated in place.
+  price instead of 1.25x. Caller marker dicts are never mutated in place. Since v3.43.2, the LiteLLM path copies the request before applying cache settings, so adjustments also leave the caller's saved messages and content blocks unchanged.
 - **Tool results (v3.43.1).** A `role: tool` message may carry its content as a
   block list (text and `image_url` parts); the router converts the blocks into
   `tool_result` content instead of stringifying the list. Anthropic documents

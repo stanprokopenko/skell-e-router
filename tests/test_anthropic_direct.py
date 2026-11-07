@@ -1141,6 +1141,56 @@ class TestCacheTtlOrdering:
     """Anthropic rejects a 5m breakpoint ahead of a 1h one (HTTP 400). The router
     enforces non-increasing TTLs itself instead of trusting every caller."""
 
+    @pytest.mark.parametrize("marker_location", ["tool_message", "content_block"])
+    @pytest.mark.parametrize("ttl", [None, "5m"])
+    def test_litellm_request_does_not_change_reused_history(self, marker_location, ttl):
+        from copy import deepcopy
+        from skell_e_router.utils import ask_ai
+
+        marker = {"type": "ephemeral"}
+        if ttl is not None:
+            marker["ttl"] = ttl
+        if marker_location == "tool_message":
+            first = {"role": "tool", "tool_call_id": "t1", "content": "result",
+                     "cache_control": marker}
+        else:
+            first = {"role": "user", "content": [
+                {"type": "text", "text": "plan", "cache_control": marker}]}
+        history = [first, {"role": "user", "content": [
+            {"type": "text", "text": "tail",
+             "cache_control": {"type": "ephemeral", "ttl": "1h"}}]}]
+        original = deepcopy(history)
+
+        def first_marker(messages):
+            message = messages[1]  # The router prepends the system message.
+            return (message if marker_location == "tool_message"
+                    else message["content"][0])["cache_control"]
+
+        with patch("skell_e_router.utils._perform_completion",
+                   return_value=(make_litellm_response(), 0.1)) as completion:
+            options = {"system_message": "sys", "direct_sdk": False,
+                       "enable_caching": True,
+                       "config": {"anthropic_api_key": FAKE_ANTHROPIC_KEY}}
+            ask_ai("claude-haiku-4-5", history, **options)
+            assert first_marker(completion.call_args.kwargs["messages"])["ttl"] == "1h"
+            assert history == original
+
+            ask_ai("claude-haiku-4-5", history[:1], **options)
+            assert first_marker(completion.call_args.kwargs["messages"]) == marker
+            assert history == original
+
+    def test_litellm_default_breakpoints_do_not_change_history(self):
+        from copy import deepcopy
+        from skell_e_router.utils import _apply_cache_control_litellm
+
+        history = [{"role": "system", "content": "sys"},
+                   {"role": "user", "content": [{"type": "text", "text": "hi"}]}]
+        original = deepcopy(history)
+        out = _apply_cache_control_litellm(history)
+        assert out[0]["content"][0]["cache_control"] == {"type": "ephemeral"}
+        assert out[-1]["content"][0]["cache_control"] == {"type": "ephemeral"}
+        assert history == original
+
     def test_direct_path_raises_earlier_5m_marker_to_1h(self):
         from skell_e_router.anthropic_direct import _apply_cache_control
         msgs = [

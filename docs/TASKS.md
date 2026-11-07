@@ -1,5 +1,9 @@
 # Active Tasks & Deferred Follow-ups
 
+## Tool-message cache markers
+
+- [x] Reviewed v3.43.1 and fixed caller-history mutation on the LiteLLM route in v3.43.2. Two blind review rounds completed, the final review was clean, 1,164 tests and 17 subtests passed, and live bridge and tool-result checks passed. [Review and evidence](cache-marker-review-2026-11-06.md).
+
 ## Literal text embeddings
 
 - [x] Added `get_embedding(..., literal_text=True)` in 3.38.1 for untrusted search and transcript text. Gemini and OpenAI preserve exact strings and batch size without input filesystem probes or URL/media interpretation. Existing image uploads keep their default path. Consumer migration requires adding this keyword; the Solar Sailer moment-search review lead owns that change. [Supported API](../skell_e_router/Skell-E-Router-DOCUMENTATION.md#literal-text-for-search-queries-and-transcripts).

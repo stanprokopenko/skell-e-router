@@ -6,6 +6,7 @@ import logging
 import time
 import base64
 import mimetypes
+from copy import deepcopy
 from typing import overload, Literal, BinaryIO
 from tenacity import retry, wait_random_exponential, stop_after_attempt, retry_if_exception
 from .model_config import AIModel, MODEL_CONFIG, CLASSIFICATION_MODEL_CONFIG
@@ -1007,6 +1008,9 @@ def _apply_cache_control_litellm(messages: list[dict]) -> list[dict]:
     anthropic_direct._apply_cache_control: one breakpoint on the system
     message, one on the last content block of the last message.
     """
+    # Cache settings belong to this request, not the caller's saved history.
+    messages = deepcopy(messages)
+
     def _mark(msg: dict, cc: dict):
         content = msg.get("content")
         if isinstance(content, str):
