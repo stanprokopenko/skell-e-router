@@ -6,6 +6,8 @@ Reviewed November 6, 2026, Pacific time. Advisory queries ran November 7 UTC. Re
 
 ## Decision
 
+Publish verdict: CLEAR for the proposed MCP extra. After the initial report, the requesting lead supplied `.worktrees/audit-review-20261106/pyproject.toml` and `D:\agent-builds\skell-e-agent\audit-review-20261106\venv`. Read-only inspection confirmed the proposed dependency line and an exact match for all 73 reviewed package versions in that environment. Its other 22 packages are outside this dependency review. The tighter-pin recommendation below addresses preexisting range risk and is not a blocker for this publish.
+
 Accept the extra as a supported compatibility fix for the reviewed versions. Prefer `litellm[mcp]==1.108.2` for the immediate fix, subject to Stan's approval. For deployed applications, preserve a tested dependency lock or constraints with hashes as well: pinning LiteLLM alone does not pin its transitive packages. Revisit the extra when upstream fixes the unnecessary import. Exact pinning costs deliberate upgrades and may require coordination with consumers that demand another LiteLLM version.
 
 A local monkeypatch creates a second implementation to maintain. A rollback to 1.105.7 avoids this particular import regression, but the router's recent provider changes were not tested against that version. Neither alternative has a demonstrated security advantage over the reviewed current package set.
