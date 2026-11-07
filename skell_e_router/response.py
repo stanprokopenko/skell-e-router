@@ -48,6 +48,21 @@ class AIResponse:
     cache_read_tokens: int | None = None
     cache_write_tokens: int | None = None
 
+    # Provider-opaque reasoning state the model expects back on its next turn,
+    # in the order the provider returned it. Each entry is tagged with the
+    # provider that produced it, and only that provider's converter replays it:
+    #   {"provider": "anthropic", "kind": "thinking", "text": ..., "signature": ...}
+    #   {"provider": "anthropic", "kind": "redacted_thinking", "data": ...}
+    #   {"provider": "openai", "kind": "reasoning", "id": "rs_...",
+    #    "encrypted_content": ..., "summary": [...]}
+    # Callers put the list back on the assistant message dict as
+    # ``"reasoning_state"`` when they replay the turn. None when the provider
+    # returned no state or the route cannot carry it (plain chat/completions).
+    # Gemini's equivalent, the per-call thought signature, stays on each
+    # ``tool_calls[i]["thought_signature"]`` because Gemini binds it to the
+    # function call rather than to the turn.
+    reasoning_state: list[dict] | None = None
+
     def __str__(self) -> str:
         """Allow AIResponse to be used as a string (returns content)."""
         return self.content

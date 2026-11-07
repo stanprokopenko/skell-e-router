@@ -104,9 +104,17 @@ def _sanitize_tool_id(tool_id):
     return f"{cleaned}_{digest}" if cleaned else f"tool_{digest}"
 
 
+_THINKING_BLOCK_TYPES = ("thinking", "redacted_thinking")
+
+
 def _merge_consecutive_roles(messages: list[dict]) -> list[dict]:
     """Merge consecutive same-role messages into one block-content message
-    (tool_result conversion and retry prompts can produce user/user runs)."""
+    (tool_result conversion and retry prompts can produce user/user runs).
+
+    Anthropic requires an assistant turn's thinking blocks to precede its text
+    and tool_use blocks, so a merged assistant turn hoists every thinking block
+    to the front, keeping their relative order; the blocks themselves are not
+    modified (a modified or reordered signed block is rejected)."""
     merged: list[dict] = []
     for msg in messages:
         if merged and merged[-1]["role"] == msg["role"]:
@@ -114,10 +122,36 @@ def _merge_consecutive_roles(messages: list[dict]) -> list[dict]:
             for m in (prev, msg):
                 if isinstance(m["content"], str):
                     m["content"] = [{"type": "text", "text": m["content"]}]
-            prev["content"] = prev["content"] + msg["content"]
+            blocks = prev["content"] + msg["content"]
+            if msg["role"] == "assistant":
+                thinking = [b for b in blocks if b.get("type") in _THINKING_BLOCK_TYPES]
+                if thinking:
+                    blocks = thinking + [b for b in blocks if b.get("type") not in _THINKING_BLOCK_TYPES]
+            prev["content"] = blocks
         else:
             merged.append(msg)
     return merged
+
+
+def _reasoning_blocks(msg: dict) -> list[dict]:
+    """Anthropic thinking blocks replayed from an assistant message's
+    ``reasoning_state`` (see ``AIResponse.reasoning_state``).
+
+    Only entries tagged ``provider == "anthropic"`` are replayed; state from
+    another provider means nothing here and is dropped (a transcript that
+    switched providers). Blocks are rebuilt exactly as received, in order:
+    the API verifies each signature against its text."""
+    blocks = []
+    for entry in msg.get("reasoning_state") or []:
+        if not isinstance(entry, dict) or entry.get("provider") != "anthropic":
+            continue
+        kind = entry.get("kind")
+        if kind == "thinking" and entry.get("signature"):
+            blocks.append({"type": "thinking", "thinking": entry.get("text") or "",
+                           "signature": entry["signature"]})
+        elif kind == "redacted_thinking" and entry.get("data"):
+            blocks.append({"type": "redacted_thinking", "data": entry["data"]})
+    return blocks
 
 
 def _convert_content_parts(content: list) -> list[dict]:
@@ -237,9 +271,13 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
             })
             continue
 
+        # Assistant turns replay their own thinking blocks first (Anthropic
+        # requires thinking before text and tool_use), then text, then tool_use.
+        thinking_blocks = _reasoning_blocks(msg) if role == "assistant" else []
+
         # Assistant tool calls -> tool_use content blocks (text first, if any)
         if role == "assistant" and msg.get("tool_calls"):
-            parts = []
+            parts = list(thinking_blocks)
             if isinstance(content, str) and content:
                 parts.append({"type": "text", "text": content})
             for tc in msg["tool_calls"]:
@@ -255,11 +293,19 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
 
         # Roles: "user" and "assistant" pass through directly
         if isinstance(content, str):
-            converted.append({"role": role, "content": content})
+            if thinking_blocks:
+                parts = list(thinking_blocks)
+                if content:
+                    parts.append({"type": "text", "text": content})
+                converted.append({"role": role, "content": parts})
+            else:
+                converted.append({"role": role, "content": content})
         elif isinstance(content, list):
-            parts = _convert_content_parts(content)
+            parts = thinking_blocks + _convert_content_parts(content)
             if parts:
                 converted.append({"role": role, "content": parts})
+        elif thinking_blocks:
+            converted.append({"role": role, "content": thinking_blocks})
 
     # Parallel tool results (and retry prompts after them) arrive as separate
     # messages — Anthropic wants them as blocks of a single user turn.
@@ -590,9 +636,13 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
     # Strip prefix for display
     display_model = model_name.replace("anthropic/", "")
 
-    # Extract text content (join all TextBlock.text parts, skip thinking blocks)
+    # Extract text content (join all TextBlock.text parts). Thinking blocks are
+    # not part of the text; they are kept, verbatim and in order, as
+    # reasoning_state so the caller can replay them on the next turn (the API
+    # verifies each block's signature against its text).
     content_parts = []
     tool_calls = None
+    reasoning_state = []
 
     for block in getattr(response, 'content', []):
         block_type = getattr(block, 'type', None)
@@ -609,7 +659,17 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
                     "arguments": json.dumps(block.input) if isinstance(block.input, dict) else str(block.input),
                 }
             })
-        # Skip "thinking" blocks — they're internal
+        elif block_type == "thinking":
+            reasoning_state.append({
+                "provider": "anthropic", "kind": "thinking",
+                "text": getattr(block, 'thinking', None) or "",
+                "signature": getattr(block, 'signature', None),
+            })
+        elif block_type == "redacted_thinking":
+            reasoning_state.append({
+                "provider": "anthropic", "kind": "redacted_thinking",
+                "data": getattr(block, 'data', None),
+            })
 
     content = "".join(content_parts)
 
@@ -680,6 +740,7 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
         raw_response=response,
         cache_read_tokens=_int_attr(usage, 'cache_read_input_tokens'),
         cache_write_tokens=_int_attr(usage, 'cache_creation_input_tokens'),
+        reasoning_state=reasoning_state or None,
     )
 
 

@@ -801,12 +801,22 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
     # LiteLLM's gpt-5.4+ tools-plus-effort bridge). LiteLLM 1.83 drops a top-level
     # store before building optional params, so send it through extra_body, which
     # reaches the wire untouched. An explicit caller value wins.
+    # The same requests ask for ``include: ["reasoning.encrypted_content"]``:
+    # with store false, the encrypted blob on each reasoning item is the only
+    # way to hand the model its reasoning back on the next turn (it rides on
+    # AIResponse.reasoning_state). A caller's own include list is kept and
+    # extended.
     if (ai_model.is_openai and ai_model.name.startswith("openai/")
             and (ai_model.use_responses_api or _uses_responses_bridge(ai_model.name, final_kwargs))):
         final_kwargs.pop("store", None)
+        final_kwargs.pop("include", None)
         caller_store = kwargs.get("store")
         extra_body = dict(final_kwargs.get("extra_body") or {})
         extra_body.setdefault("store", False if caller_store is None else caller_store)
+        include = []
+        for value in (kwargs.get("include") or [], extra_body.get("include") or [], [REASONING_ENCRYPTED_INCLUDE]):
+            include.extend(v for v in value if v not in include)
+        extra_body["include"] = include
         final_kwargs["extra_body"] = extra_body
     return final_kwargs
 
@@ -839,24 +849,67 @@ def _uses_responses_bridge(model_name: str, kwargs: dict) -> bool:
         return explicit
 
 
-def _strip_gemini_tool_call_keys(messages: list[dict]) -> list[dict]:
-    """Drop direct-Gemini ``thought_signature`` from assistant tool_calls.
+REASONING_ENCRYPTED_INCLUDE = "reasoning.encrypted_content"
 
-    A transcript that switched from direct Gemini to a LiteLLM model still
-    carries the key; it means nothing to other providers. Messages without it
-    are returned as the same objects.
+
+def _openai_reasoning_items(msg: dict) -> list[dict]:
+    """OpenAI Responses ``reasoning`` input items from an assistant message's
+    ``reasoning_state`` (see ``AIResponse.reasoning_state``).
+
+    Only ``provider == "openai"`` entries that carry ``encrypted_content`` are
+    replayed: with ``store: false`` the API can only resume reasoning from the
+    encrypted blob, and an id-only item would 404. The dicts match LiteLLM's
+    ``ChatCompletionReasoningItem``; its chat-to-Responses bridge emits each
+    one as a ``reasoning`` input item right before the turn's function calls.
+    """
+    items = []
+    for entry in msg.get("reasoning_state") or []:
+        if (isinstance(entry, dict) and entry.get("provider") == "openai"
+                and entry.get("kind") == "reasoning" and entry.get("encrypted_content")):
+            items.append({
+                "type": "reasoning",
+                "id": entry.get("id"),
+                "encrypted_content": entry["encrypted_content"],
+                "summary": list(entry.get("summary") or []),
+            })
+    return items
+
+
+def _prepare_messages_for_litellm(messages: list[dict], responses_bridge: bool) -> list[dict]:
+    """Translate router-only history keys for ``litellm.completion``.
+
+    - Direct-Gemini ``thought_signature`` on assistant tool_calls is dropped; a
+      transcript that switched from direct Gemini to a LiteLLM model still
+      carries it and it means nothing to other providers.
+    - ``reasoning_state`` is dropped everywhere except on the OpenAI Responses
+      bridge, where its OpenAI entries become LiteLLM ``reasoning_items`` so the
+      model resumes its reasoning instead of redoing it. Plain chat/completions
+      has no way to carry reasoning, and another provider's state is not ours
+      to replay.
+
+    Messages without any of these keys are returned as the same objects; the
+    caller's transcript is never mutated.
     """
     out = []
     for msg in messages:
-        tool_calls = msg.get("tool_calls") if isinstance(msg, dict) else None
+        if not isinstance(msg, dict):
+            out.append(msg)
+            continue
+        tool_calls = msg.get("tool_calls")
         if isinstance(tool_calls, list) and any(
                 isinstance(tc, dict) and "thought_signature" in tc for tc in tool_calls):
             msg = {**msg, "tool_calls": [
                 {k: v for k, v in tc.items() if k != "thought_signature"}
                 if isinstance(tc, dict) else tc
                 for tc in tool_calls]}
+        if "reasoning_state" in msg:
+            items = _openai_reasoning_items(msg) if responses_bridge and msg.get("role") == "assistant" else []
+            msg = {k: v for k, v in msg.items() if k != "reasoning_state"}
+            if items:
+                msg["reasoning_items"] = items
         out.append(msg)
     return out
+
 
 
 @retry(
@@ -866,7 +919,8 @@ def _strip_gemini_tool_call_keys(messages: list[dict]) -> list[dict]:
     reraise=True,
 )
 def _perform_completion(model_name: str, messages: list[dict], api_key: str | None = None, **kwargs):
-    messages = _strip_gemini_tool_call_keys(messages)
+    responses_bridge = _uses_responses_bridge(model_name, kwargs)
+    messages = _prepare_messages_for_litellm(messages, responses_bridge)
     completion_kwargs = dict(model=model_name, messages=messages, **kwargs)
     if api_key:
         completion_kwargs["api_key"] = api_key
@@ -885,7 +939,7 @@ def _perform_completion(model_name: str, messages: list[dict], api_key: str | No
     if not isinstance(getattr(response, "_hidden_params", None), dict):
         response._hidden_params = {}
     response._hidden_params["router_responses_output_parts"] = (
-        not kwargs.get("stream") and _uses_responses_bridge(model_name, kwargs)
+        not kwargs.get("stream") and responses_bridge
     )
     return response, request_duration
 
@@ -942,9 +996,22 @@ def _build_ai_response(
 
     content = _response_text(choices)
     merged_tool_calls = []
+    reasoning_state = []
     for choice in choices:
         choice_message = getattr(choice, 'message', None)
         merged_tool_calls.extend(getattr(choice_message, 'tool_calls', None) or [])
+        # LiteLLM's Responses bridge attaches each ``reasoning`` output item
+        # (id, encrypted_content, summary) to the choice it precedes. Keep the
+        # ones that carry the encrypted blob; without it nothing can be
+        # replayed under store:false. Plain chat/completions never sets this.
+        for item in getattr(choice_message, 'reasoning_items', None) or []:
+            get = item.get if isinstance(item, dict) else lambda k, _i=item: getattr(_i, k, None)
+            if get("encrypted_content"):
+                reasoning_state.append({
+                    "provider": "openai", "kind": "reasoning",
+                    "id": get("id"), "encrypted_content": get("encrypted_content"),
+                    "summary": list(get("summary") or []),
+                })
     finish_reason = getattr(first_choice, 'finish_reason', None)
     if merged_tool_calls:
         tool_calls = merged_tool_calls
@@ -1012,6 +1079,7 @@ def _build_ai_response(
         raw_response=response,
         cache_read_tokens=cache_read_tokens,
         cache_write_tokens=cache_write_tokens,
+        reasoning_state=reasoning_state or None,
     )
 
 
