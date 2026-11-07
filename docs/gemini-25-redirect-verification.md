@@ -11,7 +11,7 @@ Google's [deprecation notice](https://ai.google.dev/gemini-api/docs/deprecations
 Validation on November 7:
 
 - Focused tests on the installed dependencies: 428 passed.
-- Full `python -m pytest tests -q --tb=short -p no:cacheprovider` on the current dependency environment: 1,325 passed plus 17 subtests, no failures. The 23 warnings are dependency serialization warnings.
+- Full `python -m pytest tests -q --tb=short -p no:cacheprovider` on the current dependency environment: 1,325 passed plus 17 subtests, no failures and 23 dependency warnings.
 - Live `ask_ai` calls using each old name, `reasoning_effort="low"`, `temperature=1`, `candidate_count=1`, a required function tool and `rich_response=True` both returned the required tool call. Responses named the expected successors and reported nonzero cost.
 - Combined live-call cost: $0.00018075.
 - `git diff --check` passed.
@@ -20,8 +20,16 @@ The full suite used `D:/agent-builds/skell-e-agent/audit-review-20261106/venv/Sc
 
 Raw logs and the live probe are retained in `.agent-scratch/2026-11-07-gemini-25-redirect/`: `router-focused.log`, `router-full-current.log`, `live_smoke.py`, `live-smoke.json` and `live-smoke.log`. Google's SDK printed a warning when a reply contained only a function call; the assertions passed and the probe ended with `PASS`.
 
+## Consumer verification
+
+- Router release commit: `5c34ea4c72e5fe7731c24eaedd2040e7746a9bea`, pushed.
+- Benchmark commit: `e8215947d7956708afa99aacef2747a20261f8c9`, pushed. It pins that router commit and removes both runnable 2.5 entries. Maintained-runtime validation passed 129 router contract tests and 149 consumer tests; the final launcher regression suite passed 11 tests. Historical viewing still displays 64 saved rows per retired model. Both successor smoke calls scored 1.0, with no errors and $0.00058510 combined cost.
+- Knowledge-base: both successor entries and short/provider-prefixed aliases prepared, 288 router tests and Ruff passed, and both live tool calls passed for $0.00014315. Independent repository review found no blockers or nits and independently reran the tests. Its broad unit and full suites cannot collect on Windows because existing code imports Unix-only `resource`. A Linux runner is still required for those suites.
+- Web: full backend suite passed 2,219 tests; the Angular development build and five saved-chat restoration tests passed. These cover the release script's tests and build. The core chat benchmark passed 11/11 with no errors or skips, costing $0.278575 in reported model usage. Both old saved IDs displayed Gemini 3.8 Flash in the real running app. A saved Pro chat used it for two successful lesson searches and a cited answer with seven retrieved chunks, costing $0.029217. Screenshots, persisted-response evidence and backend logs are retained in that repo.
+
+Total recorded model cost across the task is $0.308701. Retrieval embedding costs are not separately reported by the chat benchmark.
+
 ## Remaining release gates
 
-- Benchmark must pin the released router commit, pass its maintained runtime checks, open historical results and complete a successor smoke run.
-- Knowledge-base needs the mandatory Jira task number before branching or committing, its full tests and repo review.
-- Web needs full backend checks, the chat core benchmark, real-app saved-chat tool verification and Stan's picker/price approval before any push.
+- Knowledge-base has no branch or commit yet. Its `CLAUDE.md` requires a Jira task number first; Stan has been asked. Follow its Jira branch/commit and merge-request workflow, with Linux application tests before merge.
+- Web changes remain uncommitted and unpushed pending Stan's explicit approval of the picker removal and former Flash users' price increase. Its evidence is in `docs/gemini-25-redirect-verification.md`. Commit frontend and backend together after approval and account for every main-branch commit before pushing, since the push deploys production.
