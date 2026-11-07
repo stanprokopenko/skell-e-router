@@ -222,7 +222,7 @@ The router adds `max_completion_tokens` to LiteLLM's `allowed_openai_params` so 
 
 `gpt-6.1-sol` also uses the Responses API bridge. Tools require this endpoint; Chat Completions supports text-only requests. Accepted efforts are `low`, `medium`, `high`, `xhigh`, and `max`; omitting effort selects OpenAI's `medium` default. `none` and `minimal` are invalid. The router drops sampling parameters. Context is 1,050,000 tokens and maximum output is 128,000 tokens.
 
-Every OpenAI request that reaches `/v1/responses`, through these aliases or LiteLLM's gpt-5.4+ tools-plus-reasoning-effort bridge, carries `store: false` (sent via `extra_body`, because LiteLLM drops a top-level `store`). OpenAI otherwise keeps the request and response for 30 days. Pass `store=True`, top-level or in `extra_body`, to keep server-side storage.
+Every OpenAI request that reaches `/v1/responses`, through these aliases, LiteLLM's gpt-5.4+ tools-plus-reasoning-effort bridge, or its reasoning-summary route, carries `store: false` to disable stored response state. The router sends it via `extra_body` because older LiteLLM drops a top-level `store`. Pass `store=True`, top-level or in `extra_body`, to keep server-side storage.
 
 `gpt-6.1-terra` (released October 26, 2026) shares that bridge and the same context and output limits. It accepts `none`, `low`, `medium`, `high`, `xhigh`, and `max`, with `medium` as the default. Authoritative rates are $1 input, $0.05 cache reads, and $5 output per million tokens, with the same 272,000-token long-context surcharge as Sol. Cache writes ($1.25 per million) are billed separately and excluded from `AIResponse.cost`. See the [model reference](https://developers.openai.com/api/docs/models/gpt-6.1-terra).
 

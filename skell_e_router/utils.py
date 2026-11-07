@@ -2,6 +2,7 @@ import litellm
 import os
 import io
 import json
+import inspect
 import logging
 import time
 import base64
@@ -823,11 +824,16 @@ def _uses_responses_bridge(model_name: str, kwargs: dict) -> bool:
     try:
         from litellm.main import responses_api_bridge_check
         model, provider, _, _ = litellm.get_llm_provider(model=model_name)
-        info, _ = responses_api_bridge_check(
-            model=model, custom_llm_provider=provider,
-            tools=kwargs.get("tools"), reasoning_effort=kwargs.get("reasoning_effort"),
-            web_search_options=kwargs.get("web_search_options"),
-        )
+        bridge_kwargs = {
+            "model": model, "custom_llm_provider": provider,
+            "tools": kwargs.get("tools"), "reasoning_effort": kwargs.get("reasoning_effort"),
+            "web_search_options": kwargs.get("web_search_options"),
+        }
+        # Newer LiteLLM also routes reasoning summaries without tools to Responses.
+        if "reasoning_summary" in inspect.signature(responses_api_bridge_check).parameters:
+            from litellm.litellm_core_utils.model_param_helper import peek_reasoning_summary_aliases
+            bridge_kwargs["reasoning_summary"] = peek_reasoning_summary_aliases(kwargs)
+        info, _ = responses_api_bridge_check(**bridge_kwargs)
         return explicit or info.get("mode") == "responses"
     except Exception:
         return explicit

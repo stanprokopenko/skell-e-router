@@ -2,6 +2,10 @@
 
 Earlier releases are described in the version notes in [README.md](README.md).
 
+## 3.44.4 - 2026-11-06
+
+Apply the `store: false` default when current LiteLLM routes a reasoning-summary request to OpenAI Responses without tools. Route detection now forwards both summary aliases to LiteLLM's own check when supported, while retaining compatibility with older versions. Explicit caller storage settings still win.
+
 ## 3.44.3 - 2026-11-06
 
 Send `store: false` on every OpenAI request that reaches the Responses API: the GPT-6 aliases, and gpt-5.4+ calls with tools plus a reasoning effort, which LiteLLM bridges there on its own. OpenAI's Responses API defaults to `store: true` and keeps each request and response for 30 days, and the router never reuses them through `previous_response_id`, so nothing was gained by storing them (audit finding R3). LiteLLM 1.83 drops a top-level `store` before building the request, so the router sends it through `extra_body`. A caller's own `store=True`, top-level or in `extra_body`, still wins. Chat Completions requests and other providers are unchanged.
