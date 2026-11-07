@@ -642,6 +642,17 @@ def _call_gemini_direct_stream(model_name: str, contents: list, system_instructi
             raise
 
 
+def _prompt_block_finish_reason(response) -> str | None:
+    """Recognize prompt refusals when Gemini supplies no candidate."""
+    feedback = getattr(response, "prompt_feedback", None)
+    reason = getattr(feedback, "block_reason", None)
+    value = reason.name if isinstance(reason, enum.Enum) else reason
+    if value in {"SAFETY", "OTHER", "BLOCKLIST", "PROHIBITED_CONTENT",
+                 "IMAGE_SAFETY", "MODEL_ARMOR", "JAILBREAK"}:
+        return "content_filter"
+    return None
+
+
 def _build_response(response, model_name: str, duration_s: float, total_duration_s: float | None = None) -> AIResponse:
     """Convert Google SDK response to AIResponse."""
     # Strip prefix for display
@@ -672,6 +683,8 @@ def _build_response(response, model_name: str, duration_s: float, total_duration
             # FinishReason is a str enum whose str() is "FinishReason.MAX_TOKENS";
             # return the bare API value ("STOP", "MAX_TOKENS", "SAFETY", ...).
             finish_reason = fr.name if isinstance(fr, enum.Enum) else str(fr)
+    else:
+        finish_reason = _prompt_block_finish_reason(response)
 
     # Grounding metadata
     grounding_metadata = None

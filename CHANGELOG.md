@@ -2,6 +2,14 @@
 
 Earlier releases are described in the version notes in [README.md](README.md).
 
+## 3.44.1 - 2026-11-06
+
+Review fixes for 3.44.0:
+
+- Keep alternative completion candidates separate, so tool calls from different answers cannot execute together. Merge all text and tool calls only for LiteLLM's Responses API output.
+- Forward Anthropic cache-write token counts on the LiteLLM route as well as the direct route.
+- Preserve Gemini prompt-level safety blocks when there are no candidates, so the agent stops instead of retrying the blocked request.
+
 ## 3.44.0
 
 Fixes from the 2026-11-06 provider-integration audit.

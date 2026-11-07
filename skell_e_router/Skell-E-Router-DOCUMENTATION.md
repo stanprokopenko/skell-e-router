@@ -282,6 +282,8 @@ print(response)  # Prints content via __str__
 | `tool_calls` | list | Function calls made |
 | `raw_response` | Any | Full LiteLLM response |
 
+Since v3.44.1, cache-write counts also reach this field through LiteLLM. The router combines text and tool calls across Responses API output items, but keeps only the first alternative for ordinary multi-candidate completions. Gemini prompt-level blocks without candidates return `finish_reason="content_filter"`.
+
 ---
 
 ## Classification with Jev

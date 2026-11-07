@@ -46,6 +46,8 @@ print(result.answers["team"]["probabilities"])
 
 Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
+Version 3.44.1 keeps alternative answers separate, preserves all Responses text, reports Claude cache writes on the LiteLLM route, and stops retries after Gemini blocks a prompt. See [CHANGELOG.md](CHANGELOG.md).
+
 Version 3.44.0 fixes ten provider-integration bugs from the 2026-11-06 audit. Gemini now receives tool calls and tool results in its native format, LiteLLM's Responses API path keeps a tool call that arrives next to text, Anthropic 529 overloads retry, and Anthropic cost covers 1-hour cache writes and Haiku 5.5's above-100k tier. `AIResponse` gains `cache_read_tokens` and `cache_write_tokens`. See [CHANGELOG.md](CHANGELOG.md).
 
 Version 3.43.2 keeps Anthropic cache adjustments out of the caller's saved conversation on the LiteLLM path. Reusing a conversation no longer retains a one-hour cache setting added for an earlier request.

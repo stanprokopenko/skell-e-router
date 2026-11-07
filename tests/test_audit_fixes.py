@@ -320,6 +320,7 @@ class TestGemini25FlashThinking:
 class TestLiteLLMBuildAIResponse:
     def _build(self, response):
         from skell_e_router.utils import _build_ai_response
+        response._hidden_params["router_responses_output_parts"] = True
         return _build_ai_response(response, 0.1, 0.1)
 
     def _two_choice_response(self):

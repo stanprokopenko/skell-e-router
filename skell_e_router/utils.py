@@ -799,6 +799,26 @@ def _handle_model_specific_params(ai_model: AIModel, kwargs: dict):
 # MAIN CALL FUNCTIONS
 #--------------------
 
+def _uses_responses_bridge(model_name: str, kwargs: dict) -> bool:
+    """Use LiteLLM's route decision, since Responses choices are output parts.
+
+    Older LiteLLM releases do not expose the check. Explicit Responses routes
+    remain identifiable there; an optional detection failure must not fail a call.
+    """
+    explicit = "/responses/" in model_name
+    try:
+        from litellm.main import responses_api_bridge_check
+        model, provider, _, _ = litellm.get_llm_provider(model=model_name)
+        info, _ = responses_api_bridge_check(
+            model=model, custom_llm_provider=provider,
+            tools=kwargs.get("tools"), reasoning_effort=kwargs.get("reasoning_effort"),
+            web_search_options=kwargs.get("web_search_options"),
+        )
+        return explicit or info.get("mode") == "responses"
+    except Exception:
+        return explicit
+
+
 def _strip_gemini_tool_call_keys(messages: list[dict]) -> list[dict]:
     """Drop direct-Gemini ``thought_signature`` from assistant tool_calls.
 
@@ -840,6 +860,13 @@ def _perform_completion(model_name: str, messages: list[dict], api_key: str | No
         response = litellm.stream_chunk_builder(chunks, messages=messages)
 
     request_duration = time.perf_counter() - request_start
+    # LiteLLM's transform does not retain a reliable Responses origin marker.
+    # Its streaming bridge already rebuilds one chat message, so no merge there.
+    if not isinstance(getattr(response, "_hidden_params", None), dict):
+        response._hidden_params = {}
+    response._hidden_params["router_responses_output_parts"] = (
+        not kwargs.get("stream") and _uses_responses_bridge(model_name, kwargs)
+    )
     return response, request_duration
 
 
@@ -853,6 +880,23 @@ def _completion_model_name(ai_model) -> str:
     return f"{provider}/responses/{model}"
 
 
+def _response_choices(response, ai_model=None):
+    choices = list(getattr(response, "choices", None) or [])
+    hidden = getattr(response, "_hidden_params", None)
+    marker = hidden.get("router_responses_output_parts") if isinstance(hidden, dict) else None
+    is_responses = marker is True or (
+        marker is None and getattr(ai_model, "use_responses_api", False) is True
+    )
+    return choices if is_responses else choices[:1]
+
+
+def _response_text(choices):
+    return "\n".join(
+        text for choice in choices
+        if isinstance(text := getattr(getattr(choice, "message", None), "content", None), str) and text
+    )
+
+
 def _build_ai_response(
     response,
     request_duration_s: float | None = None,
@@ -864,12 +908,11 @@ def _build_ai_response(
     LiteLLM's Responses-API bridge (completion_extras/litellm_responses_transformation,
     _convert_response_output_to_choices) emits one choice per output message
     part plus a separate trailing choice holding every function call. All
-    choices are therefore read: content is the first non-empty text,
-    tool_calls is every choice's tool_calls in order, and a "stop"
-    finish_reason becomes "tool_calls" when any call exists.
+    output parts are merged in order. Ordinary chat choices are alternative
+    completions, so only the first is selected there.
     """
 
-    choices = list(getattr(response, 'choices', None) or [])
+    choices = _response_choices(response, ai_model)
     model_name = getattr(response, 'model', 'unknown')
 
     usage = getattr(response, 'usage', None)
@@ -877,13 +920,10 @@ def _build_ai_response(
     first_choice = choices[0] if choices else None
     message = getattr(first_choice, 'message', None) if first_choice else None
 
-    content = ""
+    content = _response_text(choices)
     merged_tool_calls = []
     for choice in choices:
         choice_message = getattr(choice, 'message', None)
-        text = getattr(choice_message, 'content', None)
-        if not content and isinstance(text, str) and text:
-            content = text
         merged_tool_calls.extend(getattr(choice_message, 'tool_calls', None) or [])
     finish_reason = getattr(first_choice, 'finish_reason', None)
     if merged_tool_calls:
@@ -899,6 +939,11 @@ def _build_ai_response(
     cache_read_tokens = getattr(prompt_details, 'cached_tokens', None) if prompt_details is not None else None
     if not isinstance(cache_read_tokens, int):
         cache_read_tokens = None
+    cache_write_tokens = getattr(prompt_details, 'cache_creation_tokens', None)
+    if not isinstance(cache_write_tokens, int):
+        cache_write_tokens = getattr(usage, 'cache_creation_input_tokens', None)
+    if not isinstance(cache_write_tokens, int):
+        cache_write_tokens = None
 
     # Compute cost safely (LiteLLM cost map, else router-level pricing fallback)
     computed_cost = _compute_response_cost(response, ai_model)
@@ -939,6 +984,7 @@ def _build_ai_response(
         provider_specific_fields=getattr(message, 'provider_specific_fields', None),
         raw_response=response,
         cache_read_tokens=cache_read_tokens,
+        cache_write_tokens=cache_write_tokens,
     )
 
 
@@ -1204,7 +1250,7 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
         )
         total_duration_s = time.perf_counter() - start_time
 
-        content = response.choices[0].message.content
+        content = _response_text(_response_choices(response, ai_model))
         _print_response_details(response, verbosity, total_duration_s, ai_model=ai_model)
 
         if rich_response:
