@@ -378,21 +378,6 @@ MODEL_CONFIG = {
         supports_thinking=False,
         supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "stream", "candidate_count", "safety_settings", "modalities"},
     ),
-    "gemini-2.5-pro": AIModel(
-        name="gemini/gemini-2.5-pro",
-        provider="gemini",
-        supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"}
-    ),
-    # Gemini 2.5 thinks via thinking_budget (thinking_level is Gemini 3 only and
-    # 400s here), so reasoning_effort maps to a budget like 2.5-flash-lite.
-    "gemini-2.5-flash": AIModel(
-        name="gemini/gemini-2.5-flash",
-        provider="gemini",
-        supports_thinking=True,
-        supported_params={"temperature", "max_tokens", "budget_tokens", "thinking", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
-        use_direct_sdk=True,
-    ),
     "gemini-2.5-flash-lite": AIModel(
         name="gemini/gemini-2.5-flash-lite",
         provider="gemini",
@@ -825,6 +810,12 @@ MODEL_CONFIG = {
 }
 
 # Additional aliases
+# Google redirects these names from 2026-12-01; use successor rules and pricing now.
+MODEL_CONFIG["gemini-2.5-pro"] = MODEL_CONFIG["gemini-3.8-flash"]
+MODEL_CONFIG["gemini-2.5-flash"] = MODEL_CONFIG["gemini-3.5-flash-lite"]
+# Preserve the previously registered provider-prefixed names for existing callers.
+MODEL_CONFIG["gemini/gemini-2.5-pro"] = MODEL_CONFIG["gemini-3.8-flash"]
+MODEL_CONFIG["gemini/gemini-2.5-flash"] = MODEL_CONFIG["gemini-3.5-flash-lite"]
 MODEL_CONFIG["gemini-3-pro-preview"] = MODEL_CONFIG["gemini-3.1-pro-preview"]  # Gemini 3 Pro discontinued March 9, 2026
 MODEL_CONFIG["gemini-3.1-flash-lite-preview"] = MODEL_CONFIG["gemini-3.1-flash-lite"]  # Renamed from preview on GA
 MODEL_CONFIG["gemini-3-pro-image"] = MODEL_CONFIG["nano-banana-3"]

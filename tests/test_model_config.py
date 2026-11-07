@@ -123,6 +123,22 @@ class TestModelConfig:
         assert "openai/gpt-5" in MODEL_CONFIG
         assert MODEL_CONFIG["openai/gpt-5"].name == "openai/gpt-5"
 
+    @pytest.mark.parametrize("old, successor", [
+        ("gemini-2.5-pro", "gemini-3.8-flash"),
+        ("gemini-2.5-flash", "gemini-3.5-flash-lite"),
+    ])
+    @pytest.mark.parametrize("prefix", ["", "gemini/"])
+    def test_retired_gemini_names_use_successor_contract(self, old, successor, prefix):
+        model = MODEL_CONFIG[prefix + old]
+        assert model is MODEL_CONFIG[successor]
+        assert model.name == "gemini/" + successor
+        assert model.use_direct_sdk is True
+        assert "reasoning_effort" in model.supported_params
+        assert "budget_tokens" not in model.supported_params
+
+    def test_gemini_25_flash_lite_is_not_redirected(self):
+        assert MODEL_CONFIG["gemini-2.5-flash-lite"].name == "gemini/gemini-2.5-flash-lite"
+
     def test_alias_and_full_name_point_to_same_model(self):
         alias_model = MODEL_CONFIG["gpt-5"]
         full_name_model = MODEL_CONFIG["openai/gpt-5"]

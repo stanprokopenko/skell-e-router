@@ -16,11 +16,15 @@ pip install git+https://github.com/stanprokopenko/skell-e-router@main
 from skell_e_router import ask_ai
 
 response = ask_ai(
-    "gemini-2.5-pro",
+    "gemini-3.8-flash",
     "Explain quantum computing in simple terms",
     verbosity="response"
 )
 ```
+
+### Gemini 2.5 redirects
+
+`gemini-2.5-pro` now calls `gemini-3.8-flash`; `gemini-2.5-flash` now calls `gemini-3.5-flash-lite`. The aliases use each successor's parameter rules and prices, and rich responses name the successor. Provider-prefixed aliases also work. `gemini-2.5-flash-lite` stays unchanged. This follows [Google's December 1, 2026 redirect](https://ai.google.dev/gemini-api/docs/deprecations).
 
 ### Output token limits
 

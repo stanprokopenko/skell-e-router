@@ -1628,7 +1628,7 @@ class TestAskAiWithFiles:
 
         ref = GeminiFileRef(uri="https://files.example/abc", mime_type="video/mp4")
         with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
-            result = ask_ai("gemini-2.5-pro", "What is in this video?", files=[ref])
+            result = ask_ai("gemini-3.8-flash", "What is in this video?", files=[ref], direct_sdk=False)
 
         call_kwargs = mock_litellm.completion.call_args
         messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages")
@@ -1647,8 +1647,9 @@ class TestAskAiWithFiles:
         ref = GeminiFileRef(uri="https://files.example/vid", mime_type="video/mp4")
         with patch.dict(os.environ, {v: "x" for v in PROVIDER_ENV_KEY.values()}):
             ask_ai(
-                "gemini-2.5-pro",
+                "gemini-3.8-flash",
                 "Compare",
+                direct_sdk=False,
                 images=["https://img.example/photo.jpg"],
                 files=[ref],
             )

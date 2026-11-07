@@ -6,6 +6,10 @@ Add public `classify(..., max_attempts=3)` control. Callers that manage retries 
 
 Earlier releases are described in the version notes in [README.md](README.md).
 
+## 3.47.0 - 2026-11-07
+
+Route `gemini-2.5-pro` to `gemini-3.8-flash` and `gemini-2.5-flash` to `gemini-3.5-flash-lite`, including provider-prefixed aliases. Existing callers now use the successors' parameter rules, direct SDK, response model names and prices ahead of Google's December 1 redirect. `gemini-2.5-flash-lite` stays unchanged.
+
 ## 3.45.1 - 2026-11-06
 
 Preserve every OpenAI reasoning item when a Responses result contains several items before assistant text. The router now calls `litellm.responses` for OpenAI Responses routes and captures reasoning before chat normalization; the old chat bridge could retain only the last item. Collected streams use the same capture path. The adapter also preserves cutoff and refusal metadata and handles system-only and JSON-mode input. Only the OpenAI transport can create OpenAI-tagged reasoning state. Anthropic signed blocks and Gemini tool signatures keep their existing paths. Review and verification are recorded in skell-e-agent's `docs/reasoning-state-review-2026-11-06.md`.

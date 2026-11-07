@@ -1018,7 +1018,8 @@ For speed-critical Gemini models, the router can bypass LiteLLM and call the Goo
 ### How It Works
 
 - All Gemini Flash models use the direct SDK path **by default**: `gemini-3-flash-preview`, `gemini-3.1-flash-lite-preview`, `gemini-2.5-flash`, `gemini-2.5-flash-lite`
-- Pro and other models use the standard LiteLLM path by default
+- `gemini-2.5-pro` aliases `gemini-3.8-flash`, and `gemini-2.5-flash` aliases `gemini-3.5-flash-lite`. Both use the direct SDK, successor reasoning levels and successor prices. Rich responses report the successor name. The `gemini/`-prefixed old names also resolve to the successors.
+- `gemini-3.1-pro-preview` and other models without a direct SDK default use LiteLLM
 - You can override this per-call with the `direct_sdk` parameter
 
 ### Usage
@@ -1089,7 +1090,7 @@ Tool call ids are Gemini's own `function_call.id` when Gemini sends one; the rou
 
 The direct SDK path handles thinking configuration differently depending on what the model supports:
 
-- **Models with `budget_tokens`** (e.g., `gemini-2.5-flash`, `gemini-2.5-flash-lite`): `budget_tokens` maps to `ThinkingConfig(thinking_budget=N)`. `reasoning_effort` also maps to `thinking_budget` (low=1024, medium=2048, high=4096). A model that declares neither parameter also gets a budget, never `thinking_level`, which Gemini 2.5 rejects.
+- **Models with `budget_tokens`** (e.g., `gemini-2.5-flash-lite`): `budget_tokens` maps to `ThinkingConfig(thinking_budget=N)`. `reasoning_effort` also maps to `thinking_budget` (low=1024, medium=2048, high=4096). A model that declares neither parameter also gets a budget, never `thinking_level`, which Gemini 2.5 rejects.
 - **Models with only `reasoning_effort`** (e.g., `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`): `reasoning_effort` maps to `ThinkingConfig(thinking_level="LOW"/"MEDIUM"/"HIGH")`. `budget_tokens` is converted to the appropriate thinking level. This avoids the `ThinkingConfig thinking_budget Extra inputs are not permitted` validation error that occurs when sending `thinking_budget` to models that don't support it.
 
 ### Limitations

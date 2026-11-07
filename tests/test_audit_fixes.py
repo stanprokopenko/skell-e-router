@@ -282,14 +282,14 @@ class TestGeminiThoughtSignature:
 
 
 # ---------------------------------------------------------------------------
-# G9 / P5: gemini-2.5-flash reasoning maps to thinking_budget
+# G9 / P5: remaining Gemini 2.5 models map reasoning to thinking_budget
 # ---------------------------------------------------------------------------
 
-class TestGemini25FlashThinking:
+class TestGemini25FlashLiteThinking:
     def test_g9_reasoning_effort_becomes_thinking_budget(self):
         from skell_e_router.gemini_direct import _build_generate_config
         from skell_e_router.utils import _handle_model_specific_params
-        model = MODEL_CONFIG["gemini-2.5-flash"]
+        model = MODEL_CONFIG["gemini-2.5-flash-lite"]
         kwargs = {"reasoning_effort": "low"}
         _handle_model_specific_params(model, kwargs)
         config, _ = _build_generate_config(model, kwargs)
