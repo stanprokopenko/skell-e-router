@@ -24,12 +24,12 @@ Raw logs and the live probe are retained in `.agent-scratch/2026-11-07-gemini-25
 
 - Router release commit: `5c34ea4c72e5fe7731c24eaedd2040e7746a9bea`, pushed.
 - Benchmark commit: `e8215947d7956708afa99aacef2747a20261f8c9`, pushed. It pins that router commit and removes both runnable 2.5 entries. Maintained-runtime validation passed 129 router contract tests and 149 consumer tests; the final launcher regression suite passed 11 tests. Historical viewing still displays 64 saved rows per retired model. Both successor smoke calls scored 1.0, with no errors and $0.00058510 combined cost.
-- Knowledge-base: both successor entries and short/provider-prefixed aliases prepared, 288 router tests and Ruff passed, and both live tool calls passed for $0.00014315. Independent repository review found no blockers or nits and independently reran the tests. Its broad unit and full suites cannot collect on Windows because existing code imports Unix-only `resource`. A Linux runner is still required for those suites.
+- Knowledge-base: Stan clarified that Shakuro maintains the Proko repos and agents must not modify them. All seven tracked-file changes and the new verification document were reverted before any commit or publication. The earlier local tests and live probes cost $0.00014315. A short request for Shakuro was drafted instead. Automatic approval review blocked temporary-folder removal, so unused task logs and the isolated runtime remain locally; they are not application changes.
 - Web: full backend suite passed 2,219 tests; the Angular development build and five saved-chat restoration tests passed. These cover the release script's tests and build. The core chat benchmark passed 11/11 with no errors or skips, costing $0.278575 in reported model usage. Both old saved IDs displayed Gemini 3.8 Flash in the real running app. A saved Pro chat used it for two successful lesson searches and a cited answer with seven retrieved chunks, costing $0.029217. Screenshots, persisted-response evidence and backend logs are retained in that repo.
 
 Total recorded model cost across the task is $0.308701. Retrieval embedding costs are not separately reported by the chat benchmark.
 
 ## Remaining release gates
 
-- Knowledge-base has no branch or commit yet. Its `CLAUDE.md` requires a Jira task number first; Stan has been asked. Follow its Jira branch/commit and merge-request workflow, with Linux application tests before merge.
+- Knowledge-base is outside agent implementation scope. Shakuro must make and release that change; no Jira number or Linux test work is requested from Stan for this agent task.
 - Web changes remain uncommitted and unpushed pending Stan's explicit approval of the picker removal and former Flash users' price increase. Its evidence is in `docs/gemini-25-redirect-verification.md`. Commit frontend and backend together after approval and account for every main-branch commit before pushing, since the push deploys production.

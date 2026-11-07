@@ -2,7 +2,7 @@
 
 ## Gemini 2.5 redirect
 
-- [ ] Finish the prepared consumer releases: Stan must approve the web picker and usage-price change, and provide the knowledge-base Jira task before its branch/commit. Router and benchmark are pushed. Knowledge-base broad tests require Linux. See [verification and release gates](gemini-25-redirect-verification.md).
+- [ ] Ship the prepared web picker and usage-price change after Stan approves it. Router and benchmark are pushed. Shakuro owns the Proko knowledge-base repo; its local implementation was reverted at Stan's request. See [verification and release gates](gemini-25-redirect-verification.md).
 
 ## Provider integration audit, 2026-11-06
 
