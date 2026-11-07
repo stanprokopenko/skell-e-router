@@ -1,0 +1,3422 @@
+{
+  "review_date_local": "2026-11-06",
+  "platform": "Windows x64 CPython 3.11.2",
+  "scope": "LiteLLM dependency closure, not entire router application",
+  "manifest": [
+    {
+      "name": "litellm",
+      "version": "1.108.2",
+      "new_with_extra": false,
+      "requires_dist": [
+        "fastuuid>=0.14.0,<1.0",
+        "filelock>=3.16.1,<4.0",
+        "httpx[http2]>=0.28.0,<1.0",
+        "openai>=2.20.0,<4.0.0",
+        "python-dotenv>=1.0.0,<2.0",
+        "pyyaml>=6.0.3,<7.0",
+        "packaging>=24.0",
+        "importlib-metadata>=8.0.0,<9.0",
+        "tiktoken>=0.8.0,<1.0 ; python_full_version < '3.14'",
+        "tiktoken>=0.12.0,<1.0 ; python_full_version >= '3.14'",
+        "tokenizers>=0.21.0,<1.0",
+        "huggingface-hub>=0.34.0,<2.0",
+        "click>=8.0.0,<9.0",
+        "jinja2>=3.1.6,<4.0",
+        "aiohttp>=3.14.2,<4.0",
+        "async-timeout>=4.0.3,<6.0 ; python_full_version < '3.11'",
+        "pydantic>=2.11.0,<3.0.0 ; python_full_version < '3.14'",
+        "pydantic>=2.12.0,<3.0.0 ; python_full_version >= '3.14'",
+        "pydantic-settings>=2.14.1,<3.0",
+        "jsonschema>=4.0.0,<5.0",
+        "boto3>=1.43.117,<2.0",
+        "certifi>=2026.10.19",
+        "typing-extensions>=4.13.0,<5.0",
+        "gunicorn>=23.0.0,<24.0 ; extra == 'proxy'",
+        "uvicorn>=0.33.0,<1.0 ; extra == 'proxy'",
+        "granian>=2.7.4,<3.0 ; extra == 'proxy'",
+        "uvloop>=0.22.1,<1.0 ; sys_platform != 'win32' and extra == 'proxy'",
+        "fastapi>=0.136.3,<1.0 ; extra == 'proxy'",
+        "starlette>=1.0.1,<2.0 ; extra == 'proxy'",
+        "backoff>=2.2.1,<3.0 ; extra == 'proxy'",
+        "pyyaml>=6.0.3,<7.0 ; extra == 'proxy'",
+        "rq>=2.7.0,<3.0 ; extra == 'proxy'",
+        "orjson>=3.11.6,<4.0 ; extra == 'proxy'",
+        "hiredis>=3.0.0,<4.0 ; extra == 'proxy'",
+        "apscheduler>=3.11.2,<4.0 ; extra == 'proxy'",
+        "fastapi-sso>=0.19.0,<1.0 ; extra == 'proxy'",
+        "pyjwt>=2.13.0,<3.0 ; extra == 'proxy'",
+        "python-multipart>=0.0.27,<1.0 ; extra == 'proxy'",
+        "cryptography>=49.0.0,<51.0 ; extra == 'proxy'",
+        "pynacl>=1.6.2,<2.0 ; extra == 'proxy'",
+        "websockets>=15.0.1,<16.0 ; extra == 'proxy'",
+        "boto3>=1.43.117,<2.0 ; extra == 'proxy'",
+        "azure-identity>=1.25.2,<2.0 ; extra == 'proxy'",
+        "azure-storage-blob>=12.28.0,<13.0 ; extra == 'proxy'",
+        "mcp>=2.2.0,<3 ; extra == 'proxy'",
+        "httpx2>=2.5.0,<3 ; extra == 'proxy'",
+        "pydantic>=2.12.0,<3 ; extra == 'proxy'",
+        "litellm-proxy-extras==0.4.110 ; extra == 'proxy'",
+        "litellm-enterprise==0.1.79.post1 ; extra == 'proxy'",
+        "restrictedpython>=8.5,<9.0 ; extra == 'proxy'",
+        "rich>=13.9.4,<14.0 ; extra == 'proxy'",
+        "inquirerpy>=0.3.4,<1.0 ; extra == 'proxy'",
+        "tomlkit>=0.13.3,<1.0 ; extra == 'proxy'",
+        "polars>=1.38.1,<2.0 ; extra == 'proxy'",
+        "soundfile>=0.12.1,<1.0 ; extra == 'proxy'",
+        "pyroscope-io>=0.8.16,<1.0 ; sys_platform != 'win32' and extra == 'proxy'",
+        "expression>=5.6.0,<6.0 ; extra == 'proxy'",
+        "rich>=13.9.4,<14.0 ; extra == 'cli'",
+        "pyyaml>=6.0.3,<7.0 ; extra == 'cli'",
+        "requests>=2.32.0,<3.0 ; extra == 'cli'",
+        "inquirerpy>=0.3.4,<1.0 ; extra == 'cli'",
+        "keyring>=25.6.0,<26.0 ; extra == 'cli'",
+        "tomlkit>=0.13.3,<1.0 ; extra == 'cli'",
+        "prisma>=0.11.0,<1.0 ; extra == 'extra-proxy'",
+        "psycopg>=3.2,<4.0 ; extra == 'extra-proxy'",
+        "psycopg-binary>=3.2,<4.0 ; extra == 'extra-proxy'",
+        "azure-identity>=1.25.2,<2.0 ; extra == 'extra-proxy'",
+        "azure-keyvault-secrets>=4.10.0,<5.0 ; extra == 'extra-proxy'",
+        "google-cloud-kms>=2.24.2,<3.0 ; extra == 'extra-proxy'",
+        "google-cloud-iam>=2.19.1,<3.0 ; extra == 'extra-proxy'",
+        "resend>=2.23.0,<3.0 ; extra == 'extra-proxy'",
+        "redisvl>=0.4.1,<1.0 ; extra == 'extra-proxy'",
+        "a2a-sdk>=1.1.0,<2.0 ; extra == 'extra-proxy'",
+        "numpydoc>=1.8.0,<2.0 ; extra == 'utils'",
+        "diskcache>=5.6.3,<6.0 ; extra == 'caching'",
+        "mcp>=2.2.0,<3 ; extra == 'mcp'",
+        "httpx2>=2.5.0,<3 ; extra == 'mcp'",
+        "pydantic>=2.12.0,<3 ; extra == 'mcp'",
+        "python3-saml>=1.16.0,<2.0 ; extra == 'saml'",
+        "semantic-router>=0.1.15,<1.0 ; python_full_version < '3.14' and extra == 'semantic-router'",
+        "aurelio-sdk>=0.0.19,<1.0 ; python_full_version < '3.14' and extra == 'semantic-router'",
+        "mlflow>=3.17.2,<4.0 ; extra == 'mlflow'",
+        "grpcio==1.84.1 ; extra == 'grpc'",
+        "google-cloud-speech>=2.40.0,<3.0 ; extra == 'stt-vertex-chirp'",
+        "nvidia-riva-client>=2.15.0 ; extra == 'stt-nvidia-riva'",
+        "soundfile>=0.12.1 ; extra == 'stt-nvidia-riva'",
+        "audioread>=3.0.1 ; extra == 'stt-nvidia-riva'",
+        "numpy>=1.26.0 ; extra == 'stt-nvidia-riva'",
+        "google-cloud-aiplatform>=1.133.0,<2.0 ; extra == 'google'",
+        "aws-sdk-bedrock-runtime[awscrt]>=0.10.0,<0.12.0 ; python_full_version >= '3.12' and extra == 'bedrock-realtime'",
+        "google-cloud-aiplatform>=1.133.0,<2.0 ; extra == 'proxy-runtime'",
+        "google-cloud-speech>=2.40.0,<3.0 ; extra == 'proxy-runtime'",
+        "google-genai>=1.37.0,<2.0 ; extra == 'proxy-runtime'",
+        "anthropic[vertex]>=0.84.0,<1.0 ; extra == 'proxy-runtime'",
+        "grpcio==1.84.1 ; extra == 'proxy-runtime'",
+        "prometheus-client>=0.20.0,<1.0 ; extra == 'proxy-runtime'",
+        "langfuse>=4.7,<5.0 ; extra == 'proxy-runtime'",
+        "opentelemetry-api==1.45.1 ; extra == 'proxy-runtime'",
+        "opentelemetry-sdk==1.45.1 ; extra == 'proxy-runtime'",
+        "opentelemetry-exporter-otlp==1.45.1 ; extra == 'proxy-runtime'",
+        "opentelemetry-instrumentation-fastapi==0.66b1 ; extra == 'proxy-runtime'",
+        "ddtrace>=4.8.2,<5.0 ; extra == 'proxy-runtime'",
+        "sentry-sdk>=2.21.0,<3.0 ; extra == 'proxy-runtime'",
+        "mangum>=0.17.0,<1.0 ; extra == 'proxy-runtime'",
+        "azure-ai-contentsafety>=1.0.0,<2.0 ; extra == 'proxy-runtime'",
+        "azure-storage-file-datalake>=12.20.0,<13.0 ; extra == 'proxy-runtime'",
+        "pypdf>=6.21.2,<7.0 ; extra == 'proxy-runtime'",
+        "llm-sandbox>=0.3.39,<1.0 ; extra == 'proxy-runtime'",
+        "detect-secrets>=1.5.0,<2.0 ; extra == 'proxy-runtime'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/fb/10/7fe09e9fb792e2aa6f090b0c6a0ca8345256ace559d8445277c9afa7b68c/litellm-1.108.2-cp310-abi3-win_amd64.whl",
+      "sha256": "8b29865e28558e396de2365cf7791d253532b448d9a9e1aaf4efcbb0c0223feb"
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.5",
+      "new_with_extra": false,
+      "requires_dist": [
+        "aiohappyeyeballs>=2.5.0",
+        "aiosignal>=1.4.0",
+        "async-timeout<6.0,>=4.0; python_version < \"3.11\"",
+        "attrs>=17.3.0",
+        "frozenlist>=1.1.1",
+        "multidict<8.0,>=4.5",
+        "propcache>=0.2.0",
+        "typing_extensions>=4.4; python_version < \"3.13\"",
+        "yarl<2.0,>=1.25.1",
+        "aiodns>=3.3.0; (sys_platform != \"android\" and sys_platform != \"ios\") and extra == \"speedups\"",
+        "Brotli>=1.2; (platform_python_implementation == \"CPython\" and sys_platform != \"android\" and sys_platform != \"ios\") and extra == \"speedups\"",
+        "brotlicffi>=1.2; platform_python_implementation != \"CPython\" and extra == \"speedups\"",
+        "backports.zstd; (platform_python_implementation == \"CPython\" and python_version < \"3.14\" and sys_platform != \"android\" and sys_platform != \"ios\") and extra == \"speedups\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/0f/15/52b5e65f02b33686ae49f1518548ae4f5a7adaf31d9d3c54fa12a143137b/aiohttp-3.14.5-cp311-cp311-win_amd64.whl",
+      "sha256": "6f275c11d1aa6d4c458e05a68be084efe3c55a113d99e3f46a318098e52948fc"
+    },
+    {
+      "name": "boto3",
+      "version": "1.43.126",
+      "new_with_extra": false,
+      "requires_dist": [
+        "botocore (<1.44.0,>=1.43.126)",
+        "jmespath (<2.0.0,>=0.7.1)",
+        "s3transfer (<0.20.0,>=0.19.0)",
+        "botocore[crt] (<2.0a0,>=1.21.0) ; extra == 'crt'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/1d/e8/52f797a9cb81773c828de5508353a16405666d18f522db08291ca92ecc37/boto3-1.43.126-py3-none-any.whl",
+      "sha256": "dd701a973b02a73930e546a6a15d13edbfbedc3180bb3d55b0a88678c284ccd6"
+    },
+    {
+      "name": "botocore",
+      "version": "1.43.126",
+      "new_with_extra": false,
+      "requires_dist": [
+        "jmespath (<2.0.0,>=0.7.1)",
+        "python-dateutil (<3.0.0,>=2.1)",
+        "urllib3 (!=2.2.0,<3,>=1.25.4)",
+        "awscrt (==0.38.0) ; extra == 'crt'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/ad/e2/c51360cea33895b187f50603f1abcababe76a68f05de273d47f0293c6f42/botocore-1.43.126-py3-none-any.whl",
+      "sha256": "2f2239a47025a2fa173cd145ab8803ac02b76114864bf5b66475ff1cb88e6b0a"
+    },
+    {
+      "name": "click",
+      "version": "8.5.1",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/31/7d/164b7ffc8624fe9efb4221bf9af485d5c1e41b9ae118045d2b6dc5457d8b/click-8.5.1-py3-none-any.whl",
+      "sha256": "8bb5376d2006950386f8c6427613334a2acadc5f559cb80e638d00b4df957e37"
+    },
+    {
+      "name": "fastuuid",
+      "version": "0.14.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/9c/b2/2d40bf00820de94b9280366a122cbaa60090c8cf59e89ac3938cf5d75895/fastuuid-0.14.0-cp311-cp311-win_amd64.whl",
+      "sha256": "e150eab56c95dc9e3fefc234a0eedb342fac433dacc273cd4d150a5b0871e1fa"
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.7",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/15/df/31098c5aeb4d966b553641472bd55fcf5fdfac953549894b8a765ba44e91/filelock-3.32.7-py3-none-any.whl",
+      "sha256": "65ff0d0190ea42038b32bda4b77834fb05be2cad4c5b9b01aa4dfb3614536e52"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "new_with_extra": false,
+      "requires_dist": [
+        "anyio",
+        "certifi",
+        "httpcore==1.*",
+        "idna",
+        "brotli; (platform_python_implementation == 'CPython') and extra == 'brotli'",
+        "brotlicffi; (platform_python_implementation != 'CPython') and extra == 'brotli'",
+        "click==8.*; extra == 'cli'",
+        "pygments==2.*; extra == 'cli'",
+        "rich<14,>=10; extra == 'cli'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "zstandard>=0.18.0; extra == 'zstd'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl",
+      "sha256": "d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "new_with_extra": false,
+      "requires_dist": [
+        "certifi",
+        "h11>=0.16",
+        "anyio<5.0,>=4.0; extra == 'asyncio'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "trio<1.0,>=0.22.0; extra == 'trio'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl",
+      "sha256": "2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55"
+    },
+    {
+      "name": "httpx2",
+      "version": "2.16.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "anyio>=4.10; sys_platform != 'emscripten'",
+        "httpcore2==2.16.0; sys_platform != 'emscripten'",
+        "httpx2-jsfetch; sys_platform == 'emscripten' and python_version >= '3.12'",
+        "idna>=3.18",
+        "truststore>=0.10; sys_platform != 'emscripten'",
+        "typing-extensions>=4.5.0; python_version < '3.13'",
+        "brotli>=1.2.0; (platform_python_implementation == 'CPython') and extra == 'brotli'",
+        "brotlicffi>=1.2.0.2; (platform_python_implementation != 'CPython') and extra == 'brotli'",
+        "click>=8.4.2; extra == 'cli'",
+        "pygments==2.*; extra == 'cli'",
+        "rich<16,>=10; extra == 'cli'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "wsproto>=1.2; extra == 'ws'",
+        "backports-zstd>=1.0.0; (python_version <= '3.13') and extra == 'zstd'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/7b/3d/2e4bc4fd1ef9770871669adb348d612a6e4786b303a23f9935b81c48dd60/httpx2-2.16.0-py3-none-any.whl",
+      "sha256": "fd2c5d7909e8d86fe92d53020c310ca0e4e431b838c207c5754b9bbf0308d49a"
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.16.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "h11>=0.16",
+        "truststore>=0.10",
+        "anyio<5.0,>=4.5.0; extra == 'asyncio'",
+        "h2<5,>=3; extra == 'http2'",
+        "socksio==1.*; extra == 'socks'",
+        "trio<1.0,>=0.34.0; extra == 'trio'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/af/c2/ce417c397afa5181f0e3c6ff01a4d01639414e1adef08730d97571297151/httpcore2-2.16.0-py3-none-any.whl",
+      "sha256": "5c4358319f2602d984ad93182c9fee5160f22e9da7babdda870a5e7c4e2dc34f"
+    },
+    {
+      "name": "h2",
+      "version": "4.4.1",
+      "new_with_extra": false,
+      "requires_dist": [
+        "hyperframe<7,>=6.1",
+        "hpack<5,>=4.2"
+      ],
+      "url": "https://files.pythonhosted.org/packages/7e/22/e85faf23bd72a92d1921e37d674ca56eb298a3c8be31fdecef0ff2b3aaac/h2-4.4.1-py3-none-any.whl",
+      "sha256": "0e25f1462b23c9cb82d9eb02e28bc706dac2a68cb457c6a0d74d63c8a2a5d0e6"
+    },
+    {
+      "name": "hpack",
+      "version": "4.2.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/71/b4/4a9fcfb2aef6ba44d9073ecd301443aa00b3dac95de5619f2a7de7ec8a91/hpack-4.2.0-py3-none-any.whl",
+      "sha256": "858ac0b02280fa582b5080d68db0899c62a80375e0e5413a74970c5e518b6986"
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "1.33.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "click<9.0.0,>=8.4.2",
+        "filelock>=3.10.0",
+        "fsspec>=2023.5.0",
+        "hf-xet<2.0.0,>=1.6.0; platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"arm64\" or platform_machine == \"aarch64\"",
+        "httpx<1,>=0.23.0",
+        "packaging>=20.9",
+        "pyyaml>=5.1",
+        "tomli>=1.1.0; python_version < \"3.11\"",
+        "tqdm>=4.42.1",
+        "typing-extensions>=4.1.0",
+        "authlib>=1.3.2; extra == \"oauth\"",
+        "fastapi; extra == \"oauth\"",
+        "httpx; extra == \"oauth\"",
+        "itsdangerous; extra == \"oauth\"",
+        "torch; extra == \"torch\"",
+        "safetensors[torch]; extra == \"torch\"",
+        "toml; extra == \"fastai\"",
+        "fastai>=2.4; extra == \"fastai\"",
+        "fastcore>=1.3.27; extra == \"fastai\"",
+        "hf-xet<2.0.0,>=1.6.0; extra == \"hf-xet\"",
+        "mcp<2.0.0,>=1.9.4; extra == \"mcp\"",
+        "authlib>=1.3.2; extra == \"testing\"",
+        "fastapi; extra == \"testing\"",
+        "httpx; extra == \"testing\"",
+        "itsdangerous; extra == \"testing\"",
+        "jedi; extra == \"testing\"",
+        "Jinja2; extra == \"testing\"",
+        "pytest>=8.4.2; extra == \"testing\"",
+        "pytest-cov; extra == \"testing\"",
+        "pytest-env; extra == \"testing\"",
+        "pytest-xdist; extra == \"testing\"",
+        "pytest-vcr; extra == \"testing\"",
+        "pytest-asyncio; extra == \"testing\"",
+        "pytest-rerunfailures>=16.2; extra == \"testing\"",
+        "pytest-mock; extra == \"testing\"",
+        "urllib3<2.0; extra == \"testing\"",
+        "soundfile; extra == \"testing\"",
+        "Pillow; extra == \"testing\"",
+        "numpy; extra == \"testing\"",
+        "duckdb; extra == \"testing\"",
+        "fastapi; extra == \"testing\"",
+        "gradio>=5.0.0; extra == \"gradio\"",
+        "requests; extra == \"gradio\"",
+        "typing-extensions>=4.8.0; extra == \"typing\"",
+        "types-PyYAML; extra == \"typing\"",
+        "types-simplejson; extra == \"typing\"",
+        "types-toml; extra == \"typing\"",
+        "types-tqdm; extra == \"typing\"",
+        "types-urllib3; extra == \"typing\"",
+        "ruff>=0.9.0; extra == \"quality\"",
+        "mypy==1.15.0; extra == \"quality\"",
+        "libcst>=1.4.0; extra == \"quality\"",
+        "ty; extra == \"quality\"",
+        "authlib>=1.3.2; extra == \"all\"",
+        "fastapi; extra == \"all\"",
+        "httpx; extra == \"all\"",
+        "itsdangerous; extra == \"all\"",
+        "jedi; extra == \"all\"",
+        "Jinja2; extra == \"all\"",
+        "pytest>=8.4.2; extra == \"all\"",
+        "pytest-cov; extra == \"all\"",
+        "pytest-env; extra == \"all\"",
+        "pytest-xdist; extra == \"all\"",
+        "pytest-vcr; extra == \"all\"",
+        "pytest-asyncio; extra == \"all\"",
+        "pytest-rerunfailures>=16.2; extra == \"all\"",
+        "pytest-mock; extra == \"all\"",
+        "urllib3<2.0; extra == \"all\"",
+        "soundfile; extra == \"all\"",
+        "Pillow; extra == \"all\"",
+        "numpy; extra == \"all\"",
+        "duckdb; extra == \"all\"",
+        "fastapi; extra == \"all\"",
+        "ruff>=0.9.0; extra == \"all\"",
+        "mypy==1.15.0; extra == \"all\"",
+        "libcst>=1.4.0; extra == \"all\"",
+        "ty; extra == \"all\"",
+        "typing-extensions>=4.8.0; extra == \"all\"",
+        "types-PyYAML; extra == \"all\"",
+        "types-simplejson; extra == \"all\"",
+        "types-toml; extra == \"all\"",
+        "types-tqdm; extra == \"all\"",
+        "types-urllib3; extra == \"all\"",
+        "authlib>=1.3.2; extra == \"dev\"",
+        "fastapi; extra == \"dev\"",
+        "httpx; extra == \"dev\"",
+        "itsdangerous; extra == \"dev\"",
+        "jedi; extra == \"dev\"",
+        "Jinja2; extra == \"dev\"",
+        "pytest>=8.4.2; extra == \"dev\"",
+        "pytest-cov; extra == \"dev\"",
+        "pytest-env; extra == \"dev\"",
+        "pytest-xdist; extra == \"dev\"",
+        "pytest-vcr; extra == \"dev\"",
+        "pytest-asyncio; extra == \"dev\"",
+        "pytest-rerunfailures>=16.2; extra == \"dev\"",
+        "pytest-mock; extra == \"dev\"",
+        "urllib3<2.0; extra == \"dev\"",
+        "soundfile; extra == \"dev\"",
+        "Pillow; extra == \"dev\"",
+        "numpy; extra == \"dev\"",
+        "duckdb; extra == \"dev\"",
+        "fastapi; extra == \"dev\"",
+        "ruff>=0.9.0; extra == \"dev\"",
+        "mypy==1.15.0; extra == \"dev\"",
+        "libcst>=1.4.0; extra == \"dev\"",
+        "ty; extra == \"dev\"",
+        "typing-extensions>=4.8.0; extra == \"dev\"",
+        "types-PyYAML; extra == \"dev\"",
+        "types-simplejson; extra == \"dev\"",
+        "types-toml; extra == \"dev\"",
+        "types-tqdm; extra == \"dev\"",
+        "types-urllib3; extra == \"dev\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/fc/16/963096d224b80909432dc16561a615fd33d2d13beef3ce4c63fa25e40867/huggingface_hub-1.33.0-py3-none-any.whl",
+      "sha256": "04e434b06e100eddbce9a6e817d72693a7884b10a79bd67ab48080d5c07eb899"
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.8.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "pytest ; extra == 'tests'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/97/4d/2c76a992b370ff77d0b5219275779f8c9a7dabb8ee649deb265dfed84d0f/hf_xet-1.8.0-cp38-abi3-win_amd64.whl",
+      "sha256": "92188598dedc1e1f5609bd718d4db8687a6c89915553912571e2f587892eecec"
+    },
+    {
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/48/30/47d0bf6072f7252e6521f3447ccfa40b421b6824517f82854703d0f5a98b/hyperframe-6.1.0-py3-none-any.whl",
+      "sha256": "b03380493a519fce58ea5af42e4a42317bf9bd425596f7a0835ffce80f1a42e5"
+    },
+    {
+      "name": "importlib_metadata",
+      "version": "8.9.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "zipp>=3.20",
+        "pytest!=8.1.*,>=6; extra == \"test\"",
+        "packaging; extra == \"test\"",
+        "pyfakefs; extra == \"test\"",
+        "pytest-perf>=0.9.2; extra == \"test\"",
+        "sphinx>=3.5; extra == \"doc\"",
+        "jaraco.packaging>=9.3; extra == \"doc\"",
+        "rst.linker>=1.9; extra == \"doc\"",
+        "furo; extra == \"doc\"",
+        "sphinx-lint; extra == \"doc\"",
+        "jaraco.tidelift>=1.4; extra == \"doc\"",
+        "ipython; extra == \"perf\"",
+        "pytest-checkdocs>=2.14; extra == \"check\"",
+        "pytest-ruff>=0.2.1; sys_platform != \"cygwin\" and extra == \"check\"",
+        "pytest-cov; extra == \"cover\"",
+        "pytest-enabler>=3.4; extra == \"enabler\"",
+        "pytest-mypy>=1.0.1; platform_python_implementation != \"PyPy\" and extra == \"type\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/7d/f9/97f2ca8bb3ec6e4b1d64f983ebe98b9a192faddff67fac3d6303a537e670/importlib_metadata-8.9.0-py3-none-any.whl",
+      "sha256": "e0f761b6ea91ced3b0844c14c9d955224d538105921f8e6754c00f6ca79fba7f"
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "new_with_extra": false,
+      "requires_dist": [
+        "MarkupSafe>=2.0",
+        "Babel>=2.7 ; extra == \"i18n\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl",
+      "sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl",
+      "sha256": "a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64"
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "jsonschema-specifications>=2023.03.6",
+        "referencing>=0.28.4",
+        "rpds-py>=0.25.0",
+        "fqdn; extra == 'format'",
+        "idna; extra == 'format'",
+        "isoduration; extra == 'format'",
+        "jsonpointer>1.13; extra == 'format'",
+        "rfc3339-validator; extra == 'format'",
+        "rfc3987; extra == 'format'",
+        "uri-template; extra == 'format'",
+        "webcolors>=1.11; extra == 'format'",
+        "fqdn; extra == 'format-nongpl'",
+        "idna; extra == 'format-nongpl'",
+        "isoduration; extra == 'format-nongpl'",
+        "jsonpointer>1.13; extra == 'format-nongpl'",
+        "rfc3339-validator; extra == 'format-nongpl'",
+        "rfc3986-validator>0.1.0; extra == 'format-nongpl'",
+        "rfc3987-syntax>=1.1.0; extra == 'format-nongpl'",
+        "uri-template; extra == 'format-nongpl'",
+        "webcolors>=24.6.0; extra == 'format-nongpl'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/69/90/f63fb5873511e014207a475e2bb4e8b2e570d655b00ac19a9a0ca0a385ee/jsonschema-4.26.0-py3-none-any.whl",
+      "sha256": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce"
+    },
+    {
+      "name": "mcp",
+      "version": "2.3.0",
+      "new_with_extra": true,
+      "requires_dist": [
+        "anyio>=4.10; python_version >= '3.14'",
+        "anyio>=4.9; python_version < '3.14'",
+        "httpx2>=2.10.0",
+        "jsonschema>=4.20.0",
+        "mcp-types==2.3.0",
+        "opentelemetry-api>=1.28.0",
+        "pydantic>=2.12.0",
+        "pyjwt[crypto]>=2.10.1",
+        "python-multipart>=0.0.9",
+        "pywin32>=311; sys_platform == 'win32'",
+        "sse-starlette>=3.0.0",
+        "starlette>=0.27; python_version < '3.14'",
+        "starlette>=0.48.0; python_version >= '3.14'",
+        "typing-extensions>=4.13.0",
+        "typing-inspection>=0.4.1",
+        "uvicorn>=0.31.1; sys_platform != 'emscripten'",
+        "python-dotenv>=1.0.0; extra == 'cli'",
+        "typer>=0.16.0; extra == 'cli'",
+        "rich>=13.9.4; extra == 'rich'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/20/d7/4a2878f128df729db3ca04e71bfce26405cc2e0c9ebe19c592feeb4c61b9/mcp-2.3.0-py3-none-any.whl",
+      "sha256": "dd0c44c089d16453e8ae31a3877a0054d7a2314caaa81f5e0541b9b1734b2377"
+    },
+    {
+      "name": "mcp-types",
+      "version": "2.3.0",
+      "new_with_extra": true,
+      "requires_dist": [
+        "pydantic>=2.12.0",
+        "typing-extensions>=4.13.0"
+      ],
+      "url": "https://files.pythonhosted.org/packages/ce/48/32583066b155bb5d4507e7887dc88ee23118cc4de8e2a12870c49719e2a8/mcp_types-2.3.0-py3-none-any.whl",
+      "sha256": "968efdbdaedfab06adae40d378a34395f1090c5921d4be3c9cde283aaf76d91d"
+    },
+    {
+      "name": "multidict",
+      "version": "7.2.1",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/1f/02/41d769148f32c9bd535fd0ddd946c4e42f38acaddf7899f3bf49d9e67703/multidict-7.2.1-cp311-cp311-win_amd64.whl",
+      "sha256": "a789e3d27fc5665cc0477f10a35a89383313e4c9cf8b5e6af7ea71f039cdcc0e"
+    },
+    {
+      "name": "openai",
+      "version": "3.46.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "anyio<5,>=4.10.0",
+        "httpx2<3,>=2.12.0",
+        "jiter<1,>=0.16.0",
+        "pydantic!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.*,<3,>=1.10.13",
+        "sniffio",
+        "typing-extensions<5,>=4.14",
+        "aiohttp>=3.14.4; extra == 'aiohttp'",
+        "multidict>=6.9.1; extra == 'aiohttp'",
+        "yarl>=1.25.1; extra == 'aiohttp'",
+        "botocore<2,>=1.40.0; extra == 'bedrock'",
+        "urllib3<3,>=2.7.0; extra == 'bedrock'",
+        "numpy>=1; extra == 'datalib'",
+        "pandas>=1.2.3; extra == 'datalib'",
+        "websockets<16,>=13; extra == 'realtime'",
+        "google-auth[requests]<3,>=2.36; extra == 'vertex'",
+        "numpy>=2.0.2; extra == 'voice-helpers'",
+        "sounddevice>=0.5.1; extra == 'voice-helpers'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/f4/63/454e6faad68ac903e7669932db8d0a91c95dfca829ec9476e52045b17684/openai-3.46.0-py3-none-any.whl",
+      "sha256": "7b650117e9bf539029bf880c2eff94a26f281394f6572284efa5d068d4b1c98e"
+    },
+    {
+      "name": "anyio",
+      "version": "4.16.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "exceptiongroup>=1.0.2; python_version < \"3.11\"",
+        "idna>=2.8",
+        "typing_extensions>=4.16.0; python_version < \"3.15\"",
+        "trio>=0.32.0; extra == \"trio\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/a9/16/7757fb84c819accc7d7e9af5291b261e4abb8627ee040f99e7d35ef2457a/anyio-4.16.0-py3-none-any.whl",
+      "sha256": "c66ae634e0b8228396b801741beb3294326d4b6102f7bba4041c0dfb58c29026"
+    },
+    {
+      "name": "jiter",
+      "version": "0.19.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/6b/97/0550927e719aca463c4ef4858ade937c434efbb4a68a66a6943cb23167fd/jiter-0.19.0-cp311-cp311-win_amd64.whl",
+      "sha256": "7b9107bb4ec6889f943c948d69cee0f0ef64f5c5a7f6a8a6a6c5f23e8ff5f557"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.3",
+      "new_with_extra": false,
+      "requires_dist": [
+        "annotated-types>=0.6.0",
+        "pydantic-core==2.50.4",
+        "typing-extensions>=4.16.0",
+        "typing-inspection>=0.4.4",
+        "email-validator>=2.0.0; extra == 'email'",
+        "tzdata; (platform_system == 'Windows') and extra == 'timezone'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/72/b8/b864503789ef5c58597d2a7b4adbee62c26440ab1e682581fc6838df8947/pydantic-2.14.3-py3-none-any.whl",
+      "sha256": "3f7b347782ab7e4cf4c798496ae3a82787d9f21ec12676a9c564355eeef8daa8"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.4",
+      "new_with_extra": false,
+      "requires_dist": [
+        "typing-extensions>=4.16.0"
+      ],
+      "url": "https://files.pythonhosted.org/packages/c6/06/cebeeb7a8e87b42a3d8bc189d0d400e47df5d1736cb326764bae8a74c433/pydantic_core-2.50.4-cp311-cp311-win_amd64.whl",
+      "sha256": "15bece43a02ad543c621c8305e67dedb5f27d378c5ba741e5a2c36523f8ef37f"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.16.2",
+      "new_with_extra": false,
+      "requires_dist": [
+        "pydantic>=2.7.0",
+        "python-dotenv>=1.2.2",
+        "typing-extensions>=4.0.0",
+        "typing-inspection>=0.4.0",
+        "boto3>=1.35.0; extra == 'aws-secrets-manager'",
+        "boto3>=1.35.0; extra == 'aws-systems-manager'",
+        "azure-identity>=1.16.0; extra == 'azure-key-vault'",
+        "azure-keyvault-secrets>=4.8.0; extra == 'azure-key-vault'",
+        "google-cloud-secret-manager>=2.23.1; extra == 'gcp-secret-manager'",
+        "pyyaml>=6.0.1; extra == 'yaml'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/39/88/4131c51ff87b7cd7f82a1194d0c0a2b7ca68c72d9da04c3b7e69ab91a79f/pydantic_settings-2.16.2-py3-none-any.whl",
+      "sha256": "8d523e5c129b097686bde019bd6109bff53f4c8c3f63f1ddf9933ffa42e5ab4f"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "six >=1.5"
+      ],
+      "url": "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "new_with_extra": false,
+      "requires_dist": [
+        "click>=5.0; extra == \"cli\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/60/d1/38f3a3405989a89ac18390803e70c6ad7c7760da4f9b83cbeca0c44a0c72/python_dotenv-1.2.4-py3-none-any.whl",
+      "sha256": "42269a8a5b3fd54ffa6f3d84b18abed50064717576b4ecf03dc4a55d8aa04fdc"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/da/e3/ea007450a105ae919a72393cb06f122f288ef60bba2dc64b26e2646fa315/pyyaml-6.0.3-cp311-cp311-win_amd64.whl",
+      "sha256": "9f3bfb4965eb874431221a3ff3fdcddc7e74e3b07799e0e84ca4a0f867d449bf"
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.3",
+      "new_with_extra": false,
+      "requires_dist": [
+        "botocore (<2.0a.0,>=1.37.4)",
+        "botocore[crt] (<2.0a.0,>=1.37.4) ; extra == 'crt'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/e2/a4/88f9e10498759121060b8050a1554753dfc04df39bbbcc7aad9ecc8d9440/s3transfer-0.19.3-py3-none-any.whl",
+      "sha256": "24eb7535804306355e31c952a90022bf5b2f9d760f9a11062c7493a217c08553"
+    },
+    {
+      "name": "tiktoken",
+      "version": "0.14.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "regex",
+        "requests",
+        "blobfile>=3; extra == \"blobfile\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/24/7f/fff1217240343c0c11b5938b98aeae0e3a266cacfac25f86f91cdcd748f0/tiktoken-0.14.0-cp311-cp311-win_amd64.whl",
+      "sha256": "c77d4a3e1deb2707819df92046b89aad1ac81d27e07616b797cbff3f62c037da"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.3",
+      "new_with_extra": false,
+      "requires_dist": [
+        "huggingface-hub>=0.16.4,<3.0",
+        "tokenizers[testing] ; extra == 'dev'",
+        "sphinx ; extra == 'docs'",
+        "sphinx-rtd-theme ; extra == 'docs'",
+        "setuptools-rust ; extra == 'docs'",
+        "pytest ; extra == 'testing'",
+        "pytest-asyncio ; extra == 'testing'",
+        "requests ; extra == 'testing'",
+        "numpy ; extra == 'testing'",
+        "datasets ; extra == 'testing'",
+        "ruff ; extra == 'testing'",
+        "ty ; extra == 'testing'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/d1/6c/24f074c9a0efb98e61b20aafe6b2641922d5db24e447d5d6daffd9e17555/tokenizers-0.23.3-cp310-abi3-win_amd64.whl",
+      "sha256": "1f0823bb00c5fdc98e487354d54dd55a03848d61a1a0bf29a68c77f24f3b26c3"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "brotli>=1.2.0; (platform_python_implementation == 'CPython') and extra == 'brotli'",
+        "brotlicffi>=1.2.0.0; (platform_python_implementation != 'CPython') and extra == 'brotli'",
+        "h2<5,>=4; extra == 'h2'",
+        "pysocks!=1.5.7,<2.0,>=1.5.6; extra == 'socks'",
+        "backports-zstd>=1.0.0; (python_version < '3.14') and extra == 'zstd'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+    },
+    {
+      "name": "yarl",
+      "version": "1.25.1",
+      "new_with_extra": false,
+      "requires_dist": [
+        "idna>=2.0",
+        "multidict>=4.0",
+        "propcache>=0.2.1"
+      ],
+      "url": "https://files.pythonhosted.org/packages/aa/9d/8cdceec66a9b940700cb45931741403f045b162afd79bcb93c41cadd0972/yarl-1.25.1-cp311-cp311-win_amd64.whl",
+      "sha256": "d7306dee25b8a0e737363f347362b875094b4dc4e367311470656ae420fdbf8e"
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/71/43/1947f06babed6b3f1d7f38b0c767f52df66bfb2bc10b468c4a7de9eceff2/aiohappyeyeballs-2.7.1-py3-none-any.whl",
+      "sha256": "9243213661e29250eb41368e5daa826fc017156c3b8a11440826b2e3ed376472"
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "frozenlist>=1.1.0",
+        "typing-extensions>=4.2; python_version < \"3.13\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/fb/76/641ae371508676492379f16e2fa48f4e2c11741bd63c48be4b12a6b09cba/aiosignal-1.4.0-py3-none-any.whl",
+      "sha256": "053243f8b92b990551949e63930a839ff0cf0b0ebbe0597b0f3fb19e1a0fe82e"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/99/91/8acff4f5e50511b911bbccb72b8628a49c68ce14148cd9f6431094859a90/annotated_types-0.8.0-py3-none-any.whl",
+      "sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+      "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.10.23",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/32/d1/a3652fe2c19134d0d15922177821d863cbd7e842d53a21bbe7e8e3a1b5ac/certifi-2026.10.23-py3-none-any.whl",
+      "sha256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/0a/f5/603d0d6a02cfd4c8f2a095a54672b3cf967ad688a60fb9faf04fc4887f65/frozenlist-1.8.0-cp311-cp311-win_amd64.whl",
+      "sha256": "ac913f8403b36a2c8610bbfd25b8013488533e71e62b4b4adce9c86c8cea905b"
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "adlfs; extra == 'abfs'",
+        "adlfs; extra == 'adl'",
+        "pyarrow>=1; extra == 'arrow'",
+        "dask; extra == 'dask'",
+        "distributed; extra == 'dask'",
+        "pre-commit; extra == 'dev'",
+        "ruff>=0.5; extra == 'dev'",
+        "numpydoc; extra == 'doc'",
+        "sphinx; extra == 'doc'",
+        "sphinx-design; extra == 'doc'",
+        "sphinx-rtd-theme; extra == 'doc'",
+        "yarl; extra == 'doc'",
+        "dropbox; extra == 'dropbox'",
+        "dropboxdrivefs; extra == 'dropbox'",
+        "requests; extra == 'dropbox'",
+        "adlfs; extra == 'full'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'full'",
+        "dask; extra == 'full'",
+        "distributed; extra == 'full'",
+        "dropbox; extra == 'full'",
+        "dropboxdrivefs; extra == 'full'",
+        "fusepy; extra == 'full'",
+        "gcsfs>=2026.4.0; extra == 'full'",
+        "libarchive-c; extra == 'full'",
+        "ocifs; extra == 'full'",
+        "panel; extra == 'full'",
+        "paramiko; extra == 'full'",
+        "pyarrow>=1; extra == 'full'",
+        "pygit2; extra == 'full'",
+        "requests; extra == 'full'",
+        "s3fs>=2026.6.0; extra == 'full'",
+        "smbprotocol; extra == 'full'",
+        "tqdm; extra == 'full'",
+        "fusepy; extra == 'fuse'",
+        "gcsfs>=2026.4.0; extra == 'gcs'",
+        "pygit2; extra == 'git'",
+        "requests; extra == 'github'",
+        "gcsfs>=2026.4.0; extra == 'gs'",
+        "panel; extra == 'gui'",
+        "pyarrow>=1; extra == 'hdfs'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'http'",
+        "libarchive-c; extra == 'libarchive'",
+        "ocifs; extra == 'oci'",
+        "s3fs>=2026.6.0; extra == 's3'",
+        "paramiko; extra == 'sftp'",
+        "smbprotocol; extra == 'smb'",
+        "paramiko; extra == 'ssh'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'test'",
+        "numpy; extra == 'test'",
+        "pytest; extra == 'test'",
+        "pytest-asyncio!=0.22.0; extra == 'test'",
+        "pytest-benchmark; extra == 'test'",
+        "pytest-cov; extra == 'test'",
+        "pytest-mock; extra == 'test'",
+        "pytest-recording; extra == 'test'",
+        "pytest-rerunfailures; extra == 'test'",
+        "requests; extra == 'test'",
+        "aiobotocore<3.0.0,>=2.5.4; extra == 'test-downstream'",
+        "dask[dataframe,test]; extra == 'test-downstream'",
+        "moto[server]<5,>4; extra == 'test-downstream'",
+        "pytest-timeout; extra == 'test-downstream'",
+        "xarray; extra == 'test-downstream'",
+        "zarr; extra == 'test-downstream'",
+        "adlfs; extra == 'test-full'",
+        "aiohttp!=4.0.0a0,!=4.0.0a1; extra == 'test-full'",
+        "backports-zstd; (python_version < '3.14') and extra == 'test-full'",
+        "cloudpickle; extra == 'test-full'",
+        "dask; extra == 'test-full'",
+        "distributed; extra == 'test-full'",
+        "dropbox; extra == 'test-full'",
+        "dropboxdrivefs; extra == 'test-full'",
+        "fastparquet; extra == 'test-full'",
+        "fusepy; extra == 'test-full'",
+        "gcsfs>=2026.4.0; extra == 'test-full'",
+        "jinja2; extra == 'test-full'",
+        "kerchunk; extra == 'test-full'",
+        "libarchive-c; extra == 'test-full'",
+        "lz4; extra == 'test-full'",
+        "notebook; extra == 'test-full'",
+        "numpy; extra == 'test-full'",
+        "ocifs; extra == 'test-full'",
+        "pandas<3.0.0; extra == 'test-full'",
+        "panel; extra == 'test-full'",
+        "paramiko; extra == 'test-full'",
+        "pyarrow>=1; extra == 'test-full'",
+        "pyftpdlib; extra == 'test-full'",
+        "pygit2; extra == 'test-full'",
+        "pytest; extra == 'test-full'",
+        "pytest-asyncio!=0.22.0; extra == 'test-full'",
+        "pytest-benchmark; extra == 'test-full'",
+        "pytest-cov; extra == 'test-full'",
+        "pytest-mock; extra == 'test-full'",
+        "pytest-recording; extra == 'test-full'",
+        "pytest-rerunfailures; extra == 'test-full'",
+        "python-snappy; extra == 'test-full'",
+        "requests; extra == 'test-full'",
+        "s3fs>=2026.6.0; extra == 'test-full'",
+        "smbprotocol; extra == 'test-full'",
+        "tqdm; extra == 'test-full'",
+        "urllib3; extra == 'test-full'",
+        "zarr<3.2.0; extra == 'test-full'",
+        "zstandard; (python_version < '3.14') and extra == 'test-full'",
+        "tqdm; extra == 'tqdm'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/6c/c0/a98505f18594f1bce828bb159cec0fcf9860562f1a2c85913409fc8f3d9e/fsspec-2026.9.0-py3-none-any.whl",
+      "sha256": "8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl",
+      "sha256": "63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86"
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "new_with_extra": false,
+      "requires_dist": [
+        "ruff >= 0.16.0 ; extra == \"all\"",
+        "mypy >= 1.11.2 ; extra == \"all\"",
+        "ty >= 0.0.37 ; extra == \"all\"",
+        "pytest >= 8.3.2 ; extra == \"all\"",
+        "hypothesis >= 6.141.1 ; extra == \"all\"",
+        "coverage >= 7.10.0 ; extra == \"all\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/58/a2/bb081bab032533a855d44de1d56f8e8426114ff1ba5d1f07a438a0a654f8/idna-3.20-py3-none-any.whl",
+      "sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c"
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "new_with_extra": false,
+      "requires_dist": [
+        "referencing>=0.31.0"
+      ],
+      "url": "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl",
+      "sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe"
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.4",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/91/89/f2b509f7bf79352e40117824c1070dbeafd4df67031d3fa98165a3134228/markupsafe-3.0.4-cp311-cp311-win_amd64.whl",
+      "sha256": "fdb4ca07ab75ffadab4a8b135ad59cdbb3156b99310f3d565370da74a15d6bd3"
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "new_with_extra": true,
+      "requires_dist": [
+        "typing-extensions>=4.5.0"
+      ],
+      "url": "https://files.pythonhosted.org/packages/a9/2d/610db864d7513158cebb8f36cc88e67e73bd6c7aa1905ef18d89e1281c81/opentelemetry_api-1.45.2-py3-none-any.whl",
+      "sha256": "2cbd737377e710ee740d261c94e93fa0f08e6d037c18f17513cc0a2d94479a34"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.4",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/0a/8a/3db6a3543d8101263b4c52978b6276a04ead2caff2c5ab880d934f47bd89/propcache-0.5.4-cp311-cp311-win_amd64.whl",
+      "sha256": "e904d4d01f36bd6e197590be1533c44e06058771e0746dd073a8ebb3ef880858"
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.15.1",
+      "new_with_extra": true,
+      "requires_dist": [
+        "typing_extensions>=4.0; python_version < \"3.11\"",
+        "cryptography>=3.4.0; extra == \"crypto\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/50/ca/44de4e75f8aadc457f0634be3b542815078ded46dca30efb960edeecad6e/pyjwt-2.15.1-py3-none-any.whl",
+      "sha256": "42d59d631f7768a1028a64c7ff581a9bf7519804daf91fc5b6c56e30eec5e193"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "new_with_extra": true,
+      "requires_dist": [
+        "cffi>=2.0.0 ; platform_python_implementation != 'PyPy'",
+        "typing-extensions>=4.13.2 ; python_full_version < '3.11'",
+        "bcrypt>=3.1.5 ; extra == 'ssh'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/9a/4f/adfc442765721292fff86d314ce385d3249d22db42295c0dd057727b60f3/cryptography-50.0.2-cp311-abi3-win_amd64.whl",
+      "sha256": "7afa5a6602a9f29af1f3a2965f831bae7c9d5d597b7cbb716d41ab3b7d89879c"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "new_with_extra": true,
+      "requires_dist": [
+        "pycparser; implementation_name != \"PyPy\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/73/c0/77ba02423c2f7d7091143c45cd49e0e6575c4c1967394bb542bd923a9b74/cffi-2.1.1-cp311-cp311-win_amd64.whl",
+      "sha256": "42f6930c31dc7f50732c9ae793c2786c7b6b044195967bbdde40bb9be81c4cc0"
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.33",
+      "new_with_extra": true,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/dd/1b/6b1b4164ec734cac911460ab599bfbe46afedd42c5c9627fe4235942c314/python_multipart-0.0.33-py3-none-any.whl",
+      "sha256": "8f16c07b36add9da6b2ee87d3efcaf0a45a6de9c3d0a5dd94e9ccf7675a7bc45"
+    },
+    {
+      "name": "pywin32",
+      "version": "312",
+      "new_with_extra": true,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/35/c4/dcd2d62b5944b6d5db53413a5899016ccd57ffcb7278f3f81655d25d2027/pywin32-312-cp311-cp311-win_amd64.whl",
+      "sha256": "d11417d84412f859b722fad0841b3614459ed0047f7542d8362e77884f6b6e8a"
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "new_with_extra": false,
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "rpds-py>=0.7.0",
+        "typing-extensions>=4.4.0; python_version < '3.13'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/2c/58/ca301544e1fa93ed4f80d724bf5b194f6e4b945841c5bfd555878eea9fcb/referencing-0.37.0-py3-none-any.whl",
+      "sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231"
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/df/c9/384a9b62f8cd89c8e3e609b8c9052c140e8c01d807261e0517c904b8bf29/rpds_py-2026.9.1-cp311-cp311-win_amd64.whl",
+      "sha256": "ce4d4f52e2a4324396caddbd45a97d8d7be5f42edd25d2355282a9c34f9b2f7f"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+      "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274"
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.6.0",
+      "new_with_extra": true,
+      "requires_dist": [
+        "starlette>=0.49.1",
+        "anyio>=4.7.0",
+        "uvicorn>=0.34.0; extra == \"examples\"",
+        "fastapi>=0.115.12; extra == \"examples\"",
+        "pydantic>=2; extra == \"examples\"",
+        "sqlalchemy[asyncio]>=2.0.41; extra == \"examples-db\"",
+        "aiosqlite>=0.21.0; extra == \"examples-db\"",
+        "uvicorn>=0.34.0; extra == \"uvicorn\"",
+        "granian>=2.3.1; extra == \"granian\"",
+        "daphne>=4.2.0; extra == \"daphne\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/cf/49/35053078cdfcf639237e8bee6dc6f34f1b3a3cc8d01800a1e213e1660ff6/sse_starlette-3.6.0-py3-none-any.whl",
+      "sha256": "e4dfa4d237d2712cb2b4d4918eda9b457cd6b44bbecdc838af75de836565bafd"
+    },
+    {
+      "name": "starlette",
+      "version": "1.10.0",
+      "new_with_extra": true,
+      "requires_dist": [
+        "anyio<5,>=4.0.0",
+        "typing-extensions>=4.10.0; python_version < '3.13'",
+        "httpx2>=2.0.0; extra == 'full'",
+        "httpx<0.29.0,>=0.27.0; extra == 'full'",
+        "itsdangerous; extra == 'full'",
+        "jinja2; extra == 'full'",
+        "opentelemetry-api; extra == 'full'",
+        "python-multipart>=0.0.18; extra == 'full'",
+        "pyyaml; extra == 'full'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/88/2e/947cfe02def9371c07cd5bf5b6b61c829e9aecb9904db02a66cfafbc1eec/starlette-1.10.0-py3-none-any.whl",
+      "sha256": "478c0ab3b4ced6e82719849c118fa406f0278a3499c1a898cd15cd31bdc38ce4"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "new_with_extra": false,
+      "requires_dist": [
+        "colorama; platform_system == \"Windows\"",
+        "requests; extra == \"discord\"",
+        "envwrap; extra == \"discord\"",
+        "slack-sdk; extra == \"slack\"",
+        "envwrap; extra == \"slack\"",
+        "requests; extra == \"telegram\"",
+        "envwrap; extra == \"telegram\"",
+        "ipywidgets>=6; extra == \"notebook\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/a7/03/921a3d3c75785aca9ebfbfcabfbc3a1be12e2ab5265deb026d55a5a3f83e/tqdm-4.70.1-py3-none-any.whl",
+      "sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73"
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.5",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/51/e9/3a7820be2bb0fe53b6bc9c3be26d3d1158004e4c3ab953aa6840b955b1e9/truststore-0.10.5-py3-none-any.whl",
+      "sha256": "9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.5",
+      "new_with_extra": false,
+      "requires_dist": [
+        "typing-extensions>=4.15.0"
+      ],
+      "url": "https://files.pythonhosted.org/packages/de/0c/ea2544850a7c135e15033a5c7a8e7211136184b7ae63e2239d557c2b3019/typing_inspection-0.4.5-py3-none-any.whl",
+      "sha256": "bc210535442b39e1bf2805e0c7a17dfd6a4ace760c84c7f7d16245d23a6b1c39"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "new_with_extra": true,
+      "requires_dist": [
+        "click>=7.0",
+        "h11>=0.8",
+        "typing-extensions>=4.0; python_version < '3.11'",
+        "httptools>=0.8.0; extra == 'standard'",
+        "python-dotenv>=0.13; extra == 'standard'",
+        "pyyaml>=5.1; extra == 'standard'",
+        "uvloop>=0.15.1; (sys_platform != 'win32' and (sys_platform != 'cygwin' and platform_python_implementation != 'PyPy')) and extra == 'standard'",
+        "watchfiles>=0.20; extra == 'standard'",
+        "websockets>=13.0; extra == 'standard'"
+      ],
+      "url": "https://files.pythonhosted.org/packages/38/0c/b54a4fdd7f90a3af8b02ebc9ce6712c2c208b7926a2f7bad95c33ebbe943/uvicorn-0.54.0-py3-none-any.whl",
+      "sha256": "505bdb0f318731d45f1f712071fc781a8981f6847a31c902c9f5e652d4f67faf"
+    },
+    {
+      "name": "zipp",
+      "version": "4.1.2",
+      "new_with_extra": false,
+      "requires_dist": [
+        "pytest!=8.1.*,>=6; extra == \"test\"",
+        "jaraco.itertools; extra == \"test\"",
+        "jaraco.functools; extra == \"test\"",
+        "more_itertools; extra == \"test\"",
+        "big-O; extra == \"test\"",
+        "pytest-ignore-flaky; extra == \"test\"",
+        "jaraco.test; extra == \"test\"",
+        "sphinx>=3.5; extra == \"doc\"",
+        "jaraco.packaging>=9.3; extra == \"doc\"",
+        "rst.linker>=1.9; extra == \"doc\"",
+        "furo; extra == \"doc\"",
+        "sphinx-lint; extra == \"doc\"",
+        "jaraco.tidelift>=1.4; extra == \"doc\"",
+        "pytest-checkdocs>=2.14; extra == \"check\"",
+        "pytest-ruff>=0.2.1; sys_platform != \"cygwin\" and extra == \"check\"",
+        "pytest-cov; extra == \"cover\"",
+        "pytest-enabler>=3.4; extra == \"enabler\"",
+        "pytest-mypy>=1.0.1; platform_python_implementation != \"PyPy\" and extra == \"type\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/b8/44/7bd2007260da11cccca29ba2d4c345f1287aa663db38ee7cefeabf6386a5/zipp-4.1.2-py3-none-any.whl",
+      "sha256": "b30cb6cd253122169c47de245ca24a86bac2a5d3802ba15bf7ba6414eb9e144d"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl",
+      "sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "new_with_extra": true,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/b6/ae/315bbeee126a769cbde43cf4908acb4b40408d8bf8bbf334dd7368d8dadf/pycparser-3.12-py3-none-any.whl",
+      "sha256": "a076f3f489b39b43ed13563a1dafe42447445bec2e294154ec5c57fcdda4c85e"
+    },
+    {
+      "name": "regex",
+      "version": "2026.11.7",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/45/98/83836c46962ea38285f28ef1fa5eae2d04cb3b63922af485bc9832725b1e/regex-2026.11.7-cp311-cp311-win_amd64.whl",
+      "sha256": "99af6a56a79f10c59b07f2f18065cafc7cf4f671125835cc32fecd66c505b39e"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "new_with_extra": false,
+      "requires_dist": [
+        "charset_normalizer<4,>=2",
+        "idna<4,>=2.5",
+        "urllib3<3,>=1.26",
+        "certifi>=2023.5.7",
+        "PySocks!=1.5.7,>=1.5.6; extra == \"socks\"",
+        "chardet<8,>=3.0.2; extra == \"use-chardet-on-py3\""
+      ],
+      "url": "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl",
+      "sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/e8/fc/fdf8cf52ff21cd5bf158f20978991cf985325842f74283eb6df26c8a39d8/charset_normalizer-3.5.2-cp311-cp311-win_amd64.whl",
+      "sha256": "87e50a3e7cb90af586b6c5faf23e302a970415ac73bd7bd90a515a04b427ef96"
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1",
+      "new_with_extra": false,
+      "requires_dist": [],
+      "url": "https://files.pythonhosted.org/packages/e9/44/75a9c9421471a6c4805dbf2356f7c181a29c1879239abab1ea2cc8f38b40/sniffio-1.3.1-py3-none-any.whl",
+      "sha256": "2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2"
+    }
+  ],
+  "python310_resolution": [
+    {
+      "name": "litellm",
+      "version": "1.108.2"
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.5"
+    },
+    {
+      "name": "boto3",
+      "version": "1.43.126"
+    },
+    {
+      "name": "botocore",
+      "version": "1.43.126"
+    },
+    {
+      "name": "click",
+      "version": "8.5.1"
+    },
+    {
+      "name": "fastuuid",
+      "version": "0.14.0"
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.7"
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1"
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9"
+    },
+    {
+      "name": "httpx2",
+      "version": "2.14.0"
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.14.0"
+    },
+    {
+      "name": "h2",
+      "version": "4.4.1"
+    },
+    {
+      "name": "hpack",
+      "version": "4.2.0"
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "1.33.0"
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.8.0"
+    },
+    {
+      "name": "hyperframe",
+      "version": "6.1.0"
+    },
+    {
+      "name": "importlib_metadata",
+      "version": "8.9.0"
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6"
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0"
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0"
+    },
+    {
+      "name": "mcp",
+      "version": "2.3.0"
+    },
+    {
+      "name": "mcp-types",
+      "version": "2.3.0"
+    },
+    {
+      "name": "multidict",
+      "version": "7.1.0"
+    },
+    {
+      "name": "openai",
+      "version": "3.46.0"
+    },
+    {
+      "name": "anyio",
+      "version": "4.16.0"
+    },
+    {
+      "name": "jiter",
+      "version": "0.18.0"
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.3"
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.4"
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.15.0"
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0"
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4"
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3"
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.3"
+    },
+    {
+      "name": "tiktoken",
+      "version": "0.14.0"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.3"
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0"
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0"
+    },
+    {
+      "name": "yarl",
+      "version": "1.25.1"
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1"
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0"
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0"
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0"
+    },
+    {
+      "name": "certifi",
+      "version": "2026.10.23"
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0"
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0"
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0"
+    },
+    {
+      "name": "idna",
+      "version": "3.20"
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1"
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.4"
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3"
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.4"
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.15.1"
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2"
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1"
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32"
+    },
+    {
+      "name": "pywin32",
+      "version": "312"
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0"
+    },
+    {
+      "name": "rpds-py",
+      "version": "0.30.0"
+    },
+    {
+      "name": "six",
+      "version": "1.17.0"
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.5.1"
+    },
+    {
+      "name": "starlette",
+      "version": "1.7.0"
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1"
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.5"
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.5"
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0"
+    },
+    {
+      "name": "zipp",
+      "version": "4.1.2"
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6"
+    },
+    {
+      "name": "pycparser",
+      "version": "3.11"
+    },
+    {
+      "name": "regex",
+      "version": "2026.9.29"
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2"
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2"
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1"
+    }
+  ],
+  "advisories_osv": {
+    "checked_at": "2026-11-07T03:07:27.1016612Z",
+    "source": "https://api.osv.dev/v1/querybatch",
+    "packages": [
+      {
+        "name": "litellm",
+        "version": "1.108.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "aiohttp",
+        "version": "3.14.5",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "boto3",
+        "version": "1.43.126",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "botocore",
+        "version": "1.43.126",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "click",
+        "version": "8.5.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "fastuuid",
+        "version": "0.14.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.7",
+        "vulns": [
+          {
+            "id": "GHSA-567q-5qvw-pf92",
+            "modified": "2026-10-23T22:45:03.452878Z"
+          },
+          {
+            "id": "GHSA-6627-m3xw-93mp",
+            "modified": "2026-10-28T21:15:05.690884Z"
+          },
+          {
+            "id": "GHSA-69hj-f68j-2879",
+            "modified": "2026-10-28T21:15:04.974667Z"
+          },
+          {
+            "id": "GHSA-8mx5-7m5m-r77g",
+            "modified": "2026-10-28T21:15:05.688436Z"
+          },
+          {
+            "id": "GHSA-9c4x-gm8v-wgc4",
+            "modified": "2026-10-28T21:15:05.681708Z"
+          },
+          {
+            "id": "GHSA-9j6q-wvj5-jgjg",
+            "modified": "2026-10-28T21:15:05.577927Z"
+          },
+          {
+            "id": "GHSA-9vhv-jxww-xfm5",
+            "modified": "2026-10-23T22:45:03.439584Z"
+          },
+          {
+            "id": "GHSA-cwqr-hh33-gh44",
+            "modified": "2026-10-28T21:15:04.923553Z"
+          },
+          {
+            "id": "GHSA-fq56-3cx3-fjxp",
+            "modified": "2026-10-28T21:15:04.933315Z"
+          },
+          {
+            "id": "GHSA-j8f7-rjxc-mr56",
+            "modified": "2026-10-28T21:15:04.169983Z"
+          },
+          {
+            "id": "GHSA-m462-7rxw-wvpg",
+            "modified": "2026-10-28T21:15:04.165555Z"
+          },
+          {
+            "id": "GHSA-rfpc-qcw5-3pc4",
+            "modified": "2026-10-28T21:15:05.584943Z"
+          },
+          {
+            "id": "GHSA-v4x8-3wr5-3wq8",
+            "modified": "2026-10-23T22:15:04.432475Z"
+          }
+        ]
+      },
+      {
+        "name": "httpx",
+        "version": "0.28.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "httpcore",
+        "version": "1.0.9",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "httpx2",
+        "version": "2.16.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "httpcore2",
+        "version": "2.16.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "h2",
+        "version": "4.4.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "hpack",
+        "version": "4.2.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "huggingface_hub",
+        "version": "1.33.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "hf-xet",
+        "version": "1.8.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "hyperframe",
+        "version": "6.1.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "importlib_metadata",
+        "version": "8.9.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "Jinja2",
+        "version": "3.1.6",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "jmespath",
+        "version": "1.1.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "jsonschema",
+        "version": "4.26.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "mcp",
+        "version": "2.3.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "mcp-types",
+        "version": "2.3.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "multidict",
+        "version": "7.2.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "openai",
+        "version": "3.46.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "anyio",
+        "version": "4.16.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "jiter",
+        "version": "0.19.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "pydantic",
+        "version": "2.14.3",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.50.4",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "pydantic-settings",
+        "version": "2.16.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "python-dotenv",
+        "version": "1.2.4",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "s3transfer",
+        "version": "0.19.3",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "tiktoken",
+        "version": "0.14.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "tokenizers",
+        "version": "0.23.3",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "yarl",
+        "version": "1.25.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "aiohappyeyeballs",
+        "version": "2.7.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "aiosignal",
+        "version": "1.4.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "attrs",
+        "version": "26.1.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "certifi",
+        "version": "2026.10.23",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "frozenlist",
+        "version": "1.8.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "fsspec",
+        "version": "2026.9.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "idna",
+        "version": "3.20",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "jsonschema-specifications",
+        "version": "2025.9.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "MarkupSafe",
+        "version": "3.0.4",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "opentelemetry-api",
+        "version": "1.45.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "packaging",
+        "version": "26.3",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "propcache",
+        "version": "0.5.4",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "PyJWT",
+        "version": "2.15.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "cryptography",
+        "version": "50.0.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "python-multipart",
+        "version": "0.0.33",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "pywin32",
+        "version": "312",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "referencing",
+        "version": "0.37.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "rpds-py",
+        "version": "2026.9.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "six",
+        "version": "1.17.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "sse-starlette",
+        "version": "3.6.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "starlette",
+        "version": "1.10.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "truststore",
+        "version": "0.10.5",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.5",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.54.0",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "zipp",
+        "version": "4.1.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "colorama",
+        "version": "0.4.6",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "pycparser",
+        "version": "3.12",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "regex",
+        "version": "2026.11.7",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.2",
+        "vulns": [
+          null
+        ]
+      },
+      {
+        "name": "sniffio",
+        "version": "1.3.1",
+        "vulns": [
+          null
+        ]
+      }
+    ]
+  },
+  "advisories_pypi": {
+    "checked_at": "2026-11-07T03:08:03.0099041Z",
+    "source": "https://pypi.org/pypi/{name}/{version}/json",
+    "packages": [
+      {
+        "name": "litellm",
+        "version": "1.108.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "aiohttp",
+        "version": "3.14.5",
+        "vulnerabilities": []
+      },
+      {
+        "name": "boto3",
+        "version": "1.43.126",
+        "vulnerabilities": []
+      },
+      {
+        "name": "botocore",
+        "version": "1.43.126",
+        "vulnerabilities": []
+      },
+      {
+        "name": "click",
+        "version": "8.5.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "fastuuid",
+        "version": "0.14.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "filelock",
+        "version": "3.32.7",
+        "vulnerabilities": [
+          {
+            "id": "GHSA-v4x8-3wr5-3wq8",
+            "aliases": [
+              "CVE-2026-112940"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-v4x8-3wr5-3wq8"
+          },
+          {
+            "id": "GHSA-9vhv-jxww-xfm5",
+            "aliases": [
+              "CVE-2026-112913"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-9vhv-jxww-xfm5"
+          },
+          {
+            "id": "GHSA-567q-5qvw-pf92",
+            "aliases": [
+              "CVE-2026-112907"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-567q-5qvw-pf92"
+          },
+          {
+            "id": "GHSA-m462-7rxw-wvpg",
+            "aliases": [
+              "CVE-2026-112938"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-m462-7rxw-wvpg"
+          },
+          {
+            "id": "GHSA-j8f7-rjxc-mr56",
+            "aliases": [
+              "CVE-2026-112936"
+            ],
+            "fixed_in": [
+              "4.0.9"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-j8f7-rjxc-mr56"
+          },
+          {
+            "id": "GHSA-8mx5-7m5m-r77g",
+            "aliases": [
+              "CVE-2026-112910"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-8mx5-7m5m-r77g"
+          },
+          {
+            "id": "GHSA-69hj-f68j-2879",
+            "aliases": [
+              "CVE-2026-112909"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-69hj-f68j-2879"
+          },
+          {
+            "id": "GHSA-9c4x-gm8v-wgc4",
+            "aliases": [
+              "CVE-2026-112911"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-9c4x-gm8v-wgc4"
+          },
+          {
+            "id": "GHSA-rfpc-qcw5-3pc4",
+            "aliases": [
+              "CVE-2026-112939"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-rfpc-qcw5-3pc4"
+          },
+          {
+            "id": "GHSA-cwqr-hh33-gh44",
+            "aliases": [
+              "CVE-2026-112915"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-cwqr-hh33-gh44"
+          },
+          {
+            "id": "GHSA-fq56-3cx3-fjxp",
+            "aliases": [
+              "CVE-2026-112935"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-fq56-3cx3-fjxp"
+          },
+          {
+            "id": "GHSA-9j6q-wvj5-jgjg",
+            "aliases": [
+              "CVE-2026-112912"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-9j6q-wvj5-jgjg"
+          },
+          {
+            "id": "GHSA-6627-m3xw-93mp",
+            "aliases": [
+              "CVE-2026-112908"
+            ],
+            "fixed_in": [
+              "4.2.1"
+            ],
+            "link": "https://osv.dev/vulnerability/GHSA-6627-m3xw-93mp"
+          }
+        ]
+      },
+      {
+        "name": "httpx",
+        "version": "0.28.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "httpcore",
+        "version": "1.0.9",
+        "vulnerabilities": []
+      },
+      {
+        "name": "httpx2",
+        "version": "2.16.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "httpcore2",
+        "version": "2.16.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "h2",
+        "version": "4.4.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "hpack",
+        "version": "4.2.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "huggingface_hub",
+        "version": "1.33.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "hf-xet",
+        "version": "1.8.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "hyperframe",
+        "version": "6.1.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "importlib_metadata",
+        "version": "8.9.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "Jinja2",
+        "version": "3.1.6",
+        "vulnerabilities": []
+      },
+      {
+        "name": "jmespath",
+        "version": "1.1.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "jsonschema",
+        "version": "4.26.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "mcp",
+        "version": "2.3.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "mcp-types",
+        "version": "2.3.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "multidict",
+        "version": "7.2.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "openai",
+        "version": "3.46.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "anyio",
+        "version": "4.16.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "jiter",
+        "version": "0.19.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "pydantic",
+        "version": "2.14.3",
+        "vulnerabilities": []
+      },
+      {
+        "name": "pydantic_core",
+        "version": "2.50.4",
+        "vulnerabilities": []
+      },
+      {
+        "name": "pydantic-settings",
+        "version": "2.16.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "python-dotenv",
+        "version": "1.2.4",
+        "vulnerabilities": []
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.3",
+        "vulnerabilities": []
+      },
+      {
+        "name": "s3transfer",
+        "version": "0.19.3",
+        "vulnerabilities": []
+      },
+      {
+        "name": "tiktoken",
+        "version": "0.14.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "tokenizers",
+        "version": "0.23.3",
+        "vulnerabilities": []
+      },
+      {
+        "name": "typing_extensions",
+        "version": "4.16.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "yarl",
+        "version": "1.25.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "aiohappyeyeballs",
+        "version": "2.7.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "aiosignal",
+        "version": "1.4.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "attrs",
+        "version": "26.1.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "certifi",
+        "version": "2026.10.23",
+        "vulnerabilities": []
+      },
+      {
+        "name": "frozenlist",
+        "version": "1.8.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "fsspec",
+        "version": "2026.9.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "h11",
+        "version": "0.16.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "idna",
+        "version": "3.20",
+        "vulnerabilities": []
+      },
+      {
+        "name": "jsonschema-specifications",
+        "version": "2025.9.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "MarkupSafe",
+        "version": "3.0.4",
+        "vulnerabilities": []
+      },
+      {
+        "name": "opentelemetry-api",
+        "version": "1.45.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "packaging",
+        "version": "26.3",
+        "vulnerabilities": []
+      },
+      {
+        "name": "propcache",
+        "version": "0.5.4",
+        "vulnerabilities": []
+      },
+      {
+        "name": "PyJWT",
+        "version": "2.15.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "cryptography",
+        "version": "50.0.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "python-multipart",
+        "version": "0.0.33",
+        "vulnerabilities": []
+      },
+      {
+        "name": "pywin32",
+        "version": "312",
+        "vulnerabilities": []
+      },
+      {
+        "name": "referencing",
+        "version": "0.37.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "rpds-py",
+        "version": "2026.9.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "six",
+        "version": "1.17.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "sse-starlette",
+        "version": "3.6.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "starlette",
+        "version": "1.10.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1",
+        "vulnerabilities": []
+      },
+      {
+        "name": "truststore",
+        "version": "0.10.5",
+        "vulnerabilities": []
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.5",
+        "vulnerabilities": []
+      },
+      {
+        "name": "uvicorn",
+        "version": "0.54.0",
+        "vulnerabilities": []
+      },
+      {
+        "name": "zipp",
+        "version": "4.1.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "colorama",
+        "version": "0.4.6",
+        "vulnerabilities": []
+      },
+      {
+        "name": "pycparser",
+        "version": "3.12",
+        "vulnerabilities": []
+      },
+      {
+        "name": "regex",
+        "version": "2026.11.7",
+        "vulnerabilities": []
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.2",
+        "vulnerabilities": []
+      },
+      {
+        "name": "sniffio",
+        "version": "1.3.1",
+        "vulnerabilities": []
+      }
+    ]
+  },
+  "advisories_python310": [
+    {
+      "name": "litellm",
+      "version": "1.108.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "aiohttp",
+      "version": "3.14.5",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "boto3",
+      "version": "1.43.126",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "botocore",
+      "version": "1.43.126",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "click",
+      "version": "8.5.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "fastuuid",
+      "version": "0.14.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.7",
+      "vulns": [
+        {
+          "id": "GHSA-567q-5qvw-pf92",
+          "modified": "2026-10-23T22:45:03.452878Z"
+        },
+        {
+          "id": "GHSA-6627-m3xw-93mp",
+          "modified": "2026-10-28T21:15:05.690884Z"
+        },
+        {
+          "id": "GHSA-69hj-f68j-2879",
+          "modified": "2026-10-28T21:15:04.974667Z"
+        },
+        {
+          "id": "GHSA-8mx5-7m5m-r77g",
+          "modified": "2026-10-28T21:15:05.688436Z"
+        },
+        {
+          "id": "GHSA-9c4x-gm8v-wgc4",
+          "modified": "2026-10-28T21:15:05.681708Z"
+        },
+        {
+          "id": "GHSA-9j6q-wvj5-jgjg",
+          "modified": "2026-10-28T21:15:05.577927Z"
+        },
+        {
+          "id": "GHSA-9vhv-jxww-xfm5",
+          "modified": "2026-10-23T22:45:03.439584Z"
+        },
+        {
+          "id": "GHSA-cwqr-hh33-gh44",
+          "modified": "2026-10-28T21:15:04.923553Z"
+        },
+        {
+          "id": "GHSA-fq56-3cx3-fjxp",
+          "modified": "2026-10-28T21:15:04.933315Z"
+        },
+        {
+          "id": "GHSA-j8f7-rjxc-mr56",
+          "modified": "2026-10-28T21:15:04.169983Z"
+        },
+        {
+          "id": "GHSA-m462-7rxw-wvpg",
+          "modified": "2026-10-28T21:15:04.165555Z"
+        },
+        {
+          "id": "GHSA-rfpc-qcw5-3pc4",
+          "modified": "2026-10-28T21:15:05.584943Z"
+        },
+        {
+          "id": "GHSA-v4x8-3wr5-3wq8",
+          "modified": "2026-10-23T22:15:04.432475Z"
+        }
+      ]
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "httpx2",
+      "version": "2.14.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "httpcore2",
+      "version": "2.14.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "h2",
+      "version": "4.4.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "hpack",
+      "version": "4.2.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "1.33.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.8.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "hyperframe",
+      "version": "6.1.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "importlib_metadata",
+      "version": "8.9.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "mcp",
+      "version": "2.3.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "mcp-types",
+      "version": "2.3.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "multidict",
+      "version": "7.1.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "openai",
+      "version": "3.46.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "anyio",
+      "version": "4.16.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "jiter",
+      "version": "0.18.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.3",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.4",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.15.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.3",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "tiktoken",
+      "version": "0.14.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.3",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "yarl",
+      "version": "1.25.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "aiohappyeyeballs",
+      "version": "2.7.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "aiosignal",
+      "version": "1.4.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "certifi",
+      "version": "2026.10.23",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "frozenlist",
+      "version": "1.8.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.4",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "propcache",
+      "version": "0.5.4",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.15.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "pywin32",
+      "version": "312",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "rpds-py",
+      "version": "0.30.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.5.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "starlette",
+      "version": "1.7.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "truststore",
+      "version": "0.10.5",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.5",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "zipp",
+      "version": "4.1.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "colorama",
+      "version": "0.4.6",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "pycparser",
+      "version": "3.11",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "regex",
+      "version": "2026.9.29",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "vulns": [
+        null
+      ]
+    },
+    {
+      "name": "sniffio",
+      "version": "1.3.1",
+      "vulns": [
+        null
+      ]
+    }
+  ],
+  "source_build_systems": [
+    {
+      "name": "mcp",
+      "version": "2.3.0",
+      "sdist": "mcp-2.3.0.tar.gz",
+      "sha256": "8b147a50441cf059dc88c684e0aeed3687f0aa0f39c6cde7b90330effd2b34d8",
+      "size": 4171955,
+      "build_system": {
+        "requires": [
+          "hatchling",
+          "uv-dynamic-versioning"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "scripts/docs/build_config.py",
+        "tests/docs/test_build_config.py",
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "mcp-types",
+      "version": "2.3.0",
+      "sdist": "mcp_types-2.3.0.tar.gz",
+      "sha256": "d1e46549edb35ee19a94940fcee6d1addd7e589ab7ea92dda83f5d84781fc362",
+      "size": 65898,
+      "build_system": {
+        "requires": [
+          "hatchling",
+          "uv-dynamic-versioning"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.2",
+      "sdist": "opentelemetry_api-1.45.2.tar.gz",
+      "sha256": "d7b0008e21e5fd61cbe7a7f34ca3b6905a78ab677d9bc395e299359c75cda6b4",
+      "size": 73277,
+      "build_system": {
+        "requires": [
+          "hatchling"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "PyJWT",
+      "version": "2.15.1",
+      "sdist": "pyjwt-2.15.1.tar.gz",
+      "sha256": "4f259e80cdfb6b3fc18a7de51fd1ef9ec79652f25019bae68975ca2468a34df8",
+      "size": 121252,
+      "build_system": {
+        "build-backend": "setuptools.build_meta",
+        "requires": [
+          "setuptools>=77.0.3"
+        ]
+      },
+      "files": [
+        "pyproject.toml",
+        "setup.cfg"
+      ]
+    },
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "sdist": "cryptography-50.0.2.tar.gz",
+      "sha256": "7b46165bb56eb4704e2eaaf86f3c940d19154535d9b0ca7d6d590b04060e00d5",
+      "size": 880623,
+      "build_system": {
+        "requires": [
+          "maturin>=1.14.1,<2",
+          "cffi>=2.0.0; platform_python_implementation != 'PyPy'",
+          "cffi>=2.1; python_version >= '3.15' and platform_python_implementation != 'PyPy'",
+          "setuptools!=74.0.0,!=74.1.0,!=74.1.1,!=74.1.2"
+        ],
+        "build-backend": "maturin"
+      },
+      "files": [
+        "Cargo.toml",
+        "pyproject.toml",
+        "src/_cffi_src/build_openssl.py",
+        "tests/x509/test_x509_crlbuilder.py",
+        "tests/x509/test_x509_revokedcertbuilder.py"
+      ]
+    },
+    {
+      "name": "cffi",
+      "version": "2.1.1",
+      "sdist": "cffi-2.1.1.tar.gz",
+      "sha256": "dd31f52ea1086513bb9df30f8fcee9b8918323ae067a3d5b78bc826a000712be",
+      "size": 530807,
+      "build_system": {
+        "requires": [
+          "setuptools >= 77.0.3"
+        ],
+        "build-backend": "setuptools.build_meta"
+      },
+      "files": [
+        "demo/_curses_build.py",
+        "demo/bsdopendirtype_build.py",
+        "demo/gmp_build.py",
+        "demo/pwuid_build.py",
+        "demo/readdir2_build.py",
+        "demo/readdir_build.py",
+        "demo/recopendirtype_build.py",
+        "demo/winclipboard_build.py",
+        "demo/xclient_build.py",
+        "pyproject.toml",
+        "setup.cfg",
+        "setup.py"
+      ]
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.33",
+      "sdist": "python_multipart-0.0.33.tar.gz",
+      "sha256": "b8112424a6abd162ec08d390565dd113ad699f2fe6fef3c987b8bbcbfe9e390d",
+      "size": 50499,
+      "build_system": {
+        "requires": [
+          "hatchling"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "pywin32",
+      "version": "312",
+      "sdist": null
+    },
+    {
+      "name": "sse-starlette",
+      "version": "3.6.0",
+      "sdist": "sse_starlette-3.6.0.tar.gz",
+      "sha256": "623151d6c20dc0eebf1b3379c27faae91fff883bac7ab6665f16f46440a88b3a",
+      "size": 41174,
+      "build_system": {
+        "requires": [
+          "setuptools"
+        ],
+        "build-backend": "setuptools.build_meta"
+      },
+      "files": [
+        "pyproject.toml",
+        "setup.cfg"
+      ]
+    },
+    {
+      "name": "starlette",
+      "version": "1.10.0",
+      "sdist": "starlette-1.10.0.tar.gz",
+      "sha256": "b8399098d4c1e3522734f7235dc79b1fc967f96cf139c81e0fa30479e0685f9b",
+      "size": 2734356,
+      "build_system": {
+        "requires": [
+          "hatchling"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "sdist": "uvicorn-0.54.0.tar.gz",
+      "sha256": "a2e33cbfaa0306f8e6b0c13e0cb89d7d7a2da3e62b90c66e18c33d9807b28620",
+      "size": 112283,
+      "build_system": {
+        "requires": [
+          "hatchling"
+        ],
+        "build-backend": "hatchling.build"
+      },
+      "files": [
+        "pyproject.toml"
+      ]
+    },
+    {
+      "name": "pycparser",
+      "version": "3.12",
+      "sdist": "pycparser-3.12.tar.gz",
+      "sha256": "f03387877eab82ce01bbdfd0ba7252ee55a90b1c708d5129e2ce915475cf1db6",
+      "size": 158785,
+      "build_system": {
+        "requires": [
+          "setuptools>=77.0.3"
+        ],
+        "build-backend": "setuptools.build_meta"
+      },
+      "files": [
+        "pyproject.toml",
+        "setup.cfg",
+        "setup.py"
+      ]
+    }
+  ],
+  "wheel_startup_hooks": [
+    {
+      "name": "pywin32",
+      "version": "312",
+      "files": {
+        "pywin32.pth": "# .pth file for the PyWin32 extensions\r\nwin32\r\nwin32\\lib\r\npythonwin\r\n# And some hackery to deal with environments where the post_install script\r\n# isn't run.\r\nimport pywin32_bootstrap\r\n"
+      }
+    }
+  ],
+  "probe_base": {
+    "fixture_requests": [],
+    "result": {
+      "success": false,
+      "error": "litellm.APIConnectionError: APIConnectionError: OpenAIException - No module named 'mcp'",
+      "traceback": "Traceback (most recent call last):\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\responses\\main.py\", line 1392, in responses\n    _mcp_dispatch: Final = _responses_try_dispatch_mcp_gateway(\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\responses\\main.py\", line 1115, in _responses_try_dispatch_mcp_gateway\n    from litellm.responses.mcp.litellm_proxy_mcp_handler import (\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\responses\\mcp\\litellm_proxy_mcp_handler.py\", line 15, in <module>\n    from litellm.proxy._experimental.mcp_server.catalog import catalog_operation, global_manager\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\proxy\\_experimental\\mcp_server\\catalog.py\", line 20, in <module>\n    from mcp.types import CacheableResult\nModuleNotFoundError: No module named 'mcp'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\probe_child.py\", line 19, in <module>\n    response=litellm.completion(model='openai/responses/gpt-6',messages=[{'role':'user','content':'local fixture only'}],api_key='review-placeholder',api_base=sys.argv[1],num_retries=0,max_tokens=20)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\chat_completions\\dispatch.py\", line 91, in completion\n    return _DISPATCH.run(\n           ^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\rust_bridge\\dispatch.py\", line 81, in run\n    return python(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\utils.py\", line 2039, in wrapper\n    raise e\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\utils.py\", line 1890, in wrapper\n    result = original_function(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\main.py\", line 6236, in completion\n    raise exception_type(\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\main.py\", line 5957, in completion\n    return responses_api_bridge.completion(  # pyright: ignore[reportReturnType]  # bridge returns a coroutine on the acompletion path; awaited by the async caller\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\completion_extras\\litellm_responses_transformation\\handler.py\", line 205, in completion\n    result: Final = responses(\n                    ^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\responses\\dispatch.py\", line 89, in responses\n    return _DISPATCH.run(\n           ^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\rust_bridge\\dispatch.py\", line 81, in run\n    return python(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\utils.py\", line 2039, in wrapper\n    raise e\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\utils.py\", line 1890, in wrapper\n    result = original_function(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\responses\\main.py\", line 1582, in responses\n    raise litellm.exception_type(\n          ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\litellm_core_utils\\exception_mapping_utils.py\", line 2800, in exception_type\n    raise e  # it's already mapped\n    ^^^^^^^\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\litellm_core_utils\\exception_mapping_utils.py\", line 2547, in exception_type\n    _map_openai_exception(\n  File \"D:\\agent-builds\\skell-e-router\\mcp-security-review-2026-11-06\\venv\\Lib\\site-packages\\litellm\\litellm_core_utils\\exception_mapping_utils.py\", line 558, in _map_openai_exception\n    raise APIConnectionError(\nlitellm.exceptions.APIConnectionError: litellm.APIConnectionError: APIConnectionError: OpenAIException - No module named 'mcp'\n",
+      "activity": [
+        [
+          "socket.bind",
+          "(<socket.socket fd=652, family=23, type=1, proto=0>, ('::1', 0))"
+        ]
+      ]
+    }
+  },
+  "probe_extra": {
+    "fixture_requests": [
+      {
+        "path": "/v1/responses",
+        "model": "gpt-6",
+        "tools_present": false
+      }
+    ],
+    "result": {
+      "success": true,
+      "text": "fixture ok",
+      "import_activity": [
+        [
+          "socket.bind",
+          "(<socket.socket fd=1616, family=23, type=1, proto=0>, ('::1', 0))"
+        ]
+      ],
+      "activity": [
+        [
+          "socket.bind",
+          "(<socket.socket fd=1616, family=23, type=1, proto=0>, ('::1', 0))"
+        ],
+        [
+          "socket.getaddrinfo",
+          "('127.0.0.1', 64369, 0, 1, 0)"
+        ],
+        [
+          "socket.connect",
+          "(<socket.socket fd=2800, family=2, type=1, proto=0>, ('127.0.0.1', 64369))"
+        ]
+      ]
+    }
+  }
+}
