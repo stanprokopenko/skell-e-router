@@ -2,6 +2,10 @@
 
 Earlier releases are described in the version notes in [README.md](README.md).
 
+## 3.44.2 - 2026-11-06
+
+Install LiteLLM's MCP extra. LiteLLM 1.108.2 imports its MCP catalog during ordinary completion calls, so the base package alone fails before reaching the provider. Preserve native refusal text from newer LiteLLM and keep caller-requested Gemini image/caption embeddings grouped when its newer adapter expects nested input. Fresh-install tests cover both SDK generations, including valid field aliases and Responses text joining.
+
 ## 3.44.1 - 2026-11-06
 
 Review fixes for 3.44.0:

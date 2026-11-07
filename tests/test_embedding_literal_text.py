@@ -56,6 +56,10 @@ def wire(monkeypatch):
         elif request.url.path == "/v1beta/models/gemini-embedding-2:embedContent":
             assert request.url.host == "generativelanguage.googleapis.com"
             response = {"embedding": {"values": [0.0, 0.5]}}
+        elif request.url.path == "/v1beta/models/gemini-embedding-2:batchEmbedContents":
+            assert request.url.host == "generativelanguage.googleapis.com"
+            assert len(body["requests"]) == 1
+            response = {"embeddings": [{"values": [0.0, 0.5]}]}
         else:
             raise AssertionError(f"Unexpected HTTP request: {request.method} {request.url.host}{request.url.path}")
         return httpx.Response(200, json=response, request=request)
@@ -202,9 +206,14 @@ def test_explicit_local_image_still_uses_native_inline_data(tmp_path, wire):
     assert get_embedding("gemini-embedding-2", [["caption", str(local_image)]], config=CONFIG) == [[0.0, 0.5]]
     assert len(wire["requests"]) == 1
     request, body = wire["requests"][0]
-    assert request.url.path == "/v1beta/models/gemini-embedding-2:embedContent"
+    if request.url.path.endswith(":batchEmbedContents"):
+        assert len(body["requests"]) == 1
+        body = body["requests"][0]
+    else:
+        assert request.url.path == "/v1beta/models/gemini-embedding-2:embedContent"
     parts = body["content"]["parts"]
     assert {"text": "caption"} in parts
-    inline = next(part["inline_data"] for part in parts if "inline_data" in part)
-    assert inline["mime_type"] == "image/png"
+    inline = next(part.get("inline_data", part.get("inlineData")) for part in parts
+                  if "inline_data" in part or "inlineData" in part)
+    assert inline.get("mime_type", inline.get("mimeType")) == "image/png"
     assert base64.b64decode(inline["data"]) == PNG

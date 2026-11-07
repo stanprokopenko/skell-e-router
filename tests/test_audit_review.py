@@ -11,6 +11,15 @@ from skell_e_router import utils
 TOOL = {"type": "function", "function": {"name": "book_ticket", "parameters": {"type": "object"}}}
 
 
+def assert_complete_response_text(text):
+    # Older LiteLLM emits separate choices; newer versions concatenate them
+    # before returning. Both must preserve the complete text in output order.
+    assert text in (
+        "Checking availability.\nI found one flight.",
+        "Checking availability.I found one flight.",
+    )
+
+
 @pytest.fixture(autouse=True)
 def no_cost_lookup(monkeypatch):
     monkeypatch.setattr(utils, "_compute_response_cost", lambda *args: 0.0)
@@ -41,11 +50,17 @@ def responses_reply():
 @pytest.mark.parametrize("model", ["gpt-6-astra", "gpt-5.6-sol"])
 def test_public_responses_routes_merge_actual_output_parts(monkeypatch, model):
     reply = responses_reply()
+    # LiteLLM versions differ in whether their chat call id uses call_id or
+    # the output item's id. The router must preserve the adapter's call.
+    expected_calls = [call.model_dump() for choice in reply.choices
+                      for call in choice.message.tool_calls or []]
     monkeypatch.setattr(utils.litellm, "completion", lambda **kwargs: reply)
     out = utils.ask_ai(model, "Book one ticket", rich_response=True,
                        tools=[TOOL], reasoning_effort="low", config={"openai_api_key": "fake"})
-    assert out.content == "Checking availability.\nI found one flight."
-    assert [call.id for call in out.tool_calls] == ["call_1"]
+    assert_complete_response_text(out.content)
+    assert len(expected_calls) == 1
+    assert [call.model_dump() for call in out.tool_calls] == expected_calls
+    assert out.tool_calls[0].function.name == "book_ticket"
     assert out.finish_reason == "tool_calls"
     assert reply._hidden_params["router_responses_output_parts"] is True
 
@@ -53,7 +68,7 @@ def test_public_responses_routes_merge_actual_output_parts(monkeypatch, model):
 def test_plain_text_responses_return_all_text(monkeypatch):
     monkeypatch.setattr(utils.litellm, "completion", lambda **kwargs: responses_reply())
     out = utils.ask_ai("gpt-6-astra", "Check flights", config={"openai_api_key": "fake"})
-    assert out == "Checking availability.\nI found one flight."
+    assert_complete_response_text(out)
 
 
 def test_public_gemini_candidates_select_one_alternative(monkeypatch):
@@ -96,3 +111,26 @@ def test_litellm_anthropic_reports_cache_writes(details):
     out = utils._build_ai_response(litellm.ModelResponse(usage=usage), 0.1)
     assert out.cache_read_tokens == 700
     assert out.cache_write_tokens == 300
+
+
+@pytest.mark.parametrize("native_refusal,provider_fields,expected", [
+    ("I cannot help with that.", None, {"refusal": "I cannot help with that."}),
+    ("I cannot help with that.", {"other": "kept"},
+     {"other": "kept", "refusal": "I cannot help with that."}),
+    (None, {"refusal": "Legacy refusal", "other": "kept"},
+     {"refusal": "Legacy refusal", "other": "kept"}),
+    ("", {"refusal": "Legacy refusal"}, {"refusal": "Legacy refusal"}),
+])
+def test_litellm_refusal_metadata_is_preserved_without_mutation(native_refusal, provider_fields, expected):
+    reply = litellm.ModelResponse()
+    message = reply.choices[0].message
+    message.refusal = native_refusal
+    message.provider_specific_fields = provider_fields
+    original = reply.model_dump()
+
+    out = utils._build_ai_response(reply, 0.1)
+
+    assert out.provider_specific_fields == expected
+    assert reply.model_dump() == original
+    if native_refusal:
+        assert out.provider_specific_fields is not message.provider_specific_fields

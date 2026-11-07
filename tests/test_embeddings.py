@@ -512,9 +512,15 @@ class TestGetEmbedding:
         assert "sk-test" not in exc.value.message
         assert exc.value.message == "Provider request failed."
 
-    def test_gemini_multimodal_aggregation(self, monkeypatch, tmp_path):
+    @pytest.mark.parametrize("nested_adapter", [False, True])
+    def test_gemini_multimodal_aggregation(self, monkeypatch, tmp_path, nested_adapter):
         monkeypatch.setenv("GEMINI_API_KEY", "AIzaSy-test")
         from skell_e_router.embeddings import get_embedding
+        from litellm.llms.vertex_ai.gemini_embeddings import batch_embed_content_transformation
+        if nested_adapter:
+            monkeypatch.setattr(batch_embed_content_transformation, "GeminiEmbeddingInput", object(), raising=False)
+        else:
+            monkeypatch.delattr(batch_embed_content_transformation, "GeminiEmbeddingInput", raising=False)
 
         img = tmp_path / "tiny.png"
         img.write_bytes(b"\x89PNG\r\n\x1a\n")
@@ -531,9 +537,10 @@ class TestGetEmbedding:
         # 1 nested element → 1 output embedding
         assert len(result) == 1
         assert len(result[0]) == 768
-        # The input passed to litellm should be a flat list (LiteLLM auto-detects
-        # multimodal from data URI presence and routes to embedContent endpoint).
         sent = mock_emb.call_args.kwargs["input"]
+        if nested_adapter:
+            assert len(sent) == 1
+            sent = sent[0]
         assert sent[0] == "a red shoe"
         assert sent[1].startswith("data:image/png;base64,")
 

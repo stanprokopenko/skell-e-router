@@ -112,12 +112,12 @@ def _normalize_input(
         litellm.embedding(input=...). `was_str` is True iff the caller passed
         a single string (used for unwrapping the return type).
 
-    LiteLLM's Gemini handler routes flat lists to two endpoints based on
+    Older LiteLLM Gemini handlers route flat lists to two endpoints based on
     content: all-text → batchEmbedContents (N embeddings); any media element
     → embedContent (one fused embedding). Nested lists are NOT supported by
     either path, so an aggregation request like ``[["caption", "img"]]`` is
     flattened here into a flat multimodal list ``["caption", "data:image..."]``
-    before reaching LiteLLM.
+    here. get_embedding restores the group for newer nested-input adapters.
 
     Raises:
         RouterError("INVALID_INPUT") for: wrong top-level type, invalid part
@@ -394,6 +394,15 @@ def get_embedding(
         raise RouterError(code="INVALID_PARAM", message="literal_text must be a bool")
     normalized, was_str = _normalize_input(input, embedding_model, literal_text=literal_text)
     _validate_dimensions(dimensions, embedding_model)
+
+    if (embedding_model.provider == "gemini" and not literal_text
+            and isinstance(input, list) and input and isinstance(input[0], list)):
+        # New LiteLLM's GeminiEmbeddingInput parser treats flat media as a
+        # batch and nested media as one combined embedding. Older adapters
+        # require the flattened input produced by our normalizer.
+        from litellm.llms.vertex_ai.gemini_embeddings import batch_embed_content_transformation
+        if hasattr(batch_embed_content_transformation, "GeminiEmbeddingInput"):
+            normalized = [normalized]
 
     api_key = _resolve_api_key(embedding_model, config)
 

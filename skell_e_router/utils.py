@@ -965,6 +965,13 @@ def _build_ai_response(
         if raw_images:
             response_images = raw_images
 
+    provider_fields = getattr(message, 'provider_specific_fields', None)
+    refusal = getattr(message, 'refusal', None)
+    if isinstance(refusal, str) and refusal:
+        # Newer LiteLLM exposes chat refusal directly on Message. Preserve the
+        # router's metadata contract without modifying the SDK-owned mapping.
+        provider_fields = {**(provider_fields or {}), "refusal": refusal}
+
     return AIResponse(
         content=content or "",
         model=model_name,
@@ -981,7 +988,7 @@ def _build_ai_response(
         images=response_images,
         tool_calls=tool_calls,
         function_call=getattr(message, 'function_call', None),
-        provider_specific_fields=getattr(message, 'provider_specific_fields', None),
+        provider_specific_fields=provider_fields,
         raw_response=response,
         cache_read_tokens=cache_read_tokens,
         cache_write_tokens=cache_write_tokens,
