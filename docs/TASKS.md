@@ -2,6 +2,8 @@
 
 ## Provider integration audit, 2026-11-06
 
+- [x] Reviewed the reasoning-state channel and released 3.45.1. Capture every raw OpenAI reasoning item before chat normalization, including collected streams; retain cutoff/refusal metadata and own-provider filtering. Review and live evidence: skell-e-agent `docs/reasoning-state-review-2026-11-06.md`.
+
 - [x] Released 3.45.0 with the reasoning-state channel: `AIResponse.reasoning_state` returns Claude signed thinking blocks and OpenAI encrypted reasoning items and replays them to their own provider only; Responses requests ask for `reasoning.encrypted_content`. Closes R3 (replay half) and A2. Tests: `tests/test_reasoning_state.py`. Live evidence: skell-e-agent `docs/reasoning-state-live-verification-2026-11-06.md`.
 
 - [x] Reviewed 3.44.3 and fixed the missing storage default on current LiteLLM's reasoning-summary route in 3.44.4. Agent contracts now check storage by imported router version. Both router dependency sets and all three agent compatibility runs pass. [Review and evidence](responses-storage-review-2026-11-06.md).

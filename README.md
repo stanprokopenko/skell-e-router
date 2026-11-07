@@ -46,7 +46,7 @@ print(result.answers["team"]["probabilities"])
 
 Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
-Version 3.45.0 adds `AIResponse.reasoning_state`, the reasoning a model expects back on its next turn (Claude signed thinking blocks, OpenAI encrypted reasoning items), replayed by putting it on the assistant message as `reasoning_state`; each provider gets only its own state back, and OpenAI Responses requests ask for `reasoning.encrypted_content`. See [CHANGELOG.md](CHANGELOG.md).
+Version 3.45.1 preserves every OpenAI reasoning item before chat normalization, including responses with several items. Version 3.45.0 added `AIResponse.reasoning_state`, the reasoning a model expects back on its next turn. Replay it on the assistant message as `reasoning_state`; each provider gets only its own state back, and OpenAI Responses requests ask for `reasoning.encrypted_content`. See [CHANGELOG.md](CHANGELOG.md).
 
 Version 3.44.2 supports current LiteLLM installs, preserves refusal text, and keeps combined Gemini embeddings together. Version 3.44.1 keeps alternative answers separate, preserves all Responses text, reports Claude cache writes on the LiteLLM route, and stops retries after Gemini blocks a prompt. See [CHANGELOG.md](CHANGELOG.md).
 

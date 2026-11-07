@@ -378,6 +378,8 @@ class TestLiteLLMCapture:
     def _build(self, response):
         from skell_e_router.utils import _build_ai_response
         response._hidden_params["router_responses_output_parts"] = True
+        response.router_openai_reasoning_items = [item for choice in response.choices
+            for item in (getattr(choice.message, "reasoning_items", None) or [])]
         return _build_ai_response(response, 0.1, 0.1)
 
     def _two_choice_response(self, reasoning_items):
@@ -449,3 +451,105 @@ class TestAIResponseField:
         field = {f.name: f for f in dataclasses.fields(AIResponse)}["reasoning_state"]
         assert field.default is None
         assert AIResponse("x", "m").reasoning_state is None
+
+
+@pytest.mark.parametrize("json_mode", [False, True])
+def test_system_text_reaches_responses_input_when_required(captured_bodies, json_mode):
+    from skell_e_router import ask_ai
+
+    messages = [{"role": "system", "content": "Answer with json"}]
+    kwargs = {}
+    if json_mode:
+        messages.append({"role": "user", "content": "Give a number"})
+        kwargs["extra_body"] = {"text": {"format": {"type": "json_object"}}}
+    before = copy.deepcopy(messages)
+    assert ask_ai("gpt-6.1-sol", messages, config=_DUMMY_KEYS, **kwargs) == "OK"
+    body = captured_bodies[0][1]
+    assert body["input"][0] == {
+        "type": "message", "role": "system",
+        "content": [{"type": "input_text", "text": "Answer with json"}],
+    }
+    assert "instructions" not in body
+    if json_mode:
+        assert body["input"][1]["content"] == [{"type": "input_text", "text": "Give a number"}]
+        assert body["text"]["format"]["type"] == "json_object"
+    assert messages == before
+
+
+@pytest.mark.parametrize("stream", [False, True])
+def test_raw_multiple_reasoning_items_survive_two_calls(captured_bodies, monkeypatch, stream):
+    import httpx
+    from skell_e_router import ask_ai
+    original_send = httpx.Client.send
+    output = []
+    for number in (1, 2):
+        output.extend([
+            {"type": "reasoning", "id": f"rs_{number}", "summary": [],
+             "encrypted_content": f"ENC-{number}+/=="},
+            {"type": "function_call", "id": f"fc_{number}", "call_id": f"call_{number}",
+             "name": "lookup", "arguments": "{}", "status": "completed"},
+        ])
+
+    def send(client, request, **kwargs):
+        payload = original_send(client, request, **kwargs).json()
+        if len(captured_bodies) == 1:
+            payload["output"] = output
+        if json.loads(request.content).get("stream"):
+            event = {"type": "response.completed", "sequence_number": 0, "response": payload}
+            return httpx.Response(200, content=f"event: response.completed\ndata: {json.dumps(event)}\n\n",
+                                  headers={"content-type": "text/event-stream"}, request=request)
+        return httpx.Response(200, json=payload, request=request)
+
+    monkeypatch.setattr(httpx.Client, "send", send)
+    first = ask_ai("gpt-6.1-sol", "look up both", tools=_LOOKUP_TOOL,
+                   config=_DUMMY_KEYS, rich_response=True, stream=stream)
+    assert [item["id"] for item in first.reasoning_state] == ["rs_1", "rs_2"]
+    assert [item["encrypted_content"] for item in first.reasoning_state] == ["ENC-1+/==", "ENC-2+/=="]
+    history = [{"role": "user", "content": "look up both"},
+               {"role": "assistant", "content": first.content,
+                "tool_calls": [call.model_dump() for call in first.tool_calls],
+                "reasoning_state": first.reasoning_state},
+               *[{"role": "tool", "tool_call_id": f"call_{n}", "content": "42"} for n in (1, 2)]]
+    assert ask_ai("gpt-6.1-sol", history, tools=_LOOKUP_TOOL, config=_DUMMY_KEYS) == "OK"
+    replayed = [item for item in captured_bodies[1][1]["input"] if item.get("type") == "reasoning"]
+    assert replayed == [output[0], output[2]]
+
+
+@pytest.mark.parametrize("model", ["gpt-4.1", "claude-sonnet-4-6"])
+def test_chat_or_foreign_provider_does_not_capture_openai_shaped_state(monkeypatch, model):
+    from skell_e_router import utils
+    from tests.helpers import make_litellm_response
+    response = make_litellm_response()
+    response.choices[0].message.reasoning_items = [{"type": "reasoning", "id": "foreign", "encrypted_content": "ENC"}]
+    monkeypatch.setattr(utils.litellm, "completion", lambda **kwargs: response)
+    result = utils.ask_ai(model, "hi", config={**_DUMMY_KEYS, "anthropic_api_key": "test"}, direct_sdk=False, rich_response=True)
+    assert result.reasoning_state is None
+
+
+@pytest.mark.parametrize("kind", ["refusal", "length", "content_filter"])
+def test_responses_metadata_survives_normalization(captured_bodies, monkeypatch, kind):
+    import httpx
+    from skell_e_router import ask_ai
+    original_send = httpx.Client.send
+
+    def send(client, request, **kwargs):
+        payload = original_send(client, request, **kwargs).json()
+        payload["usage"] = {"input_tokens": 100, "output_tokens": 20, "total_tokens": 120,
+                            "input_tokens_details": {"cached_tokens": 50},
+                            "output_tokens_details": {"reasoning_tokens": 15}}
+        if kind == "refusal":
+            payload["output"][0]["content"] = [{"type": "refusal", "refusal": "Cannot help."}]
+        else:
+            payload["output"] = [{"type": "reasoning", "id": "rs_1", "summary": [], "encrypted_content": "ENC"}]
+            payload["status"] = "incomplete"
+            payload["incomplete_details"] = {"reason": "max_output_tokens" if kind == "length" else kind}
+        return httpx.Response(200, json=payload, request=request)
+
+    monkeypatch.setattr(httpx.Client, "send", send)
+    result = ask_ai("gpt-6.1-sol", "hi", config=_DUMMY_KEYS, rich_response=True)
+    assert (result.prompt_tokens, result.completion_tokens, result.cache_read_tokens, result.reasoning_tokens) == (100, 20, 50, 15)
+    if kind == "refusal":
+        assert result.provider_specific_fields["refusal"] == "Cannot help."
+    else:
+        assert result.finish_reason == kind
+        assert result.reasoning_state[0]["encrypted_content"] == "ENC"

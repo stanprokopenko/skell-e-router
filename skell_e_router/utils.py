@@ -919,28 +919,29 @@ def _prepare_messages_for_litellm(messages: list[dict], responses_bridge: bool) 
     reraise=True,
 )
 def _perform_completion(model_name: str, messages: list[dict], api_key: str | None = None, **kwargs):
-    responses_bridge = _uses_responses_bridge(model_name, kwargs)
+    responses_bridge = model_name.startswith("openai/") and _uses_responses_bridge(model_name, kwargs)
     messages = _prepare_messages_for_litellm(messages, responses_bridge)
     completion_kwargs = dict(model=model_name, messages=messages, **kwargs)
     if api_key:
         completion_kwargs["api_key"] = api_key
     request_start = time.perf_counter()
-    response = litellm.completion(**completion_kwargs)
+    if responses_bridge:
+        from .openai_responses import complete_openai_responses
+        response = complete_openai_responses(**completion_kwargs)
+    else:
+        response = litellm.completion(**completion_kwargs)
 
     # When streaming, collect all chunks and rebuild into a complete response
     # so callers always get a normal response object with .choices, .usage, etc.
-    if kwargs.get("stream"):
+    if kwargs.get("stream") and not responses_bridge:
         chunks = list(response)
         response = litellm.stream_chunk_builder(chunks, messages=messages)
 
     request_duration = time.perf_counter() - request_start
-    # LiteLLM's transform does not retain a reliable Responses origin marker.
-    # Its streaming bridge already rebuilds one chat message, so no merge there.
+    # Responses choices represent parts of one output, including collected streams.
     if not isinstance(getattr(response, "_hidden_params", None), dict):
         response._hidden_params = {}
-    response._hidden_params["router_responses_output_parts"] = (
-        not kwargs.get("stream") and responses_bridge
-    )
+    response._hidden_params["router_responses_output_parts"] = responses_bridge
     return response, request_duration
 
 
@@ -1000,18 +1001,13 @@ def _build_ai_response(
     for choice in choices:
         choice_message = getattr(choice, 'message', None)
         merged_tool_calls.extend(getattr(choice_message, 'tool_calls', None) or [])
-        # LiteLLM's Responses bridge attaches each ``reasoning`` output item
-        # (id, encrypted_content, summary) to the choice it precedes. Keep the
-        # ones that carry the encrypted blob; without it nothing can be
-        # replayed under store:false. Plain chat/completions never sets this.
-        for item in getattr(choice_message, 'reasoning_items', None) or []:
-            get = item.get if isinstance(item, dict) else lambda k, _i=item: getattr(_i, k, None)
-            if get("encrypted_content"):
-                reasoning_state.append({
-                    "provider": "openai", "kind": "reasoning",
-                    "id": get("id"), "encrypted_content": get("encrypted_content"),
-                    "summary": list(get("summary") or []),
-                })
+    for item in getattr(response, 'router_openai_reasoning_items', None) or []:
+        if item.get("encrypted_content"):
+            reasoning_state.append({
+                "provider": "openai", "kind": "reasoning",
+                "id": item.get("id"), "encrypted_content": item["encrypted_content"],
+                "summary": list(item.get("summary") or []),
+            })
     finish_reason = getattr(first_choice, 'finish_reason', None)
     if merged_tool_calls:
         tool_calls = merged_tool_calls

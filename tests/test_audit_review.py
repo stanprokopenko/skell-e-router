@@ -5,7 +5,7 @@ import importlib
 import litellm
 import pytest
 
-from skell_e_router import utils
+from skell_e_router import utils, openai_responses
 
 
 TOOL = {"type": "function", "function": {"name": "book_ticket", "parameters": {"type": "object"}}}
@@ -54,7 +54,7 @@ def test_public_responses_routes_merge_actual_output_parts(monkeypatch, model):
     # the output item's id. The router must preserve the adapter's call.
     expected_calls = [call.model_dump() for choice in reply.choices
                       for call in choice.message.tool_calls or []]
-    monkeypatch.setattr(utils.litellm, "completion", lambda **kwargs: reply)
+    monkeypatch.setattr(openai_responses, "complete_openai_responses", lambda **kwargs: reply)
     out = utils.ask_ai(model, "Book one ticket", rich_response=True,
                        tools=[TOOL], reasoning_effort="low", config={"openai_api_key": "fake"})
     assert_complete_response_text(out.content)
@@ -66,7 +66,7 @@ def test_public_responses_routes_merge_actual_output_parts(monkeypatch, model):
 
 
 def test_plain_text_responses_return_all_text(monkeypatch):
-    monkeypatch.setattr(utils.litellm, "completion", lambda **kwargs: responses_reply())
+    monkeypatch.setattr(openai_responses, "complete_openai_responses", lambda **kwargs: responses_reply())
     out = utils.ask_ai("gpt-6-astra", "Check flights", config={"openai_api_key": "fake"})
     assert_complete_response_text(out)
 
