@@ -1,5 +1,9 @@
 # Active Tasks & Deferred Follow-ups
 
+## Gemini 4 Carbon, 2026-11-10
+
+- [x] Released 3.49.0 with `gemini-4-carbon` (stable, paid tier only, same API surface and $2/$10/$0.10 launch pricing as `gemini-4-argon`, doubling December 1). Benchmarked at pinned low and high in the benchmark repo: low scores 92.5% (rank 15 of 126), just under Argon low, and high costs 16x more for a lower score ([results](../../benchmark/docs/gemini-4-carbon-benchmark-results.md)).
+
 ## Claude Fable 5.2, 2026-11-09
 
 - [x] Released 3.48.0 with `claude-fable-5-2` ($8/$40 per 1M, $0.20 cache reads, same API surface as Fable 5.1). Benchmarked at pinned low and high in the benchmark repo: low matches Fable 5.1's best score at about half the cost and time ([results](../../benchmark/docs/claude-fable-5-2-benchmark-results.md)). Consumers moved off Fable 5.1 the same day: houston crons, skell-e-web, solar-sailer and the orchestrator's notes ([scan and resolution](fable-5-1-references-2026-11-09.md)).
