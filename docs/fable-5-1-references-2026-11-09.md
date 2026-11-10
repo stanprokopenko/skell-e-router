@@ -1,5 +1,7 @@
 # Where Fable 5.1 is still hard-coded (Nov 9, 2026)
 
+**Resolved the same evening on Stan's order.** Everything below was moved to Fable 5.2 and pushed: houston crons (`0627916`), skell-e-web lists and routing (`2ae03931`, deployed), solar-sailer chat model lists with Fable 5 also removed and the Claude Code minimum raised to 2.1.290 (`aa5d41145`), and the orchestrator's Solar Sailer note (`ac0919ff`; its CLAUDE.md, briefing and tests were fixed in `d796403c`). Still on Fable 5.1 by choice: the Iron Giant Linux box's own Claude Code settings, because its Claude Code 2.1.278 is too old for 5.2. The rest of this doc is the scan as it stood before those changes.
+
 Scan of every git repo under `Documents\GitHub` (64 folders) and `Documents\GitLab` (31 folders) for `claude-fable-5-1`, `fable-5-1`, `fable 5.1` and similar spellings, tracked files only. GitLab has no references at all. Benchmark result files, logs, Slack-thread archives, handoff docs and the Obsidian vault mention Fable 5.1 as history and are not listed here. What follows is code and config that would actually send traffic to Fable 5.1 or offer it as a choice, plus the orchestrator briefs.
 
 ## Pins that send real traffic to Fable 5.1
