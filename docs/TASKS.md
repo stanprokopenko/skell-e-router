@@ -3,7 +3,6 @@
 ## Claude Fable 5.2, 2026-11-09
 
 - [x] Released 3.48.0 with `claude-fable-5-2` ($8/$40 per 1M, $0.20 cache reads, same API surface as Fable 5.1). Benchmarked at pinned low and high in the benchmark repo: low matches Fable 5.1's best score at about half the cost and time ([results](../../benchmark/docs/claude-fable-5-2-benchmark-results.md)). Consumers moved off Fable 5.1 the same day: houston crons, skell-e-web, solar-sailer and the orchestrator's notes ([scan and resolution](fable-5-1-references-2026-11-09.md)).
-- [ ] Follow-up, needs Stan's go: the Iron Giant Linux box still pins `claude-fable-5-1[1m]` in its Claude Code settings; moving it to 5.2 means updating Claude Code there to 2.1.290 or newer first.
 
 ## Provider integration audit, 2026-11-06
 
