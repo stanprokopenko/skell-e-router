@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.49.0 - 2026-11-10
+
+Add `gemini-4-carbon`, Google's strongest Gemini 4 reasoning model, now stable on the paid tier. Same API surface and launch pricing as `gemini-4-argon`: direct Gemini SDK, thinking level `low`/`medium`/`high`, 1M context, 65,536 max output, $2/$10/$0.10 per 1M tokens through 2026-11-30, doubling on 2026-12-01.
+
 ## 3.48.0 - 2026-11-09
 
 Add `claude-fable-5-2` (released 2026-11-09). Same API surface as Fable 5.1: adaptive thinking always on, effort `low` through `max`, no sampling parameters, forced tool use coerced to `auto`. 1M context, 128k max output. Priced at $8/$40 per 1M tokens with $0.20 cache reads, 20% below Fable 5.1.
