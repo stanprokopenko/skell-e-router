@@ -401,6 +401,20 @@ MODEL_CONFIG = {
         use_direct_sdk=True,
         max_output_tokens=128000,
     ),
+    # Fable 5.2: released 2026-11-09. Drop-in successor to Fable 5.1 with the same API
+    # surface (adaptive thinking always on, no temperature/top_p/top_k, effort low..max,
+    # forced tool use returns 400 so tool_choice is coerced to "auto"). 1M context,
+    # 128k max output. $8/$40 per 1M; cache reads $0.20 per 1M (0.025x).
+    "claude-fable-5-2": AIModel(
+        name="anthropic/claude-fable-5-2",
+        provider="anthropic",
+        supports_thinking=True,
+        supported_params={"stop", "max_tokens", "thinking", "reasoning_effort", "stream", "tools", "tool_choice", "betas"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh", "max"},
+        accepted_tool_choices={"auto", "none"},
+        use_direct_sdk=True,
+        max_output_tokens=128000,
+    ),
     # Fable 5.1: released 2026-09-01. Same API surface as Fable 5 (adaptive thinking
     # always on, no temperature/top_p/top_k, effort low..max) with one breaking change:
     # forced tool use returns 400 — tool_choice "any" or a named tool is coerced to

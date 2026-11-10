@@ -102,7 +102,7 @@ class TestModelConfig:
         "gemini-3.5-flash", "gemini-2.5-pro", "gemini-2.5-flash",
         "gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview",
         "nano-banana-3", "gemini-3-pro-image",
-        "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
+        "claude-fable-5-2", "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5",
         "claude-opus-4-7", "claude-opus-4-6", "claude-sonnet-4-6", "claude-opus-4-5", "claude-haiku-4-5",
         "muse-spark-1.2", "muse-spark-1.2-contributor", "muse-spark-1.1",
         "kimi-k3.1-pro", "kimi-k3.1-pro-highspeed", "kimi-k3",
@@ -190,7 +190,7 @@ class TestModelConfig:
         assert "budget_tokens" in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "max"}
 
-    @pytest.mark.parametrize("alias", ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5"])
+    @pytest.mark.parametrize("alias", ["claude-fable-5-2", "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1", "claude-opus-5", "claude-fable-5", "claude-opus-4-8", "claude-sonnet-5"])
     def test_fable_5_and_opus_4_8_config(self, alias):
         """Opus 5, Fable 5, Opus 4.8, Sonnet 5: adaptive thinking only, no sampling params, effort up to max."""
         model = MODEL_CONFIG[alias]
@@ -203,7 +203,7 @@ class TestModelConfig:
         assert "budget_tokens" not in model.supported_params
         assert model.accepted_reasoning_efforts == {"low", "medium", "high", "xhigh", "max"}
 
-    @pytest.mark.parametrize("alias", ["claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1"])
+    @pytest.mark.parametrize("alias", ["claude-fable-5-2", "claude-sonnet-5-5", "claude-opus-5-5", "claude-fable-5-1"])
     def test_forced_tool_use_restricted(self, alias):
         """Fable 5.1 rejects forced tool use (tool_choice "any"/named -> 400);
         only "auto" and "none" pass through, everything else coerces to "auto"."""
@@ -211,6 +211,12 @@ class TestModelConfig:
         assert model.accepted_tool_choices == {"auto", "none"}
         # Fable 5 has no such restriction — must stay unrestricted
         assert MODEL_CONFIG["claude-fable-5"].accepted_tool_choices is None
+
+    def test_fable_5_2_pricing(self):
+        """Fable 5.2: $8/$40 per 1M, cache reads $0.20 (0.025x, like Fable 5.1), 128k output."""
+        from skell_e_router.anthropic_direct import _PRICING
+        assert MODEL_CONFIG["claude-fable-5-2"].max_output_tokens == 128000
+        assert _PRICING["claude-fable-5-2"] == {"input": 8.00, "output": 40.00, "cache_read": 0.20}
 
     def test_haiku_5_5_config(self):
         """Haiku 5.5 accepts forced tool use (no coercion), 128k output, $0.10/$0.50 pricing

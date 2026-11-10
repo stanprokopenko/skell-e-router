@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.48.0 - 2026-11-09
+
+Add `claude-fable-5-2` (released 2026-11-09). Same API surface as Fable 5.1: adaptive thinking always on, effort `low` through `max`, no sampling parameters, forced tool use coerced to `auto`. 1M context, 128k max output. Priced at $8/$40 per 1M tokens with $0.20 cache reads, 20% below Fable 5.1.
+
 ## 3.46.0 - 2026-11-07
 
 Add public `classify(..., max_attempts=3)` control. Callers that manage retries can select one HTTP attempt; other callers retain the existing three-attempt policy. Concurrent calls have independent retry policies.
