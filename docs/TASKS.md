@@ -1,5 +1,10 @@
 # Active Tasks & Deferred Follow-ups
 
+## Gemini 4 Hydrogen, 2026-11-17
+
+- [x] Released 3.50.0 with `gemini-4-hydrogen` (stable, released November 12, $1.50/$7.50/$0.075 per 1M flat, 1M context, 65,536 max output, thinking level low/medium/high/xhigh, default high). The same release makes the Gemini path send `xhigh` instead of turning thinking off. Benchmarked at pinned low, high and xhigh in the benchmark repo: high scores 92.5% (rank 15 of 129), level with Argon high at 71% of the cost, but Gemini 3.8 Flash low still scores higher at an eighth of the cost ([results](../../benchmark/docs/gemini-4-hydrogen-benchmark-results.md)).
+- [ ] **Gemini `xhigh` fails on the LiteLLM path** — `ask_ai("gemini-4-hydrogen", reasoning_effort="xhigh", direct_sdk=False)` returns `PROVIDER_ERROR: Provider connection failed` (verified 2026-11-17; `high` works there). The default direct SDK path is fine. Either raise a clear `INVALID_PARAM` for that combination or pass the level through once LiteLLM supports it.
+
 ## Gemini 4 Carbon, 2026-11-10
 
 - [x] Released 3.49.0 with `gemini-4-carbon` (stable, paid tier only, same API surface and $2/$10/$0.10 launch pricing as `gemini-4-argon`, doubling December 1). Benchmarked at pinned low and high in the benchmark repo: low scores 92.5% (rank 15 of 126), just under Argon low, and high costs 16x more for a lower score ([results](../../benchmark/docs/gemini-4-carbon-benchmark-results.md)).
