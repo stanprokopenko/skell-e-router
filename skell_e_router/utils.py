@@ -22,6 +22,7 @@ from .gemini_direct import (
     _build_response as _build_gemini_response,
     _print_response as _print_gemini_response,
     _sanitize_openai_tools_for_gemini,
+    _RAW_THINKING_LEVELS as _GEMINI_DIRECT_ONLY_EFFORTS,
 )
 from .anthropic_direct import (
     _convert_messages_for_anthropic,
@@ -1119,6 +1120,7 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
                 "provider": ai_model.provider, "model": ai_model.name, "direct_sdk": True})
 
         start_time = time.perf_counter()
+        discarded: list = []
         response, request_duration_s = _call_gemini_direct(
             model_name=ai_model.name,
             contents=contents,
@@ -1126,10 +1128,12 @@ def _ask_ai_direct_gemini(ai_model: AIModel, messages: list[dict], api_key: str 
             config=gen_config,
             tools=tools,
             api_key=api_key,
+            discarded=discarded,
         )
         total_duration_s = time.perf_counter() - start_time
 
-        ai_response = _build_gemini_response(response, ai_model.name, request_duration_s, total_duration_s)
+        ai_response = _build_gemini_response(response, ai_model.name, request_duration_s, total_duration_s,
+                                             discarded=discarded)
         _print_gemini_response(ai_response, ai_model.name, verbosity, total_duration_s)
 
         if rich_response:
@@ -1321,6 +1325,15 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
 
     # Swap and filter out parameters for the target model
     kwargs = _handle_model_specific_params(ai_model, kwargs)
+
+    # Some Gemini thinking levels only exist on the direct SDK path; LiteLLM fails
+    # on them inside its own parameter mapping with an unrelated-looking error.
+    if ai_model.is_gemini and kwargs.get("reasoning_effort") in _GEMINI_DIRECT_ONLY_EFFORTS:
+        raise RouterError(
+            code="INVALID_PARAM",
+            message=(f"'reasoning_effort' '{kwargs['reasoning_effort']}' for {model_alias} needs the "
+                     "direct Gemini SDK path. Remove direct_sdk=False."),
+        )
 
     # Custom OpenAI-compatible endpoints (e.g., Meta Model API) need their base URL
     # forwarded to litellm.completion. Added after param filtering since api_base is
