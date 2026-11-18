@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.50.1 - 2026-11-17
+
+Handle Gemini finish reason `MALFORMED_RESPONSE` ("Finished due to malformed response" in Google's API reference), first seen on `gemini-4-hydrogen`. The direct Gemini path used to return whatever text arrived as a normal answer.
+
+- Non-streaming calls resend the request, sharing the existing limit of 3 attempts with transient errors. If the last attempt is still malformed, `ask_ai` raises `RouterError("PROVIDER_ERROR")` with `details["category"] == "malformed_response"`, plus `finish_reason`, `attempts` and `partial_output`.
+- Streaming calls restart the stream when Gemini reports the fault before any text or tool call reached the caller. After output has been delivered, iteration ends with the same error and `partial_output` set to `True`, so the caller knows the text is incomplete. The malformed chunk is never yielded.
+- Usage and cost on the returned response cover the final attempt only. Google may bill the discarded attempts.
+
 ## 3.50.0 - 2026-11-17
 
 Add `gemini-4-hydrogen` (released 2026-11-12), the fast Gemini 4 model and Google's upgrade path from `gemini-3.8-flash`. Direct Gemini SDK, 1M context, 65,536 max output, $1.50/$7.50/$0.075 per 1M tokens with no launch discount. It accepts thinking level `low`/`medium`/`high`/`xhigh` and defaults to `high`; `minimal` is rejected.

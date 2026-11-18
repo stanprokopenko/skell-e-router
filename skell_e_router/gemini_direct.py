@@ -19,6 +19,7 @@ except ImportError:
     types = None
 
 from .response import AIResponse
+from .errors import MalformedProviderResponse
 
 
 # Reverse of utils._AUDIO_MIME_TO_FORMAT — picks one canonical MIME per format
@@ -547,11 +548,60 @@ _CONFIG_ATTRS = ("max_output_tokens", "temperature", "top_p", "top_k",
                  "candidate_count", "tool_config", "http_options")
 
 
+_MAX_ATTEMPTS = 3
+
+# Finish reasons where Gemini reports that its own output is unusable. Google's API
+# reference: MALFORMED_RESPONSE = "Finished due to malformed response."
+_MALFORMED_FINISH_REASONS = frozenset({"MALFORMED_RESPONSE"})
+
+# Part fields that mean a chunk carries something the caller will act on.
+_OUTPUT_PART_FIELDS = ("text", "function_call", "inline_data", "file_data",
+                       "executable_code", "code_execution_result", "function_response")
+
+
+def _is_transient_error(exc: Exception) -> bool:
+    err_name = type(exc).__name__.lower()
+    status = getattr(exc, 'code', None) or getattr(exc, 'status_code', None)
+    return ('timeout' in err_name or
+            'connection' in err_name or
+            status in (429, 500, 502, 503, 504))
+
+
+def _malformed_finish_reason(response) -> str | None:
+    """Return the first candidate's finish reason if it marks the output malformed.
+
+    google-genai releases that predate a finish reason still parse it into a
+    FinishReason member with the API name (and log "... is not a valid
+    FinishReason"), so the name is reliable on every supported SDK.
+    """
+    candidates = getattr(response, "candidates", None)
+    if not candidates:
+        return None
+    fr = getattr(candidates[0], "finish_reason", None)
+    name = fr.name if isinstance(fr, enum.Enum) else fr
+    if isinstance(name, str) and name in _MALFORMED_FINISH_REASONS:
+        return name
+    return None
+
+
+def _chunk_has_output(chunk) -> bool:
+    candidates = getattr(chunk, "candidates", None)
+    if not candidates:
+        return False
+    content = getattr(candidates[0], "content", None)
+    for part in getattr(content, "parts", None) or []:
+        if any(getattr(part, field, None) for field in _OUTPUT_PART_FIELDS):
+            return True
+    return False
+
+
 def _call_gemini_direct(model_name: str, contents: list, system_instruction: str | None,
                         config, tools, api_key: str) -> object:
     """Call the Google genai SDK with retry on transient errors.
 
-    Retries up to 3 attempts on timeout, 429, and 5xx errors.
+    Retries up to 3 attempts on timeout, 429, and 5xx errors, and when Gemini
+    ends the answer with finish reason MALFORMED_RESPONSE. Raises
+    MalformedProviderResponse if the last attempt is still malformed.
     """
     if not GENAI_AVAILABLE:
         raise ImportError(
@@ -584,33 +634,32 @@ def _call_gemini_direct(model_name: str, contents: list, system_instruction: str
         config=config,
     )
 
-    max_attempts = 3
-    for attempt in range(1, max_attempts + 1):
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
         try:
             request_start = time.perf_counter()
             response = client.models.generate_content(**call_kwargs)
             request_duration = time.perf_counter() - request_start
-            return response, request_duration
         except Exception as e:
-            err_name = type(e).__name__.lower()
-            status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
-            is_transient = (
-                'timeout' in err_name or
-                'connection' in err_name or
-                status in (429, 500, 502, 503, 504)
-            )
-            if is_transient and attempt < max_attempts:
+            if _is_transient_error(e) and attempt < _MAX_ATTEMPTS:
                 wait_time = 2 ** attempt  # 2s, 4s
                 time.sleep(wait_time)
                 continue
             raise
+        malformed = _malformed_finish_reason(response)
+        if malformed is None:
+            return response, request_duration
+        # Gemini discarded its own output. The same request usually succeeds
+        # when sent again, so resend it instead of returning a broken answer.
+        if attempt == _MAX_ATTEMPTS:
+            raise MalformedProviderResponse(malformed, attempts=attempt)
 
 
 def _call_gemini_direct_stream(model_name: str, contents: list, system_instruction: str | None,
                                config, tools, api_key: str):
     """Call the Google genai SDK with streaming. Returns an iterator of chunks.
 
-    Same retry logic as _call_gemini_direct (retry before first chunk).
+    Same retry logic as _call_gemini_direct (retry before first chunk), plus
+    _retry_malformed_stream for a MALFORMED_RESPONSE finish reason.
     """
     if not GENAI_AVAILABLE:
         raise ImportError(
@@ -643,24 +692,57 @@ def _call_gemini_direct_stream(model_name: str, contents: list, system_instructi
         config=config,
     )
 
-    max_attempts = 3
-    for attempt in range(1, max_attempts + 1):
-        try:
-            stream = client.models.generate_content_stream(**call_kwargs)
-            return stream
-        except Exception as e:
-            err_name = type(e).__name__.lower()
-            status = getattr(e, 'code', None) or getattr(e, 'status_code', None)
-            is_transient = (
-                'timeout' in err_name or
-                'connection' in err_name or
-                status in (429, 500, 502, 503, 504)
-            )
-            if is_transient and attempt < max_attempts:
-                wait_time = 2 ** attempt
-                time.sleep(wait_time)
+    def open_stream():
+        for attempt in range(1, _MAX_ATTEMPTS + 1):
+            try:
+                return client.models.generate_content_stream(**call_kwargs)
+            except Exception as e:
+                if _is_transient_error(e) and attempt < _MAX_ATTEMPTS:
+                    wait_time = 2 ** attempt
+                    time.sleep(wait_time)
+                    continue
+                raise
+
+    # Open the first stream now so request errors surface at call time.
+    return _retry_malformed_stream(open_stream(), open_stream)
+
+
+def _retry_malformed_stream(stream, open_stream):
+    """Yield stream chunks, handling a MALFORMED_RESPONSE finish reason.
+
+    If Gemini reports its output as malformed before the caller has received any
+    text or tool call, the request is sent again (up to _MAX_ATTEMPTS streams).
+    Once output has been delivered it cannot be taken back, so the stream ends
+    with MalformedProviderResponse and the caller knows the answer is incomplete.
+    The malformed chunk itself is never yielded.
+    """
+    attempt = 1
+    while True:
+        held = []          # chunks with no output yet, kept back in case we restart
+        delivered = False
+        malformed = None
+        for chunk in stream:
+            malformed = _malformed_finish_reason(chunk)
+            if malformed is not None:
+                break
+            if not delivered and not _chunk_has_output(chunk):
+                held.append(chunk)
                 continue
-            raise
+            if held:
+                yield from held
+                held = []
+            delivered = True
+            yield chunk
+        if malformed is None:
+            yield from held
+            return
+        close = getattr(stream, "close", None)
+        if callable(close):
+            close()
+        if delivered or attempt == _MAX_ATTEMPTS:
+            raise MalformedProviderResponse(malformed, attempts=attempt, partial_output=delivered)
+        attempt += 1
+        stream = open_stream()
 
 
 def _prompt_block_finish_reason(response) -> str | None:

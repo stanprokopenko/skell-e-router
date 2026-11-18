@@ -11,7 +11,21 @@ _MESSAGES = {
     "unavailable": "Provider service is unavailable.",
     "dependency": "A required provider dependency is unavailable.",
     "provider_error": "Provider request failed.",
+    "malformed_response": "Provider returned a malformed response.",
 }
+
+
+class MalformedProviderResponse(Exception):
+    """A provider finished a generation by reporting its own output as malformed.
+
+    Carries only values the router sets itself, so provider_error can report them.
+    """
+
+    def __init__(self, finish_reason: str, attempts: int, partial_output: bool = False):
+        super().__init__(finish_reason)
+        self.finish_reason = finish_reason
+        self.attempts = attempts
+        self.partial_output = partial_output
 
 
 def _status_code(exc):
@@ -34,6 +48,11 @@ def provider_error(exc, error_type, *, code="PROVIDER_ERROR", details=None):
     Do not copy the provider exception or call str/repr on it. Replacement of
     known keys cannot cover escaped, truncated, or otherwise encoded secrets.
     """
+    if isinstance(exc, MalformedProviderResponse):
+        safe_details = dict(details or {})
+        safe_details.update(category="malformed_response", finish_reason=exc.finish_reason,
+                            attempts=exc.attempts, partial_output=exc.partial_output)
+        return error_type(code=code, message=_MESSAGES["malformed_response"], details=safe_details)
     status = _status_code(exc)
     name = type(exc).__name__.lower()
     if status == 401 or "authentication" in name:
