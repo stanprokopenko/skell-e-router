@@ -24,6 +24,15 @@ def _mock_types():
         return m
     t.ThinkingConfig.side_effect = _thinking_config
 
+    # HttpOptions: store kwargs as attributes
+    def _http_options(**kw):
+        m = MagicMock()
+        for k, v in kw.items():
+            setattr(m, k, v)
+        m._kw = kw
+        return m
+    t.HttpOptions.side_effect = _http_options
+
     # SafetySetting: simple passthrough
     t.SafetySetting.side_effect = lambda **kw: kw
 
@@ -36,7 +45,7 @@ def _mock_types():
         # Ensure missing attrs return None (for _CONFIG_ATTRS iteration)
         for attr in ("max_output_tokens", "temperature", "top_p", "top_k",
                       "stop_sequences", "thinking_config", "safety_settings",
-                      "candidate_count", "tool_config"):
+                      "candidate_count", "tool_config", "http_options"):
             if attr not in kw:
                 setattr(m, attr, None)
         return m
@@ -245,6 +254,37 @@ class TestBuildGenerateConfig:
         config, _ = self._call(self._gemini_model(), {"reasoning_effort": "high"})
         tc = config._kw["thinking_config"]
         assert tc.thinking_level == "HIGH"
+
+    def test_reasoning_effort_minimal_disables_thinking(self):
+        config, _ = self._call(self._gemini_model(), {"reasoning_effort": "minimal"})
+        tc = config._kw["thinking_config"]
+        assert tc.thinking_budget == 0
+        assert "http_options" not in config._kw
+
+    def test_reasoning_effort_xhigh_goes_in_raw_request_body(self):
+        """xhigh is newer than some SDK ThinkingLevel enums, so it travels as extra_body."""
+        model = self._gemini_model(
+            name="gemini/gemini-4-hydrogen",
+            accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+        )
+        config, _ = self._call(model, {"reasoning_effort": "xhigh", "max_tokens": 100})
+        assert "thinking_config" not in config._kw
+        assert config._kw["http_options"].extra_body == {
+            "generationConfig": {"thinkingConfig": {"thinkingLevel": "XHIGH"}}
+        }
+        assert config._kw["max_output_tokens"] == 100
+
+    def test_reasoning_effort_without_gemini_level_raises(self):
+        """A declared effort with no Gemini mapping must fail, not turn thinking off."""
+        from skell_e_router.utils import RouterError
+        model = self._gemini_model(accepted_reasoning_efforts={"low", "medium", "high", "max"})
+        with pytest.raises(RouterError, match="INVALID_PARAM"):
+            self._call(model, {"reasoning_effort": "max"})
+
+    def test_xhigh_rejected_on_model_that_does_not_accept_it(self):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError, match="INVALID_PARAM"):
+            self._call(self._gemini_model(), {"reasoning_effort": "xhigh"})
 
     def test_reasoning_effort_on_budget_model_uses_thinking_budget(self):
         """Model with budget_tokens in supported_params -> thinking_budget."""

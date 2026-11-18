@@ -280,6 +280,21 @@ MODEL_CONFIG = {
     # Note: web_search_options enables Google Search Grounding for real-time web search
     # Example: web_search_options={"search_context_size": "high"}  # Options: "low", "medium", "high"
 
+    # gemini-4-hydrogen: Stable, released 2026-11-12 (confirmed live 2026-11-17). The fast Gemini 4
+    # model and Google's upgrade path from gemini-3.8-flash. 1M context shared by input, thinking
+    # and output; 65,536 max output (long decode up to 1M not wired here). thinking_level
+    # low/medium/high/xhigh, default high per Google's launch post; "minimal" returns 400 and
+    # thinking_budget=0 is ignored, so thinking cannot be turned off. Sampling params accepted.
+    # Implicit caching only. $1.50/$7.50/$0.075 per 1M, flat, no launch discount.
+    # https://ai.google.dev/gemini-api/docs/models/gemini-4-hydrogen
+    "gemini-4-hydrogen": AIModel(
+        name="gemini/gemini-4-hydrogen",
+        provider="gemini",
+        supports_thinking=True,
+        supported_params={"temperature", "top_p", "top_k", "stop", "max_tokens", "reasoning_effort", "stream", "tools", "tool_choice", "candidate_count", "safety_settings", "web_search_options"},
+        accepted_reasoning_efforts={"low", "medium", "high", "xhigh"},
+        use_direct_sdk=True,
+    ),
     # gemini-4-carbon: Stable, publicly callable on the paid tier (confirmed live 2026-11-10;
     # announced 2026-10-28). Google's strongest reasoning model, aimed at software engineering.
     # Same API surface and launch pricing as gemini-4-argon: 1M context shared by input, thinking

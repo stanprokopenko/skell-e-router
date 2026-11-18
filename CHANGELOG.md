@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.50.0 - 2026-11-17
+
+Add `gemini-4-hydrogen` (released 2026-11-12), the fast Gemini 4 model and Google's upgrade path from `gemini-3.8-flash`. Direct Gemini SDK, 1M context, 65,536 max output, $1.50/$7.50/$0.075 per 1M tokens with no launch discount. It accepts thinking level `low`/`medium`/`high`/`xhigh` and defaults to `high`; `minimal` is rejected.
+
+Gemini models that declare `xhigh` now send it to Google as thinking level `XHIGH`. Before this release the Gemini path turned thinking off for any effort other than `low`, `medium` or `high`. A declared effort with no Gemini thinking level now raises `INVALID_PARAM`.
+
 ## 3.49.0 - 2026-11-10
 
 Add `gemini-4-carbon`, Google's strongest Gemini 4 reasoning model, now stable on the paid tier. Same API surface and launch pricing as `gemini-4-argon`: direct Gemini SDK, thinking level `low`/`medium`/`high`, 1M context, 65,536 max output, $2/$10/$0.10 per 1M tokens through 2026-11-30, doubling on 2026-12-01.

@@ -55,6 +55,8 @@ def _get_gemini_client(api_key: str):
 # see https://ai.google.dev/gemini-api/docs/caching). Cache hits are reported
 # in usage_metadata.cached_content_token_count, a SUBSET of prompt_token_count.
 _PRICING = {
+    # gemini-4-hydrogen: flat across the 1M context, no launch discount (verified 2026-11-17)
+    "gemini-4-hydrogen": {"input": 1.50, "output": 7.50, "cached_input": 0.075},
     # gemini-4-carbon: launch rates through 2026-11-30; doubles to 4.00/20.00/0.20 on 2026-12-01
     "gemini-4-carbon": {"input": 2.00, "output": 10.00, "cached_input": 0.10},
     # gemini-4-argon: launch rates through 2026-11-30; doubles to 4.00/20.00/0.20 on 2026-12-01
@@ -263,23 +265,40 @@ def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, lis
     return system_instruction, contents
 
 
-def _thinking_config_for_effort(effort: str):
-    """Build a ThinkingConfig using thinking_level for reasoning_effort strings.
+# reasoning_effort -> Gemini thinking level. Levels in _SDK_THINKING_LEVELS exist in the
+# ThinkingLevel enum of every google-genai release the router supports.
+_SDK_THINKING_LEVELS = {"low": "LOW", "medium": "MEDIUM", "high": "HIGH"}
+# Levels the SDK enum may not know yet. google-genai 2.20 raises on an unknown
+# ThinkingLevel before sending anything, so these go in the raw request body, which
+# the SDK merges into generationConfig (verified live on google-genai 1.62 and 2.20).
+_RAW_THINKING_LEVELS = {"xhigh": "XHIGH"}
 
-    For models that accept reasoning_effort (low/medium/high) but not budget_tokens,
-    the Google GenAI SDK expects ThinkingConfig(thinking_level=...) rather than
-    ThinkingConfig(thinking_budget=N).
+
+def _apply_thinking_effort(config_kwargs: dict, effort: str) -> None:
+    """Set the thinking level for a reasoning_effort string on config_kwargs.
+
+    For models that accept reasoning_effort but not budget_tokens. "minimal" turns
+    thinking off with thinking_budget=0. An effort with no Gemini mapping raises
+    instead of silently changing how much the model thinks.
     """
-    level_map = {
-        "low": "LOW",
-        "medium": "MEDIUM",
-        "high": "HIGH",
-    }
-    level = level_map.get(effort)
-    if level is not None:
-        return types.ThinkingConfig(thinking_level=level)
-    # "minimal" or unknown → disable thinking
-    return types.ThinkingConfig(thinking_budget=0)
+    if effort in _SDK_THINKING_LEVELS:
+        config_kwargs["thinking_config"] = types.ThinkingConfig(
+            thinking_level=_SDK_THINKING_LEVELS[effort]
+        )
+    elif effort in _RAW_THINKING_LEVELS:
+        config_kwargs["http_options"] = types.HttpOptions(extra_body={
+            "generationConfig": {
+                "thinkingConfig": {"thinkingLevel": _RAW_THINKING_LEVELS[effort]}
+            }
+        })
+    elif effort == "minimal":
+        config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=0)
+    else:
+        from .utils import RouterError  # local import: utils imports this module
+        raise RouterError(
+            code="INVALID_PARAM",
+            message=f"'reasoning_effort' value '{effort}' has no Gemini thinking level"
+        )
 
 
 # JSON-schema keys the Gemini API accepts in function-declaration parameters
@@ -410,7 +429,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 effort = "medium"
             else:
                 effort = "high"
-            config_kwargs["thinking_config"] = _thinking_config_for_effort(effort)
+            _apply_thinking_effort(config_kwargs, effort)
 
     elif "thinking" in kwargs:
         thinking = kwargs["thinking"]
@@ -454,7 +473,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
                 thinking_budget=budget_map.get(effort, 1024)
             )
         else:
-            config_kwargs["thinking_config"] = _thinking_config_for_effort(effort)
+            _apply_thinking_effort(config_kwargs, effort)
 
     # Safety settings — always set BLOCK_NONE for all categories
     config_kwargs["safety_settings"] = [
@@ -525,7 +544,7 @@ def _build_generate_config(ai_model, kwargs: dict) -> tuple:
 
 _CONFIG_ATTRS = ("max_output_tokens", "temperature", "top_p", "top_k",
                  "stop_sequences", "thinking_config", "safety_settings",
-                 "candidate_count", "tool_config")
+                 "candidate_count", "tool_config", "http_options")
 
 
 def _call_gemini_direct(model_name: str, contents: list, system_instruction: str | None,
