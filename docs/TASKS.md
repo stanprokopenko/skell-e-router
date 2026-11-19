@@ -1,5 +1,11 @@
 # Active Tasks & Deferred Follow-ups
 
+## Gemini 4 Neon, 2026-11-18
+
+- [x] Released 3.52.0 with `gemini-4-neon` (GA November 18, paid tier only, $3/$15/$0.15 per 1M flat with no introductory price, 1M context, 65,536 max output, thinking level low/medium/high/xhigh, default high, sampling params ignored by Google). Benchmarked at pinned low, high and xhigh in the benchmark repo: low scores 93.0% (tied for rank 7 of 132), the best Gemini 4 score so far, but costs 3.6x Carbon low and 10x Gemini 3.8 Flash low for a lead inside the noise ([results](../../benchmark/docs/gemini-4-neon-benchmark-results.md)).
+- [ ] The shared default Python on Stan's PC still has Solar Sailer's locked router build (3.51.0+solar1), so `gemini-4-neon` is not available there until Solar Sailer moves its lock. The benchmark has its own runtime on 3.52.0.
+- [ ] Google's `models.get` now reports a 32,768 output limit for `gemini-4-argon` and `gemini-4-carbon`, where Google's docs and our comments say 65,536. Both still accept `maxOutputTokens` 65536 (checked live 2026-11-18). Recheck if long answers start truncating.
+
 ## Gemini 4 Hydrogen, 2026-11-17
 
 - [x] Released 3.50.0 with `gemini-4-hydrogen` (stable, released November 12, $1.50/$7.50/$0.075 per 1M flat, 1M context, 65,536 max output, thinking level low/medium/high/xhigh, default high). The same release makes the Gemini path send `xhigh` instead of turning thinking off. Benchmarked at pinned low, high and xhigh in the benchmark repo: high scores 92.5% (rank 15 of 129), level with Argon high at 71% of the cost, but Gemini 3.8 Flash low still scores higher at an eighth of the cost ([results](../../benchmark/docs/gemini-4-hydrogen-benchmark-results.md)).
