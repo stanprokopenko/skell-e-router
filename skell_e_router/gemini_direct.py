@@ -56,6 +56,8 @@ def _get_gemini_client(api_key: str):
 # see https://ai.google.dev/gemini-api/docs/caching). Cache hits are reported
 # in usage_metadata.cached_content_token_count, a SUBSET of prompt_token_count.
 _PRICING = {
+    # gemini-4-neon: flat across the 1M context, no introductory price (verified 2026-11-18)
+    "gemini-4-neon": {"input": 3.00, "output": 15.00, "cached_input": 0.15},
     # gemini-4-hydrogen: flat across the 1M context, no launch discount (verified 2026-11-17)
     "gemini-4-hydrogen": {"input": 1.50, "output": 7.50, "cached_input": 0.075},
     # gemini-4-carbon: launch rates through 2026-11-30; doubles to 4.00/20.00/0.20 on 2026-12-01

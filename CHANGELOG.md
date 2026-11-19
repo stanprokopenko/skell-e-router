@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.52.0 - 2026-11-18
+
+Add `gemini-4-neon` (released 2026-11-18), the Gemini 4 model Google places between `gemini-4-hydrogen` and `gemini-4-carbon`. Paid tier only. Direct Gemini SDK, 1M context, 65,536 max output, $3/$15/$0.15 per 1M tokens, flat, with no introductory price. It accepts thinking level `low`/`medium`/`high`/`xhigh` and defaults to `high`; `minimal` is rejected. Google ignores `temperature`, `top_p` and `top_k` for this model.
+
 ## 3.51.0 - 2026-11-17
 
 Three follow-ups to 3.50.1 on the direct Gemini path.
