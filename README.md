@@ -48,7 +48,7 @@ print(result.answers["team"]["choice"])
 print(result.answers["team"]["probabilities"])
 ```
 
-Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
+Set `TYPESAFE_API_KEY`, or pass `config={"typesafe_api_key": key}`. The `jev` alias pins `jev-1.13.0`; `jev-latest` follows TypeSafe upgrades. To pin a version yourself, pass its full id: `jev-1.13.0` or `jev-1.14.0` (added in 3.53.0). See the [classification reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#classification-with-jev) and [research and comparison status](docs/jev-classification.md).
 
 Version 3.45.1 preserves every OpenAI reasoning item before chat normalization, including responses with several items. Version 3.45.0 added `AIResponse.reasoning_state`, the reasoning a model expects back on its next turn. Replay it on the assistant message as `reasoning_state`; each provider gets only its own state back, and OpenAI Responses requests ask for `reasoning.encrypted_content`. See [CHANGELOG.md](CHANGELOG.md).
 

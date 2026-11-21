@@ -1219,7 +1219,7 @@ def resolve_image_alias(model_alias: str) -> ImageModel:
 class ClassificationModel:
     """Typed evaluation model, separate from generative chat models."""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, *, box: bool = False):
         self.name = name
         self.provider = "typesafe"
         self.input_cost_per_million = 0.042
@@ -1227,14 +1227,19 @@ class ClassificationModel:
         # Provider limits, enforced by the API using its own tokenizer.
         self.max_input_tokens = 64000
         self.max_state_question_tokens = 32000
-        self.question_types = frozenset({"choice", "score", "noul", "box"})
+        # Descriptive only: the provider decides which question types a model answers.
+        self.question_types = frozenset({"choice", "score", "noul"} | ({"box"} if box else set()))
 
 
-# https://docs.typesafe.ai/models and /model-jaggedness/jev-1.13
-# The short alias is pinned; callers opt into provider upgrades with jev-latest.
+# https://docs.typesafe.ai/models (checked 2026-11-21): 1.13 and 1.14 share price
+# and limits; box questions need 1.14, which jev-latest points to.
+# The short alias stays pinned to 1.13.0. Callers pin a newer version by its full
+# id, or opt into provider upgrades with jev-latest. Each new version needs its
+# own entry here: unregistered ids are rejected before any request is sent.
 CLASSIFICATION_MODEL_CONFIG = {
     "jev": ClassificationModel("jev-1.13.0"),
-    "jev-latest": ClassificationModel("jev-latest"),
+    "jev-1.14.0": ClassificationModel("jev-1.14.0", box=True),
+    "jev-latest": ClassificationModel("jev-latest", box=True),
 }
 CLASSIFICATION_MODEL_CONFIG["jev-1.13.0"] = CLASSIFICATION_MODEL_CONFIG["jev"]
 

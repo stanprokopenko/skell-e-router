@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.53.0 - 2026-11-21
+
+`classify()` accepts the versioned id `jev-1.14.0`, so callers can pin Jev 1.14 instead of following `jev-latest`. `jev` and `jev-1.13.0` still resolve to `jev-1.13.0`, and `jev-latest` still goes to TypeSafe as the alias. Price and token limits match 1.13 per [TypeSafe's model table](https://docs.typesafe.ai/models). Other Jev ids, such as `jev-1.14` or `jev-preview`, are still rejected with `INVALID_MODEL` before any request is sent; a new Jev version needs its own entry in `CLASSIFICATION_MODEL_CONFIG`.
+
+`resolve_classification_alias(...).question_types` now follows TypeSafe's table: `box` is listed for `jev-1.14.0` and `jev-latest` only. It used to be listed for `jev` and `jev-1.13.0` as well, which reject box questions. The field is descriptive and the router does not enforce it, so request behavior is unchanged.
+
 ## 3.52.0 - 2026-11-18
 
 Add `gemini-4-neon` (released 2026-11-18), the Gemini 4 model Google places between `gemini-4-hydrogen` and `gemini-4-carbon`. Paid tier only. Direct Gemini SDK, 1M context, 65,536 max output, $3/$15/$0.15 per 1M tokens, flat, with no introductory price. It accepts thinking level `low`/`medium`/`high`/`xhigh` and defaults to `high`; `minimal` is rejected. Google ignores `temperature`, `top_p` and `top_k` for this model.

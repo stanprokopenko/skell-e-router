@@ -257,9 +257,10 @@ def classify(model: str, state: str | dict | list, questions: dict, *,
              assets: dict | None = None, max_attempts: int = 3) -> ClassificationResponse:
     """Evaluate choice, score, noul, and box questions through TypeSafe.
 
-    ``jev`` pins 1.13.0; ``jev-latest`` follows provider upgrades. Credentials
-    come from ``config['typesafe_api_key']`` or TYPESAFE_API_KEY when config is
-    None. Timeout is per HTTP attempt. max_attempts includes the first request;
+    ``jev`` pins 1.13.0; ``jev-1.13.0`` and ``jev-1.14.0`` pin by full id;
+    ``jev-latest`` follows provider upgrades. Credentials come from
+    ``config['typesafe_api_key']`` or TYPESAFE_API_KEY when config is None.
+    Timeout is per HTTP attempt. max_attempts includes the first request;
     use 1 when the caller owns retries and cancellation.
     Context limits are provider-enforced, using the provider's tokenizer.
     Optional base64 image assets enable the provider's image preview header.

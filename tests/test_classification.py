@@ -121,15 +121,61 @@ def test_image_assets_survive_retry_and_provider_rejection(transport):
     assert "private-image" not in str(caught.value) and "env-key" not in str(caught.value)
 
 
-@pytest.mark.parametrize("alias,expected", [("jev", "jev-1.13.0"), ("jev-latest", "jev-latest"), ("jev-1.13.0", "jev-1.13.0")])
+@pytest.mark.parametrize("alias,expected", [
+    ("jev", "jev-1.13.0"), ("jev-latest", "jev-latest"),
+    ("jev-1.13.0", "jev-1.13.0"), ("jev-1.14.0", "jev-1.14.0"),
+])
 def test_aliases_and_chat_rejection(alias, expected):
     from skell_e_router import ask_ai
     model = resolve_classification_alias(alias)
     assert model.name == expected
+    assert model.provider == "typesafe"
+    assert model.input_cost_per_million == 0.042 and model.output_cost_per_million == 0.0
     assert model.max_input_tokens == 64000 and model.max_state_question_tokens == 32000
     assert alias not in MODEL_CONFIG
     with pytest.raises(RouterError, match="requires classify"):
         ask_ai(alias, "Hello")
+
+
+def test_versioned_ids_leave_the_short_alias_pinned():
+    pinned = resolve_classification_alias("jev")
+    assert resolve_classification_alias("jev-1.13.0") is pinned
+    newer = resolve_classification_alias("jev-1.14.0")
+    assert newer is not pinned and newer is not resolve_classification_alias("jev-latest")
+
+
+@pytest.mark.parametrize("alias,box", [
+    ("jev", False), ("jev-1.13.0", False), ("jev-1.14.0", True), ("jev-latest", True),
+])
+def test_question_types_follow_the_provider_table(alias, box):
+    types = resolve_classification_alias(alias).question_types
+    assert {"choice", "score", "noul"} <= types
+    assert ("box" in types) is box
+
+
+def test_versioned_id_is_sent_to_the_provider_unchanged(transport):
+    transport.return_value = http_response({**deepcopy(ANSWER), "model": "jev-1.14.0"})
+    result = classify("jev-1.14.0", "Refund me", QUESTIONS)
+    assert transport.call_args.kwargs["json"]["model"] == "jev-1.14.0"
+    assert result.model == "jev-1.14.0"
+    assert result.cost == pytest.approx(0.000042)
+
+
+def test_versioned_id_is_named_in_provider_errors(transport):
+    transport.return_value = http_response({}, status=400)
+    with pytest.raises(RouterError) as caught:
+        classify("jev-1.14.0", "text", QUESTIONS)
+    assert caught.value.details["model"] == "jev-1.14.0"
+    assert caught.value.details["status_code"] == 400
+    assert transport.call_count == 1
+
+
+@pytest.mark.parametrize("alias", ["jev-1.14", "jev-1.14.1", "jev-1.15.0", "JEV-1.14.0", " jev-1.14.0", "jev-preview"])
+def test_unregistered_jev_ids_are_rejected_before_transport(alias, transport):
+    with pytest.raises(RouterError) as caught:
+        classify(alias, "text", QUESTIONS)
+    assert caught.value.code == "INVALID_MODEL"
+    transport.assert_not_called()
 
 
 @pytest.mark.parametrize("alias", ["unknown", [], None])
