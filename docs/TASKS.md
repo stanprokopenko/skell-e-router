@@ -1,5 +1,11 @@
 # Active Tasks & Deferred Follow-ups
 
+## Jev 1.14 versioned id, 2026-11-21
+
+- [x] Released 3.53.0: `classify()` accepts `jev-1.14.0`. `jev` stays pinned to `jev-1.13.0` and `jev-latest` is unchanged. Unblocks Solar Sailer's Jev pin in Face tracking and Motion Action.
+- [ ] Solar Sailer: point `sources.json` at the 3.53.0 commit, regenerate both Python locks (`editor/server/locked-wheels/README.md`), then pin `jev-1.14.0`. Its installer build refuses to start until the locks catch up with this repo's `main`. Owned by a solar-sailer lead.
+- [ ] 19 tests fail on `main` under the shared default Python on Stan's PC (LiteLLM 1.100.1, openai 2.54.0), the same set at `1fabf39` and at 3.53.0, so not caused by either release. 18 are OpenAI Responses route tests in `test_responses_storage.py`, `test_reasoning_state.py`, `test_output_limits.py`, `test_audit_fixes.py` and `test_audit_review.py` (15 are `KeyError: 'store'`, 3 reach the network and fail on auth or availability). The other is the root `test_grounding.py`, a live script pytest collects. Cause not investigated; the suite needs its own locked test environment or the tests need to follow current LiteLLM.
+
 ## Gemini 4 Neon, 2026-11-18
 
 - [x] Released 3.52.0 with `gemini-4-neon` (GA November 18, paid tier only, $3/$15/$0.15 per 1M flat with no introductory price, 1M context, 65,536 max output, thinking level low/medium/high/xhigh, default high, sampling params ignored by Google). Benchmarked at pinned low, high and xhigh in the benchmark repo: low scores 93.0% (tied for rank 7 of 132), the best Gemini 4 score so far, but costs 3.6x Carbon low and 10x Gemini 3.8 Flash low for a lead inside the noise ([results](../../benchmark/docs/gemini-4-neon-benchmark-results.md)).
