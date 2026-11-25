@@ -3,6 +3,7 @@
 ## Video input and dropped file parts, 2026-11-25
 
 - [x] Released 3.54.0: `files=[GeminiFileRef]` reaches Gemini on the direct SDK path (it was dropped with no error), `ask_ai` takes `video=`, unconvertible content parts raise on the direct Gemini and Anthropic paths, list-form system messages are no longer ignored there, and `upload_file()` waits for Gemini to finish processing. Found by Solar Sailer's take-picking prototype (`solar-sailer/docs/take-picking-audio-video-prototype-2026-11-25.md`, "Video path"). Real-call evidence: `.agent-scratch/2026-11-25-video-file-parts/`.
+- [ ] Solar Sailer: point `sources.json` at the 3.54.0 commit (`34d5a92`) and regenerate both Python locks before the take-picking work uses `video=` or `files=`. Its pinned copy is `3.53.0+solar1`, which still drops uploaded files. Owned by a solar-sailer lead.
 - [ ] Gemini omits `prompt_token_count` when a prompt references a file that is still processing, and the router then reports `prompt_tokens` and `cost` as `None`. Only reachable with `upload_file(wait_until_ready=False)`. Not fixed: deriving the count from the total would be a guess.
 - [ ] skell-e-agent's bridge (`skell_e_agent/bridge.py:117`) and skell-e-web's copy (`backend/rag/chat_v2.py:134`) put any pydantic-ai `BinaryContent` into an `image_url` part, video and PDF included. It works on Gemini because the data URI keeps its MIME type. Moving non-image content to `file` parts is the cleaner shape; owned by those repos.
 
