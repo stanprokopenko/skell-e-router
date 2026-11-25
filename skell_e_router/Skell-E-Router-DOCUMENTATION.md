@@ -555,7 +555,83 @@ The router builds an OpenAI-canonical `input_audio` content part:
 - If the file path doesn't exist, the file extension is unrecognized, or the MIME type isn't in the supported set, `RouterError("INVALID_INPUT")` is raised.
 - An empty list (`audio=[]`) or `audio=None` has no effect.
 - For files larger than ~20 MB, use `upload_file()` to upload via Gemini's Files API and pass the resulting `GeminiFileRef` through `files=[ref]`.
-- May be combined freely with `images` and `files` in the same call.
+- May be combined freely with `images`, `video` and `files` in the same call.
+
+---
+
+## Video Input
+
+The `video` parameter on `ask_ai()` sends video to a Gemini model alongside a text prompt. Added in 3.54.0.
+
+### Supported Video Sources
+
+Each item in the `video` list is one of:
+
+| Source | Example | What happens |
+|--------|---------|--------------|
+| **Local file path** | `"take-3.mp4"` | Read, base64-encoded and sent inline. The MIME type comes from the extension (`.mp4`, `.m4v`, `.mov`, `.mpeg`, `.mpg`, `.avi`, `.flv`, `.webm`, `.wmv`, `.3gp`, then Python's `mimetypes`) and must be `video/*`. |
+| **Base64 data URI** | `"data:video/mp4;base64,AAAA..."` | Sent inline as-is. |
+| **`GeminiFileRef`** | `upload_file(f, "video/mp4")` | Gemini reads the file from its Files API. Nothing is sent inline. |
+| **URL** (`http://`, `https://`) | — | **Rejected.** Download it, call `upload_file()`, pass the ref. |
+
+Inline sources are limited to 100 MB of raw video (`skell_e_router.utils.MAX_INLINE_VIDEO_BYTES`). A larger file raises `RouterError("INVALID_INPUT")` with `details["size_bytes"]` and `details["max_inline_bytes"]`. Google's docs give both 20 MB and 100 MB as the inline limit; an 88 MB clip went through inline on 2026-11-25. Upload anything you send more than once: an inline clip is re-sent in full on every call.
+
+### Usage
+
+```python
+from skell_e_router import ask_ai, upload_file
+
+# Inline clip
+response = ask_ai("gemini-4-neon", "Which numbers appear on screen?", video=["clip.mp4"])
+
+# Uploaded file
+with open("episode.mp4", "rb") as f:
+    ref = upload_file(f, "video/mp4", display_name="episode.mp4")
+response = ask_ai("gemini-4-neon", "Summarize this episode.", video=[ref])
+```
+
+### `upload_file()` and `files`
+
+`upload_file(file, mime_type, display_name=None, config=None, wait_until_ready=True, ready_timeout=300.0)` uploads bytes or a binary file object to Gemini's Files API and returns a `GeminiFileRef`. Google keeps an upload for 48 hours.
+
+Gemini processes an upload before a prompt may use it. A 65 KB clip took about 3 seconds. `upload_file()` polls once a second until the file is `ACTIVE`. It raises `RouterError("UPLOAD_ERROR")` if Gemini reports `FAILED`, the file is still processing after `ready_timeout` seconds, or the status check fails three times in a row. The upload itself succeeded in the last two cases, and `details["uri"]` carries its URI. With `wait_until_ready=False` it returns right after the upload. Gemini answered a prompt that referenced a still-processing clip, but its usage data had no prompt token count, so `AIResponse.prompt_tokens` and `AIResponse.cost` were `None`.
+
+`files=[ref]` takes the same `GeminiFileRef` for any uploaded file type, such as audio or a PDF. For video, `video=[ref]` and `files=[ref]` build the same content part.
+
+### How It Works
+
+The router builds an OpenAI-style `file` content part after the text, images and audio:
+
+```python
+# inline path or data URI
+{"type": "file", "file": {"file_data": "data:video/mp4;base64,<data>", "format": "video/mp4"}}
+# GeminiFileRef
+{"type": "file", "file": {"file_id": "https://generativelanguage.googleapis.com/v1beta/files/abc123", "format": "video/mp4"}}
+```
+
+- **Gemini direct SDK**: `file_data` becomes `Part.from_bytes(data, mime_type)`, `file_id` becomes `Part.from_uri(file_uri, mime_type)`. A `file_id` part without `format` needs a URI whose extension gives the MIME type.
+- **LiteLLM path** (`direct_sdk=False`): the part is forwarded unchanged and LiteLLM converts it.
+- A video data URI inside an `image_url` part still works on both paths and keeps its own MIME type.
+
+### Constraints
+
+- `video` and `files` need a Gemini model. Any other model raises `RouterError("UNSUPPORTED_MODALITY")` before a request is sent.
+- Both only work when `user_input` is a **string**. For `list[dict]` input, embed `file` content parts directly in your messages.
+- A missing file, an unrecognized extension, a non-video MIME type or a malformed data URI raises `RouterError("INVALID_INPUT")`.
+- Video is billed as prompt tokens. The 6-second, 320x240 test clip with audio added 528 prompt tokens on `gemini-3.5-flash-lite`, about 90 per second.
+
+### Content parts the router cannot convert
+
+On the direct Gemini and direct Anthropic paths, a content part the router cannot convert raises an error. It is never dropped.
+
+| Path | Accepted part types | Anything else |
+|------|--------------------|---------------|
+| Gemini direct | `text`, `image_url`, `input_audio`, `file` | `INVALID_INPUT`, with `details["part_type"]` |
+| Anthropic direct | `text`, `image_url` | `input_audio` and `file` raise `UNSUPPORTED_MODALITY`; other types raise `INVALID_INPUT` |
+
+These also raise `INVALID_INPUT` on both paths: a non-dict entry in a content list, a part with a broken shape (an `image_url` without a URL, `input_audio` that is not base64), message content that is not a string, a list or `None`, and a system message with non-text parts. Gemini skips empty text parts because the API rejects them.
+
+A system message may be a string or a list of `text` parts. Gemini receives the parts joined with newlines. Anthropic receives the same joined string, or the blocks themselves when any carries `cache_control`.
 
 ---
 

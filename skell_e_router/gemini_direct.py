@@ -5,6 +5,7 @@
 
 import base64
 import enum
+import mimetypes
 import time
 import json
 import uuid
@@ -78,47 +79,150 @@ _PRICING = {
 }
 
 
+def _invalid_part(message: str, **details):
+    from .utils import RouterError  # local import: utils imports this module
+    return RouterError(code="INVALID_INPUT", message=message, details=details)
+
+
+def _data_uri_to_part(uri: str, part_type: str):
+    """Inline Part from a ``data:<mime>;base64,<data>`` URI, keeping its MIME type."""
+    try:
+        header, b64_data = uri.split(",", 1)
+        mime = header.removeprefix("data:").split(";", 1)[0]
+        data = base64.b64decode(b64_data)
+    except ValueError:
+        raise _invalid_part(f"Malformed data URI in '{part_type}' content part.",
+                            part_type=part_type) from None
+    if not mime:
+        raise _invalid_part(f"Data URI in '{part_type}' content part has no MIME type.",
+                            part_type=part_type)
+    return types.Part.from_bytes(data=data, mime_type=mime)
+
+
+# Image types Gemini reads that Python's mimetypes table lacks before 3.13.
+_IMAGE_EXTENSION_TO_MIME = {
+    ".webp": "image/webp",
+    ".heic": "image/heic",
+    ".heif": "image/heif",
+}
+
+
+def _image_url_mime(url: str) -> str:
+    """MIME type for an image URL, from its extension. Gemini needs one with
+    the URI; JPEG stays the fallback for URLs without a recognizable extension."""
+    path = url.split("?", 1)[0].split("#", 1)[0]
+    extension = "." + path.rsplit(".", 1)[-1].lower() if "." in path.rsplit("/", 1)[-1] else ""
+    return (_IMAGE_EXTENSION_TO_MIME.get(extension)
+            or mimetypes.guess_type(path)[0]
+            or "image/jpeg")
+
+
+def _file_part_to_part(part: dict):
+    """Convert an OpenAI ``file`` content part to a Gemini Part.
+
+    ``file_id`` is a URI Gemini can read itself (a Files API upload from
+    ``upload_file()``); ``format`` carries its MIME type. ``file_data`` is a
+    data URI sent inline.
+    """
+    file = part.get("file")
+    if not isinstance(file, dict):
+        raise _invalid_part("'file' content part needs a 'file' object.", part_type="file")
+    file_data = file.get("file_data")
+    if file_data:
+        if not isinstance(file_data, str) or not file_data.startswith("data:"):
+            raise _invalid_part("'file' content part 'file_data' must be a data: URI.",
+                                part_type="file")
+        return _data_uri_to_part(file_data, "file")
+    file_id = file.get("file_id")
+    if not isinstance(file_id, str) or not file_id:
+        raise _invalid_part("'file' content part needs 'file_id' or 'file_data'.",
+                            part_type="file")
+    mime = file.get("format") or mimetypes.guess_type(file_id.split("?", 1)[0])[0]
+    if not mime or not isinstance(mime, str):
+        raise _invalid_part(
+            "'file' content part needs a MIME type in 'format'; it cannot be "
+            "guessed from the file URI.", part_type="file")
+    return types.Part.from_uri(file_uri=file_id, mime_type=mime)
+
+
+def _system_text(content) -> str | None:
+    """Text of a system message: a string, or the joined text parts of a list.
+    Returns None when there is nothing to set."""
+    if content is None or isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        texts = []
+        for part in content:
+            if (not isinstance(part, dict) or part.get("type") != "text"
+                    or not isinstance(part.get("text"), str)):
+                raise _invalid_part("System message content must be a string or a list of text parts.")
+            texts.append(part["text"])
+        return "\n".join(texts) if texts else None
+    raise _invalid_part(
+        f"System message content must be a string or a list of text parts, got {type(content).__name__}.")
+
+
 def _content_to_parts(content) -> list:
     """Convert OpenAI message content (str or list of parts) to SDK Parts.
 
     Empty or whitespace-only text never becomes a Part: Gemini rejects an empty
     text part with a 400 ("empty text parameter").
+
+    Every entry of a list must be a ``text``, ``image_url``, ``input_audio`` or
+    ``file`` part. Anything else raises ``RouterError("INVALID_INPUT")``: a part
+    dropped here would reach the model as a prompt with its media missing.
     """
+    if content is None:
+        return []
     if isinstance(content, str):
         return [types.Part.from_text(text=content)] if content.strip() else []
     if not isinstance(content, list):
-        return []
+        raise _invalid_part(
+            f"Message content must be a string or a list of content parts, got {type(content).__name__}.")
     parts = []
     for part in content:
         if not isinstance(part, dict):
-            continue
-        if part.get("type") == "text":
+            raise _invalid_part(
+                f"Message content list entries must be content-part dicts, got {type(part).__name__}.")
+        part_type = part.get("type")
+        if part_type == "text":
             text = part.get("text") or ""
+            if not isinstance(text, str):
+                raise _invalid_part("'text' content part needs a string in 'text'.", part_type="text")
             if text.strip():
                 parts.append(types.Part.from_text(text=text))
-        elif part.get("type") == "image_url":
-            url = part["image_url"]["url"]
+        elif part_type == "image_url":
+            image_url = part.get("image_url")
+            url = image_url.get("url") if isinstance(image_url, dict) else image_url
+            if not isinstance(url, str) or not url:
+                raise _invalid_part("'image_url' content part needs a URL string in image_url.url.",
+                                    part_type="image_url")
             if url.startswith("data:"):
-                # Parse data URI: data:mime;base64,DATA
-                header, b64_data = url.split(",", 1)
-                mime = header.split(":")[1].split(";")[0]
-                parts.append(types.Part.from_bytes(
-                    data=base64.b64decode(b64_data),
-                    mime_type=mime
-                ))
+                parts.append(_data_uri_to_part(url, "image_url"))
             else:
-                parts.append(types.Part.from_uri(
-                    file_uri=url,
-                    mime_type="image/jpeg"  # Default; SDK may auto-detect
-                ))
-        elif part.get("type") == "input_audio":
-            audio_data = part["input_audio"]["data"]
-            audio_format = part["input_audio"]["format"]
+                parts.append(types.Part.from_uri(file_uri=url, mime_type=_image_url_mime(url)))
+        elif part_type == "input_audio":
+            audio = part.get("input_audio")
+            audio_data = audio.get("data") if isinstance(audio, dict) else None
+            audio_format = audio.get("format") if isinstance(audio, dict) else None
+            if not isinstance(audio_data, str) or not isinstance(audio_format, str):
+                raise _invalid_part(
+                    "'input_audio' content part needs string 'data' (base64) and 'format'.",
+                    part_type="input_audio")
+            try:
+                audio_bytes = base64.b64decode(audio_data)
+            except ValueError:
+                raise _invalid_part("'input_audio' content part 'data' is not valid base64.",
+                                    part_type="input_audio") from None
             mime = _AUDIO_FORMAT_TO_MIME.get(audio_format, f"audio/{audio_format}")
-            parts.append(types.Part.from_bytes(
-                data=base64.b64decode(audio_data),
-                mime_type=mime,
-            ))
+            parts.append(types.Part.from_bytes(data=audio_bytes, mime_type=mime))
+        elif part_type == "file":
+            parts.append(_file_part_to_part(part))
+        else:
+            raise _invalid_part(
+                f"Unsupported content part type {part_type!r} for Gemini models. "
+                "Supported: text, image_url, input_audio, file.",
+                part_type=part_type)
     return parts
 
 
@@ -238,8 +342,9 @@ def _convert_messages_to_contents(messages: list[dict]) -> tuple[str | None, lis
 
         if role == "system":
             # Google SDK takes system instruction separately via config
-            if isinstance(content, str):
-                system_instruction = content
+            text = _system_text(content)
+            if text is not None:
+                system_instruction = text
             continue
 
         parts = _content_to_parts(content)

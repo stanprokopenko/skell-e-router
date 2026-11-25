@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.54.0 - 2026-11-25
+
+Video input for Gemini, and a fix for uploaded files that never reached the model.
+
+- **Fixed:** `ask_ai(..., files=[GeminiFileRef])` on the direct Gemini SDK path, the default for every current Gemini model, dropped the file with no error. The converter had no branch for `file` content parts, so the model answered from the text alone. The file now reaches Gemini as a `file_data` part. The LiteLLM path (`direct_sdk=False`) was not affected.
+- **New:** `ask_ai(..., video=[...])`. Each item is a local file path, a `data:video/...;base64,` URI, or a `GeminiFileRef` from `upload_file()`. A path or data URI is sent inline, up to 100 MB (`MAX_INLINE_VIDEO_BYTES`); larger sources raise `INVALID_INPUT` naming `upload_file()`. Raw URLs raise `INVALID_INPUT`. `video` is declared after `enable_caching`, so pass it by keyword.
+- **Changed:** `video` or `files` with a non-Gemini model raises `RouterError("UNSUPPORTED_MODALITY")` before any request is sent.
+- **Changed:** a content part the direct Gemini or direct Anthropic path cannot convert raises instead of being dropped. On Gemini, a part type other than `text`, `image_url`, `input_audio` or `file`, a non-dict entry in a content list, or a malformed data URI raises `INVALID_INPUT`. On Anthropic, a `file` part raises `UNSUPPORTED_MODALITY` and any other unknown type or non-dict entry raises `INVALID_INPUT`. The error carries `details["part_type"]`. Empty text parts are still skipped on Gemini, which rejects them. A part with the right type and a broken shape, such as an `image_url` with no URL or `input_audio` that is not base64, raises `INVALID_INPUT` where it used to raise a bare `KeyError` or `TypeError`. Message content that is not a string, a list or `None` raises `INVALID_INPUT`.
+- **Fixed:** three more places on the direct paths lost content with no error. A system message given as a list of text parts was ignored on Gemini and Anthropic; its text now becomes the system prompt, and Anthropic keeps caller `cache_control` markers on it. An Anthropic assistant turn with `tool_calls` and list-form content lost its text. A system message with non-text parts raises `INVALID_INPUT`.
+- **Changed:** `upload_file()` waits until Gemini has finished processing the upload, up to `ready_timeout` seconds (default 300), and raises `UPLOAD_ERROR` if processing fails, times out, or the status check fails three times in a row; `details["uri"]` carries the uploaded file's URI. A 65 KB clip took about 3 seconds. Gemini answered a prompt that referenced a still-processing clip but reported no prompt token count, so `AIResponse.cost` came back `None`. Pass `wait_until_ready=False` for the old behavior.
+- **Fixed:** an `image_url` part holding an http(s) URL was always labeled `image/jpeg` on the direct Gemini path. The type now comes from the URL's extension (`.png`, `.webp`, `.heic` and so on), with JPEG as the fallback.
+
+Verified with real calls on 2026-11-25: the same clip and prompt returned `NO VIDEO` on 3.53.0 and both on-screen numbers on 3.54.0, through `files=` and `video=`, on the direct and LiteLLM paths, on `gemini-3.5-flash-lite` and `gemini-4-neon`. A `.mov` clip (`video/quicktime`) and inline clips of 32, 70 and 88 MB also went through.
+
 ## 3.53.0 - 2026-11-21
 
 `classify()` accepts the versioned id `jev-1.14.0`, so callers can pin Jev 1.14 instead of following `jev-latest`. `jev` and `jev-1.13.0` still resolve to `jev-1.13.0`, and `jev-latest` still goes to TypeSafe as the alias. Price and token limits match 1.13 per [TypeSafe's model table](https://docs.typesafe.ai/models). Other Jev ids, such as `jev-1.14` or `jev-preview`, are still rejected with `INVALID_MODEL` before any request is sent; a new Jev version needs its own entry in `CLASSIFICATION_MODEL_CONFIG`.

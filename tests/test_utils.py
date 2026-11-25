@@ -11,6 +11,7 @@ from skell_e_router.utils import (
     _construct_messages,
     _encode_image,
     _encode_audio,
+    _encode_video,
     _resolve_api_key,
     _redact_keys,
     _extract_status_and_headers,
@@ -257,6 +258,43 @@ class TestConstructMessages:
         msgs = _construct_messages("hello", files=[])
         assert msgs == [{"role": "user", "content": "hello"}]
 
+    def test_files_item_not_a_ref_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _construct_messages("describe", files=["https://files.example/abc"])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    # --- video parameter ---
+
+    def test_video_parts_order_text_images_audio_video_files(self):
+        ref = GeminiFileRef(uri="https://files.example/doc", mime_type="application/pdf")
+        msgs = _construct_messages(
+            "all of it",
+            images=["https://example.com/a.jpg"],
+            audio=["data:audio/mpeg;base64,AAAA"],
+            video=["data:video/mp4;base64,AAAA"],
+            files=[ref],
+        )
+        content = msgs[0]["content"]
+        assert [p["type"] for p in content] == ["text", "image_url", "input_audio", "file", "file"]
+        assert content[3]["file"]["file_data"] == "data:video/mp4;base64,AAAA"
+        assert content[4]["file"]["file_id"] == "https://files.example/doc"
+
+    def test_video_only(self):
+        msgs = _construct_messages("describe", video=["data:video/webm;base64,AAAA"])
+        assert msgs == [{"role": "user", "content": [
+            {"type": "text", "text": "describe"},
+            {"type": "file", "file": {"file_data": "data:video/webm;base64,AAAA", "format": "video/webm"}},
+        ]}]
+
+    def test_video_with_list_input_raises(self):
+        with pytest.raises(RouterError) as exc_info:
+            _construct_messages(
+                [{"role": "user", "content": "hi"}],
+                video=["data:video/mp4;base64,AAAA"],
+            )
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert "video" in exc_info.value.message
+
 
 # ---------------------------------------------------------------------------
 # _encode_image
@@ -421,6 +459,112 @@ class TestEncodeAudio:
             )
         finally:
             os.unlink(tmp_path)
+
+
+# ---------------------------------------------------------------------------
+# _encode_video
+# ---------------------------------------------------------------------------
+
+class TestEncodeVideo:
+
+    @pytest.mark.parametrize("name, mime", [
+        ("a.mp4", "video/mp4"), ("a.MOV", "video/quicktime"), ("a.webm", "video/webm"),
+        ("a.avi", "video/avi"), ("a.mpg", "video/mpeg"), ("a.3gp", "video/3gpp"),
+    ])
+    def test_path_mime_comes_from_the_router_table(self, tmp_path, name, mime):
+        path = tmp_path / name
+        path.write_bytes(b"x")
+        assert _encode_video(str(path))["file"]["format"] == mime
+
+    def test_data_uri_size_ignores_base64_padding(self, monkeypatch):
+        monkeypatch.setattr("skell_e_router.utils.MAX_INLINE_VIDEO_BYTES", 4)
+        payload = "YWJjZA=="  # base64 of the 4 bytes b"abcd"
+        assert _encode_video(f"data:video/mp4;base64,{payload}")["file"]["format"] == "video/mp4"
+
+    def test_error_message_does_not_echo_a_huge_source(self):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_video("A" * 100_000)
+        assert len(exc_info.value.message) < 400
+
+    def _invalid(self, source):
+        with pytest.raises(RouterError) as exc_info:
+            _encode_video(source)
+        assert exc_info.value.code == "INVALID_INPUT"
+        return exc_info.value
+
+    def test_gemini_file_ref(self):
+        ref = GeminiFileRef(uri="https://files.example/abc", mime_type="video/mp4")
+        assert _encode_video(ref) == {
+            "type": "file", "file": {"file_id": "https://files.example/abc", "format": "video/mp4"},
+        }
+
+    def test_local_mp4_path(self, tmp_path):
+        import base64
+        path = tmp_path / "clip.mp4"
+        path.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+        result = _encode_video(str(path))
+        expected = "data:video/mp4;base64," + base64.b64encode(b"\x00\x00\x00\x18ftypmp42").decode()
+        assert result == {"type": "file", "file": {"file_data": expected, "format": "video/mp4"}}
+
+    def test_data_uri_passed_through(self):
+        uri = "data:video/quicktime;base64,AAAA"
+        assert _encode_video(uri) == {
+            "type": "file", "file": {"file_data": uri, "format": "video/quicktime"},
+        }
+
+    @pytest.mark.parametrize("url", ["http://example.com/v.mp4", "https://example.com/v.mp4"])
+    def test_url_rejected(self, url):
+        self._invalid(url)
+
+    def test_missing_file_rejected(self, tmp_path):
+        err = self._invalid(str(tmp_path / "missing.mp4"))
+        assert "not found" in err.message
+
+    def test_unknown_extension_rejected(self, tmp_path):
+        path = tmp_path / "clip.weirdext"
+        path.write_bytes(b"\x00")
+        self._invalid(str(path))
+
+    def test_non_video_path_rejected(self, tmp_path):
+        path = tmp_path / "pic.png"
+        path.write_bytes(b"\x89PNG")
+        self._invalid(str(path))
+
+    def test_non_video_data_uri_rejected(self):
+        self._invalid("data:image/png;base64,AAAA")
+
+    @pytest.mark.parametrize("uri", [
+        "data:video/mp4;base64AAAA",   # no comma
+        "data:video/mp4,AAAA",         # no ;base64
+        "data:video/mp4;base64,",      # empty payload
+    ])
+    def test_malformed_data_uri_rejected(self, uri):
+        self._invalid(uri)
+
+    @pytest.mark.parametrize("item", [123, None, b"bytes", {"uri": "x"}])
+    def test_non_str_non_ref_rejected(self, item):
+        self._invalid(item)
+
+    def test_path_over_inline_limit_rejected(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("skell_e_router.utils.MAX_INLINE_VIDEO_BYTES", 10)
+        path = tmp_path / "big.mp4"
+        path.write_bytes(b"\x00" * 11)
+        err = self._invalid(str(path))
+        assert err.details == {"size_bytes": 11, "max_inline_bytes": 10}
+
+    def test_path_at_inline_limit_accepted(self, tmp_path, monkeypatch):
+        monkeypatch.setattr("skell_e_router.utils.MAX_INLINE_VIDEO_BYTES", 10)
+        path = tmp_path / "ok.mp4"
+        path.write_bytes(b"\x00" * 10)
+        assert _encode_video(str(path))["file"]["format"] == "video/mp4"
+
+    def test_data_uri_over_inline_limit_rejected(self, monkeypatch):
+        import base64
+        monkeypatch.setattr("skell_e_router.utils.MAX_INLINE_VIDEO_BYTES", 10)
+        uri = "data:video/mp4;base64," + base64.b64encode(b"\x00" * 12).decode()
+        err = self._invalid(uri)
+        assert err.details["size_bytes"] > 10
+        assert err.details["max_inline_bytes"] == 10
 
 
 # ---------------------------------------------------------------------------
@@ -1526,6 +1670,107 @@ class TestRouterError:
 
 class TestUploadFile:
 
+    @pytest.fixture(autouse=True)
+    def gemini_files(self):
+        """Stand-in for the genai client upload_file polls; files are ACTIVE unless a test says otherwise."""
+        with patch("skell_e_router.utils._get_gemini_client") as get_client,                 patch("skell_e_router.utils.time.sleep") as sleep:
+            files = get_client.return_value.files
+            files.get.return_value = MagicMock(state=MagicMock())
+            files.get.return_value.state.name = "ACTIVE"
+            files.sleep = sleep
+            yield files
+
+    @staticmethod
+    def _states(*names):
+        out = []
+        for name in names:
+            f = MagicMock()
+            f.state.name = name
+            out.append(f)
+        return out
+
+    @patch("skell_e_router.utils.litellm")
+    def test_waits_until_file_is_active(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+        gemini_files.get.side_effect = self._states("PROCESSING", "PROCESSING", "ACTIVE")
+
+        ref = upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        assert ref.uri.endswith("/files/abc123")
+        assert gemini_files.get.call_count == 3
+        assert gemini_files.get.call_args.kwargs == {"name": "files/abc123"}
+        assert gemini_files.sleep.call_count == 2
+
+    @patch("skell_e_router.utils.litellm")
+    def test_failed_processing_raises_upload_error(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+        gemini_files.get.side_effect = self._states("PROCESSING", "FAILED")
+
+        with pytest.raises(RouterError) as exc_info:
+            upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+        assert exc_info.value.code == "UPLOAD_ERROR"
+        assert exc_info.value.details["state"] == "FAILED"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_processing_past_timeout_raises_upload_error(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+        gemini_files.get.side_effect = self._states("PROCESSING")
+
+        with pytest.raises(RouterError) as exc_info:
+            upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY},
+                        ready_timeout=0)
+        assert exc_info.value.code == "UPLOAD_ERROR"
+        assert exc_info.value.details == {
+            "file": "files/abc123",
+            "uri": "https://generativelanguage.googleapis.com/v1beta/files/abc123",
+            "state": "PROCESSING",
+        }
+
+    @patch("skell_e_router.utils.litellm")
+    def test_one_failed_status_check_does_not_lose_the_upload(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+        gemini_files.get.side_effect = [RuntimeError("503")] + self._states("PROCESSING", "ACTIVE")
+
+        ref = upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        assert ref.uri.endswith("/files/abc123")
+        assert gemini_files.get.call_count == 3
+
+    @patch("skell_e_router.utils.litellm")
+    def test_bare_files_name_is_polled(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(id="files/abc123")
+
+        upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        assert gemini_files.get.call_args.kwargs == {"name": "files/abc123"}
+
+    @patch("skell_e_router.utils.litellm")
+    def test_status_check_failure_raises_upload_error_without_key(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+        gemini_files.get.side_effect = RuntimeError(f"denied for key {FAKE_GEMINI_KEY}")
+
+        with pytest.raises(RouterError) as exc_info:
+            upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY})
+        assert exc_info.value.code == "UPLOAD_ERROR"
+        assert FAKE_GEMINI_KEY not in str(exc_info.value)
+        assert exc_info.value.details["uri"].endswith("/files/abc123")
+        assert gemini_files.get.call_count == 3
+
+    @patch("skell_e_router.utils.litellm")
+    def test_wait_until_ready_false_skips_status_check(self, mock_litellm, gemini_files):
+        mock_litellm.create_file.return_value = MagicMock(
+            id="https://generativelanguage.googleapis.com/v1beta/files/abc123")
+
+        upload_file(b"video-bytes", "video/mp4", config={"gemini_api_key": FAKE_GEMINI_KEY},
+                    wait_until_ready=False)
+
+        gemini_files.get.assert_not_called()
+
     @patch("skell_e_router.utils.litellm")
     def test_returns_gemini_file_ref(self, mock_litellm):
         mock_result = MagicMock()
@@ -1659,6 +1904,97 @@ class TestAskAiWithFiles:
         content = messages[-1]["content"]
         types = [part["type"] for part in content]
         assert types == ["text", "image_url", "file"]
+
+
+class TestAskAiVideoAndFilesEndToEnd:
+    """Regression: a Gemini Files API ref / video must reach the model.
+
+    The direct Gemini converter used to drop `file` parts, so the model got the
+    text prompt alone. These tests run ask_ai end to end with only the genai
+    client (or litellm) mocked.
+    """
+
+    FILE_URI = "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+
+    def _direct_gemini_contents(self, **ask_kwargs):
+        from tests.helpers import make_gemini_response
+        import skell_e_router.gemini_direct as gd
+        pytest.importorskip("google.genai.types")
+
+        mock_genai = MagicMock()
+        generate = mock_genai.Client.return_value.models.generate_content
+        generate.return_value = make_gemini_response()
+        gd._client_cache.clear()
+        try:
+            with patch("skell_e_router.gemini_direct.GENAI_AVAILABLE", True), \
+                 patch("skell_e_router.gemini_direct.genai", mock_genai):
+                ask_ai("gemini-4-neon", "describe",
+                       config={"gemini_api_key": FAKE_GEMINI_KEY}, **ask_kwargs)
+        finally:
+            gd._client_cache.clear()
+        generate.assert_called_once()
+        contents = generate.call_args.kwargs["contents"]
+        assert len(contents) == 1
+        assert contents[0].role == "user"
+        return contents[0].parts
+
+    def test_files_ref_reaches_direct_gemini_sdk(self):
+        assert MODEL_CONFIG["gemini-4-neon"].use_direct_sdk
+        ref = GeminiFileRef(uri=self.FILE_URI, mime_type="video/mp4")
+        parts = self._direct_gemini_contents(files=[ref])
+        assert len(parts) == 2
+        assert parts[0].text == "describe"
+        assert parts[1].file_data.file_uri == self.FILE_URI
+        assert parts[1].file_data.mime_type == "video/mp4"
+
+    def test_video_path_reaches_direct_gemini_sdk_inline(self, tmp_path):
+        path = tmp_path / "clip.mp4"
+        path.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+        parts = self._direct_gemini_contents(video=[str(path)])
+        assert len(parts) == 2
+        assert parts[0].text == "describe"
+        assert parts[1].inline_data.mime_type == "video/mp4"
+        assert parts[1].inline_data.data == b"\x00\x00\x00\x18ftypmp42"
+
+    def test_video_ref_reaches_direct_gemini_sdk(self):
+        ref = GeminiFileRef(uri=self.FILE_URI, mime_type="video/webm")
+        parts = self._direct_gemini_contents(video=[ref])
+        assert parts[1].file_data.file_uri == self.FILE_URI
+        assert parts[1].file_data.mime_type == "video/webm"
+
+    @patch("skell_e_router.utils.litellm")
+    def test_video_path_reaches_litellm_as_file_data(self, mock_litellm, tmp_path):
+        import base64
+        mock_litellm.completion.return_value = make_litellm_response("I see a video")
+        mock_litellm.drop_params = True
+        path = tmp_path / "clip.mp4"
+        path.write_bytes(b"\x00\x00\x00\x18ftypmp42")
+
+        ask_ai("gemini-4-neon", "describe", video=[str(path)], direct_sdk=False,
+               config={"gemini_api_key": FAKE_GEMINI_KEY})
+
+        mock_litellm.completion.assert_called_once()
+        content = mock_litellm.completion.call_args.kwargs["messages"][-1]["content"]
+        assert content[0] == {"type": "text", "text": "describe"}
+        expected = "data:video/mp4;base64," + base64.b64encode(b"\x00\x00\x00\x18ftypmp42").decode()
+        assert content[1] == {"type": "file", "file": {"file_data": expected, "format": "video/mp4"}}
+
+    @pytest.mark.parametrize("alias", ["claude-sonnet-5-5", "gpt-5.5"])
+    @pytest.mark.parametrize("kwarg", ["video", "files"])
+    @patch("skell_e_router.utils.litellm")
+    def test_video_or_files_with_non_gemini_model_rejected(self, mock_litellm, alias, kwarg):
+        ref = GeminiFileRef(uri=self.FILE_URI, mime_type="video/mp4")
+        with patch("skell_e_router.utils._construct_messages") as construct:
+            with pytest.raises(RouterError) as exc_info:
+                ask_ai(alias, "describe", config=FULL_CONFIG, **{kwarg: [ref]})
+        assert exc_info.value.code == "UNSUPPORTED_MODALITY"
+        construct.assert_not_called()
+        mock_litellm.completion.assert_not_called()
+
+    def test_video_keyword_declared_after_enable_caching(self):
+        import inspect
+        names = list(inspect.signature(ask_ai).parameters)
+        assert names.index("video") == names.index("enable_caching") + 1
 
 
 # ---------------------------------------------------------------------------

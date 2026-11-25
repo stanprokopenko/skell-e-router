@@ -16,6 +16,7 @@ from .response import AIResponse, GeminiFileRef
 from .errors import provider_error, safe_iterator, SafeStream, _redact_keys
 from .gemini_direct import (
     _convert_messages_to_contents,
+    _get_gemini_client,
     _build_generate_config,
     _call_gemini_direct,
     _call_gemini_direct_stream,
@@ -183,16 +184,181 @@ def _encode_audio(source: str) -> dict:
     return {"type": "input_audio", "input_audio": {"data": b64_data, "format": audio_format}}
 
 
+# Largest video the router sends inline, in raw bytes. Google's docs give both
+# 20 MB and 100 MB for inline video; an 88 MB clip went through on 2026-11-25.
+MAX_INLINE_VIDEO_BYTES = 100 * 1024 * 1024
+
+# Extensions of the video formats Gemini documents, with the MIME type it
+# expects. Checked before `mimetypes`, whose table varies by Python version
+# and, on Windows, by registry.
+_VIDEO_EXTENSION_TO_MIME = {
+    ".mp4": "video/mp4",
+    ".m4v": "video/mp4",
+    ".mov": "video/quicktime",
+    ".mpeg": "video/mpeg",
+    ".mpg": "video/mpeg",
+    ".avi": "video/avi",
+    ".flv": "video/x-flv",
+    ".webm": "video/webm",
+    ".wmv": "video/wmv",
+    ".3gp": "video/3gpp",
+}
+
+
+def _file_ref_part(ref: GeminiFileRef) -> dict:
+    """OpenAI chat-completion `file` content part for a Gemini Files API upload."""
+    if not isinstance(ref, GeminiFileRef):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=f"'files' items must be GeminiFileRef (from upload_file()), got {type(ref).__name__}.",
+        )
+    return {"type": "file", "file": {"file_id": ref.uri, "format": ref.mime_type}}
+
+
+def _encode_video(source: "str | GeminiFileRef") -> dict:
+    """Convert a video source to an OpenAI chat-completion `file` content part.
+
+    Accepts a `GeminiFileRef` from `upload_file()`, a local file path, or a
+    `data:video/<mime>;base64,<data>` URI. A path or data URI is sent inline and
+    must be at most `MAX_INLINE_VIDEO_BYTES`; upload anything larger. Raw
+    http(s) URLs are rejected, the same as for audio.
+
+    Returns `{"type": "file", "file": {"file_id": ..., "format": <mime>}}` for a
+    ref, or `{"type": "file", "file": {"file_data": <data URI>, "format": <mime>}}`.
+    Raises RouterError("INVALID_INPUT") on anything else.
+    """
+    if isinstance(source, GeminiFileRef):
+        return _file_ref_part(source)
+    if not isinstance(source, str):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=f"'video' items must be a file path, a data: URI or a GeminiFileRef, got {type(source).__name__}.",
+        )
+    if source.startswith(("http://", "https://")):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                "video sources must be a file path, a data: URI or a GeminiFileRef. "
+                "For URL-hosted video, download it, upload via `upload_file()` and "
+                "pass the result through `video=[ref]`."
+            ),
+        )
+
+    if source.startswith("data:"):
+        header, sep, b64_data = source.partition(",")
+        mime = header.removeprefix("data:").split(";", 1)[0]
+        if not sep or not header.endswith(";base64") or not b64_data:
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Malformed video data URI: {source[:60]}...",
+            )
+        size = len(b64_data) * 3 // 4 - (len(b64_data) - len(b64_data.rstrip("=")))
+    else:
+        if not os.path.isfile(source):
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Video file not found: {source[:200]}",
+            )
+        extension = os.path.splitext(source)[1].lower()
+        mime = _VIDEO_EXTENSION_TO_MIME.get(extension) or mimetypes.guess_type(source)[0]
+        if mime is None:
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Cannot determine video MIME type from extension: {source[:200]}",
+            )
+        size = os.path.getsize(source)
+
+    if not mime.lower().startswith("video/"):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=f"'video' sources must have a video/* MIME type, got {mime or 'none'}.",
+        )
+    if size > MAX_INLINE_VIDEO_BYTES:
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(
+                f"Video is {size / 1024 / 1024:.1f} MB, over the "
+                f"{MAX_INLINE_VIDEO_BYTES // 1024 // 1024} MB inline limit. "
+                "Upload it via `upload_file()` and pass the result through `video=[ref]`."
+            ),
+            details={"size_bytes": size, "max_inline_bytes": MAX_INLINE_VIDEO_BYTES},
+        )
+
+    if source.startswith("data:"):
+        data_uri = source
+    else:
+        with open(source, "rb") as f:
+            data_uri = f"data:{mime};base64,{base64.b64encode(f.read()).decode('utf-8')}"
+    return {"type": "file", "file": {"file_data": data_uri, "format": mime}}
+
+
+def _wait_for_gemini_file(uri: str, api_key: str, timeout: float, poll_interval: float = 1.0) -> None:
+    """Block until an uploaded Gemini file is ACTIVE.
+
+    Gemini processes an upload before a prompt may reference it (a few seconds
+    for a short video). Raises RouterError("UPLOAD_ERROR") if processing fails,
+    outlasts ``timeout`` seconds, or the status check fails three times in a
+    row. ``details["uri"]`` carries the uploaded file's URI.
+    """
+    if not isinstance(uri, str):
+        return
+    if "/files/" in uri:
+        name = "files/" + uri.rstrip("/").rsplit("/files/", 1)[1]
+    elif uri.startswith("files/"):
+        name = uri
+    else:
+        return  # not a Files API name; nothing to poll
+    details = {"file": name, "uri": uri}
+    deadline = time.monotonic() + timeout
+    failures = 0
+    while True:
+        state_name = ""
+        try:
+            state = _get_gemini_client(api_key).files.get(name=name).state
+        except Exception as e:
+            failures += 1
+            check_error = provider_error(e, RouterError, code="UPLOAD_ERROR", details=details)
+        else:
+            failures = 0
+            check_error = None
+            state_name = getattr(state, "name", None) or (str(state) if state else "")
+        if state_name == "ACTIVE":
+            return
+        if state_name == "FAILED":
+            raise RouterError(
+                code="UPLOAD_ERROR",
+                message=f"Gemini could not process the uploaded file {name}.",
+                details={**details, "state": state_name},
+            )
+        timed_out = time.monotonic() >= deadline
+        if check_error is not None and (failures >= 3 or timed_out):
+            raise check_error from None
+        if timed_out:
+            raise RouterError(
+                code="UPLOAD_ERROR",
+                message=(f"Uploaded file {name} was still processing after {timeout:g} s. "
+                         "Raise `ready_timeout`, or pass `wait_until_ready=False` and wait yourself."),
+                details={**details, "state": state_name or "unknown"},
+            )
+        time.sleep(poll_interval)
+
+
 def upload_file(
     file: bytes | BinaryIO,
     mime_type: str,
     display_name: str | None = None,
     config: dict | None = None,
+    wait_until_ready: bool = True,
+    ready_timeout: float = 300.0,
 ) -> GeminiFileRef:
     """Upload a file to Gemini's Files API and return a GeminiFileRef.
 
     Uses litellm.create_file under the hood.  The returned ref can be passed
-    to ask_ai via the ``files`` parameter.
+    to ask_ai via the ``video`` or ``files`` parameter.
+
+    Gemini processes an upload before a prompt may use it. By default this
+    call returns once the file is ready, waiting up to ``ready_timeout``
+    seconds. ``wait_until_ready=False`` returns right after the upload.
     """
     # Resolve API key: config dict first, then env var
     config = config or {}
@@ -219,13 +385,18 @@ def upload_file(
         error = provider_error(e, RouterError, code="UPLOAD_ERROR",
                                details={"mime_type": mime_type})
     else:
-        return GeminiFileRef(uri=result.id, mime_type=mime_type, display_name=display_name)
-    raise error from None
+        error = None
+    if error is not None:
+        raise error from None
+    ref = GeminiFileRef(uri=result.id, mime_type=mime_type, display_name=display_name)
+    if wait_until_ready:
+        _wait_for_gemini_file(ref.uri, api_key, ready_timeout)
+    return ref
 
 
 
 # Constructs the messages list for the AI call.
-def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None):
+def _construct_messages(user_input: str | list[dict], system_message: str = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, video: list[str | GeminiFileRef] | None = None):
     messages = []
 
     if images and not isinstance(user_input, str):
@@ -242,6 +413,13 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
                     "For list input, embed audio content parts directly in your messages."
         )
 
+    if video and not isinstance(user_input, str):
+        raise RouterError(
+            code="INVALID_INPUT",
+            message="'video' parameter is only supported when 'user_input' is a string. "
+                    "For list input, embed file content parts directly in your messages."
+        )
+
     if files and not isinstance(user_input, str):
         raise RouterError(
             code="INVALID_INPUT",
@@ -253,14 +431,16 @@ def _construct_messages(user_input: str | list[dict], system_message: str = None
         messages.append({"role": "system", "content": system_message})
 
     if isinstance(user_input, str):
-        if images or audio or files:
+        if images or audio or video or files:
             content_parts = [{"type": "text", "text": user_input}]
             for img in (images or []):
                 content_parts.append(_encode_image(img))
             for aud in (audio or []):
                 content_parts.append(_encode_audio(aud))
+            for vid in (video or []):
+                content_parts.append(_encode_video(vid))
             for ref in (files or []):
-                content_parts.append({"type": "file", "file": {"file_id": ref.uri, "format": ref.mime_type}})
+                content_parts.append(_file_ref_part(ref))
             messages.append({"role": "user", "content": content_parts})
         else:
             messages.append({"role": "user", "content": user_input})
@@ -1273,6 +1453,7 @@ def ask_ai(
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     enable_caching: bool = False,
+    video: list[str | GeminiFileRef] | None = None,
     **kwargs
 ) -> str: ...
 
@@ -1289,10 +1470,11 @@ def ask_ai(
     files: list[GeminiFileRef] | None = None,
     direct_sdk: bool | None = None,
     enable_caching: bool = False,
+    video: list[str | GeminiFileRef] | None = None,
     **kwargs
 ) -> AIResponse: ...
 
-def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, enable_caching: bool = False, **kwargs) -> str | AIResponse:
+def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str = None, verbosity: str = 'none', rich_response: bool = False, config: dict | None = None, images: list[str] | None = None, audio: list[str] | None = None, files: list[GeminiFileRef] | None = None, direct_sdk: bool | None = None, enable_caching: bool = False, video: list[str | GeminiFileRef] | None = None, **kwargs) -> str | AIResponse:
 
     verbosity = verbosity.lower()
     if verbosity not in ['none', 'response', 'info', 'debug']:
@@ -1302,7 +1484,13 @@ def ask_ai(model_alias: str, user_input: str | list[dict], system_message: str =
     # These helpers will raise RouterError on failure
     ai_model = resolve_model_alias(model_alias)
     _check_provider_key(ai_model, config, verbosity)
-    messages = _construct_messages(user_input, system_message, images=images, audio=audio, files=files)
+    if (video or files) and not ai_model.is_gemini:
+        raise RouterError(
+            code="UNSUPPORTED_MODALITY",
+            message=(f"'{'video' if video else 'files'}' needs a Gemini model; {model_alias} "
+                     "cannot read video or Gemini Files API uploads through the router."),
+        )
+    messages = _construct_messages(user_input, system_message, images=images, audio=audio, files=files, video=video)
 
     # Resolve API key from config (None falls back to litellm env var lookup)
     api_key = _resolve_api_key(ai_model, config)

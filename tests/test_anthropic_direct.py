@@ -99,6 +99,115 @@ class TestConvertMessagesForAnthropic:
         assert exc_info.value.code == "UNSUPPORTED_MODALITY"
         assert "audio" in exc_info.value.message.lower()
 
+    def test_file_part_raises_unsupported_modality(self):
+        from skell_e_router.utils import RouterError
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "describe"},
+                {"type": "file", "file": {"file_id": "https://files.example/abc", "format": "video/mp4"}},
+            ]},
+        ]
+        with pytest.raises(RouterError) as exc_info:
+            self._call(msgs)
+        assert exc_info.value.code == "UNSUPPORTED_MODALITY"
+
+    @pytest.mark.parametrize("part", [
+        {"type": "video_url", "video_url": {"url": "https://example.com/v.mp4"}},
+        {"type": "document"},
+        {"text": "no type"},
+    ])
+    def test_unknown_part_type_raises_invalid_input(self, part):
+        """Unknown parts used to be dropped silently; now they raise."""
+        from skell_e_router.utils import RouterError
+        msgs = [{"role": "user", "content": [{"type": "text", "text": "describe"}, part]}]
+        with pytest.raises(RouterError) as exc_info:
+            self._call(msgs)
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert exc_info.value.details["part_type"] == part.get("type")
+
+    @pytest.mark.parametrize("part", [
+        {"type": "text"},
+        {"type": "text", "text": 5},
+        {"type": "image_url", "image_url": {}},
+        {"type": "image_url"},
+        {"type": "image_url", "image_url": {"url": "data:image/png;base64"}},
+    ])
+    def test_malformed_part_raises_invalid_input(self, part):
+        """A broken part is a RouterError, not a KeyError or ValueError."""
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "user", "content": [part]}])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    @pytest.mark.parametrize("content", [{"type": "text", "text": "hi"}, 5])
+    def test_content_that_is_not_str_or_list_raises(self, content):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "user", "content": content}])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_system_message_list_content_joins_text_parts(self):
+        """A list-form system message used to be dropped."""
+        system, _ = self._call([
+            {"role": "system", "content": [{"type": "text", "text": "Be terse."},
+                                           {"type": "text", "text": "Answer in French."}]},
+            {"role": "user", "content": "hi"},
+        ])
+        assert system == "Be terse.\nAnswer in French."
+
+    def test_system_message_list_content_keeps_cache_markers(self):
+        system, _ = self._call([
+            {"role": "system", "content": [
+                {"type": "text", "text": "Be terse.", "cache_control": {"type": "ephemeral"}}]},
+            {"role": "user", "content": "hi"},
+        ])
+        assert system == [{"type": "text", "text": "Be terse.", "cache_control": {"type": "ephemeral"}}]
+
+    @pytest.mark.parametrize("content", [
+        [{"type": "image_url", "image_url": {"url": "https://example.com/a.png"}}],
+        {"type": "text", "text": "hi"},
+    ])
+    def test_system_message_non_text_content_raises(self, content):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "system", "content": content}, {"role": "user", "content": "hi"}])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_assistant_tool_call_turn_keeps_list_content_text(self):
+        """List-form text beside tool_calls used to be dropped."""
+        _, msgs = self._call([
+            {"role": "user", "content": "weather?"},
+            {"role": "assistant", "content": [{"type": "text", "text": "Checking."}],
+             "tool_calls": [{"id": "call_1", "type": "function",
+                             "function": {"name": "get_weather", "arguments": "{}"}}]},
+        ])
+        blocks = msgs[1]["content"]
+        assert [b["type"] for b in blocks] == ["text", "tool_use"]
+        assert blocks[0]["text"] == "Checking."
+
+    def test_non_dict_content_entry_raises_invalid_input(self):
+        from skell_e_router.utils import RouterError
+        msgs = [{"role": "user", "content": [{"type": "text", "text": "hi"}, "bare string"]}]
+        with pytest.raises(RouterError) as exc_info:
+            self._call(msgs)
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_text_and_image_cache_control_kept(self):
+        cc = {"type": "ephemeral"}
+        msgs = [
+            {"role": "user", "content": [
+                {"type": "text", "text": "look", "cache_control": cc},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64,aGVsbG8="},
+                 "cache_control": cc},
+            ]},
+        ]
+        _, converted = self._call(msgs)
+        blocks = converted[0]["content"]
+        assert len(blocks) == 2
+        assert blocks[0]["cache_control"] == cc
+        assert blocks[1]["type"] == "image"
+        assert blocks[1]["cache_control"] == cc
+
     def test_assistant_tool_calls_become_tool_use_blocks(self):
         msgs = [
             {"role": "assistant", "content": "Searching now.", "tool_calls": [

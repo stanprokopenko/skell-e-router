@@ -195,6 +195,186 @@ class TestConvertMessagesToContents:
         assert sys_instr is None
         assert contents == []
 
+    # --- file parts, unknown parts (silent-drop regression) ---
+
+    def _user_parts(self, content):
+        _, contents = self._call([{"role": "user", "content": content}])
+        return contents[0]["parts"]
+
+    def _raises(self, content, code="INVALID_INPUT"):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "user", "content": content}])
+        assert exc_info.value.code == code
+        return exc_info.value
+
+    def test_text_plus_file_id_gives_two_parts(self):
+        """Core regression: a file part next to text must never be dropped."""
+        uri = "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+        parts = self._user_parts([
+            {"type": "text", "text": "describe"},
+            {"type": "file", "file": {"file_id": uri, "format": "video/mp4"}},
+        ])
+        assert len(parts) == 2
+        assert parts[0] == {"text": "describe"}
+        assert parts[1] == {"uri": uri, "mime_type": "video/mp4"}
+
+    def test_file_data_uri_becomes_inline_bytes(self):
+        parts = self._user_parts([
+            {"type": "text", "text": "describe"},
+            {"type": "file", "file": {"file_data": "data:video/mp4;base64,aGVsbG8="}},
+        ])
+        assert len(parts) == 2
+        assert parts[1] == {"bytes": b"hello", "mime_type": "video/mp4"}
+
+    def test_file_id_without_format_guesses_mime_from_extension(self):
+        parts = self._user_parts([
+            {"type": "file", "file": {"file_id": "https://example.com/clip.mp4?sig=1"}},
+        ])
+        assert parts[0] == {"uri": "https://example.com/clip.mp4?sig=1", "mime_type": "video/mp4"}
+
+    def test_file_id_without_format_or_extension_raises(self):
+        err = self._raises([
+            {"type": "file", "file": {"file_id": "https://generativelanguage.googleapis.com/v1beta/files/abc123"}},
+        ])
+        assert err.details.get("part_type") == "file"
+
+    def test_file_part_without_file_object_raises(self):
+        self._raises([{"type": "file"}])
+
+    def test_file_part_with_neither_id_nor_data_raises(self):
+        self._raises([{"type": "file", "file": {"format": "video/mp4"}}])
+
+    def test_file_data_not_a_data_uri_raises(self):
+        self._raises([{"type": "file", "file": {"file_data": "aGVsbG8="}}])
+
+    @pytest.mark.parametrize("part", [
+        {"type": "video_url", "video_url": {"url": "https://example.com/v.mp4"}},
+        {"type": "document"},
+    ])
+    def test_unknown_part_type_raises_with_part_type(self, part):
+        err = self._raises([{"type": "text", "text": "describe"}, part])
+        assert err.details["part_type"] == part["type"]
+
+    def test_part_without_type_raises(self):
+        err = self._raises([{"text": "no type"}])
+        assert err.details["part_type"] is None
+
+    def test_non_dict_entry_raises(self):
+        self._raises(["just a string"])
+
+    @pytest.mark.parametrize("part", [
+        {"type": "image_url", "image_url": {}},
+        {"type": "image_url", "image_url": {"url": None}},
+        {"type": "image_url"},
+        {"type": "input_audio", "input_audio": {"data": "not base64!", "format": "mp3"}},
+        {"type": "input_audio", "input_audio": {"data": "aGVsbG8="}},
+        {"type": "input_audio"},
+        {"type": "text", "text": 5},
+        {"type": "file", "file": {"file_id": "https://files.example/abc", "format": 7}},
+    ])
+    def test_malformed_part_raises_invalid_input(self, part):
+        """A broken part is a RouterError, not a KeyError or TypeError."""
+        err = self._raises([{"type": "text", "text": "describe"}, part])
+        assert err.details["part_type"] == part["type"]
+
+    def test_image_url_given_as_plain_string(self):
+        parts = self._user_parts([{"type": "image_url", "image_url": "https://example.com/a.png"}])
+        assert parts[0]["uri"] == "https://example.com/a.png"
+        assert parts[0]["mime_type"] == "image/png"
+
+    @pytest.mark.parametrize("content", [{"type": "text", "text": "hi"}, ("hi",), 5])
+    def test_content_that_is_not_str_or_list_raises(self, content):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "user", "content": content}])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_system_message_list_content_joins_text_parts(self):
+        """A list-form system message used to be dropped."""
+        sys_instr, _ = self._call([
+            {"role": "system", "content": [
+                {"type": "text", "text": "Be terse.", "cache_control": {"type": "ephemeral"}},
+                {"type": "text", "text": "Answer in French."},
+            ]},
+            {"role": "user", "content": "hi"},
+        ])
+        assert sys_instr == "Be terse.\nAnswer in French."
+
+    @pytest.mark.parametrize("content", [
+        [{"type": "image_url", "image_url": {"url": "https://example.com/a.png"}}],
+        ["bare string"],
+        {"type": "text", "text": "hi"},
+    ])
+    def test_system_message_non_text_content_raises(self, content):
+        from skell_e_router.utils import RouterError
+        with pytest.raises(RouterError) as exc_info:
+            self._call([{"role": "system", "content": content}, {"role": "user", "content": "hi"}])
+        assert exc_info.value.code == "INVALID_INPUT"
+
+    def test_whitespace_only_text_part_still_skipped(self):
+        parts = self._user_parts([
+            {"type": "text", "text": "   "},
+            {"type": "text", "text": ""},
+            {"type": "text", "text": "real"},
+        ])
+        assert parts == [{"text": "real"}]
+
+    @pytest.mark.parametrize("url,mime", [
+        ("https://example.com/pic.png", "image/png"),
+        ("https://example.com/pic.webp", "image/webp"),
+        ("https://example.com/pic.png?w=200&h=100", "image/png"),
+        ("https://example.com/image", "image/jpeg"),
+    ])
+    def test_url_image_mime_from_extension(self, url, mime):
+        parts = self._user_parts([{"type": "image_url", "image_url": {"url": url}}])
+        assert parts[0] == {"uri": url, "mime_type": mime}
+
+    def test_video_data_uri_in_image_url_keeps_video_mime(self):
+        """Consumers send video as a data URI inside an image_url part."""
+        parts = self._user_parts([
+            {"type": "image_url", "image_url": {"url": "data:video/mp4;base64,aGVsbG8="}},
+        ])
+        assert parts[0] == {"bytes": b"hello", "mime_type": "video/mp4"}
+
+    def test_malformed_image_data_uri_raises(self):
+        err = self._raises([
+            {"type": "image_url", "image_url": {"url": "data:image/png;base64NO_COMMA"}},
+        ])
+        assert err.details["part_type"] == "image_url"
+
+    def test_tool_role_list_content_with_unknown_part_raises(self):
+        from skell_e_router.utils import RouterError
+        msgs = [
+            {"role": "assistant", "content": "", "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "grab", "arguments": "{}"}},
+            ]},
+            {"role": "tool", "tool_call_id": "call_1", "content": [
+                {"type": "text", "text": "frame"},
+                {"type": "video_url", "video_url": {"url": "https://example.com/v.mp4"}},
+            ]},
+        ]
+        with pytest.raises(RouterError) as exc_info:
+            self._call(msgs)
+        assert exc_info.value.code == "INVALID_INPUT"
+        assert exc_info.value.details["part_type"] == "video_url"
+
+    def test_tool_role_list_content_file_part_rides_in_user_turn(self):
+        uri = "https://generativelanguage.googleapis.com/v1beta/files/abc123"
+        msgs = [
+            {"role": "assistant", "content": "", "tool_calls": [
+                {"id": "call_1", "type": "function",
+                 "function": {"name": "grab", "arguments": "{}"}},
+            ]},
+            {"role": "tool", "tool_call_id": "call_1", "content": [
+                {"type": "file", "file": {"file_id": uri, "format": "video/mp4"}},
+            ]},
+        ]
+        _, contents = self._call(msgs)
+        all_parts = [p for c in contents for p in c["parts"]]
+        assert {"uri": uri, "mime_type": "video/mp4"} in all_parts
+
 
 # ===================================================================
 # TestBuildGenerateConfig

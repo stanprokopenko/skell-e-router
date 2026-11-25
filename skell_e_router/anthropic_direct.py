@@ -155,26 +155,49 @@ def _reasoning_blocks(msg: dict) -> list[dict]:
     return blocks
 
 
+def _invalid_content(message: str):
+    from .utils import RouterError  # local import: utils imports this module
+    return RouterError(code="INVALID_INPUT", message=message)
+
+
 def _convert_content_parts(content: list) -> list[dict]:
     """Convert OpenAI multi-part content (text + images) to Anthropic blocks.
 
     Caller-placed ``cache_control`` (e.g. skell-e-agent CachePoints) is kept on
-    the converted block. Audio parts raise UNSUPPORTED_MODALITY; unknown part
-    types are dropped.
+    the converted block. Audio and file parts raise UNSUPPORTED_MODALITY; any
+    other part type, or a non-dict entry, raises INVALID_INPUT. A part dropped
+    here would reach the model as a prompt with its media missing.
     """
+    from .utils import RouterError  # local import: utils imports this module
     parts = []
     for part in content:
         if not isinstance(part, dict):
-            continue
+            raise RouterError(
+                code="INVALID_INPUT",
+                message=f"Message content list entries must be content-part dicts, got {type(part).__name__}.",
+            )
         block = None
         if part.get("type") == "text":
+            if not isinstance(part.get("text"), str):
+                raise RouterError(code="INVALID_INPUT",
+                                  message="'text' content part needs a string in 'text'.",
+                                  details={"part_type": "text"})
             block = {"type": "text", "text": part["text"]}
         elif part.get("type") == "image_url":
-            url = part["image_url"]["url"]
+            image_url = part.get("image_url")
+            url = image_url.get("url") if isinstance(image_url, dict) else image_url
+            if not isinstance(url, str) or not url:
+                raise RouterError(code="INVALID_INPUT",
+                                  message="'image_url' content part needs a URL string in image_url.url.",
+                                  details={"part_type": "image_url"})
             if url.startswith("data:"):
                 # Parse data URI: data:mime;base64,DATA
-                header, b64_data = url.split(",", 1)
-                mime = header.split(":")[1].split(";")[0]
+                header, sep, b64_data = url.partition(",")
+                mime = header.removeprefix("data:").split(";", 1)[0]
+                if not sep or not mime:
+                    raise RouterError(code="INVALID_INPUT",
+                                      message="Malformed data URI in 'image_url' content part.",
+                                      details={"part_type": "image_url"})
                 block = {
                     "type": "image",
                     "source": {
@@ -197,8 +220,8 @@ def _convert_content_parts(content: list) -> list[dict]:
                 block["cache_control"] = part["cache_control"]
             parts.append(block)
             continue
-        if part.get("type") == "input_audio":
-            from .utils import RouterError
+        part_type = part.get("type")
+        if part_type == "input_audio":
             raise RouterError(
                 code="UNSUPPORTED_MODALITY",
                 message=(
@@ -206,6 +229,21 @@ def _convert_content_parts(content: list) -> list[dict]:
                     "Use a Gemini or OpenAI audio-capable model."
                 ),
             )
+        if part_type == "file":
+            raise RouterError(
+                code="UNSUPPORTED_MODALITY",
+                message=(
+                    "Anthropic models do not accept 'file' content parts through the router. "
+                    "Send images as 'image_url' parts; video and Gemini Files API uploads "
+                    "need a Gemini model."
+                ),
+            )
+        raise RouterError(
+            code="INVALID_INPUT",
+            message=(f"Unsupported content part type {part_type!r} for Anthropic models. "
+                     "Supported: text, image_url."),
+            details={"part_type": part_type},
+        )
     return parts
 
 
@@ -260,8 +298,21 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
         content = msg.get("content")
 
         if role == "system":
-            if isinstance(content, str):
+            if isinstance(content, list):
+                # Text blocks only. Caller cache markers keep the block form;
+                # otherwise the text joins into a plain string.
+                blocks = _convert_content_parts(content)
+                if any(block["type"] != "text" for block in blocks):
+                    raise _invalid_content("System message content must be a string or a list of text parts.")
+                if any("cache_control" in block for block in blocks):
+                    system_prompt = blocks
+                elif blocks:
+                    system_prompt = "\n".join(block["text"] for block in blocks)
+            elif isinstance(content, str):
                 system_prompt = content
+            elif content is not None:
+                raise _invalid_content(
+                    f"System message content must be a string or a list of text parts, got {type(content).__name__}.")
             continue
 
         # OpenAI tool result -> tool_result block in a user message
@@ -272,6 +323,10 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
             })
             continue
 
+        if content is not None and not isinstance(content, (str, list)):
+            raise _invalid_content(
+                f"Message content must be a string or a list of content parts, got {type(content).__name__}.")
+
         # Assistant turns replay their own thinking blocks first (Anthropic
         # requires thinking before text and tool_use), then text, then tool_use.
         thinking_blocks = _reasoning_blocks(msg) if role == "assistant" else []
@@ -281,6 +336,8 @@ def _convert_messages_for_anthropic(messages: list[dict]) -> tuple[str | None, l
             parts = list(thinking_blocks)
             if isinstance(content, str) and content:
                 parts.append({"type": "text", "text": content})
+            elif isinstance(content, list):
+                parts.extend(_convert_content_parts(content))
             for tc in msg["tool_calls"]:
                 fn = tc.get("function") or {}
                 parts.append({

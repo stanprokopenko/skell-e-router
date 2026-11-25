@@ -101,6 +101,24 @@ Supported on Gemini 2.5+/3.x and OpenAI GPT-4o audio models. Anthropic models ra
 
 For audio files larger than ~20 MB, use `upload_file()` and pass via `files=[ref]` instead.
 
+### Video Input
+
+Send video to a Gemini model with `video=`. Each item is a local file path, a base64 `data:video/...` URI, or a `GeminiFileRef` from `upload_file()`.
+
+```python
+from skell_e_router import ask_ai, upload_file
+
+# Short clip, sent inline (up to 100 MB)
+response = ask_ai("gemini-4-neon", "Which take has the cleanest delivery?", video=["take-3.mp4"])
+
+# Long or reused video: upload once, then reference it
+with open("episode.mp4", "rb") as f:
+    ref = upload_file(f, "video/mp4", display_name="episode.mp4")
+response = ask_ai("gemini-4-neon", "Summarize this episode.", video=[ref])
+```
+
+`upload_file()` returns once Gemini has finished processing the file, and Google deletes uploads after 48 hours. Video needs a Gemini model; any other model raises `RouterError("UNSUPPORTED_MODALITY")`. See the [video reference](skell_e_router/Skell-E-Router-DOCUMENTATION.md#video-input).
+
 ### Image Generation
 
 Generate images using the `nano-banana-3` model. Use `rich_response=True` to access the generated image data.
